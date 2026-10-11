@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>日志管理与journald · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fdf4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#15803d}.badge-implement{background:#f0fdf4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}.badge-clarify{background:#eff6ff;color:#2563eb}.badge-principle{background:#fef3c7;color:#b45309}.badge-apply{background:#f5f3ff;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 日志管理与journald</span><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" title="上一章">← 上一章</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" aria-current="page" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+
+<header class="site-header">
+  <h1>日志管理</h1>
+  <p class="subtitle">系统的"黑匣子" —— 从 syslog 协议到 journald，从日志堆积到轮转清理</p>
+  <div class="meta-row editorial-meta">
+    <span>操 / 实 / 运</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：建立完整日志认知体系，故障排查不靠猜测</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec13-1">日志体系概述</a>
+    <a href="#sec13-2">关键日志文件速查</a>
+    <a href="#sec13-3">journalctl实战</a>
+    <a href="#sec13-4">logrotate轮转</a>
+    <a href="#sec13-5">错误定位实战</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第1节：日志体系概述 ═══════════ -->
+<h2 class="section-title" id="sec13-1"><span class="icon">1</span>日志体系概述</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">概</span><h3>从 syslog 协议到二进制 journald —— 日志的三层架构</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：一行 echo "error" 到底经历了什么才出现在 /var/log/syslog 里？</h4>
+    <p>Linux 的日志体系是一套分层的流水线，理解它才能知道"日志去哪了"以及"为什么找不到了"：</p>
+
+    <p><strong>第一层：【产生者】应用程序或系统服务。</strong>任何进程都可以调用 <code>syslog(3)</code> 这个 C 库函数，把一条消息（附上"级别"如 ERROR/WARNING 和"类别"如 auth/mail）发送给系统日志服务。这就是 syslog 协议的核心——一个通用的日志投递标准，不绑定任何具体实现。还有个专门用来在 shell 脚本里写日志的命令 <code>logger "备份完成"</code>，背后调用的也是同一个 syslog 函数。</p>
+
+    <p><strong>第二层：【收集者】日志守护进程。</strong>传统上这是 <code>rsyslogd</code> 或 <code>syslog-ng</code>。它们监听 UNIX domain socket <code>/dev/log</code>，接收所有进程投递过来的日志，然后根据 <code>/etc/rsyslog.conf</code> 中的规则把日志分发到不同文件。比如所有 <code>auth.*</code>（认证相关）写入 <code>/var/log/auth.log</code>，所有 <code>*.*</code> 写入 <code>/var/log/syslog</code>。rsyslog 同时支持 UDP/514 端口接收远程设备的日志，这就是为什么你可以把整机房的交换机日志集中到一台服务器管理。</p>
+
+    <p><strong>第三层：【存储者】journald + 文本文件。</strong>现代 systemd 系统里引入了一个全新的二进制日志系统——<code>systemd-journald</code>。它不仅收集传统的 syslog 消息，还收集所有服务的标准输出/标准错误（stdout/stderr）、内核消息、coredump 信息。journald 把全部日志存入 <code>/var/log/journal/</code> 下的二进制文件，通过 <code>journalctl</code> 提供统一的检索入口。同时 journald 可以转发给 rsyslog，所以最终两份——二进制 journald + 文本 /var/log/*——会同时存在。一些发行版（如 Ubuntu）默认保留了 rsyslog 做文本日志输出，而 Fedora/Arch 可能只依赖 journald。</p>
+
+    <div class="box box-info">
+      <strong>一句总结</strong><br>
+      <strong>syslog 协议</strong> = 所有日志的统一投递格式（标准）<br>
+      <strong>rsyslog</strong> = 传统日志守护进程，把日志按规则分拣写入 /var/log（实现）<br>
+      <strong>journald</strong> = systemd 时代的二进制日志系统，更全面、更结构化（进化）
+    </div>
+
+    <h4>为什么 journald 要用二进制？</h4>
+    <p>文本日志对人类友好，但对机器不好。如果你需要在上百万条 syslog 中找到"昨天下午3点到4点之间由 nginx 产生的所有错误日志"，用 <code>grep</code> 是一条一条扫描文本——O(n)。journald 的二进制格式包含索引，按时间、服务、级别、进程 ID 查询都是 O(log n) 级别的。同时二进制存储每条日志的元数据（PID、UID、GID、SELinux context、cgroup 路径），这些是 syslog 文本格式里不可能完整记录的。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="3ec9964917922b477c4d6f0c3c57c02066cc840cf4ebd5087d36b25ebd15718b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看当前系统日志收集架构</span>
+<span class="hljs-built_in">systemctl</span> status rsyslog    <span class="hljs-comment"># 传统 syslog 守护进程</span>
+<span class="hljs-built_in">systemctl</span> status systemd-journald  <span class="hljs-comment"># journald 守护进程</span>
+
+<span class="hljs-comment"># 查看日志存储的磁盘占用</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> --disk-usage</span>     <span class="hljs-comment"># journald 二进制日志占了多少磁盘</span>
+
+<span class="hljs-comment"># logger 命令：从 shell 投递一条日志（验证 syslog 链路）</span>
+logger<span class="hljs-attr"> -p</span> auth.notice <span class="hljs-string">"admin logged into console at <span class="hljs-subst">$(date)</span>"</span>
+<span class="hljs-built_in">tail</span> -1 /var/log/auth.log   <span class="hljs-comment"># 立即在 auth.log 中看到这条日志</span></code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-clarify">清</span><h3>日志级别与 Facility —— syslog 的两维分类</h3><span class="tag tag-suggested">必备</span></div>
+  <div class="card-body">
+    <h4>问题：什么日志值得看？什么只是噪音？</h4>
+    <p>syslog 协议用了两个维度给每条日志打标签，就像图书馆把书按"主题"和"重要程度"分别编号：</p>
+
+    <p><strong>Facility（设施类别）：</strong>日志来自哪个子系统。常见的有 <code>auth</code>（认证）、<code>cron</code>（定时任务）、<code>daemon</code>（守护进程）、<code>kern</code>（内核）、<code>mail</code>（邮件）、<code>local0</code>~<code>local7</code>（留给应用程序自定义）。Nginx 一般用 <code>local0</code>，数据库用 <code>local1</code>。</p>
+
+    <p><strong>Severity（严重级别/优先级）：</strong>从小到大依次为 <code>debug</code> → <code>info</code> → <code>notice</code> → <code>warning</code> → <code>err</code> → <code>crit</code> → <code>alert</code> → <code>emerg</code>。数字越小越不重要（debug=7），数字越大越严重（emerg=0）。</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>级别</th><th>数字</th><th>含义</th><th>典型场景</th></tr></thead>
+      <tbody><tr><td><strong>emerg</strong></td><td>0</td><td>系统不可用</td><td>内核 panic，连登录提示符都打不出来了</td></tr>
+      <tr><td><strong>alert</strong></td><td>1</td><td>立即需要处理</td><td>数据库崩了，不处理影响业务</td></tr>
+      <tr><td><strong>crit</strong></td><td>2</td><td>严重错误</td><td>磁盘满了、CPU 过热</td></tr>
+      <tr><td><strong>err</strong></td><td>3</td><td>一般错误</td><td>服务启动失败、连接超时</td></tr>
+      <tr><td><strong>warning</strong></td><td>4</td><td>警告</td><td>磁盘使用率超过 80%、密码快过期</td></tr>
+      <tr><td><strong>notice</strong></td><td>5</td><td>正常但值得注意</td><td>用户通过 SSH 登录成功</td></tr>
+      <tr><td><strong>info</strong></td><td>6</td><td>一般信息</td><td>服务启动、配置重载</td></tr>
+      <tr><td><strong>debug</strong></td><td>7</td><td>调试信息</td><td>开发阶段用的详细输出</td></tr>
+    </tbody></table>
+    </div>
+
+    <p>在 rsyslog 配置中，用 <code>Facility.Severity</code> 来过滤。比如 <code>mail.warn</code> 表示"所有级别 &gt;= warning 的邮件相关日志"。星号 <code>*</code> 表示通配：<code>*.*</code> 是"所有类型所有级别的日志"。重定向优先级关键字 <code>none</code> 表示排除。</p>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter13/01-linux-logging-pipeline.png"><img src="assets/chapter13/01-linux-logging-pipeline.png" alt="展示应用、syslog、内核与 systemd 日志进入 journald/rsyslog，再到查询、文本文件和远程服务器的路径。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第2节：关键日志文件速查 ═══════════ -->
+<h2 class="section-title" id="sec13-2"><span class="icon">2</span>关键日志文件速查</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>/var/log 目录 —— 每个运维人必须背下来的文件清单</h3><span class="tag tag-required">必修</span></div>
+  <div class="card-body">
+    <h4>问题：系统出问题了，应该先看哪个文件？</h4>
+    <p><code>/var/log</code> 是 Linux 的日志主目录。不同发行版路径略有差异（比如 Debian/Ubuntu 用 <code>syslog</code>，RHEL/CentOS 用 <code>messages</code>），但核心文件的用途是完全一致的。</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>文件路径</th><th>记录内容</th><th>何时查看</th></tr></thead>
+      <tbody><tr><td><code>/var/log/syslog</code></td><td>系统全局日志，所有非内核服务的日志汇总池</td><td>不知道问题出在哪时先看它——它是最全的</td></tr>
+      <tr><td><code>/var/log/messages</code></td><td>RHEL 系的 syslog 等价物，范围稍窄（不含 debug）</td><td>RHEL/CentOS 上替代 syslog</td></tr>
+      <tr><td><code>/var/log/auth.log</code></td><td>认证日志：sudo 调用、SSH 登录/失败、su 切换</td><td>怀疑被入侵、查谁在 sudo、SSH 登录失败</td></tr>
+      <tr><td><code>/var/log/kern.log</code></td><td>内核消息（驱动加载、OOM killer、硬件错误）</td><td>系统突然重启、硬件异常、内核 oops</td></tr>
+      <tr><td><code>/var/log/dmesg</code></td><td>本次启动以来的内核环形缓冲区快照</td><td>刚启动时看驱动加载和设备识别情况</td></tr>
+      <tr><td><code>/var/log/boot.log</code></td><td>系统引导过程中各服务的启动日志</td><td>某个服务启动失败，排查启动脚本错误</td></tr>
+      <tr><td><code>/var/log/cron</code></td><td>cron 定时任务执行记录</td><td>排查定时任务为什么没跑、为什么报错没有输出</td></tr>
+      <tr><td><code>/var/log/apt/history.log</code></td><td>apt/dpkg 包安装与升级的完整历史记录</td><td>想知道昨天装了哪些包、谁升级了内核</td></tr>
+      <tr><td><code>/var/log/nginx/access.log</code></td><td>Web 服务器访问日志（每行一个请求）</td><td>分析流量、找爬虫 IP、检查 API 调用频率</td></tr>
+      <tr><td><code>/var/log/nginx/error.log</code></td><td>Web 服务器错误日志</td><td>502/500 错误排查、PHP-FPM 连接失败</td></tr>
+      <tr><td><code>/var/log/mysql/error.log</code></td><td>MySQL/MariaDB 数据库错误日志</td><td>数据库启动失败、查询错误、主从复制中断</td></tr>
+    </tbody></table>
+    </div>
+
+    <h4>last 命令 —— 查登录记录的秘密武器</h4>
+    <p><code>last</code> 命令可以列出所有用户的登录历史，包括登录时间、IP 地址和持续时间。它的数据来源不是普通文本文件，而是一个二进制数据库 <code>/var/log/wtmp</code>——这个文件记录了所有成功的登录和注销事件。<code>lastb</code> 命令对应 <code>/var/log/btmp</code>，记录所有失败的登录尝试。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="a4fc8e17b7e1cdc35e60ba92983c47da8fa684786e8ab473005f68179a69db3b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看最近的登录记录</span>
+last<span class="hljs-attr"> -n</span> 20                     <span class="hljs-comment"># 最近 20 次登录</span>
+last<span class="hljs-attr"> -a</span>                        <span class="hljs-comment"># 在行尾显示 IP 地址</span>
+last<span class="hljs-attr"> -F</span>                        <span class="hljs-comment"># 完整时间戳（精确到秒）</span>
+
+<span class="hljs-comment"># 查看失败的登录尝试（暴力破解的特征）</span>
+lastb<span class="hljs-attr"> -n</span> 50                    <span class="hljs-comment"># 最近 50 次登录失败</span>
+
+<span class="hljs-comment"># 查看特定用户的登录历史</span>
+last alice</code></pre>
+    <p class="out-label">▶ last 输出示例</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="6f5acb7f324cc5b5be409d16d479263298ffb34f9b308c43b0644cff98c95985"><code data-static-highlight="11.9.0" class="editorial-code language-plaintext nohighlight" data-highlighted="yes">alice    pts/0        192.168.1.100    Fri Jul 31 10:23   still logged in
+bob      pts/1        10.0.0.55        Fri Jul 31 09:15 - 09:45  (00:30)
+root     pts/0        :0               Thu Jul 30 18:02 - 18:05  (00:03)
+
+wtmp begins Thu Jul 30 18:02:01 2026</code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-apply">实</span><h3>应用日志与自定义日志 —— 别让 nginx 的错误淹没在 syslog 里</h3><span class="tag tag-suggested">技巧</span></div>
+  <div class="card-body">
+    <h4>问题：为什么不能把所有日志都堆到 syslog？</h4>
+    <p>把 Nginx、MySQL、Redis 的日志全写入 syslog 会有三个严重问题：一是 <code>/var/log/syslog</code> 会膨胀到几十 GB——rsyslog 的文本处理远不如应用自带的日志管理高效；二是无法按应用粒度轮转——syslog 的 logrotate 按大小切分，Nginx 的 access.log 需要按天切割以配合统计；三是性能影响——高流量的 Nginx 每秒产生数千行日志，全推给 rsyslog 的 UNIX socket 会成为瓶颈。</p>
+
+    <p><strong>标准做法是：每个应用维护自己的日志目录，自己控制格式和轮转策略。</strong>rsyslog/journald 只看系统级事件。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="3de0d3faaf1b7621b21f50607968b8bb8870e694c63e66c081001174cd5188a5"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># Nginx 配置中的日志路径（/etc/nginx/nginx.conf）</span>
+<span class="hljs-comment"># access_log /var/log/nginx/access.log combined;</span>
+<span class="hljs-comment"># error_log  /var/log/nginx/error.log warn;</span>
+
+<span class="hljs-comment"># 实时监控 Nginx 访问日志——看谁在访问你的网站</span>
+<span class="hljs-built_in">tail</span><span class="hljs-attr"> -f</span> /var/log/nginx/access.log
+
+<span class="hljs-comment"># 提取访问量最高的 10 个 IP</span>
+awk <span class="hljs-string">'{print $1}'</span> /var/log/nginx/access.log | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> | <span class="hljs-built_in">head</span> -10
+
+<span class="hljs-comment"># MySQL 的错误日志路径</span>
+grep log_error /etc/mysql/mysql.conf.d/mysqld.cnf
+<span class="hljs-comment"># 输出: log_error = /var/log/mysql/error.log</span></code></pre>
+
+    <div class="box box-warning">
+      <strong>警惕：应用日志打满磁盘</strong><br>
+      曾有一个案例：Nginx 的 access.log 在没有设置轮转的情况下跑了 3 个月，单个文件达到 120GB，直接把根分区的可用空间从 40GB 压到 0。最后不只是 Nginx 挂了——<strong>因为 /var 和根分区共享，系统连创建 SSH 连接所需的临时文件的空间都没有了</strong>。日志文件的管理与监控同样重要，永远不要假设"日志文件不会长到多离谱"。
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ 第3节：journalctl实战 ═══════════ -->
+<h2 class="section-title" id="sec13-3"><span class="icon">3</span>journalctl 实战</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>journalctl —— systemd 时代的日志瑞士军刀</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：journalctl 和 grep 查日志的根本区别在哪？</h4>
+    <p><code>grep</code> 是"逐行扫描文本文件"——对于 5GB 的 syslog，一个关键词搜索就要读完整个文件。<code>journalctl</code> 用的是"数据库查询"——二进制索引让按时间范围、按服务名、按优先级的查询都在毫秒级完成。一个直观的对比：在 10GB 的日志中找某个服务的所有错误，grep 可能要 2 分钟，journalctl 只要 0.5 秒——差了几个数量级。</p>
+
+    <h4>基础查询：最常用的 10 个命令</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="18aec953c133ad6dbb0b80553ad63114e1a4d0d87ef6e474e35d5637059470c7"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. 查看所有日志（从旧的开始）</span>
+<span class="hljs-built_in">journalctl</span>
+
+<span class="hljs-comment"># 2. 查看本次启动以来的所有日志</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -b</span>
+
+<span class="hljs-comment"># 3. 查看前一次启动的日志（排查"为什么上次重启了"）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -b</span> -1
+
+<span class="hljs-comment"># 4. 实时追踪最新日志（等同于 tail -f）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -f</span>
+
+<span class="hljs-comment"># 5. 只看某个服务的日志（最常用的命令没有之一）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -u</span> <span class="hljs-built_in">nginx</span>.service
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -u</span> <span class="hljs-built_in">ssh</span>.service
+
+<span class="hljs-comment"># 6. 按时间范围过滤</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> --since</span> <span class="hljs-string">"2026-07-30 15:00:00"</span><span class="hljs-attr"> --until</span> <span class="hljs-string">"2026-07-30 16:00:00"</span>
+
+<span class="hljs-comment"># 7. 看最近的日志（最新的在最上面，像 dmesg）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -n</span> 50           <span class="hljs-comment"># 最近 50 条</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -u</span> <span class="hljs-built_in">nginx</span><span class="hljs-attr"> -n</span> 20  <span class="hljs-comment"># nginx 最近 20 条</span>
+
+<span class="hljs-comment"># 8. 按优先级过滤：只看错误和更严重的</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -p</span> err          <span class="hljs-comment"># err, crit, alert, emerg</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -p</span> warning      <span class="hljs-comment"># warning + err + crit + alert + emerg</span>
+
+<span class="hljs-comment"># 9. 查特定进程的日志</span>
+<span class="hljs-built_in">journalctl</span> _PID=12345
+
+<span class="hljs-comment"># 10. 按可执行文件路径过滤</span>
+<span class="hljs-built_in">journalctl</span> /usr/sbin/sshd</code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">运</span><h3>journalctl 进阶 —— JSON 输出与日志持久化</h3><span class="tag tag-suggested">进阶</span></div>
+  <div class="card-body">
+    <h4>问题：如何把 journald 日志导入 ELK / Grafana Loki？</h4>
+    <p>journald 的二进制格式虽然索引快，但不便于跨系统传输和可视化分析。幸运的是 journalctl 支持多种输出格式，其中最强大的是 JSON——每一条日志转成一个 JSON 对象，包含所有元数据：</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="6508f7d60790e0d15d278b3a80a4a4792d431c39a82df7c03ad5873aa03ff4a9"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># JSON 输出——每行一个完整的 JSON 对象，包含 __REALTIME_TIMESTAMP, MESSAGE, _PID, _UID 等</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -o</span> json            <span class="hljs-comment"># 完整 JSON（一行，很长）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -o</span> json-pretty     <span class="hljs-comment"># 格式化 JSON（每个字段一行，供人阅读）</span>
+
+<span class="hljs-comment"># 只输出 MESSAGE 字段（纯文本，类似传统 syslog）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -o</span> <span class="hljs-built_in">cat</span>             <span class="hljs-comment"># 去掉了时间戳、主机名等前缀，只保留原始消息</span>
+
+<span class="hljs-comment"># 带详细元数据的短格式（默认输出模式的扩展版）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -o</span> verbose
+
+<span class="hljs-comment"># 导出为 JSON 并送给 jq 做进一步处理</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -u</span> <span class="hljs-built_in">nginx</span><span class="hljs-attr"> --since</span> <span class="hljs-string">"1 hour ago"</span><span class="hljs-attr"> -o</span> json | jq <span class="hljs-string">'.MESSAGE'</span></code></pre>
+
+    <p>如果你需要把 JSON 日志批量导入 ELK，可以用 <code>journalctl -o json</code> 管道输出给 Filebeat 或 Logstash 的 stdin 输入。如果你用 Grafana Loki，可以用 <code>promtail</code> 的 journal 采集器直接读取 journald 的二进制文件——不需要额外导出步骤。</p>
+
+    <h4>日志持久化配置</h4>
+    <p>默认情况下 journald 把日志存在 <code>/run/log/journal/</code>（tmpfs——内存文件系统），重启就消失了。要持久化到磁盘，需要创建 <code>/var/log/journal/</code> 目录并设置权限：</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="e94d12b3cfd18207947c8ed9f08e9e04188218a18a5b779e422f469c8ecea8a8"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 创建持久化目录</span>
+sudo <span class="hljs-built_in">mkdir</span><span class="hljs-attr"> -p</span> /var/log/journal
+sudo systemd-tmpfiles<span class="hljs-attr"> --create</span><span class="hljs-attr"> --prefix</span> /var/log/journal
+
+<span class="hljs-comment"># 重启 journald 使其识别新目录</span>
+sudo <span class="hljs-built_in">systemctl</span> restart systemd-journald
+
+<span class="hljs-comment"># 验证：journald 现在把日志写入磁盘而非 tmpfs</span>
+<span class="hljs-built_in">ls</span> /var/log/journal/
+<span class="hljs-comment"># 输出: 一串机器 ID 命名的目录，里面是 *.journal 二进制文件</span>
+
+<span class="hljs-comment"># 配置持久化和大小限制：编辑 /etc/systemd/journald.conf</span>
+<span class="hljs-comment"># Storage=persistent     # 强制持久化</span>
+<span class="hljs-comment"># SystemMaxUse=500M      # 日志最多占用 500MB 磁盘</span>
+<span class="hljs-comment"># MaxRetentionSec=4week  # 最多保留 4 周</span></code></pre>
+
+    <div class="box box-info">
+      <strong>kernel 消息的另一种查看方式：dmesg</strong><br>
+      <code>dmesg</code> 读取的是内核环形缓冲区（ring buffer），不经过 journald。这是内核启动阶段最先输出的消息——在你看到登录提示符之前，驱动加载、PCI 设备枚举、文件系统挂载的信息都在这里。<code>journalctl -k</code> 也可以查看内核消息（它同时从 journald 和内核环形缓冲区获取数据）。二者等价：<code>journalctl -k</code> 等同于 <code>journalctl -b _TRANSPORT=kernel</code> 再叠加 dmesg 的内容。
+    </div>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter13/02-journal-structured-query.png"><img src="assets/chapter13/02-journal-structured-query.png" alt="连接 Journal 字段、四类筛选入口与易失/持久化存储选择。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第4节：logrotate轮转 ═══════════ -->
+<h2 class="section-title" id="sec13-4"><span class="icon">4</span>logrotate 日志轮转</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">运</span><h3>如果日志不轮转，磁盘迟早被吃光 —— logrotate 的完整配置</h3><span class="tag tag-required">必修</span></div>
+  <div class="card-body">
+    <h4>问题：你设了 Nginx 的 access.log，三个月后半夜被磁盘满的告警惊醒</h4>
+    <p>logrotate 是 Linux 上最通用的日志轮转工具。它每隔一段时间（通常是每天）执行一次，根据配置文件把大的日志文件改名、压缩、或者在保留够一定数量后删除最老的那个。它的主配置文件是 <code>/etc/logrotate.conf</code>，每个服务的自定义配置放在 <code>/etc/logrotate.d/</code> 目录下——Nginx 的配置在 <code>/etc/logrotate.d/nginx</code>，rsyslog 的在 <code>/etc/logrotate.d/rsyslog</code>。</p>
+
+    <h4>核心配置参数解释</h4>
+    <p>以下面这个 Nginx 的典型 logrotate 配置为例：</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="ab2f1cb566c9ad7678aed6e0ea7b8e1d174387afc23e3a246b5b59d12016a9d9"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /etc/logrotate.d/nginx</span>
+/var/log/nginx/*.<span class="hljs-built_in">log</span> {      <span class="hljs-comment"># 对 nginx 目录下所有 .log 文件执行轮转</span>
+    daily                   <span class="hljs-comment"># 每天轮转一次（可选: weekly, monthly, yearly）</span>
+    missingok               <span class="hljs-comment"># 如果日志文件不存在也不报错（避免第一次运行报错）</span>
+    rotate 14               <span class="hljs-comment"># 最多保留 14 个历史文件（即 14 天的日志）  </span>
+    compress                <span class="hljs-comment"># 历史日志用 gzip 压缩（.gz 空间节省约 90%）</span>
+    delaycompress           <span class="hljs-comment"># 延后一天压缩（让昨天的日志今天还能直接 grep，压缩的是前天的）</span>
+    notifempty              <span class="hljs-comment"># 如果日志文件是空的就不轮转（避免创建一堆空日志）</span>
+    create 0640 www-data adm  <span class="hljs-comment"># 轮转后自动创建新的空日志文件，权限 0640，属主 www-data:adm</span>
+    sharedscripts           <span class="hljs-comment"># 所有日志轮转完后只执行一次 postrotate 脚本（而不是每个文件执行一次）</span>
+    postrotate              <span class="hljs-comment"># 轮转完成后执行的命令</span>
+        [<span class="hljs-attr"> -s</span> /run/nginx.pid ] &amp;&amp; <span class="hljs-built_in">kill</span><span class="hljs-attr"> -USR1</span> $(<span class="hljs-built_in">cat</span> /run/nginx.pid)
+                            <span class="hljs-comment"># 向 Nginx 发送 USR1 信号，让它重新打开日志文件（不然 Nginx 还往旧文件写）</span>
+    endscript
+    dateext                 <span class="hljs-comment"># 历史存档的文件名加日期后缀（access.log-20260731 而不是 access.log.1）</span>
+    dateformat -%Y%m%d      <span class="hljs-comment"># 日期格式（配合 dateext 使用）</span>
+    maxsize 100M            <span class="hljs-comment"># 即使还没到轮转周期，单个文件超过 100M 就强制轮转</span>
+}</code></pre>
+
+    <p><strong>逐个参数拆解：</strong></p>
+    <p><code>rotate 14</code>——这条至关重要。它定义了保留的历史副本数量。设为 14 意味着你会保留 15 个文件：1 个当前活跃的 + 14 个历史归档。如果你每天轮转且保留 14 个，就是两周的日志历史。对于高频服务（比如每天 10G 的 Nginx 日志），保留 14 个可能还是太占空间，可以减到 7 甚至 3。</p>
+
+    <p><code>compress</code> + <code>delaycompress</code> 是黄金组合。单独开 compress 会把昨天的日志立即压缩，导致你没法直接 grep 昨天的日志（grep 不认 .gz 文件）。加上 delaycompress 后：今天的轮转压缩的是前天的日志，昨天的日志还是纯文本可以直接 grep。如果你用 <code>zgrep</code> 可以直接搜索压缩日志，那就无所谓 delaycompress。</p>
+
+    <p><code>postrotate</code>——被无数人遗忘的关键配置。很多应用（Nginx、Apache）打开日志文件后持有文件描述符一直往里面写。logrotate 把文件改名（mv access.log access.log.1）后，应用的文件描述符仍然指向那个被改了名的旧文件——它根本不知道 logrotate 做了改名操作，new access.log 是空的也没人往里面写。<strong>postrotate 脚本的作用就是通知应用"请关闭旧文件描述符，打开新文件"</strong>。Nginx 用 USR1 信号实现日志重开，Apache 用 <code>apachectl graceful</code>。</p>
+
+    <div class="box box-warning">
+      <strong>logrotate 不会魔法——你必须验证它真的在跑</strong><br>
+      不少人配完 logrotate 就忘了，几个月后才发现在手动执行 <code>logrotate -f /etc/logrotate.conf</code> 之前，它根本没自动运行过。logrotate 依赖 cron 或 systemd timer 来触发。检查方式：<code>systemctl status logrotate.timer</code>（systemd 系统）或 <code>cat /etc/cron.daily/logrotate</code>（传统 cron 系统）。如果 timer 状态是 inactive，你的日志就在悄悄长胖。
+    </div>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="eb5f3471afee773d3a17ed9039aa98815cc7df277ebb2c9e55f98f0bcd76a35b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 手动测试 logrotate 配置（不实际轮转，只演示）</span>
+sudo logrotate<span class="hljs-attr"> -d</span> /etc/logrotate.conf
+
+<span class="hljs-comment"># 强制执行一次轮转（忽略周期判断，现在立刻就做）</span>
+sudo logrotate<span class="hljs-attr"> -f</span> /etc/logrotate.conf
+
+<span class="hljs-comment"># 只对某个单独的配置做测试</span>
+sudo logrotate<span class="hljs-attr"> -d</span> /etc/logrotate.d/nginx
+
+<span class="hljs-comment"># 查看 logrotate 的上次执行时间</span>
+<span class="hljs-built_in">cat</span> /var/lib/logrotate/status   <span class="hljs-comment"># 状态文件，记录每个日志最后一次轮转的时间</span></code></pre>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter13/03-logrotate-file-descriptor.png"><img src="assets/chapter13/03-logrotate-file-descriptor.png" alt="解释轮转、压缩、创建新文件、发信号和应用重新打开 fd 的完整链路。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第5节：错误定位实战 ═══════════ -->
+<h2 class="section-title" id="sec13-5"><span class="icon">5</span>错误定位实战</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>从"出问题了"到"找到原因"——日志驱动的三板斧排查法</h3><span class="tag tag-required">实操</span></div>
+  <div class="card-body">
+    <h4>问题：凌晨 3 点收到告警说 Web 服务 502，你只有 5 分钟定位</h4>
+
+    <p><strong>板斧一：查时间，定范围。</strong>先确认问题发生的时间窗口。告警说 3:05 开始 502——那就只看 3:00 到 3:10 这个时间段的日志，不要一上来把一整天的日志 grep 一遍。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="46fc508826239d803351950c185fa34547fad6a13e78bd663412554a71609741"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># journalctl 按时间过滤（精确到秒）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> --since</span> <span class="hljs-string">"2026-07-31 03:00:00"</span><span class="hljs-attr"> --until</span> <span class="hljs-string">"2026-07-31 03:10:00"</span>
+
+<span class="hljs-comment"># 传统 syslog 文件用法——用 grep 的时间正则</span>
+grep <span class="hljs-string">'Jul 31 03:0[0-9]'</span> /var/log/syslog</code></pre>
+
+    <p><strong>板斧二：查错误，看上下游。</strong>Web 返回 502 说明反向代理（Nginx）能连到上游服务（PHP-FPM/后端 API），但上游返回了无效响应。所以要先看 Nginx 的错误日志——它的视角是"上游怎么了"，再看上游服务自己的日志——它的视角是"我怎么了"。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="4106c15250971ff8a4bffa54d824663c1af83cfc7e8703f8968ed624b39b15aa"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. Nginx 错误日志——找上游连接失败的线索</span>
+grep <span class="hljs-string">'upstream'</span> /var/log/nginx/error.log | <span class="hljs-built_in">tail</span> -50
+<span class="hljs-comment"># 典型输出: connect() to unix:/run/php/php8.1-fpm.sock failed (111: Connection refused)</span>
+<span class="hljs-comment"># 说明 PHP-FPM 根本没有在监听！继续追查 PHP-FPM</span>
+
+<span class="hljs-comment"># 2. 查上游服务的状态</span>
+<span class="hljs-built_in">systemctl</span> status php8.1-fpm
+<span class="hljs-comment"># 输出: Active: failed (Result: signal) → PHP-FPM 挂了！</span>
+
+<span class="hljs-comment"># 3. 看 PHP-FPM 的日志——为什么会挂</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -u</span> php8.1-fpm<span class="hljs-attr"> --since</span> <span class="hljs-string">"03:00"</span><span class="hljs-attr"> --until</span> <span class="hljs-string">"03:05"</span>
+<span class="hljs-comment"># 输出: reached pm.max_children → 所有子进程被占满，新请求排队超时</span></code></pre>
+
+    <p><strong>板斧三：查认证，看入侵。</strong>如果异常日志里出现了大量 SSH 登录失败记录，或者 sudo 调用的时间在你不可能在线的时段——这些都是被入侵的迹象。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="34a5bcded0ff3312cfc11489f025e9a80ba2e5215351ef50a4500b3072e8d414"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 实时追踪 SSH 登录活动</span>
+<span class="hljs-built_in">tail</span><span class="hljs-attr"> -f</span> /var/log/auth.log
+
+<span class="hljs-comment"># 找出今天的 SSH 登录失败记录（暴力破解的特征图）</span>
+grep <span class="hljs-string">"Failed password"</span> /var/log/auth.log | awk <span class="hljs-string">'{print $(NF-3)}'</span> | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span>
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># 1423 192.168.1.200   ← 这个 IP 在 24 小时内尝试了 1423 次，几乎肯定是爆破</span>
+
+<span class="hljs-comment"># 查看所有 sudo 调用记录</span>
+grep <span class="hljs-string">"sudo"</span> /var/log/auth.log
+
+<span class="hljs-comment"># 查看昨天所有的 failed 相关日志</span>
+grep<span class="hljs-attr"> -i</span> <span class="hljs-string">"failed"</span> /var/log/syslog | grep <span class="hljs-string">"Jul 30"</span></code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-checklist">查</span><h3>日志排查结构性问题 —— 不要满足于"找到报错了"，要"回答为什么"</h3><span class="tag tag-suggested">方法论</span></div>
+  <div class="card-body">
+    <h4>问题：日志提示 "disk full" 你就清理磁盘，这是运维最需要避免的事</h4>
+    <p>日志的价值不只是告诉你"磁盘满了"——而是告诉你<strong>为什么</strong>会满。是某个服务写了太多 debug？是 logrotate 没配置？是 /var 分区太小？排查要有层次和逻辑。</p>
+
+    <div class="subcard-grid merged-waterfall-panel">
+      <section class="merged-subcard-section">
+        <h5>现象 → 原因 → 修复（3 步闭环）</h5>
+        <p>1. 现象：磁盘使用率 98%，系统报 No space left<br>2. 原因：<code>du -sh /var/log/*</code> 发现某个应用的 debug.log 有 80G，原因是该应用以 debug 级别运行了 2 周<br>3. 修复：先压缩/debug 归档；再把应用日志级别从 debug 改为 info；最后配置 logrotate（rotate 7 + compress）</p>
+      </section>
+
+      <section class="merged-subcard-section">
+        <h5>时间维度分析：对比法</h5>
+        <p><code>journalctl --since "2 days ago" -u mysql</code> vs <code>journalctl --since "today" -u mysql</code>——对比两个时间窗的日志量和 ERROR 数量。如果今天突然多了 10 倍的错误，那一定在某个时间点发生了变更（谁部署了代码？谁改了配置？）。日志的突变几乎一定对应着变更。</p>
+      </section>
+
+      <section class="merged-subcard-section">
+        <h5>日志告警阈值设计</h5>
+        <p>不要只监控"磁盘满"。提前设置：/var/log 分区使用率 &gt; 70% 时发 Warning，&gt; 80% 时发 Alert。单个日志文件 &gt; 10GB 时告警。每条日志的 "ERROR" 关键词在 5 分钟内出现超过 100 次时告警。</p>
+      </section>
+    </div>
+
+    <h4>终极工具：组合 grep/sed/awk/jq 做日志分析</h4>
+    <p>单条日志的价值有限。把日志作为结构数据做统计，才能找到隐藏的模式：</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="d475d944da7e2804c4cced1dd6d3301162fb1dc3ebae98508becec6d2f92d050"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 找出过去一周每天的错误日志数量趋势</span>
+<span class="hljs-keyword">for</span> day <span class="hljs-keyword">in</span> {1..7}; <span class="hljs-keyword">do</span>
+    d=$(<span class="hljs-built_in">date</span><span class="hljs-attr"> -d</span> <span class="hljs-string">"-<span class="hljs-variable">$day</span> days"</span> <span class="hljs-string">'+%b %d'</span>)
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$d</span>: <span class="hljs-subst">$(journalctl --since <span class="hljs-string">"<span class="hljs-subst">$(date -d <span class="hljs-string">"-<span class="hljs-variable">$day</span> days"</span> '+%Y-%m-%d')</span>"</span> \
+               --until <span class="hljs-string">"<span class="hljs-subst">$(date -d <span class="hljs-string">"-<span class="hljs-subst">$(($day-1)</span>) days"</span> '+%Y-%m-%d')</span>"</span> -p err -q | wc -l)</span> errors"</span>
+<span class="hljs-keyword">done</span>
+
+<span class="hljs-comment"># 从 Nginx access.log 统计 HTTP 状态码分布</span>
+awk <span class="hljs-string">'{print $9}'</span> /var/log/nginx/access.log | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span>
+<span class="hljs-comment"># 输出: 45230 200, 1230 301, 540 404, 89 502, 12 500</span>
+
+<span class="hljs-comment"># 找出访问最慢的 URL（按响应时间排序，假设第 10 列是 request_time）</span>
+awk <span class="hljs-string">'{print $10, $7}'</span> /var/log/nginx/access.log | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> | <span class="hljs-built_in">head</span> -20</code></pre>
+
+    <div class="box box-info">
+      <strong>一个真实的排错故事</strong><br>
+      某天网站的密码登录突然全部报 Internal Error。查 Nginx 日志：upstream timed out。查 PHP-FPM 日志：没有明显错误。查 auth.log：发现一天内有 50 万次 SSH 登录失败来自同一个 IP——不是针对 Web 的攻击，而是有人在爆破 SSH，产生了巨量的 PAM 认证日志写入 /var/log/auth.log，导致磁盘 I/O 被占满，PHP-FPM 的 session 文件写入超时。最终原因是：SSH 暴露在公网 + 无 Fail2ban + 日志放在根分区。结论：<strong>日志本身的写入就能成为性能瓶颈</strong>。
+    </div>
+  </div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter13/04-log-root-cause-tracing.png"><img src="assets/chapter13/04-log-root-cause-tracing.png" alt="用统一时间窗、调用链和 request-id 将上游现象收敛到下游根因。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
+
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>JSON</b> · JavaScript Object Notation JavaScript 对象表示法</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第13章</p>
+  <p style="margin-top:4px">日志管理 ——"没有日志的运维，就像蒙着眼睛开飞机"</p>
+</footer>
+
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-abp-filters-channel="60164da0-df74-48d0-b98c-71076e27f056"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>进程管理与监控 · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fdf4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#15803d}.badge-implement{background:#f0fdf4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 进程管理与监控</span><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" title="上一章">← 上一章</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" aria-current="page" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+<header class="site-header">
+  <h1>进程管理与监控</h1>
+  <p class="subtitle">系统运行的全貌 —— 从进程状态到资源诊断</p>
+  <div class="meta-row editorial-meta">
+    <span>实 / 操 / 运</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：一眼看懂 ps/top 输出，定位 CPU 飙高与内存泄漏</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec05-1">一、进程状态 R / S / D / Z / T</a>
+    <a href="#sec05-2">二、进程控制：前台后台</a>
+    <a href="#sec05-3">三、ps / top / htop 实战</a>
+    <a href="#sec05-4">四、daemon 守护进程</a>
+    <a href="#sec05-5">五、资源查看 free / uptime / lsof</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第一节 ═══════════ -->
+<h2 class="section-title" id="sec05-1"><span class="icon">1</span>进程状态 R / S / D / Z / T</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">实</span><h3>ps aux STAT 列每个字母背后的故事</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：ps aux 输出的 STAT 列到底在说什么？</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="998721ec9c34475e8b4b5ee14d2c7040763d2541e2f23fe727ba26b7f1b9d4a2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ ps</span> aux | <span class="hljs-built_in">head</span> -5
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.1 169488 13568 ?        Ss   Jul30   0:05 /sbin/init
+root        12  0.0  0.0      0     0 ?        I&lt;   Jul30   0:00 [rcu_tasks_kthread]
+root        23  0.0  0.0      0     0 ?        S    Jul30   0:00 [ksoftirqd/0]
+root      2341  0.0  0.1  34876  8120 ?        D    Jul30   1:23 [jbd2/sda1-8]</code></pre>
+    <p>STAT 列由一到多个字符组成。第一个字符是<strong>主状态码</strong>，后续是附加属性（小写字母表示特殊属性，大写字母表示关键特征）。</p>
+
+    <h4>五大主状态码：进程生命周期中的五种"身份"</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>状态</th><th>含义</th><th>正在做什么</th><th>你能做什么</th></tr></thead>
+      <tbody><tr>
+        <td><strong>R</strong></td>
+        <td>Running / Runnable</td>
+        <td>正在 CPU 上执行，或在运行队列中等待 CPU（可运行状态）。两者都用 R 表示，因为对调度器来说"马上就能跑"和"正在跑"没区别。</td>
+        <td>属于正常状态，大量 R 进程说明 CPU 繁忙</td>
+      </tr>
+      <tr>
+        <td><strong>S</strong></td>
+        <td>Sleeping (Interruptible)</td>
+        <td>等待某个事件发生——等待网络数据到达、等待用户输入、等待锁释放。系统中绝大多数进程都在 S 状态。</td>
+        <td>可被信号唤醒（如 SIGTERM）</td>
+      </tr>
+      <tr>
+        <td><strong>D</strong></td>
+        <td>Uninterruptible Sleep</td>
+        <td>正在等待 I/O 操作（磁盘读写、NFS 网络文件系统响应）。此时进程<strong>不接受任何信号</strong>——不能 kill，不能 Ctrl+C。</td>
+        <td>只能等待 I/O 完成；大量 D 状态积压 → 存储系统故障</td>
+      </tr>
+      <tr>
+        <td><strong>Z</strong></td>
+        <td>Zombie (Defunct)</td>
+        <td>进程已经死亡（调用了 exit），但父进程还没有调用 wait() 来回收它的退出状态。僵尸进程不占用内存、不占用 CPU，只占用进程表中一个 slot。</td>
+        <td>清理办法：杀掉父进程，让 init 收养并回收僵尸</td>
+      </tr>
+      <tr>
+        <td><strong>T</strong></td>
+        <td>Stopped</td>
+        <td>被 Ctrl+Z 或 SIGSTOP 信号暂停。进程还在内存中，只是停止执行——可以恢复。</td>
+        <td>用 fg 恢复到前台，或用 kill -CONT 继续运行</td>
+      </tr>
+    </tbody></table>
+    <figure class="merged-illustration" data-image-id="chapter05/01-process-state-transitions.png"><img src="assets/chapter05/01-process-state-transitions.png" alt="展示 R/S/D/T/Z 的合法转换，以及 D、Z 的正确处置。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+
+    <h4>STAT 列的附加标志</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>标志</th><th>含义</th><th>示例</th></tr></thead>
+      <tbody><tr><td><code>s</code></td><td>会话首进程（session leader）</td><td><code>Ss</code> 表示该进程是会话领导者且处于睡眠状态</td></tr>
+      <tr><td><code>+</code></td><td>前台进程组中的进程</td><td><code>S+</code> 表示前台运行中的睡眠态进程</td></tr>
+      <tr><td><code>&lt;</code></td><td>高优先级进程</td><td><code>S&lt;</code> 表示睡眠中的高优先级进程</td></tr>
+      <tr><td><code>N</code></td><td>低优先级进程</td><td><code>SN</code> 表示睡眠中的低优先级进程</td></tr>
+      <tr><td><code>l</code></td><td>多线程（使用 clone 创建）</td><td><code>Sl</code> 表示该进程是多线程的</td></tr>
+      <tr><td><code>L</code></td><td>内存页面被锁定（常驻内存）</td><td><code>SLl</code> 常见于数据库进程</td></tr>
+    </tbody></table>
+    </div>
+
+    <div class="box box-danger"><strong>D 状态（不可中断睡眠）是系统健康的"煤矿金丝雀"：</strong>如果 top/ps 中频繁出现 D 状态进程且迟迟不消，说明磁盘 I/O 或 NFS 挂载出现严重问题。这是一个<strong>你完全无法干预的状态</strong>——kill -9 也无济于事，因为进程在内核态的 I/O 调用中，根本无法检查信号。唯一的办法是恢复底层存储/I/O 系统的正常。</div>
+
+    <div class="box box-warning"><strong>Z 状态（僵尸）清理指南：</strong>僵尸进程不消耗内存，但占用 PID。少量僵尸可以忽略；大量僵尸说明父进程有 bug——它持续创建子进程但不回收。用 <code>ps -eo ppid,pid,stat,cmd | grep "^Z"</code> 找到僵尸的父进程 PPID，然后 <code>kill -HUP &lt;PPID&gt;</code> 通知父进程回收。如果父进程就是不回收，只能 kill 父进程让 init 接管。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第二节 ═══════════ -->
+<h2 class="section-title" id="sec05-2"><span class="icon">2</span>进程控制：前台后台</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>前台后台切换 + 信号体系 —— 进程的"遥控器"</h3><span class="tag tag-required">实操</span></div>
+  <div class="card-body">
+    <h4>问题：跑一个长时间的 tar 打包，按了 Ctrl+C 就全没了？</h4>
+    <p>Shell 中的进程分为<strong>前台进程</strong>（foreground，占用终端，能接收键盘信号）和<strong>后台进程</strong>（background，不占用终端输入）。学会在前台后台之间自如切换，是运维的基本功。</p>
+
+    <h4>作业控制（Job Control）完整操作链条</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="32d3c24c9bd53ba1d8b7c840b9ff7a84c455b1768039123f771fbe868f6bb2ea"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. 前台启动一个长时间任务</span>
+<span class="hljs-built_in">$ tar</span><span class="hljs-attr"> -czf</span> /backup/data.tar.gz /data
+<span class="hljs-comment"># (正在运行，终端被占用...)</span>
+
+<span class="hljs-comment"># 2. 按 Ctrl+Z 暂停它</span>
+^Z
+[1]+  Stopped    tar<span class="hljs-attr"> -czf</span> /backup/data.tar.gz /data
+
+<span class="hljs-comment"># 3. 查看暂停的任务</span>
+<span class="hljs-built_in">$ jobs</span><span class="hljs-attr"> -l</span>
+[1]+  34567 Stopped    tar<span class="hljs-attr"> -czf</span> /backup/data.tar.gz /data
+
+<span class="hljs-comment"># 4. 把它放到后台继续运行</span>
+<span class="hljs-built_in">$ bg</span> %1
+[1]+ tar<span class="hljs-attr"> -czf</span> /backup/data.tar.gz /data &amp;
+
+<span class="hljs-comment"># 5. 临时回到前台看一眼</span>
+<span class="hljs-built_in">$ fg</span> %1
+<span class="hljs-comment"># (回到前台，可以 Ctrl+Z 再次暂停)</span>
+
+<span class="hljs-comment"># 6. 再次放到后台（这次加上 disown，关闭终端也不停）</span>
+<span class="hljs-built_in">$ bg</span> %1
+<span class="hljs-built_in">$ disown</span> %1          <span class="hljs-comment"># 脱离当前 shell 的控制</span></code></pre>
+
+    <h4>nohup —— 终端关了，进程继续跑</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="4957bcc0d9a1c1bc8e54212b3666dafc9c51229503d3b83ab3ab8d718978c806"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># nohup 让进程忽略 SIGHUP 信号（终端断开时发送的信号）</span>
+<span class="hljs-built_in">$ nohup</span> long-running-command &amp;
+<span class="hljs-built_in">nohup</span>: ignoring input and appending output to <span class="hljs-string">'nohup.out'</span>
+
+<span class="hljs-comment"># 标准用法：重定向输出 + 后台运行</span>
+<span class="hljs-built_in">$ nohup</span> <span class="hljs-built_in">python</span> train_model.py &gt; training.log 2&gt;&amp;1 &amp;
+[1] 45678
+<span class="hljs-comment"># 现在可以安全关闭终端，进程继续运行</span>
+
+<span class="hljs-comment"># 检查 nohup 进程</span>
+<span class="hljs-built_in">$ ps</span> aux | grep train_model
+<span class="hljs-built_in">$ tail</span><span class="hljs-attr"> -f</span> training.log    <span class="hljs-comment"># 查看输出</span></code></pre>
+
+    <h4>信号体系 —— 进程间的通讯方式</h4>
+    <p>信号是 Linux 内核向进程发送的"通知"。进程可以捕获信号并执行处理函数（如 SIGTERM），也可以忽略某些信号，或者按默认行为响应。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="fa90abc3997ca7d6df4270bc28af6bf59f9aa6b438f1e32eca794828cce6f669"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ kill</span><span class="hljs-attr"> -l</span>   <span class="hljs-comment"># 列出所有信号（编号 1~64）</span>
+ 1) SIGHUP      2) SIGINT      3) SIGQUIT     4) SIGILL
+ 5) SIGTRAP     6) SIGABRT     7) SIGBUS      8) SIGFPE
+ 9) SIGKILL    10) SIGUSR1    11) SIGSEGV    12) SIGUSR2
+13) SIGPIPE    14) SIGALRM    15) SIGTERM    16) SIGSTKFLT
+17) SIGCHLD    18) SIGCONT    19) SIGSTOP    20) SIGTSTP
+...</code></pre>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>信号</th><th>编号</th><th>触发方式</th><th>默认行为</th><th>可否捕获/忽略</th></tr></thead>
+      <tbody><tr><td><strong>SIGINT</strong></td><td>2</td><td>Ctrl+C</td><td>终止进程</td><td>可捕获</td></tr>
+      <tr><td><strong>SIGQUIT</strong></td><td>3</td><td>Ctrl+\</td><td>终止进程 + core dump</td><td>可捕获</td></tr>
+      <tr><td><strong>SIGKILL</strong></td><td>9</td><td><code>kill -9 PID</code></td><td>立即杀死（不可撤销）</td><td><strong>不可捕获、不可忽略</strong></td></tr>
+      <tr><td><strong>SIGTERM</strong></td><td>15</td><td><code>kill PID</code>（默认）</td><td>优雅终止</td><td>可捕获（进程可清理后退出）</td></tr>
+      <tr><td><strong>SIGHUP</strong></td><td>1</td><td><code>kill -HUP PID</code></td><td>终端挂断</td><td>可捕获（常用于重载配置）</td></tr>
+      <tr><td><strong>SIGSTOP</strong></td><td>19</td><td><code>kill -STOP PID</code></td><td>暂停进程</td><td><strong>不可捕获、不可忽略</strong></td></tr>
+      <tr><td><strong>SIGCONT</strong></td><td>18</td><td><code>kill -CONT PID</code></td><td>恢复暂停的进程</td><td>可捕获</td></tr>
+      <tr><td><strong>SIGUSR1</strong></td><td>10</td><td><code>kill -USR1 PID</code></td><td>用户自定义</td><td>由程序自由定义</td></tr>
+      <tr><td><strong>SIGUSR2</strong></td><td>12</td><td><code>kill -USR2 PID</code></td><td>用户自定义</td><td>由程序自由定义</td></tr>
+    </tbody></table>
+    </div>
+
+    <div class="box box-danger"><strong>SIGTERM vs SIGKILL 的关键区别：</strong>发送 SIGTERM(15) 时，进程收到通知可以执行清理工作——关闭文件描述符、刷新缓冲区、释放锁、通知下游服务——然后优雅退出。SIGKILL(9) 则是内核直接终止进程，不给任何反应时间。这可能导致文件数据只写了一半、数据库锁未释放。原则：<strong>先用 kill PID（SIGTERM），给它几秒时间优雅退出；仍然不退出再 kill -9（SIGKILL）作为终极手段。</strong></div>
+
+    <h4>实战命令</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="d111a43ca07883b9d37ba3376587f0f6dded876f6025758e3b14aa3e90ac15b3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">kill</span> 1234              <span class="hljs-comment"># 发送 SIGTERM (15)——请优雅退出</span>
+<span class="hljs-built_in">kill</span> -9 1234           <span class="hljs-comment"># 发送 SIGKILL (9)——立刻杀死</span>
+<span class="hljs-built_in">kill</span><span class="hljs-attr"> -HUP</span> 1234         <span class="hljs-comment"># 发送 SIGHUP (1)——重新加载配置（nginx/supervisor 常用）</span>
+<span class="hljs-built_in">kill</span><span class="hljs-attr"> -STOP</span> 1234        <span class="hljs-comment"># 暂停进程</span>
+<span class="hljs-built_in">kill</span><span class="hljs-attr"> -CONT</span> 1234        <span class="hljs-comment"># 恢复进程</span>
+
+killall <span class="hljs-built_in">nginx</span>          <span class="hljs-comment"># 按名称杀死所有 nginx 进程（发送 SIGTERM）</span>
+killall -9 <span class="hljs-built_in">java</span>        <span class="hljs-comment"># 按名称强制杀死所有 java 进程（谨慎使用）</span>
+
+pkill<span class="hljs-attr"> -f</span> <span class="hljs-string">"python.*train"</span>  <span class="hljs-comment"># 按命令行模式匹配杀进程</span>
+pkill<span class="hljs-attr"> -u</span> alice             <span class="hljs-comment"># 杀死某用户的所有进程</span></code></pre>
+  </div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter05/02-job-control-and-signals.png"><img src="assets/chapter05/02-job-control-and-signals.png" alt="合并前台/后台切换、SIGHUP、nohup/disown 与 TERM→KILL 顺序。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════════ 第三节 ═══════════ -->
+<h2 class="section-title" id="sec05-3"><span class="icon">3</span>ps / top / htop 实战</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>进程信息查看三位一体的武器库</h3><span class="tag tag-required">实操</span></div>
+  <div class="card-body">
+    <h4>ps —— 进程快照</h4>
+    <p>ps 是两个"流派"的命令合体：BSD 风格（不加 -）和 POSIX 风格（加 -）。日常工作中混用无妨，但要知道区别。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="b06719123424577c868048c045ebc24953e8e30a7a177a60d024832023fdb39e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 最常用的三种 ps 命令 ===</span>
+
+<span class="hljs-comment"># 1. BSD 风格全进程列表（最常用）</span>
+ps aux
+<span class="hljs-comment"># a = 显示所有用户进程（含其他终端）</span>
+<span class="hljs-comment"># u = 以用户为导向的格式（显示 CPU/MEM/VSZ/RSS/STAT）</span>
+<span class="hljs-comment"># x = 显示无控制终端的进程（daemon）</span>
+
+<span class="hljs-comment"># 2. POSIX 风格完整格式</span>
+ps<span class="hljs-attr"> -elf</span>
+<span class="hljs-comment"># -e = 显示所有进程</span>
+<span class="hljs-comment"># -l = 长格式</span>
+<span class="hljs-comment"># -f = 完整格式（包含 PPID、启动时间）</span>
+
+<span class="hljs-comment"># 3. 自定义输出列（只取你要的信息）</span>
+ps<span class="hljs-attr"> -eo</span> pid,ppid,user,%cpu,%mem,vsz,rss,<span class="hljs-built_in">stat</span>,cmd<span class="hljs-attr"> --sort</span>=-%cpu | <span class="hljs-built_in">head</span> -20
+<span class="hljs-comment"># 按 CPU 使用率降序排列，只显示前 20 名</span></code></pre>
+
+    <p class="out-label">▶ ps aux 每列的含义</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>列</th><th>含义</th></tr></thead>
+      <tbody><tr><td>USER</td><td>进程属于哪个用户</td></tr>
+      <tr><td>PID</td><td>进程 ID</td></tr>
+      <tr><td>%CPU</td><td>CPU 使用率（单核的百分比，多核可超 100%）</td></tr>
+      <tr><td>%MEM</td><td>物理内存使用百分比</td></tr>
+      <tr><td>VSZ</td><td>虚拟内存大小（KB）——包含了共享库和未实际使用的虚拟地址空间</td></tr>
+      <tr><td>RSS</td><td>常驻内存大小（KB）——物理内存中实际占用的部分</td></tr>
+      <tr><td>TTY</td><td>绑定的终端，? 表示没有控制终端（daemon）</td></tr>
+      <tr><td>STAT</td><td>进程状态（见第一节）</td></tr>
+      <tr><td>START</td><td>进程启动时间</td></tr>
+      <tr><td>TIME</td><td>累计占用的 CPU 时间（不是墙钟时间）</td></tr>
+      <tr><td>COMMAND</td><td>命令行（可能被截断）</td></tr>
+    </tbody></table>
+    </div>
+
+    <h4>top —— 实时交互式资源监控</h4>
+    <p>top 相当于终端里的"任务管理器"，每 3 秒刷新一次。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="81674f5d46fccd2704f0c46f39e6406640b4daa49bb9379705c704494faef636"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># top 的交互快捷键（运行时按对应键）</span>
+
+P       <span class="hljs-comment"># 按 CPU 使用率排序（最常用）</span>
+M       <span class="hljs-comment"># 按内存使用率排序</span>
+T       <span class="hljs-comment"># 按运行时间排序</span>
+k       <span class="hljs-comment"># 杀进程：输入 PID → 输入信号编号（默认15）</span>
+r       <span class="hljs-comment"># renice 调整进程优先级：输入 PID → 输入 nice 值</span>
+u       <span class="hljs-comment"># 只看指定用户的进程：输入用户名</span>
+1       <span class="hljs-comment"># 显示每个 CPU 核心的使用率（多核 CPU 专用）</span>
+c       <span class="hljs-comment"># 切换 COMMAND 列显示完整命令行 / 仅程序名</span>
+V       <span class="hljs-comment"># 树形视图（显示父子关系）</span>
+E       <span class="hljs-comment"># 切换内存单位</span>
+q       <span class="hljs-comment"># 退出</span>
+
+<span class="hljs-comment"># top 常用启动参数</span>
+top<span class="hljs-attr"> -u</span> alice            <span class="hljs-comment"># 只看 alice 的进程</span>
+top<span class="hljs-attr"> -p</span> 1234,5678        <span class="hljs-comment"># 只监控指定的 PID</span>
+top<span class="hljs-attr"> -d</span> 1                <span class="hljs-comment"># 每 1 秒刷新（默认 3 秒）</span>
+top<span class="hljs-attr"> -n</span> 5<span class="hljs-attr"> -b</span><span class="hljs-attr"> -o</span> %CPU    <span class="hljs-comment"># 批处理模式：取 5 次快照按 CPU 排序输出</span></code></pre>
+
+    <h4>htop —— top 的现代化替代品</h4>
+    <p>htop 不是系统预装的，需要手动安装（<code>apt install htop</code> / <code>dnf install htop</code>）。它的优势：彩色输出、鼠标支持、树形视图、更直观的交互。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="0fb4a4a80415e91a901ce49f507ab8306cf68d83df5f48c24fcefaa60b630cc2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># htop 特色功能</span>
+F2      <span class="hljs-comment"># 进入设置界面（自定义显示列、颜色主题）</span>
+F3      <span class="hljs-comment"># 搜索进程（按名称/命令行走）</span>
+F4      <span class="hljs-comment"># 按进程名过滤</span>
+F5      <span class="hljs-comment"># 树形视图（显示父子进程关系）</span>
+F6      <span class="hljs-comment"># 选择排序方式（CPU/MEM/TIME/PID 等）</span>
+F9      <span class="hljs-comment"># 发送信号：选进程 → 按 F9 → 从列表选信号类型 → 回车</span>
+F10     <span class="hljs-comment"># 退出</span>
+
+<span class="hljs-comment"># 常用启动参数</span>
+htop<span class="hljs-attr"> -u</span> alice         <span class="hljs-comment"># 只看 alice 的进程</span>
+htop<span class="hljs-attr"> -p</span> 1234          <span class="hljs-comment"># 只监控 PID 1234</span></code></pre>
+
+    <h4>pgrep —— 按名称快速查 PID</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="861b790a1702f3779e0b3424b0d9960cae4f0819c4969ca058c538369f713834"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">pgrep <span class="hljs-built_in">nginx</span>               <span class="hljs-comment"># 返回所有名为 nginx 的进程 PID</span>
+pgrep<span class="hljs-attr"> -u</span> alice             <span class="hljs-comment"># alice 的所有进程 PID</span>
+pgrep<span class="hljs-attr"> -f</span> <span class="hljs-string">"python.*app"</span>     <span class="hljs-comment"># 匹配完整命令行（不只是进程名）</span>
+pgrep<span class="hljs-attr"> -l</span> <span class="hljs-built_in">nginx</span>             <span class="hljs-comment"># 同时显示进程名</span>
+3321 <span class="hljs-built_in">nginx</span>
+3327 <span class="hljs-built_in">nginx</span>
+
+<span class="hljs-comment"># 配合 kill 使用</span>
+<span class="hljs-built_in">kill</span> $(pgrep <span class="hljs-built_in">nginx</span>)        <span class="hljs-comment"># 杀死所有 nginx 进程</span>
+pkill <span class="hljs-built_in">nginx</span>                <span class="hljs-comment"># 和上面等价，更简洁</span></code></pre>
+  </div>
+</div>
+
+<!-- ═══════════ 第四节 ═══════════ -->
+<h2 class="section-title" id="sec05-4"><span class="icon">4</span>daemon 守护进程</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">运</span><h3>后台服务 vs 前台命令 —— 两个世界的进程</h3><span class="tag tag-required">运维</span></div>
+  <div class="card-body">
+    <h4>问题：为什么 nginx 重启后还能继续运行，而 Ctrl+C 会杀死我的脚本？</h4>
+    <p>这是两种完全不同的进程模型：<strong>前台进程</strong>绑定了终端（TTY），终端关闭时进程收到 SIGHUP 信号后终止。而 <strong>daemon（守护进程）</strong>在启动后主动脱离终端、fork 出子进程、关闭标准输入/输出、将工作目录切换到 /——成为一个孤立的、持久运行的后台服务。</p>
+
+    <h4>daemon 的典型特征</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="bb6d300370ffefd85189df70c5fe6a944113d4338283c98217ba6711fa767089"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 看 ps aux 中 daemon 的特征</span>
+<span class="hljs-built_in">$ ps</span> aux | grep <span class="hljs-built_in">nginx</span>
+root      892  0.0  0.1  55212  9808 ?        Ss   Jul30   0:00 <span class="hljs-built_in">nginx</span>: master process
+www-data  893  0.0  0.2  55680 14560 ?        S    Jul30   0:12 <span class="hljs-built_in">nginx</span>: worker process
+<span class="hljs-comment">#         ↑                                 ↑</span>
+<span class="hljs-comment">#     PID 892                           TTY=? （无控制终端）</span>
+
+<span class="hljs-comment"># daemon 的特征总结：</span>
+<span class="hljs-comment"># 1. TTY 列显示 ?（没有绑定终端）</span>
+<span class="hljs-comment"># 2. PPID（父进程ID）通常是 1（init/systemd）</span>
+<span class="hljs-comment"># 3. STAT 通常带 s（会话领导者）</span></code></pre>
+
+    <h4>systemd —— 现代 Linux 的服务管家</h4>
+    <p>systemd (PID=1) 是所有用户态进程的祖先，负责启动、停止、重启、监控 daemon。</p>
+    <figure class="merged-illustration" data-image-id="chapter05/03-systemd-daemon-lifecycle.png"><img src="assets/chapter05/03-systemd-daemon-lifecycle.png" alt="对照前台进程与 daemon，并展示 unit、生命周期、重启策略和 journal。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="17290166c1ce078ea2a67afb4ceb371a733bc8a6e56be8ae6a19f0625c263e94"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># systemd 管理 daemon 的常用命令</span>
+
+<span class="hljs-built_in">systemctl</span> start <span class="hljs-built_in">nginx</span>      <span class="hljs-comment"># 启动服务</span>
+<span class="hljs-built_in">systemctl</span> stop <span class="hljs-built_in">nginx</span>       <span class="hljs-comment"># 停止服务</span>
+<span class="hljs-built_in">systemctl</span> restart <span class="hljs-built_in">nginx</span>    <span class="hljs-comment"># 重启服务</span>
+<span class="hljs-built_in">systemctl</span> reload <span class="hljs-built_in">nginx</span>     <span class="hljs-comment"># 重新加载配置（不停止服务，nginx 支持）</span>
+<span class="hljs-built_in">systemctl</span> status <span class="hljs-built_in">nginx</span>     <span class="hljs-comment"># 查看服务状态（最近10行日志 + 进程树 + CGroup）</span>
+<span class="hljs-built_in">systemctl</span> <span class="hljs-built_in">enable</span> <span class="hljs-built_in">nginx</span>     <span class="hljs-comment"># 设置开机自启</span>
+<span class="hljs-built_in">systemctl</span> <span class="hljs-built_in">disable</span> <span class="hljs-built_in">nginx</span>    <span class="hljs-comment"># 取消开机自启</span>
+<span class="hljs-built_in">systemctl</span> is-enabled <span class="hljs-built_in">nginx</span> <span class="hljs-comment"># 检查是否已设为开机自启</span>
+
+<span class="hljs-comment"># 查看所有已启用的服务</span>
+<span class="hljs-built_in">systemctl</span> list-unit-files<span class="hljs-attr"> --type</span>=service<span class="hljs-attr"> --state</span>=enabled
+
+<span class="hljs-comment"># 查看启动耗时分析</span>
+systemd-analyze blame       <span class="hljs-comment"># 各个服务启动耗时排名</span>
+systemd-analyze critical-chain  <span class="hljs-comment"># 启动关键路径</span></code></pre>
+
+    <h4>写一个 systemd service 单元文件</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="663d1208a4a4030df1bf919103e24d6606189ad97ad75ebc2c45ea48d913afb5"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /etc/systemd/system/myapp.service</span>
+[Unit]
+Description=My Custom Application
+After=network.target          <span class="hljs-comment"># 网络就绪后再启动</span>
+
+[Service]
+Type=simple                   <span class="hljs-comment"># simple / forking / oneshot / notify</span>
+User=myapp
+Group=myapp
+WorkingDirectory=/opt/myapp
+ExecStart=/opt/myapp/bin/server
+ExecStop=/bin/kill<span class="hljs-attr"> -TERM</span> <span class="hljs-variable">$MAINPID</span>
+Restart=on-failure            <span class="hljs-comment"># 异常退出时自动重启</span>
+RestartSec=5                  <span class="hljs-comment"># 重启前等待 5 秒</span>
+StandardOutput=journal        <span class="hljs-comment"># 标准输出写入 systemd journal</span>
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target    <span class="hljs-comment"># 系统进入多用户模式时启动</span>
+
+<span class="hljs-comment"># 部署 service 文件后的操作</span>
+<span class="hljs-built_in">systemctl</span> daemon-reload       <span class="hljs-comment"># 重载 systemd 配置</span>
+<span class="hljs-built_in">systemctl</span> <span class="hljs-built_in">enable</span><span class="hljs-attr"> --now</span> myapp  <span class="hljs-comment"># 启用并立即启动</span></code></pre>
+
+    <div class="box box-info"><strong>journalctl —— systemd 的统一日志：</strong>daemon 的标准输出和错误被 systemd 捕获，统一存储在 journal 中（二进制格式）。常用命令：<code>journalctl -u nginx -f</code>（跟踪 nginx 日志）、<code>journalctl -u nginx --since today</code>（今天的日志）、<code>journalctl -u nginx -p err</code>（只看错误级别）、<code>journalctl -xe</code>（查看最近的系统日志）。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第五节 ═══════════ -->
+<h2 class="section-title" id="sec05-5"><span class="icon">5</span>资源查看 free / uptime / lsof</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>系统资源诊断三板斧 —— 内存、负载、文件句柄</h3><span class="tag tag-suggested">诊断</span></div>
+  <div class="card-body">
+    <h4>free —— 内存使用全貌</h4>
+    <p>free 的输出最容易让人误解。<strong>不是 free 列越小内存越紧张</strong>——Linux 会用空闲内存做文件缓存（buff/cache），这些内存在需要时可以立即回收。</p>
+    <figure class="merged-illustration" data-image-id="chapter05/04-resource-diagnostics-map.png"><img src="assets/chapter05/04-resource-diagnostics-map.png" alt="建立 free、uptime、lsof、dmesg 与内存、负载、句柄、内核事件的对应关系。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="91478a3e39833cc92cb13b546af5498eed0b3a124c917a0b5b6f5b1cb1b92e03"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ free</span><span class="hljs-attr"> -h</span>
+              total        used        free      shared  buff/cache   available
+Mem:           15Gi       3.2Gi       1.5Gi       234Mi        10Gi        11Gi
+Swap:         2.0Gi       512Mi       1.5Gi
+
+<span class="hljs-comment"># 关键理解：</span>
+<span class="hljs-comment"># free (1.5Gi)       → 完全没有被使用的内存（"浪费"的内存）</span>
+<span class="hljs-comment"># buff/cache (10Gi)  → 被用作文件系统缓存的内存（可随时回收给应用）</span>
+<span class="hljs-comment"># available (11Gi)   → 真正可以分配给新进程的内存（free + 可回收的cache）</span>
+<span class="hljs-comment"># used (3.2Gi)       → 进程实际占用的内存（不能轻易回收的）</span></code></pre>
+    <div class="box box-info"><strong>什么时候应该担心内存？</strong>不看 free 列，看 <strong>available</strong> 列。当 available 持续接近 0 且 Swap 使用量持续增长时，说明内存真的不够了。如果 available 为 0 但 Swap 也不高，可能只是页面缓存被清零——不需要担心。</div>
+
+    <h4>uptime —— 负载平均值</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="2b7e3283b4b6d89e19faa64040174aef8149dca360f31eed6aeba76df608ec96"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ uptime</span>
+ 10:35:22 up 15 days, 3:12, 2 <span class="hljs-built_in">users</span>, load average: 1.20, 0.85, 0.62
+<span class="hljs-comment">#                                                   ↑1min ↑5min ↑15min</span>
+
+<span class="hljs-comment"># load average 含义：处于"可运行(R)"和"不可中断睡眠(D)"状态的平均进程数</span>
+<span class="hljs-comment"># 单核 CPU：load = 1.0 表示满负荷，&gt; 1.0 表示有进程在排队等待 CPU</span>
+<span class="hljs-comment"># 4 核 CPU：load = 4.0 表示满负荷，&gt; 4.0 表示排队</span></code></pre>
+    <p><strong>解读负载：</strong>如果 1 分钟负载远高于 15 分钟负载，说明系统正在变忙（可能来了突发流量）。如果三者都很高，说明系统长期超负荷。如果 1 分钟远低于 15 分钟，说明负载高峰已经过去。</p>
+
+    <h4>lsof —— 进程打开了什么</h4>
+    <p>在 Linux 中，"一切都是文件"——Socket 连接是文件、管道是文件、设备是文件、普通文件当然也是文件。lsof (List Open Files) 能告诉你任何进程打开的所有"文件"。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="4c20e000d9a37d3cff1ad12d60b041ea67077c17e77ff2562300c01b29d4dec2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看某个进程打开的所有文件</span>
+<span class="hljs-built_in">lsof</span><span class="hljs-attr"> -p</span> 892
+<span class="hljs-comment"># 输出包括：FD（文件描述符号）、TYPE（REG/DIR/CHR/FIFO/IPv4）、NAME（路径/Socket地址/端口号）</span>
+
+<span class="hljs-comment"># 查看谁在使用某个文件（比如文件删除后空间没释放）</span>
+<span class="hljs-built_in">lsof</span> /var/log/app.log
+
+<span class="hljs-comment"># 查看某个端口被谁占用（比 netstat 更直观）</span>
+<span class="hljs-built_in">lsof</span><span class="hljs-attr"> -i</span> :80
+<span class="hljs-built_in">lsof</span><span class="hljs-attr"> -i</span> :3306             <span class="hljs-comment"># MySQL 端口</span>
+<span class="hljs-built_in">lsof</span><span class="hljs-attr"> -i</span> tcp:8080          <span class="hljs-comment"># 指定协议</span>
+
+<span class="hljs-comment"># 查看某个用户打开的文件</span>
+<span class="hljs-built_in">lsof</span><span class="hljs-attr"> -u</span> alice
+
+<span class="hljs-comment"># 查看所有网络连接</span>
+<span class="hljs-built_in">lsof</span><span class="hljs-attr"> -i</span><span class="hljs-attr"> -P</span><span class="hljs-attr"> -n</span>             <span class="hljs-comment"># -P 显示端口号而非服务名，-n 不解析 DNS 名</span>
+
+<span class="hljs-comment"># 查看被删除但仍被进程持有的文件（删除后磁盘空间未释放的原因）</span>
+<span class="hljs-built_in">lsof</span> +L1</code></pre>
+
+    <h4>dmesg —— 内核环形缓冲区</h4>
+    <p>dmesg 是查看内核启动信息和运行时错误的第一窗口。硬件故障、驱动问题、OOM killer 日志都在这里。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="ff0ad0e9fab68cf347082251c1cb8d57e6c5cd1690a506995d2826bd203d9e90"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看最近的系统启动信息</span>
+dmesg | <span class="hljs-built_in">tail</span> -50
+
+<span class="hljs-comment"># 查看 OOM（Out of Memory）Killer 日志</span>
+dmesg | grep<span class="hljs-attr"> -i</span> <span class="hljs-string">'killed process'</span>
+
+<span class="hljs-comment"># 查看磁盘 I/O 错误</span>
+dmesg | grep<span class="hljs-attr"> -i</span> <span class="hljs-string">'i/o error'</span>
+
+<span class="hljs-comment"># 查看 CPU 硬件错误</span>
+dmesg | grep<span class="hljs-attr"> -i</span> <span class="hljs-string">'hardware error'</span>
+
+<span class="hljs-comment"># 查看挂载问题</span>
+dmesg | grep<span class="hljs-attr"> -i</span> <span class="hljs-string">'mount'</span>
+
+<span class="hljs-comment"># 实时查看（需要 root）</span>
+dmesg<span class="hljs-attr"> -w</span>         <span class="hljs-comment"># 类似 tail -f，实时输出新日志</span></code></pre>
+
+    <div class="box box-warning"><strong>经典排错场景——删除大日志文件后 df 显示空间没释放：</strong>你用 rm 删掉了 10GB 的日志文件，但 df -h 显示磁盘使用率没变。原因是某个进程（如 nginx 或 java）仍然持有该文件的句柄打开着。Linux 只有在文件的所有句柄都被关闭后才会真正释放磁盘空间。用 <code>lsof +L1 | grep deleted</code> 找到持有已删除文件的进程，然后重启或 HUP 该进程即可释放空间。</div>
+  </div>
+</div>
+
+<!-- /container -->
+
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>NFS</b> · Network File System 网络文件系统</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第5章</p>
+  <p style="margin-top:4px">"进程是活动的程序 —— 理解状态转换就理解了系统的心跳"</p>
+</footer>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

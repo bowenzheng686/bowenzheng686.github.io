@@ -320,6 +320,7 @@ html[data-theme="light"] .prose .highlight .s,html[data-theme="light"] .prose .h
       <nav class="site-nav" id="site-nav" aria-label="主要导航">
         <a href="{{ '/' | relative_url }}"{% if page.home %} aria-current="page"{% endif %}>首页</a>
         <a href="{{ '/' | relative_url }}#writing">文章</a>
+        <a href="{{ '/subjects/' | relative_url }}"{% if page.subject_index or page.subject_page %} aria-current="page"{% endif %}>专题</a>
         <a href="{{ '/' | relative_url }}#about">关于</a>
       </nav>
       <div class="header-actions">
@@ -336,7 +337,7 @@ html[data-theme="light"] .prose .highlight .s,html[data-theme="light"] .prose .h
   <div id="top"></div>
   <main id="main-content" class="article-shell section-shell">
     <div class="article-topline">
-      <a href="{{ '/' | relative_url }}#writing">← 返回所有文章</a>
+      {% if page.subject_page %}<a href="{{ '/subjects/' | relative_url }}">← 返回专题目录</a>{% elsif page.subject_index %}<a href="{{ '/' | relative_url }}">← 返回首页</a>{% else %}<a href="{{ '/' | relative_url }}#writing">← 返回所有文章</a>{% endif %}
       <span class="eyebrow">BOWEN / FIELD NOTES</span>
     </div>
     <div class="article-grid">

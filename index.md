@@ -12,6 +12,7 @@ home: true
       <p class="hero-description">记录编程实践、网络探索与日常思考。<br>让每次学习，都留下可以回看的轨迹。</p>
       <div class="hero-actions">
         <a class="button button-primary" href="#writing">阅读文章 <span aria-hidden="true">→</span></a>
+        <a class="button button-secondary" href="#subjects">浏览专题 <span aria-hidden="true">↘</span></a>
         <a class="button button-secondary" href="#about">关于我 <span aria-hidden="true">↘</span></a>
       </div>
       <div class="hero-footnote">
@@ -22,6 +23,26 @@ home: true
     <a class="hero-scroll" href="#writing" aria-label="向下浏览文章"><span>SCROLL TO EXPLORE</span><span aria-hidden="true">↓</span></a>
   </section>
 
+  <section id="subjects" class="section-shell writing" aria-labelledby="subjects-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">SUBJECTS</p>
+        <h2 id="subjects-title">专题内容</h2>
+      </div>
+      <p class="section-intro">按主题循序阅读，每个章节都可独立打开。</p>
+    </div>
+    <ul class="post-grid">
+      <li class="post-item">
+        <a class="post-card" href="{{ '/subjects/Linux/' | relative_url }}">
+          <div class="post-meta"><span class="post-category">Linux 系统</span><span>18 个章节</span></div>
+          <h3 class="post-title">Linux 系统学习笔记</h3>
+          <p class="post-excerpt">从发行版、文件系统与权限，到服务、存储、容器和故障排查。</p>
+          <div class="post-card-footer"><span>查看全部章节</span><span aria-hidden="true">↗</span></div>
+        </a>
+      </li>
+    </ul>
+    <p><a class="text-link" href="{{ '/subjects/' | relative_url }}">查看专题目录 →</a></p>
+  </section>
   {% assign post_count = site.posts | size %}
   <section id="writing" class="section-shell writing" aria-labelledby="writing-title">
     <div class="section-heading">

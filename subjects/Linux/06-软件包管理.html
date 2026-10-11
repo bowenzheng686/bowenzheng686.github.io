@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-abp-filters-channel="83a4d847-6467-4347-a939-9a6ac5ccc77d"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>软件包管理 · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fdf4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#15803d}.badge-implement{background:#f0fdf4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 软件包管理</span><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" title="上一章">← 上一章</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" aria-current="page" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+<header class="site-header">
+  <h1>软件包管理</h1>
+  <p class="subtitle">安装软件的规范方式 —— 从源码编译到包管理器自动化</p>
+  <div class="meta-row editorial-meta">
+    <span>实 / 操 / 运</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：精通 APT 和 DNF/YUM，告别"编译安装"噩梦</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec06-1">一、APT 完整操作</a>
+    <a href="#sec06-2">二、YUM / DNF 完整操作</a>
+    <a href="#sec06-3">三、仓库管理</a>
+    <a href="#sec06-4">四、依赖解析与升级</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第一节 ═══════════ -->
+<h2 class="section-title" id="sec06-1"><span class="icon">1</span>APT 完整操作</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>Debian 系包管理全流程 —— update → install → purge → autoremove</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：apt update 到底更新了什么？它和 apt upgrade 有什么区别？</h4>
+    <p>这是 APT 新手最容易混淆的概念。<strong>apt update 不安装任何东西，只下载包的元数据索引。</strong>它从 <code>/etc/apt/sources.list</code> 中配置的仓库服务器下载一份"最新可用的包列表"——包括每个包的版本号、依赖关系、文件大小。apt upgrade 才真正去下载和安装更新。</p>
+    <p>打个比方：update 是去超市拿最新商品目录，upgrade 是把购物车里的东西买回来。</p>
+
+    <h4>APT 日常工作流——从软件安装到彻底清理</h4>
+    <div class="subcard-grid merged-waterfall-panel">
+      <section class="merged-subcard-section">
+        <h5>阶段1：刷新包索引</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="095910751d2b11d7d49fdfacba73add8cd1c8f011c67872b93996b21a873d78f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> update</code></pre>
+        <p>读取源列表，下载每个源的 Packages.gz 索引文件。执行完这一步，APT 才知道有哪些包可用、最新版本是多少。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>阶段2：搜索与查看</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="d8c1759c140f9e7f5a05bc3f78d425fcd7cf7937316d0bc47ec1144ab23f8b31"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> search <span class="hljs-built_in">nginx</span>
+<span class="hljs-built_in">apt</span> show <span class="hljs-built_in">nginx</span>
+<span class="hljs-built_in">apt</span> list<span class="hljs-attr"> --upgradable</span></code></pre>
+        <p>search 在包名称和描述中搜索关键词；show 显示包的详细信息；list --upgradable 列出可升级的包。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>阶段3：安装</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="8837f4191b64123091b39b7321c3a447144597d0e1943f235b771361e549839e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> install <span class="hljs-built_in">nginx</span><span class="hljs-attr"> -y</span></code></pre>
+        <p>-y 自动确认（生产环境脚本用）；不加 -y 会显示将要安装/升级/删除的包列表，让你手动确认。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>阶段4：升级</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="8b8793727aac98005a5a2eff6632b86bcad12bcdb8fb4f6ef9e5b7f66fd57820"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> upgrade
+<span class="hljs-built_in">apt</span> full-upgrade</code></pre>
+        <p>upgrade 不删除现有包；full-upgrade（旧称 dist-upgrade）在必要时会删除冲突包以完成升级。</p>
+      </section>
+    </div>
+
+    <h4>卸载的三种级别</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="925e40b86e611b745bd2a61337747122cabfe228bd2e93c17993ead563644d5f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 级别1：删除软件包，保留配置文件</span>
+<span class="hljs-built_in">apt</span> remove <span class="hljs-built_in">nginx</span>
+<span class="hljs-comment"># 删除 nginx 二进制文件，但 /etc/nginx/ 配置文件保留</span>
+<span class="hljs-comment"># 未来重新安装时会沿用这些配置</span>
+
+<span class="hljs-comment"># 级别2：彻底删除，含配置文件</span>
+<span class="hljs-built_in">apt</span> purge <span class="hljs-built_in">nginx</span>
+<span class="hljs-comment"># 删除一切——二进制、配置、数据目录（如果有定义）</span>
+<span class="hljs-comment"># 相当于"从头来过"，重新安装不会残留旧配置</span>
+
+<span class="hljs-comment"># 级别3：删除不再需要的依赖</span>
+<span class="hljs-built_in">apt</span> autoremove
+<span class="hljs-comment"># 当安装 nginx 时自动装了 libssl（作为依赖），</span>
+<span class="hljs-comment"># 卸载 nginx 后 libssl 可能不再被任何包需要</span>
+<span class="hljs-comment"># autoremove 会找出并清理这些"孤儿"依赖</span></code></pre>
+
+    <figure class="merged-illustration" data-image-id="chapter06/02-apt-lifecycle.png"><img src="assets/chapter06/02-apt-lifecycle.png" alt="区分 update、install、upgrade/full-upgrade、hold、remove/purge/autoremove/autoclean。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>dpkg —— APT 的底层引擎</h4>
+    <p>APT 本质上是 dpkg 的前端。APT 负责解析依赖、从仓库下载 .deb 文件，然后调用 dpkg 进行实际的安装/卸载操作。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="ba83dd4f1b74db342c1623935775678c4d91eb550d672c9dfd09cef12913d4ec"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># dpkg 常用命令（底层操作，不处理依赖关系）</span>
+
+dpkg<span class="hljs-attr"> -l</span>                      <span class="hljs-comment"># 查看所有已安装的包（状态标志：ii=已安装 rc=已删除残留配置）</span>
+dpkg<span class="hljs-attr"> -l</span> | grep <span class="hljs-built_in">nginx</span>         <span class="hljs-comment"># 过滤查看某个包</span>
+
+dpkg<span class="hljs-attr"> -s</span> <span class="hljs-built_in">nginx</span>                <span class="hljs-comment"># 查看包的详细状态信息（版本、依赖、描述、配置文件列表）</span>
+
+dpkg<span class="hljs-attr"> -L</span> <span class="hljs-built_in">nginx</span>                <span class="hljs-comment"># 列出一个包安装的所有文件（list files）</span>
+<span class="hljs-comment"># 反向查询：某个文件属于哪个包</span>
+dpkg<span class="hljs-attr"> -S</span> /usr/sbin/nginx      <span class="hljs-comment"># 搜索——/usr/sbin/nginx 是哪个包安装的</span>
+
+dpkg<span class="hljs-attr"> -i</span> package.deb          <span class="hljs-comment"># 本地安装 .deb 文件（注意：不自动解决依赖）</span>
+dpkg<span class="hljs-attr"> -r</span> <span class="hljs-built_in">nginx</span>                <span class="hljs-comment"># 移除包（保留配置）</span>
+dpkg<span class="hljs-attr"> -P</span> <span class="hljs-built_in">nginx</span>                <span class="hljs-comment"># 彻底清除（含配置）</span>
+
+<span class="hljs-comment"># 查看包的下载缓存</span>
+<span class="hljs-built_in">ls</span> /var/cache/apt/archives/  <span class="hljs-comment"># APT 下载的 .deb 包缓存在这里</span></code></pre>
+
+    <h4>锁定包版本——防止自动升级</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="1fe20adfa247b2968f5189f2c21197a8402222cbb685fcb0f9242bb305ec3346"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 锁定某个包，阻止升级</span>
+<span class="hljs-built_in">apt</span>-mark hold <span class="hljs-built_in">nginx</span>          <span class="hljs-comment"># 锁定 nginx，后续 upgrade 不会升级它</span>
+<span class="hljs-built_in">apt</span>-mark unhold <span class="hljs-built_in">nginx</span>        <span class="hljs-comment"># 解锁</span>
+<span class="hljs-built_in">apt</span>-mark showhold            <span class="hljs-comment"># 查看所有被锁定的包</span></code></pre>
+    <div class="box box-warning"><strong>hold 锁定的应用场景：</strong>当某个关键软件的新版本与你系统不兼容时，先 hold 住旧版本，等验证新版本没问题后再 unhold。但 hold 有风险——如果其他包依赖了 nginx 的新版本而 nginx 被 hold，<code>apt full-upgrade</code> 可能会失败或产生依赖冲突。</div>
+
+    <div class="box box-info"><strong>APT 日常维护组合命令：</strong><code>apt update &amp;&amp; apt upgrade -y &amp;&amp; apt autoremove -y &amp;&amp; apt autoclean</code>。autoclean 清理本地缓存的旧版 .deb 包（只保留当前版本），释放磁盘空间。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第二节 ═══════════ -->
+<h2 class="section-title" id="sec06-2"><span class="icon">2</span>YUM / DNF 完整操作</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>Red Hat 系包管理全流程 —— YUM 的历史与 DNF 的新生</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：DNF 和 YUM 是什么关系？用哪个？</h4>
+    <p>YUM (Yellowdog Updater, Modified) 曾是 Red Hat / CentOS / Fedora 的默认包管理器，诞生于 2003 年。随着 RPM 生态膨胀，YUM 的性能瓶颈（Python 2 依赖、慢速解析依赖、内存占用大）日益突出。DNF (Dandified YUM) 从 Fedora 18 起步，用 C 语言重写核心库（libdnf），Python 3 编写 CLI，彻底解决了 YUM 的性能问题。从 RHEL 8 / CentOS 8 开始，DNF 正式取代 YUM。</p>
+    <p><strong>好消息是：DNF 的命令行语法与 YUM 几乎完全兼容。</strong>你在 CentOS 7 上学的 yum 命令，在 CentOS 8+ 上把 yum 换成 dnf 即可。系统甚至保留了 <code>/usr/bin/yum</code> 指向 dnf 的符号链接。</p>
+
+    <h4>DNF/YUM 日常工作流</h4>
+    <div class="subcard-grid merged-waterfall-panel">
+      <section class="merged-subcard-section">
+        <h5>阶段1：检查更新</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="ad713f13829f50c1d79811bede8edd7991e9a4beead27fce88330461a731aff4"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">dnf</span> check-update</code></pre>
+        <p>检查哪些包有新版本可用（只查看、不安装）。类似 apt update + apt list --upgradable 的结合体。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>阶段2：搜索与查看</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="ecf6d55c1efeb0736aa5d41f5f60035ffe39fa9c01aa2c6dd103c2245ed8a01b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">dnf</span> search <span class="hljs-built_in">nginx</span>
+<span class="hljs-built_in">dnf</span> info <span class="hljs-built_in">nginx</span>
+<span class="hljs-built_in">dnf</span> list installed</code></pre>
+        <p>search 搜索包名和描述；info 显示版本/架构/大小/仓库/描述；list installed 列出已安装的包。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>阶段3：安装与卸载</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="2a39ca97b6a16cf8ac827bd42823f2d3794f9585246cfe7a9ff6ee222e6a60e0"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">dnf</span> install <span class="hljs-built_in">nginx</span><span class="hljs-attr"> -y</span>
+<span class="hljs-built_in">dnf</span> remove <span class="hljs-built_in">nginx</span></code></pre>
+        <p>DNF 会自动处理依赖：安装时拉取所有依赖，卸载时也会提示连带卸载哪些不再需要的包。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>阶段4：升级</h5>
+        <pre data-presentation-code="v1" data-presentation-highlight="c6a1a949f4fff3612cdb4de0844ed6f3b6d9c40502498bc285483e0f705e7265"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">dnf</span> upgrade
+<span class="hljs-built_in">dnf</span> upgrade<span class="hljs-attr"> --security</span></code></pre>
+        <p>upgrade 升级所有包；--security 只升级安全相关的更新（生产环境推荐）。</p>
+      </section>
+    </div>
+
+    <h4>DNF 独有的强大功能</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="9b32c110b455a9b0f0897d3c6610480d23740c86dc12aab5f29741b437fbffbd"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 历史操作管理（DNF 的杀手级功能）===</span>
+
+<span class="hljs-comment"># 查看安装/卸载/升级的历史记录</span>
+<span class="hljs-built_in">dnf</span> <span class="hljs-built_in">history</span>
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># ID  | Command line                  | Date and time    | Action(s)      | Altered</span>
+<span class="hljs-comment"># ---------------------------------------------------|-------------------|----------------|--------</span>
+<span class="hljs-comment">#  5  | install nginx                  | 2026-07-30 10:00 | Install        |   12</span>
+<span class="hljs-comment">#  4  | remove vim                     | 2026-07-29 15:30 | Remove         |    1</span>
+<span class="hljs-comment">#  3  | upgrade                        | 2026-07-28 09:00 | Upgrade        |   45</span>
+
+<span class="hljs-comment"># 查看某次操作的详细信息</span>
+<span class="hljs-built_in">dnf</span> <span class="hljs-built_in">history</span> info 5              <span class="hljs-comment"># 查看第5次操作具体装了什么包</span>
+
+<span class="hljs-comment"># 回滚某次操作！！！</span>
+<span class="hljs-built_in">dnf</span> <span class="hljs-built_in">history</span> undo 5              <span class="hljs-comment"># 撤销第5次操作（如果5是 install nginx，则卸载它和它的依赖）</span>
+<span class="hljs-built_in">dnf</span> <span class="hljs-built_in">history</span> rollback 4          <span class="hljs-comment"># 回滚到第4次操作后的状态</span>
+
+<span class="hljs-comment"># === 包组管理 ===</span>
+<span class="hljs-built_in">dnf</span> group list                  <span class="hljs-comment"># 列出所有包组（如 "Development Tools"、"Web Server"）</span>
+<span class="hljs-built_in">dnf</span> group install <span class="hljs-string">"Development Tools"</span>    <span class="hljs-comment"># 一键安装开发工具组（gcc/make/git 等）</span></code></pre>
+
+    <h4>rpm —— YUM/DNF 的底层引擎</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="4c429a459d1b530523d6855964795851a79f9a6bc796547548d4998ca376ba0b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># rpm 常用命令（底层操作，不处理依赖关系）</span>
+
+rpm<span class="hljs-attr"> -qa</span>                        <span class="hljs-comment"># 查询所有已安装的包</span>
+rpm<span class="hljs-attr"> -qa</span> | grep <span class="hljs-built_in">nginx</span>           <span class="hljs-comment"># 过滤查看</span>
+
+rpm<span class="hljs-attr"> -qi</span> <span class="hljs-built_in">nginx</span>                  <span class="hljs-comment"># 查看包的详细信息（info）</span>
+rpm<span class="hljs-attr"> -ql</span> <span class="hljs-built_in">nginx</span>                  <span class="hljs-comment"># 列出包安装的所有文件（list files）</span>
+rpm<span class="hljs-attr"> -qc</span> <span class="hljs-built_in">nginx</span>                  <span class="hljs-comment"># 只看配置文件（config files）</span>
+rpm<span class="hljs-attr"> -qd</span> <span class="hljs-built_in">nginx</span>                  <span class="hljs-comment"># 只看文档文件（documentation）</span>
+
+<span class="hljs-comment"># 反向查询</span>
+rpm<span class="hljs-attr"> -qf</span> /usr/sbin/nginx        <span class="hljs-comment"># 这个文件属于哪个包（query file）</span>
+
+<span class="hljs-comment"># 验证包的完整性</span>
+rpm<span class="hljs-attr"> -V</span> <span class="hljs-built_in">nginx</span>                   <span class="hljs-comment"># 检查安装后的文件是否被修改</span>
+<span class="hljs-comment"># 输出符号：S=大小变了 M=权限变了 5=MD5变了 D=设备号变了 L=链接路径变了</span>
+<span class="hljs-comment">#          U=属主变了 G=属组变了 T=修改时间变了</span>
+
+<span class="hljs-comment"># 本地安装/升级/卸载</span>
+rpm<span class="hljs-attr"> -ivh</span> package.rpm           <span class="hljs-comment"># install</span>
+rpm<span class="hljs-attr"> -Uvh</span> package.rpm           <span class="hljs-comment"># upgrade（如果未安装则安装）</span>
+rpm<span class="hljs-attr"> -e</span> <span class="hljs-built_in">nginx</span>                   <span class="hljs-comment"># erase（卸载）</span>
+rpm<span class="hljs-attr"> -e</span><span class="hljs-attr"> --nodeps</span> <span class="hljs-built_in">nginx</span>          <span class="hljs-comment"># 忽略依赖强制卸载（危险！）</span></code></pre>
+
+    <figure class="merged-illustration" data-image-id="chapter06/01-package-manager-layered-architecture.png"><img src="assets/chapter06/01-package-manager-layered-architecture.png" alt="对照 APT/dpkg 与 DNF/RPM 的联网解依赖层和本地落盘层。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="box box-info"><strong>dnf provides —— 查找"这个命令在哪个包里"：</strong>你执行一个命令但提示 command not found，不知道要安装哪个包。DNF 可以帮你查找：<code>dnf provides */nginx</code> 或 <code>dnf provides /usr/bin/htop</code>。它会搜索所有仓库的包内容，告诉你哪个包包含这个文件。APT 对应的命令是 <code>apt-file search nginx</code>（需要先 <code>apt install apt-file &amp;&amp; apt-file update</code>）。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第三节 ═══════════ -->
+<h2 class="section-title" id="sec06-3"><span class="icon">3</span>仓库管理</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">运</span><h3>软件包的"来源地"——仓库配置是包管理的根基</h3><span class="tag tag-required">运维</span></div>
+  <div class="card-body">
+    <h4>问题：apt install 怎么知道去哪里下载软件包？</h4>
+    <p>APT 读取 <code>/etc/apt/sources.list</code> 和 <code>/etc/apt/sources.list.d/</code> 目录下的所有 <code>.list</code> 文件。每行定义一个仓库来源。</p>
+
+    <h4>APT 仓库配置详解</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="4bc5838a4d0443d25887df9056ad0001cef90374f0c94d7b0114b54baf065a46"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /etc/apt/sources.list 中的一行（Debian/Ubuntu）</span>
+deb https://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
+<span class="hljs-comment"># ^   ^                                 ^       ^    ^</span>
+<span class="hljs-comment"># |   |                                 |       |    仓库组件（component）</span>
+<span class="hljs-comment"># |   |                                 |      发行版代号（focal = 20.04）</span>
+<span class="hljs-comment"># |   仓库 URL                          |</span>
+<span class="hljs-comment"># 类型（deb=二进制包, deb-src=源码包）</span>
+
+<span class="hljs-comment"># 仓库组件（Component）含义：</span>
+<span class="hljs-comment"># main       → Ubuntu 官方维护的开源软件（完全支持）</span>
+<span class="hljs-comment"># restricted → 官方维护的专有驱动（如 NVIDIA 驱动）</span>
+<span class="hljs-comment"># universe   → 社区维护的开源软件（不保证安全更新时效）</span>
+<span class="hljs-comment"># multiverse → 非自由软件（许可证受限）</span></code></pre>
+
+    <h4>PPA —— 个人包仓库（Personal Package Archive）</h4>
+    <p>PPA 是 Launchpad 平台提供的非官方仓库，由个人或小团队维护。当官方仓库没有你需要的软件或版本太旧时，通过 PPA 安装。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="9931481f6e141373280b87e135431ac05e73fac7eb29a7924adf3b06d6043ad2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 添加 PPA 并安装软件</span>
+add-<span class="hljs-built_in">apt</span>-repository ppa:deadsnakes/ppa    <span class="hljs-comment"># 添加 Python 新版本的 PPA</span>
+<span class="hljs-built_in">apt</span> update                                <span class="hljs-comment"># 更新包索引（让 APT 知道新源的包）</span>
+<span class="hljs-built_in">apt</span> install <span class="hljs-built_in">python3</span>.11                    <span class="hljs-comment"># 安装 PPA 中的包</span>
+
+<span class="hljs-comment"># 删除 PPA</span>
+add-<span class="hljs-built_in">apt</span>-repository<span class="hljs-attr"> --remove</span> ppa:deadsnakes/ppa
+
+<span class="hljs-comment"># 查看已添加的 PPA</span>
+<span class="hljs-built_in">ls</span> /etc/apt/sources.list.d/               <span class="hljs-comment"># 每个 PPA 对应一个 .list 文件</span></code></pre>
+    <div class="box box-warning"><strong>PPA 的安全考量：</strong>PPA 中的包没有经过 Ubuntu 安全团队的审核。添加 PPA 前确认来源可信。添加某人的 PPA 相当于"你信任这个人不会在软件包里放恶意代码"——因为安装时 APT 会以 root 权限执行包内的安装脚本。</div>
+
+    <h4>YUM/DNF 仓库配置详解</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="a399d32927eb0a107e16f6d0348777ea0d17a525a03b665494f870ee213c7f0d"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 仓库配置文件位于 /etc/yum.repos.d/*.repo</span>
+
+<span class="hljs-comment"># /etc/yum.repos.d/nginx.repo 示例</span>
+[<span class="hljs-built_in">nginx</span>-stable]
+name=<span class="hljs-built_in">nginx</span> stable repo
+baseurl=https://nginx.org/packages/rhel/<span class="hljs-variable">$releasever</span>/<span class="hljs-variable">$basearch</span>/
+gpgcheck=1
+enabled=1
+gpgkey=https://nginx.org/keys/nginx_signing.key
+module_hotfixes=<span class="hljs-literal">true</span>
+
+<span class="hljs-comment"># 字段说明：</span>
+<span class="hljs-comment"># [repo-id]   → 仓库的唯一标识符</span>
+<span class="hljs-comment"># name        → 仓库的人类可读名称</span>
+<span class="hljs-comment"># baseurl     → 包文件的下载 URL</span>
+<span class="hljs-comment"># mirrorlist  → 镜像列表 URL（与 baseurl 二选一）</span>
+<span class="hljs-comment"># gpgcheck=1  → 强制 GPG 签名验证（强烈建议启用）</span>
+<span class="hljs-comment"># enabled=1   → 该仓库是否启用</span>
+<span class="hljs-comment"># gpgkey      → GPG 公钥 URL 或本地路径</span></code></pre>
+
+    <figure class="merged-illustration" data-image-id="chapter06/03-repository-trust-chain.png"><img src="assets/chapter06/03-repository-trust-chain.png" alt="展示来源配置、签名验证、事务预览、root 安装及第三方源信任边界。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>添加仓库的实战操作</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="a9b8e0bca0bf4e98670d0aca76d8debe2b8fc6f050bc15a89bb858c72e4f9613"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === Debian/Ubuntu ===</span>
+<span class="hljs-comment"># 方法1：add-apt-repository</span>
+add-<span class="hljs-built_in">apt</span>-repository <span class="hljs-string">"deb https://packages.example.com/ubuntu focal main"</span>
+
+<span class="hljs-comment"># 方法2：手动创建 .list 文件</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"deb https://apt.releases.hashicorp.com focal main"</span> \
+  &gt; /etc/apt/sources.list.d/hashicorp.list
+
+<span class="hljs-comment"># 添加 GPG 密钥（两种方式）</span>
+<span class="hljs-built_in">curl</span><span class="hljs-attr"> -fsSL</span> https://apt.releases.hashicorp.com/gpg | <span class="hljs-built_in">apt</span>-key add -  <span class="hljs-comment"># 传统方式（已弃用）</span>
+<span class="hljs-built_in">curl</span><span class="hljs-attr"> -fsSL</span> https://example.com/gpg | gpg<span class="hljs-attr"> --dearmor</span><span class="hljs-attr"> -o</span> /etc/apt/trusted.gpg.d/example.gpg  <span class="hljs-comment"># 现代方式</span>
+
+<span class="hljs-comment"># === RHEL/CentOS ===</span>
+<span class="hljs-comment"># 方法1：yum-config-manager（需要 yum-utils）</span>
+<span class="hljs-built_in">yum</span> install<span class="hljs-attr"> -y</span> <span class="hljs-built_in">yum</span>-utils
+<span class="hljs-built_in">yum</span>-config-manager<span class="hljs-attr"> --add-repo</span> https://download.docker.com/linux/centos/docker-ce.repo
+
+<span class="hljs-comment"># 方法2：手动创建 .repo 文件</span>
+<span class="hljs-built_in">cat</span> &gt; /etc/yum.repos.d/example.repo &lt;&lt; <span class="hljs-string">'EOF'</span>
+[example]
+name=Example Repository
+baseurl=https://packages.example.com/rhel/<span class="hljs-variable">$releasever</span>/<span class="hljs-variable">$basearch</span>/
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.example.com/gpg.key
+EOF</code></pre>
+
+    <h4>仓库优先级管理</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="0550e62d25cab81596ca85426563733e971e42d2e973bfcec2dd015c92af98a2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 当同一个包在多个仓库中存在时，哪个优先？</span>
+
+<span class="hljs-comment"># APT —— 使用 /etc/apt/preferences 设置优先级</span>
+<span class="hljs-comment"># 格式：Pin-Priority 越大越优先（默认 500）</span>
+
+<span class="hljs-comment"># DNF —— 在 .repo 文件中设置 priority</span>
+[<span class="hljs-built_in">nginx</span>-stable]
+priority=1     <span class="hljs-comment"># 数字越小优先级越高（1-99，默认99）</span>
+<span class="hljs-comment"># 需要 yum-plugin-priorities 插件</span></code></pre>
+
+    <div class="box box-info"><strong>企业内网私有仓库：</strong>在离线或内网环境中，可以搭建私有 APT/YUM 仓库。APT 用 <code>apt-mirror</code> 或 <code>reprepro</code>，YUM/DNF 用 <code>createrepo</code> 创建仓库元数据。所有服务器指向内网仓库，统一管控软件版本，减少外网带宽消耗。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第四节 ═══════════ -->
+<h2 class="section-title" id="sec06-4"><span class="icon">4</span>依赖解析与升级</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">运</span><h3>依赖地狱的成因与解法——包管理的"看不见的博弈"</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：为什么"apt install A"会自动装 B 和 C，而我根本没提它们？</h4>
+    <p>因为 A 在它的包描述中声明了"我要用 B 提供的功能"和"C 提供的功能"。包管理器在安装前会递归解析整个依赖图——如果 B 又依赖 D，D 又依赖 E……这条链上的所有包都会被自动拉取。这就是包管理器最核心的价值：<strong>自动解决依赖关系。</strong></p>
+    <p>没有包管理器的时候（Windows 或源码编译），你要自己去下载 libssl、下载 libpcre、下载 zlib……每一个库还可能依赖别的库。包管理器把这个复杂度对你完全透明了。</p>
+
+    <h4>依赖关系的两种类型</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>依赖类型</th><th>APT 术语</th><th>RPM 术语</th><th>含义</th></tr></thead>
+      <tbody><tr>
+        <td><strong>必须依赖</strong></td>
+        <td><code>Depends</code></td>
+        <td><code>Requires</code></td>
+        <td>没有这个依赖，包完全无法工作。安装时强制拉取。</td>
+      </tr>
+      <tr>
+        <td><strong>推荐依赖</strong></td>
+        <td><code>Recommends</code></td>
+        <td><code>Recommends</code></td>
+        <td>没有也能用，但功能会受限。默认会安装，但可以跳过。</td>
+      </tr>
+      <tr>
+        <td><strong>建议依赖</strong></td>
+        <td><code>Suggests</code></td>
+        <td><code>Suggests</code></td>
+        <td>锦上添花。默认不安装，纯粹是提示。</td>
+      </tr>
+      <tr>
+        <td><strong>冲突</strong></td>
+        <td><code>Conflicts</code></td>
+        <td><code>Conflicts</code></td>
+        <td>不能和某个包同时安装（如两个 MTA 邮件服务器不能共存）。</td>
+      </tr>
+      <tr>
+        <td><strong>替代</strong></td>
+        <td><code>Provides</code></td>
+        <td><code>Provides</code></td>
+        <td>声明"我能替代某个虚拟包"。如 sendmail 和 postfix 都 <code>Provides: mail-transport-agent</code>。</td>
+      </tr>
+    </tbody></table>
+    </div>
+
+    <h4>依赖地狱（Dependency Hell）——包管理的阿克琉斯之踵</h4>
+    <p>依赖地狱的根本原因是<strong>版本冲突</strong>：A 要求 libssl &gt;= 3.0，B 要求 libssl &lt;= 1.1。两者都声称需要 libssl，但版本范围不重叠——APT 和 DNF 都无力解决这种冲突。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="067afdf5b8d2d34d5ca7f6dc82257e15493d0e398248b16ec986ed3e6ae70fc6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 依赖地狱的典型场景</span>
+<span class="hljs-built_in">$ apt</span> install application-x
+The following packages have unmet dependencies:
+ application-x : Depends: libssl (&gt;= 3.0) but 1.1.1f-1ubuntu2 is to be installed
+E: Unable to correct problems, you have held broken packages.
+
+<span class="hljs-comment"># 为什么会出现这种情况？</span>
+<span class="hljs-comment"># 1. 混用了不同发行版的仓库（如 Debian stable 加了 sid 的源）</span>
+<span class="hljs-comment"># 2. 手动安装了不被系统仓库支持的 .deb 包</span>
+<span class="hljs-comment"># 3. 长时间未更新，系统版本和上游仓库脱节</span></code></pre>
+
+    <div class="box box-danger"><strong>依赖地狱是"容器化"诞生的直接推手：</strong>Docker 和其他容器技术的核心价值之一，就是让每个应用拥有独立的文件系统。应用 A 可以在"它的世界"里用 libssl 3.0，应用 B 在"它的世界"里用 libssl 1.1——两者互不干扰。容器化把"整个系统解决依赖冲突"变成了"每个应用各自解决自己的依赖"，把全局冲突化解为局部自治。</div>
+
+    <figure class="merged-illustration" data-image-id="chapter06/04-dependency-conflict-container-isolation.png"><img src="assets/chapter06/04-dependency-conflict-container-isolation.png" alt="展示递归依赖求解、版本范围无交集，以及容器用独立 rootfs 隔离用户态库。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>升级策略与最佳实践</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="7e17e058fa66233ae09d35814e3071694be95fe188eb942ee32de35956c0fb7e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 保守升级（生产环境推荐）===</span>
+
+<span class="hljs-comment"># 1. 先查看有哪些更新</span>
+<span class="hljs-built_in">apt</span> list<span class="hljs-attr"> --upgradable</span>                        <span class="hljs-comment"># APT</span>
+<span class="hljs-built_in">dnf</span> check-update                             <span class="hljs-comment"># DNF</span>
+
+<span class="hljs-comment"># 2. 逐类升级（而不是一股脑全升）</span>
+<span class="hljs-built_in">apt</span> install<span class="hljs-attr"> --only-upgrade</span> <span class="hljs-built_in">nginx</span>             <span class="hljs-comment"># 只升级 nginx</span>
+<span class="hljs-built_in">dnf</span> update <span class="hljs-built_in">nginx</span>                             <span class="hljs-comment"># 只升级 nginx</span>
+
+<span class="hljs-comment"># 3. 安全更新优先（DNF）</span>
+<span class="hljs-built_in">dnf</span> updateinfo list                          <span class="hljs-comment"># 查看安全公告</span>
+<span class="hljs-built_in">dnf</span> upgrade<span class="hljs-attr"> --security</span>                       <span class="hljs-comment"># 只升级安全相关更新</span>
+
+<span class="hljs-comment"># 4. 内核升级后不要立即重启</span>
+<span class="hljs-comment"># 使用 ksplice（Oracle）或 livepatch（Canonical）</span>
+<span class="hljs-comment"># 或等待维护窗口统一重启</span></code></pre>
+
+    <h4>排错：处理"已安装但损坏"的包</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="c0f1a4a741f4eb5e5881e47b8190925e595d8b8acf18631c1634e71b11a2f8fd"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 中断的安装导致后续操作全部失败时</span>
+<span class="hljs-built_in">apt</span><span class="hljs-attr"> --fix-broken</span> install                     <span class="hljs-comment"># APT：修复损坏的依赖关系</span>
+<span class="hljs-built_in">apt</span> install<span class="hljs-attr"> -f</span>                               <span class="hljs-comment"># 同上（-f = --fix-broken）</span>
+
+<span class="hljs-built_in">dnf</span> distro-sync                              <span class="hljs-comment"># DNF：将系统同步到仓库状态（强制对齐版本）</span>
+
+<span class="hljs-comment"># 清除本地缓存重建（APT）</span>
+<span class="hljs-built_in">apt</span> clean                                    <span class="hljs-comment"># 清除所有缓存</span>
+<span class="hljs-built_in">apt</span> update                                   <span class="hljs-comment"># 重新拉取元数据</span>
+
+<span class="hljs-comment"># 清除 DNF 缓存</span>
+<span class="hljs-built_in">dnf</span> clean all
+<span class="hljs-built_in">dnf</span> makecache</code></pre>
+
+    <div class="box box-warning"><strong>升级生产环境前的 Checklist：</strong>① 先在 staging 环境验证升级；② 做好快照/备份（虚拟机快照或 LVM snapshot）；③ 记录当前版本号 <code>dpkg -l &gt; before-upgrade.txt</code>；④ 在 tmux/screen 会话中执行升级——防止 SSH 断开导致升级中断（中断的升级状态很难修复）；⑤ 升级后对比版本号 <code>diff before-upgrade.txt after-upgrade.txt</code>；⑥ 验证关键服务 <code>systemctl status nginx</code> <code>curl -I localhost</code>。</div>
+  </div>
+</div>
+
+<!-- /container -->
+
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>CLI</b> · Command-Line Interface 命令行界面</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第6章</p>
+  <p style="margin-top:4px">"包管理器让软件安装从手工作坊进化到工业流水线"</p>
+</footer>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

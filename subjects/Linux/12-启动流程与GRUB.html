@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>启动流程与GRUB · Linux系统</title>
+
+
+
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#2f855a;--success-light:#f0fff4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#16A34A}.badge-implement{background:#f0fff4;color:#2f855a}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f0fdf4;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#f0fdf4;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 启动流程与GRUB</span><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" title="上一章">← 上一章</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" aria-current="page" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+<header class="site-header"><h1>启动流程与GRUB</h1><p class="subtitle">从按下电源到登录提示 —— Linux 启动的每一步、每一个关键角色</p><div class="meta-row editorial-meta"><span>固件：BIOS / UEFI</span><span>引导器：GRUB2</span><span>进程1：systemd</span></div></header>
+<div class="container" id="main-content">
+<nav class="toc"><h2>本章目录</h2><div class="toc-grid">
+<a href="#sec12-1">启动流程6步走</a>
+<a href="#sec12-2">GRUB 配置与救援模式</a>
+<a href="#sec12-3">内核启动参数</a>
+<a href="#sec12-4">systemd target 运行级别</a>
+</div></nav>
+
+<!-- ======= 12-1 ======= -->
+<h2 class="section-title" id="sec12-1"><span class="icon">1</span>启动流程6步走 — 从按下电源到登录提示</h2>
+<div class="card"><div class="card-header"><span class="badge badge-concept">原</span><h3>一次完整的 Linux 启动涉及固件→引导器→内核→init进程四个阶段的精密协作</h3><span class="tag tag-required">必知</span></div>
+<div class="card-body">
+<h4>问题驱动：按下电源按钮之后，到底发生了什么？</h4>
+<p>很多运维工程师在系统能正常启动的时候从不过问启动流程，直到某天服务器卡在"GRUB rescue&gt;"或黑屏光标闪烁时才发现自己对启动流程一无所知。理解整个启动链条，不仅是为了排错——更是为了掌握系统安全（单用户绕过密码）、定制内核参数（调优启动行为）、修复损坏的引导记录。</p>
+
+<h4>第1步：BIOS / UEFI — 固件自检与设备初始化</h4>
+<p><strong>BIOS（Basic Input/Output System）</strong> 是主板上的固件芯片，系统上电后 CPU 从固定地址（0xFFFFFFF0，BIOS 重置向量）开始执行 BIOS 代码：</p>
+<ul>
+<li><strong>POST（Power-On Self-Test，上电自检）</strong>：检测 CPU、内存、键盘、显示器等基础硬件是否正常。如果检测到 RAM 故障或显卡未连接，通过蜂鸣声（beep code）报警</li>
+<li><strong>枚举 PCI/PCIe 总线</strong>：扫描所有插槽上的设备，分配 IO 端口和内存映射地址</li>
+<li><strong>确定启动设备</strong>：按 BIOS 设置的启动顺序（Boot Order），找到第一块可启动的磁盘——一般是硬盘、USB 或网络 PXE</li>
+<li><strong>加载引导扇区</strong>：从启动设备的前 512 字节（MBR）中读取引导加载程序的第一阶段代码，将其加载到内存地址 0x7C00 并跳转执行。BIOS 的使命到这里就结束了</li>
+</ul>
+
+<p><strong>UEFI（Unified Extensible Firmware Interface）</strong> 是现代替代 BIOS 的固件标准：</p>
+<ul>
+<li>不再有 16 位实模式和 1MB 地址空间的限制，直接在 32 位或 64 位保护模式下运行</li>
+<li>从 EFI 系统分区（ESP，通常是 FAT32 格式）中查找 <code>.efi</code> 可执行文件作为引导加载程序</li>
+<li>支持安全启动（Secure Boot）——只加载经过数字签名的引导程序，防止 rootkit 在系统启动前注入恶意代码</li>
+<li>支持 GPT 分区表（MBR 时期 2TB 的限制不再存在）</li>
+</ul>
+
+<div class="table-wrap">
+<table><thead><tr><th>对比</th><th>BIOS (Legacy)</th><th>UEFI</th></tr></thead>
+<tbody>
+<tr><td>运行模式</td><td>16 位实模式</td><td>32/64 位保护模式</td></tr>
+<tr><td>分区表</td><td>MBR（最大 2TB）</td><td>GPT（无 2TB 限制）</td></tr>
+<tr><td>启动文件位置</td><td>磁盘第一个扇区（512 字节）</td><td>EFI 系统分区中的 .efi 文件</td></tr>
+<tr><td>安全启动</td><td>不支持</td><td>Secure Boot 可启用</td></tr>
+<tr><td>启动速度</td><td>较慢（串行初始化）</td><td>快（并行初始化）</td></tr>
+<tr><td>GUI 支持</td><td>文本界面</td><td>可显示图形</td></tr>
+</tbody></table>
+</div>
+
+<h4>第2步：GRUB — 引导管理器接管</h4>
+<p>GRUB（GRand Unified Bootloader）是目前 Linux 世界事实标准的引导加载器。它分为多个阶段：</p>
+<ul>
+<li><strong>Stage 1（boot.img）</strong>：被 BIOS 加载到 MBR 中的极小镜像（446 字节），唯一的功能是定位并加载 Stage 2</li>
+<li><strong>Stage 2（core.img）</strong>：包含核心功能——识别文件系统（能读取 <code>/boot</code> 分区）、加载 GRUB 配置（<code>grub.cfg</code>）、显示菜单、加载内核和 initramfs</li>
+<li><strong>UEFI 中的 GRUB</strong>：固件直接加载 <code>grubx64.efi</code> 文件——不需要 Stage 1 和 Stage 2 的分段策略，因为 ESP 分区的 FAT 文件系统对 UEFI 固件天然可读</li>
+</ul>
+
+<p><strong>GRUB 做了什么：</strong></p>
+<ul>
+<li>读取 <code>/boot/grub/grub.cfg</code>（BIOS）或 <code>/boot/efi/EFI/&lt;distro&gt;/grub.cfg</code>（UEFI）获取菜单列表</li>
+<li>显示内核选择菜单——如果有多个内核版本或操作系统</li>
+<li>用户选择后（或超时后使用默认），加载内核镜像（<code>vmlinuz-*</code>）和 initramfs（<code>initrd.img-*</code>）到内存</li>
+<li>设置内核命令行参数（从 GRUB_CMDLINE_LINUX 等变量获取）</li>
+<li>将控制权交给内核——GRUB 的使命结束</li>
+</ul>
+
+<h4>第3步：内核初始化</h4>
+<p>内核被加载到内存后开始执行。它的核心任务：</p>
+<ul>
+<li><strong>解压自身</strong>：内核镜像（vmlinuz）是一个被 gzip/bzip2/lz4/zstd 压缩的 ELF 二进制文件，首先解压到内存</li>
+<li><strong>初始化 CPU 和内存管理</strong>：设置页表、启用分页、初始化内核内存分配器（slab/slub）</li>
+<li><strong>初始化硬件子系统</strong>：中断控制器（APIC）、定时器（HPET/TSC）、SMP（多核调度）</li>
+<li><strong>加载 initramfs</strong>：initramfs 是一个压缩的 cpio 归档，包含内核需要的早期用户空间程序——特别是设备驱动模块（如 RAID/SATA/NVMe 驱动）和挂载根文件系统所需的工具（LVM、加密等）。内核将其解压到 <code>tmpfs</code> 并挂载为初始根文件系统</li>
+<li><strong>运行 initramfs 中的 <code>/init</code> 脚本</strong>：这个脚本在临时根文件系统中执行——加载必要的内核模块、激活 LVM 卷、输入加密磁盘密码——最终挂载真正的根文件系统</li>
+<li><strong>切换根文件系统（pivot_root / switch_root）</strong>：将根文件系统从 initramfs 的 tmpfs 切换到硬盘上的真正根分区，执行真正的 <code>/sbin/init</code></li>
+</ul>
+
+<h4>第4步：systemd — 用户空间的第一个进程</h4>
+<p><code>systemd</code> 是 PID 1——用户空间所有进程的最终祖先。它是现代 Linux 发行版的默认 init 系统（取代了传统的 SysVinit）。systemd 的启动过程：</p>
+<ul>
+<li><strong>并行启动服务</strong>：解析所有 unit 文件的依赖关系，按照依赖图并行启动——不再像 SysVinit 那样串行执行 <code>/etc/rc.d/rc?.d/</code> 中的脚本，启动速度大幅提升</li>
+<li><strong>激活必要的 target</strong>：target 是服务分组的抽象——<code>basic.target</code>（基础系统：挂载点、套接字、定时器、交换空间）→ <code>multi-user.target</code>（多用户文本模式）→ <code>graphical.target</code>（图形界面）</li>
+<li><strong>套接字激活（Socket Activation）</strong>：systemd 可以提前监听服务所需的端口，在有连接进入时才真正启动服务——加速启动，节省内存</li>
+<li><strong>激活终端（getty）</strong>：在 TTY1-6 上运行 <code>agetty</code> 进程，显示登录提示</li>
+</ul>
+
+<h4>第5步：登录终端出现</h4>
+<p>当 <code>getty@tty1.service</code> 启动后，屏幕显示熟悉的登录提示：</p>
+<pre data-presentation-code="v1" data-presentation-highlight="6608c25c2e181491d14e52c6b5bbbc2dace5f5a13a661ab4204209c7172bbafc"><code data-static-highlight="11.9.0" class="editorial-code language-plaintext nohighlight" data-highlighted="yes">Ubuntu 22.04 LTS hostname tty1
+hostname login: _</code></pre>
+<p>输入用户名后，<code>login</code> 程序验证密码（通过 <code>/etc/passwd</code>、<code>/etc/shadow</code>、PAM 模块），验证通过后启动用户的默认 shell（一般为 <code>/bin/bash</code>）。至此，从按下电源到登录提示的完整启动流程结束。</p>
+
+<figure class="merged-illustration" data-image-id="chapter12/01-linux-boot-control-handoff.png"><img src="assets/chapter12/01-linux-boot-control-handoff.png" alt="展示固件、GRUB、内核/initramfs、systemd、getty 的控制权交接。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>可视化：启动时间轴</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="3822dfb9a7af711f3b697a89177789466ebf5d050d9b4283ba8029422c59061e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 分析启动时间——找到哪个环节最慢</span>
+systemd-analyze
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># Startup finished in 2.345s (kernel) + 8.912s (userspace) = 11.257s</span>
+
+<span class="hljs-comment"># 按服务排序——找出耗时最长的服务</span>
+systemd-analyze blame | <span class="hljs-built_in">head</span> -20
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># 3.245s NetworkManager-wait-online.service</span>
+<span class="hljs-comment"># 2.112s docker.service</span>
+<span class="hljs-comment"># 1.523s mysql.service</span>
+<span class="hljs-comment">#  345ms systemd-journal-flush.service</span>
+
+<span class="hljs-comment"># 绘制启动流程的 SVG 时间线图</span>
+systemd-analyze plot &gt; boot-timeline.svg
+
+<span class="hljs-comment"># 查看关键链——哪些服务形成了最长的依赖链</span>
+systemd-analyze critical-chain</code></pre>
+
+<div class="box box-info"><strong>initramfs 为什么必不可少？</strong><br>一个经典的"鸡生蛋"问题：根文件系统可能在 RAID 阵列上、在加密的 LUKS 分区上、在网络的 NFS 上——内核刚启动时没有这些功能的驱动，如何挂载根文件系统？initramfs 就是解药——它是一个微小但完整的临时根文件系统，包含所有需要的驱动和工具，先加载它来"搭建舞台"，然后才能切换到真正的根文件系统。</div>
+<figure class="merged-illustration" data-image-id="chapter12/02-initramfs-switch-root.png"><img src="assets/chapter12/02-initramfs-switch-root.png" alt="解释驱动/LVM/LUKS 的鸡生蛋问题、/init 准备和 switchroot。" loading="lazy" decoding="async" width="1672" height="941"></figure></div></div>
+
+<!-- ======= 12-2 ======= -->
+<h2 class="section-title" id="sec12-2"><span class="icon">2</span>GRUB 配置与救援模式 — 系统启动的最后一道防线</h2>
+<div class="card"><div class="card-header"><span class="badge badge-operate">操</span><h3>GRUB 不仅选择启动哪个内核——它是你救援"启动不起来"系统的救命入口</h3><span class="tag tag-required">实操</span></div>
+<div class="card-body">
+<h4>/etc/default/grub — 主配置文件</h4>
+<p><code>/etc/default/grub</code> 是 GRUB 界面和默认行为的设置文件。修改这个文件后，需要重新生成 <code>grub.cfg</code> 才能生效。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="27c13100009fbb0e665ab7d6180070c7a06af435baf6906d16985158d2fda018"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看 GRUB 主配置文件</span>
+<span class="hljs-built_in">cat</span> /etc/default/grub</code></pre>
+
+<p class="out-label">▶ 典型 /etc/default/grub 内容</p>
+<pre data-presentation-code="v1" data-presentation-highlight="9b43b62ab75603b6ed8a31ae2d20854eab8ac8d6b813642c02dfbae691a618d8"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 如果注释掉此行或设为 false，GRUB 菜单将隐藏。true 则强制显示菜单</span>
+GRUB_TIMEOUT_STYLE=menu
+<span class="hljs-comment"># 菜单显示 5 秒后自动选择默认选项。0 表示不等待</span>
+GRUB_TIMEOUT=5
+<span class="hljs-comment"># 默认启动的内核。0 是第一个菜单项，1 是第二个，saved 表示使用上次选择的</span>
+GRUB_DEFAULT=0
+<span class="hljs-comment"># 正常启动时传递给内核的参数</span>
+GRUB_CMDLINE_LINUX_DEFAULT=<span class="hljs-string">"quiet splash"</span>
+<span class="hljs-comment"># 传递给所有启动项的内核参数（包括恢复模式）</span>
+GRUB_CMDLINE_LINUX=<span class="hljs-string">""</span>
+<span class="hljs-comment"># 如果设置为 true，为每个内核生成一个恢复模式菜单项</span>
+GRUB_DISABLE_RECOVERY=<span class="hljs-string">"false"</span>
+<span class="hljs-comment"># 启动画面图片（对服务器通常不需要）</span>
+<span class="hljs-comment"># GRUB_BACKGROUND="/boot/grub/custom-bg.png"</span></code></pre>
+
+<h4>更新 GRUB 配置使其生效</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="7a352c9bfe3a38153bb6b2338afac99bb5de71cb665b4f3a7d98eda26e88c172"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === Debian / Ubuntu 系列 ===</span>
+sudo update-grub
+<span class="hljs-comment"># 本质上执行了：grub-mkconfig -o /boot/grub/grub.cfg</span>
+
+<span class="hljs-comment"># === RHEL / CentOS / Fedora 系列 ===</span>
+<span class="hljs-comment"># BIOS 模式</span>
+sudo grub2-mkconfig<span class="hljs-attr"> -o</span> /boot/grub2/grub.cfg
+
+<span class="hljs-comment"># UEFI 模式</span>
+sudo grub2-mkconfig<span class="hljs-attr"> -o</span> /boot/efi/EFI/redhat/grub.cfg
+<span class="hljs-comment"># 或用便捷命令</span>
+sudo grub2-mkconfig<span class="hljs-attr"> -o</span> $(sudo find /boot<span class="hljs-attr"> -name</span> grub.cfg 2&gt;/dev/null)</code></pre>
+
+<h4>常用 GRUB 配置场景</h4>
+
+<div class="subcard-grid merged-waterfall-panel">
+<section class="merged-subcard-section">
+<h5>显示启动过程中的内核消息</h5>
+<p>去掉 <code>quiet splash</code> 参数即可看到内核的所有启动日志——这对排查"系统卡在启动的哪个阶段"至关重要。</p>
+<p><code>GRUB_CMDLINE_LINUX_DEFAULT=""</code></p>
+<p>然后运行 <code>sudo update-grub</code> 并重启。</p>
+</section>
+<section class="merged-subcard-section">
+<h5>设置 GRUB 密码（防止物理访问者修改启动参数）</h5>
+<p>设置密码后，在 GRUB 菜单中按 e 编辑启动参数需要先输入密码——配合全磁盘加密，物理安全可以做到较高水平。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="c092245138f44ea94ff23968e90f9954b07474ede3d97197d7813139f430a337"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 生成加密的密码哈希</span>
+grub-mkpasswd-pbkdf2
+<span class="hljs-comment"># 输入密码两次后得到哈希值...</span>
+<span class="hljs-comment"># 在 /etc/grub.d/40_custom 中添加：</span>
+<span class="hljs-comment"># set superusers="admin"</span>
+<span class="hljs-comment"># password_pbkdf2 admin grub.pbkdf2.sha512.10000.XXX...</span></code></pre>
+</section>
+<section class="merged-subcard-section">
+<h5>修改默认启动内核</h5>
+<p>查看可用内核列表：</p>
+<pre data-presentation-code="v1" data-presentation-highlight="9af09cdc80330c2ab287e2b9174db98553ae007c5bcee571e0d3b988cba4edfa"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 方法1：从 grub.cfg 中找</span>
+grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"^menuentry|submenu"</span> /boot/grub/grub.cfg
+
+<span class="hljs-comment"># 方法2：用 awk 一行提取</span>
+awk<span class="hljs-attr"> -F</span>\' <span class="hljs-string">'/menuentry / {print $2}'</span> /boot/grub/grub.cfg
+<span class="hljs-comment"># 然后设置 GRUB_DEFAULT="Ubuntu, with Linux 5.15.0-76-generic"</span></code></pre>
+</section>
+</div>
+
+<h4>GRUB 救援模式 — 启动不了的救命稻草</h4>
+<p>当你看到 <code>grub rescue&gt;</code> 提示符而不是 GRUB 菜单时，意味着 GRUB 能找到 core.img 但找不到 <code>/boot/grub</code> 目录或其中的模块——通常是因为分区表被修改或 <code>/boot</code> 分区损坏。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="4ce09d1aa066dd7ad4cf36865398cedac51605d7cdb8fd0a2d8f54331e0d3a71"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 在 grub rescue&gt; 提示符下的手动救援 ===</span>
+
+<span class="hljs-comment"># 1. 列出所有磁盘和分区</span>
+grub rescue&gt; <span class="hljs-built_in">ls</span>
+<span class="hljs-comment"># 输出如：(hd0) (hd0,msdos1) (hd0,msdos2) (hd1) (hd1,gpt1) ...</span>
+
+<span class="hljs-comment"># 2. 确定 /boot 分区是哪个——逐一尝试，找到包含 grub/ 目录的分区</span>
+grub rescue&gt; <span class="hljs-built_in">ls</span> (hd0,msdos1)/
+<span class="hljs-comment"># 如果能列出文件和目录，再用 ls 查看其中是否有 grub/</span>
+grub rescue&gt; <span class="hljs-built_in">ls</span> (hd0,msdos1)/grub/
+<span class="hljs-comment"># 有内容 → 这就是 /boot 分区或根分区</span>
+
+<span class="hljs-comment"># 3. 设置 root 和 prefix 变量</span>
+grub rescue&gt; <span class="hljs-built_in">set</span> root=(hd0,msdos1)
+grub rescue&gt; <span class="hljs-built_in">set</span> prefix=(hd0,msdos1)/grub
+
+<span class="hljs-comment"># 4. 加载 normal 模块（提供正常的菜单界面）</span>
+grub rescue&gt; insmod normal
+grub rescue&gt; normal
+<span class="hljs-comment"># 如果成功，将出现正常 GRUB 菜单并可以启动系统</span>
+
+<span class="hljs-comment"># 5. 如果以上步骤中 ls 找不到 grub/ —— 需要用 Live CD/USB 启动</span>
+<span class="hljs-comment"># 然后 chroot 进入系统并重新安装 GRUB</span>
+</code></pre>
+
+<h4>修复损坏的 GRUB（从 Live CD 环境）</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="c6c769720586a699d004977b752b87e020c0b66c94ee9dab2eba20946634ae73"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. 用 Ubuntu Live USB 启动，选择 "Try Ubuntu"</span>
+<span class="hljs-comment"># 2. 打开终端，挂载系统分区</span>
+sudo mount /dev/sda2 /mnt          <span class="hljs-comment"># 根分区</span>
+sudo mount /dev/sda1 /mnt/boot/efi <span class="hljs-comment"># ESP 分区（UEFI）</span>
+<span class="hljs-comment"># 或在 BIOS 模式下挂载 /boot</span>
+sudo mount /dev/sda1 /mnt/boot
+
+<span class="hljs-comment"># 3. 挂载必要的虚拟文件系统</span>
+sudo mount<span class="hljs-attr"> --bind</span> /dev /mnt/dev
+sudo mount<span class="hljs-attr"> --bind</span> /proc /mnt/proc
+sudo mount<span class="hljs-attr"> --bind</span> /sys /mnt/sys
+
+<span class="hljs-comment"># 4. chroot 到系统中</span>
+sudo <span class="hljs-built_in">chroot</span> /mnt
+
+<span class="hljs-comment"># 5. 重新安装 GRUB</span>
+<span class="hljs-comment"># BIOS 模式：</span>
+grub-install /dev/sda
+update-grub
+
+<span class="hljs-comment"># UEFI 模式：</span>
+grub-install<span class="hljs-attr"> --target</span>=x86_64-efi<span class="hljs-attr"> --efi-directory</span>=/boot/efi<span class="hljs-attr"> --bootloader-id</span>=Ubuntu
+update-grub
+
+<span class="hljs-comment"># 6. 退出 chroot，卸载并重启</span>
+<span class="hljs-built_in">exit</span>
+sudo umount<span class="hljs-attr"> -R</span> /mnt
+sudo reboot</code></pre>
+<figure class="merged-illustration" data-image-id="chapter12/03-grub-rescue-escalation.png"><img src="assets/chapter12/03-grub-rescue-escalation.png" alt="给出从找 grub 目录、恢复 normal 到 Live USB chroot 重装的升级路径。" loading="lazy" decoding="async" width="1672" height="941"></figure></div></div>
+
+<!-- ======= 12-3 ======= -->
+<h2 class="section-title" id="sec12-3"><span class="icon">3</span>内核启动参数 — 一行命令控制启动行为</h2>
+<div class="card"><div class="card-header"><span class="badge badge-implement">实</span><h3>内核命令行参数让你能绕过系统安全、进入救援模式、调试硬件——能力强大到危险</h3><span class="tag tag-required">核心</span></div>
+<div class="card-body">
+<h4>内核参数从哪来</h4>
+<p>内核启动参数（Kernel Command Line）是在 GRUB 加载内核时传递给内核的字符串。它们有两个来源：</p>
+<ul>
+<li><strong>持久化</strong>：<code>/etc/default/grub</code> 中的 <code>GRUB_CMDLINE_LINUX</code>（所有菜单项）和 <code>GRUB_CMDLINE_LINUX_DEFAULT</code>（仅正常启动项）</li>
+<li><strong>临时</strong>：在 GRUB 菜单中按 <code>e</code> 键编辑当前启动项，在 <code>linux /boot/vmlinuz-*</code> 这一行的末尾手动添加参数</li>
+</ul>
+
+<h4>在 GRUB 菜单中临时添加启动参数</h4>
+<p>这是运维工程师最重要的救援技能之一——不需要 root 密码、不需要 Live CD：</p>
+<pre data-presentation-code="v1" data-presentation-highlight="5fb240f55ee70fd85ff7fc8b90a079d2f174d9977ace4f720245d484a71b38a7"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 操作步骤 ===</span>
+<span class="hljs-comment"># 1. 系统启动到 GRUB 菜单时，用方向键选中要启动的内核</span>
+<span class="hljs-comment"># 2. 按 e 键进入编辑模式（editing mode）</span>
+<span class="hljs-comment"># 3. 找到以 "linux" 或 "linuxefi" 开头的那一行</span>
+<span class="hljs-comment">#    例如：linux /boot/vmlinuz-5.15.0-91-generic root=UUID=xxx ro quiet splash</span>
+<span class="hljs-comment"># 4. 将光标移到行末，添加你的参数</span>
+<span class="hljs-comment"># 5. 按 Ctrl+X 或 F10 以修改后的参数启动</span></code></pre>
+
+<h4>关键启动参数详解</h4>
+<div class="table-wrap">
+<table><thead><tr><th>参数</th><th>作用</th><th>使用场景</th></tr></thead>
+<tbody>
+<tr><td><code>single</code> 或 <code>1</code></td><td>进入单用户救援模式——仅启动最小系统，不启动网络，不挂载除 root 外的文件系统，以 root 身份进入 shell</td><td>忘记 root 密码时重置密码、修复损坏的配置文件</td></tr>
+<tr><td><code>init=/bin/bash</code></td><td>直接启动 bash 作为 init 进程——跳过 systemd 和所有服务，获得一个极简 root shell（根文件系统为只读）</td><td>systemd 本身损坏或 root 密码遗忘时最后的救援手段</td></tr>
+<tr><td><code>quiet</code></td><td>隐藏大部分内核启动日志，只显示关键信息</td><td>正常启动时减少屏幕输出，提升"专业感"</td></tr>
+<tr><td><code>splash</code></td><td>显示图形化启动画面（Plymouth 启动动画）</td><td>桌面发行版出厂默认</td></tr>
+<tr><td><code>nomodeset</code></td><td>禁用内核模式设置（KMS）——显卡驱动不切换分辨率，使用最基本的 VESA 帧缓冲</td><td>显卡驱动问题导致黑屏时，添加此参数即可进入系统再安装正确驱动</td></tr>
+<tr><td><code>root=UUID=xxx</code></td><td>指定根文件系统所在的设备（UUID 方式）。也可用 <code>root=/dev/sda2</code></td><td>内核挂载根文件系统的核心参数，由 GRUB 根据 fstab 自动添加</td></tr>
+<tr><td><code>ro</code></td><td>以只读模式挂载根文件系统——内核先以 ro 挂载，然后 initramfs 中的 fsck 检查无误后，systemd 重新挂载为 rw</td><td>标准启动流程——如果直接 rw 挂载，损坏的文件系统可能导致数据丢失</td></tr>
+<tr><td><code>rw</code></td><td>以读写模式挂载根文件系统</td><td>某些最小化环境需要直接写入根文件系统</td></tr>
+<tr><td><code>selinux=0</code></td><td>禁用 SELinux</td><td>SELinux 策略错误导致服务异常时的临时绕过</td></tr>
+<tr><td><code>enforcing=0</code></td><td>SELinux 进入许可模式（记录但不阻止）</td><td>调试 SELinux 策略</td></tr>
+<tr><td><code>systemd.unit=rescue.target</code></td><td>指定 systemd 启动的目标 target</td><td>直接进入救援模式，等价于在 GRUB 中添加 systemd.unit=rescue.target</td></tr>
+<tr><td><code>systemd.unit=emergency.target</code></td><td>进入紧急模式——比救援更底层，根文件系统只读，几乎不启动任何服务</td><td>systemd 调试、文件系统修复</td></tr>
+<tr><td><code>memtest</code></td><td>运行内存测试程序（如果安装了 memtest86+）</td><td>怀疑内存硬件故障时进行诊断</td></tr>
+</tbody></table>
+</div>
+
+<h4>实战：通过单用户模式重置 root 密码</h4>
+<p>这是展示"物理访问 = 彻底控制"的经典例子——也说明了为什么服务器机房要有物理门禁、笔记本电脑要全磁盘加密：</p>
+<pre data-presentation-code="v1" data-presentation-highlight="7889f1e0b4c9abb41882c2dae53fc62d675b65f6b3b3af83249cbfaed9654da9"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. 启动到 GRUB 菜单</span>
+<span class="hljs-comment"># 2. 按 e 键编辑菜单项</span>
+<span class="hljs-comment"># 3. 找到 linux 开头的行，在行末添加（注意去掉 quiet splash）：</span>
+<span class="hljs-comment">#    single</span>
+<span class="hljs-comment">#    或者更彻底：</span>
+<span class="hljs-comment">#    init=/bin/bash</span>
+<span class="hljs-comment"># 4. 按 Ctrl+X 启动</span>
+
+<span class="hljs-comment"># === 如果用的是 single 模式 ===</span>
+<span class="hljs-comment"># 系统进入 root shell，不需要密码</span>
+passwd root
+<span class="hljs-comment"># 输入新密码两次</span>
+<span class="hljs-built_in">exec</span> /sbin/init   <span class="hljs-comment"># 正常启动系统</span>
+<span class="hljs-comment"># 或 reboot</span>
+
+<span class="hljs-comment"># === 如果用的是 init=/bin/bash ===</span>
+<span class="hljs-comment"># 根文件系统是只读的，需要先重新挂载</span>
+mount<span class="hljs-attr"> -o</span> remount,rw /
+passwd root
+<span class="hljs-comment"># 输入新密码两次</span>
+mount<span class="hljs-attr"> -o</span> remount,ro /
+<span class="hljs-comment"># 按 Ctrl+Alt+Del 或用硬件重启按钮重启</span>
+<span class="hljs-comment"># 注意：不能用 reboot 命令，因为 systemd 没有被启动</span>
+</code></pre>
+
+<div class="box box-danger"><strong>物理安全不可忽视</strong><br>任何人只要有物理访问权限，就能通过上述步骤绕过 root 密码获得系统的完全控制权。这是 Linux 设计的特性（而非漏洞）——系统假设物理访问者是受信任的。防御手段：<strong>设置 BIOS/UEFI 密码</strong>（阻止进入固件修改启动顺序）、<strong>设置 GRUB 密码</strong>（阻止编辑启动参数）、<strong>全磁盘加密（LUKS / BitLocker）</strong>（没有解密密码就无法读取数据）。</div>
+
+<h4>持久化启动参数</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="df1aa20f70be19cec7702a4de66755d911bf5936067d0da0f67d94e1f3be9149"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 编辑 /etc/default/grub</span>
+sudo vi /etc/default/grub
+
+<span class="hljs-comment"># 示例：去掉启动动画，显示所有内核消息，开启 IOMMU</span>
+GRUB_CMDLINE_LINUX_DEFAULT=<span class="hljs-string">""</span>
+GRUB_CMDLINE_LINUX=<span class="hljs-string">"intel_iommu=on iommu=pt"</span>
+
+<span class="hljs-comment"># 更新生效</span>
+sudo update-grub    <span class="hljs-comment"># Debian/Ubuntu</span>
+<span class="hljs-comment"># 或</span>
+sudo grub2-mkconfig<span class="hljs-attr"> -o</span> /boot/grub2/grub.cfg   <span class="hljs-comment"># RHEL/CentOS</span>
+
+<span class="hljs-comment"># 查看当前内核用了哪些参数</span>
+<span class="hljs-built_in">cat</span> /proc/cmdline
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># BOOT_IMAGE=/boot/vmlinuz-5.15.0-91-generic root=UUID=a1b2c3d4-... ro quiet splash</span></code></pre>
+</div></div>
+
+<figure class="merged-illustration" data-image-id="chapter12/04-kernel-parameters-physical-security.png"><img src="assets/chapter12/04-kernel-parameters-physical-security.png" alt="展示一次性参数编辑、四种救援结果和分层物理防护。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 12-4 ======= -->
+<h2 class="section-title" id="sec12-4"><span class="icon">4</span>systemd target — 运行级别的新名称</h2>
+<div class="card"><div class="card-header"><span class="badge badge-implement">实</span><h3>systemd 用 target 替代了 SysVinit 的 runlevel——更灵活、更语义化、更模块化</h3><span class="tag tag-required">核心</span></div>
+<div class="card-body">
+<h4>从 runlevel 到 target 的演变</h4>
+<p>传统 SysVinit 用 7 个运行级别（runlevel 0-6）定义系统状态：0=关机、1=单用户、2=多用户无网络、3=多用户文本、5=图形界面、6=重启。systemd 用 <strong>target</strong> 替代了这个概念——target 是一个 unit 文件，其作用是组织一组需要一起启动或一起停止的服务。</p>
+
+<div class="table-wrap">
+<table><thead><tr><th>SysVinit Runlevel</th><th>systemd Target</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>runlevel 0</td><td><code>poweroff.target</code></td><td>关闭系统并切断电源</td></tr>
+<tr><td>runlevel 1 / S</td><td><code>rescue.target</code></td><td>单用户救援模式——挂载本地文件系统但不启动网络</td></tr>
+<tr><td>runlevel 2</td><td><code>multi-user.target</code></td><td>多用户文本模式（无 NFS）</td></tr>
+<tr><td>runlevel 3</td><td><code>multi-user.target</code></td><td>多用户文本模式（带网络和 NFS）——服务器最常用的运行级别</td></tr>
+<tr><td>runlevel 4</td><td>（未定义/自定义）</td><td>保留给用户自定义</td></tr>
+<tr><td>runlevel 5</td><td><code>graphical.target</code></td><td>图形界面多用户模式——桌面版默认</td></tr>
+<tr><td>runlevel 6</td><td><code>reboot.target</code></td><td>重启系统</td></tr>
+<tr><td>emergency</td><td><code>emergency.target</code></td><td>紧急 Shell——根文件系统只读，系统最小化</td></tr>
+</tbody></table>
+</div>
+
+<h4>查看和切换 target</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="9119598d063964ba969d747746ce9ee16e595ade618c1b15d07862293cecc194"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看当前激活的 target</span>
+<span class="hljs-built_in">systemctl</span> get-default
+<span class="hljs-comment"># 输出：multi-user.target（服务器）或 graphical.target（桌面）</span>
+
+<span class="hljs-comment"># 查看所有激活的 target</span>
+<span class="hljs-built_in">systemctl</span> list-units<span class="hljs-attr"> --type</span>=target<span class="hljs-attr"> --state</span>=active
+
+<span class="hljs-comment"># 临时切换到另一个 target</span>
+<span class="hljs-comment"># 切换到文本模式（停止图形界面，但不是永久的）</span>
+sudo <span class="hljs-built_in">systemctl</span> isolate multi-user.target
+
+<span class="hljs-comment"># 切换回图形模式</span>
+sudo <span class="hljs-built_in">systemctl</span> isolate graphical.target
+
+<span class="hljs-comment"># 设置默认启动的目标（永久）</span>
+sudo <span class="hljs-built_in">systemctl</span> set-default multi-user.target
+<span class="hljs-comment"># 服务器应该设这个</span>
+
+sudo <span class="hljs-built_in">systemctl</span> set-default graphical.target
+<span class="hljs-comment"># 桌面版应该设这个</span></code></pre>
+
+<h4>关键 target 的区别与应用场景</h4>
+<div class="subcard-grid merged-waterfall-panel">
+<section class="merged-subcard-section">
+<h5>multi-user.target</h5>
+<p><strong>标准服务器状态</strong>。网络已启动、NFS 可用、所有配置为多用户模式的服务已运行。SSH 可远程登录。这是生产服务器应该处于的状态。</p>
+<p><code>sudo systemctl set-default multi-user.target</code></p>
+</section>
+<section class="merged-subcard-section">
+<h5>graphical.target</h5>
+<p><strong>桌面用户状态</strong>。在 multi-user.target 的基础上加上显示管理器（GDM/LightDM/SDDM）和图形桌面环境（GNOME/KDE 等）。桌面版 Linux 将默认目标设为这个。</p>
+<p><code>sudo systemctl set-default graphical.target</code></p>
+</section>
+<section class="merged-subcard-section">
+<h5>rescue.target</h5>
+<p><strong>救援模式</strong>——挂载所有本地文件系统（读写），启动一些基础服务，但不启动网络。以 root 身份进入单用户 shell。用在系统配置文件错误导致无法正常启动的场景。</p>
+<p>从 GRUB 进入：添加 <code>systemd.unit=rescue.target</code> 或 <code>single</code></p>
+</section>
+<section class="merged-subcard-section">
+<h5>emergency.target</h5>
+<p><strong>紧急模式</strong>——比 rescue 更精简。根文件系统以只读挂载，不挂载其他文件系统，不启动任何服务。提供一个最小的 root shell。用于最严重的系统损坏情况——连 rescue 都进不去时。</p>
+<p>从 GRUB 进入：添加 <code>systemd.unit=emergency.target</code> 或 <code>emergency</code></p>
+</section>
+</div>
+
+<h4>显式的隔离（isolate）vs 切换</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="36ac210e5dd8de66e580252ac3ab1ac94964f22aadcdb5af9a4702d6dca75169"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># isolate：启动目标 target 并停止所有与该 target 无关的服务</span>
+sudo <span class="hljs-built_in">systemctl</span> isolate multi-user.target
+<span class="hljs-comment"># 如果用 isolate 从 graphical.target 切换到 multi-user.target</span>
+<span class="hljs-comment"># → GDM 和 X11 将被停止，内存释放</span>
+
+<span class="hljs-comment"># 而 start 一个已激活的 target 只是确保其服务在运行，不会停止不相关的服务</span>
+sudo <span class="hljs-built_in">systemctl</span> start graphical.target
+<span class="hljs-comment"># 如果已经在 multi-user.target 下，这只会额外启动 GDM 和 X11</span>
+
+<span class="hljs-comment"># 查看 target 之间的依赖关系</span>
+<span class="hljs-built_in">systemctl</span> list-dependencies multi-user.target
+<span class="hljs-comment"># 输出：</span>
+<span class="hljs-comment"># multi-user.target</span>
+<span class="hljs-comment"># ● ├─anacron.service</span>
+<span class="hljs-comment"># ● ├─cron.service</span>
+<span class="hljs-comment"># ● ├─docker.service</span>
+<span class="hljs-comment"># ● ├─networking.service</span>
+<span class="hljs-comment"># ● ├─sshd.service</span>
+<span class="hljs-comment"># ● └─systemd-user-sessions.service</span></code></pre>
+
+<h4>自定义 target 实现分组管理</h4>
+<p>你可以创建自定义 target，把一组相关的服务组合在一起统一启动/停止。比如为你的 Web 应用创建一个 <code>myapp.target</code>：</p>
+<pre data-presentation-code="v1" data-presentation-highlight="208300df05c42dbc72b90b404ea61c8ec92193da792d13cbaf5371c5cb7f5336"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. 创建自定义 target</span>
+sudo <span class="hljs-built_in">tee</span> /etc/systemd/system/myapp.target &lt;&lt; <span class="hljs-string">'EOF'</span>
+[Unit]
+Description=My Application Stack
+Requires=multi-user.target
+After=multi-user.target
+Wants=<span class="hljs-built_in">nginx</span>.service <span class="hljs-built_in">mysql</span>.service redis.service
+EOF
+
+<span class="hljs-comment"># 2. 启动自定义 target</span>
+sudo <span class="hljs-built_in">systemctl</span> start myapp.target
+
+<span class="hljs-comment"># 3. 查看状态</span>
+sudo <span class="hljs-built_in">systemctl</span> status myapp.target
+
+<span class="hljs-comment"># 4. 停止整个应用栈</span>
+sudo <span class="hljs-built_in">systemctl</span> stop myapp.target
+<span class="hljs-comment"># 会同时停止 nginx、mysql 和 redis</span>
+
+<span class="hljs-comment"># 5. 设置为默认 target（不推荐，仅示范）</span>
+<span class="hljs-comment"># sudo systemctl set-default myapp.target</span></code></pre>
+
+<h4>系统状态诊断命令集</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="bed6e9b5aef3f21afc7248a2f7e6ab2d5c990142c622afa1ecf653ce7d1a65d1"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看启动日志（上次启动的完整日志）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -b</span>
+
+<span class="hljs-comment"># 查看上次启动的日志（比如系统崩溃重启后，查崩溃之前发生了什么）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -b</span> -1
+
+<span class="hljs-comment"># 查看内核启动日志</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -k</span>
+<span class="hljs-comment"># 等价于 dmesg（但带时间戳和 systemd journal 的过滤能力）</span>
+
+<span class="hljs-comment"># 查看启动过程中失败的 unit</span>
+<span class="hljs-built_in">systemctl</span><span class="hljs-attr"> --failed</span>
+<span class="hljs-comment"># 输出：</span>
+<span class="hljs-comment"># UNIT          LOAD   ACTIVE SUB    DESCRIPTION</span>
+<span class="hljs-comment"># ● mysql.service loaded failed failed MySQL Community Server</span>
+<span class="hljs-comment"># 上面有圆点表示启动失败</span>
+
+<span class="hljs-comment"># 查看系统从启动到现在花了多久</span>
+systemd-analyze
+systemd-analyze blame    <span class="hljs-comment"># 最慢的服务</span>
+systemd-analyze critical-chain  <span class="hljs-comment"># 最长依赖链</span></code></pre>
+</div></div>
+
+<figure class="merged-illustration" data-image-id="chapter12/05-systemd-targets-start-isolate.png"><img src="assets/chapter12/05-systemd-targets-start-isolate.png" alt="展示正常 target 层次、恢复目标、default.target 以及 start/isolate 差异。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- /container -->
+</div><footer class="site-footer"><p>Linux 系统知识卡片系列 · 第12章 · 启动流程与GRUB</p><p style="margin-top:4px">从按下电源到登录提示 —— 掌控 Linux 的启动生命线</p></footer>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body>
+</html>

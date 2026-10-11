@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>文本处理三剑客 · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fff4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#ebf8ff;color:#2b6cb0}.badge-implement{background:#f0fff4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{display:block;margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 文本处理三剑客</span><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" title="上一章">← 上一章</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" aria-current="page" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+<header class="site-header">
+  <h1>文本处理三剑客</h1>
+  <p class="subtitle">grep · sed · awk —— Linux 终端下最锋利的文本处理武器</p>
+  <div class="meta-row editorial-meta">
+    <span>工具：grep / sed / awk</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：从"只会 grep 查日志"到"三剑客组合作战"</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec09-1">一、grep 搜索大师</a>
+    <a href="#sec09-2">二、grep 高级实战</a>
+    <a href="#sec09-3">三、sed 流编辑器</a>
+    <a href="#sec09-4">四、sed 进阶操作</a>
+    <a href="#sec09-5">五、awk 文本分析</a>
+    <a href="#sec09-6">六、awk 数据处理实战</a>
+    <a href="#sec09-7">七、三剑客管道组合</a>
+  </div>
+</nav>
+
+<!-- ═══════ 第一节 ═══════ -->
+<h2 class="section-title" id="sec09-1"><span class="icon">1</span>grep 搜索大师</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>grep —— 文本搜索之王，运维工程师使用频率最高的命令</h3><span class="tag tag-required">基础</span></div>
+  <div class="card-body">
+    <h4>grep 的本质</h4>
+    <p><strong>grep</strong>（Global Regular Expression Print）的功能说起来极其简单：从文本中找出包含指定模式的行，打印出来。但就是这么一个看似简单的操作，构成了运维日常工作的 30%。查日志、找配置、看进程——几乎每一件事都从 grep 开始。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="ce021dfb1eb520e6e02dcd27605d2ab1b989b87667604701c484e29d32debb95"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 最基础的用法：在文件中搜索包含指定字符串的行</span>
+grep <span class="hljs-string">"ERROR"</span> /var/log/app.log
+
+<span class="hljs-comment"># 从管道接收数据（这才是 grep 最常见的用法！）</span>
+<span class="hljs-built_in">cat</span> /var/log/nginx/access.log | grep <span class="hljs-string">"404"</span>
+ps aux | grep <span class="hljs-built_in">nginx</span>
+dmesg | grep<span class="hljs-attr"> -i</span> error</code></pre>
+
+    <h4>必知的 10 个参数——每个都能让你的效率翻倍</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>参数</th><th>作用</th><th>典型场景</th></tr></thead>
+      <tbody>
+        <tr><td><code>-i</code></td><td>忽略大小写</td><td><code>grep -i "error" app.log</code>——连 Error 和 ERROR 一起匹配</td></tr>
+        <tr><td><code>-v</code></td><td>反转匹配（打印不匹配的行）</td><td><code>grep -v "#" config.conf</code>——过滤掉注释行</td></tr>
+        <tr><td><code>-r</code></td><td>递归搜索目录</td><td><code>grep -r "TODO" src/</code>——在所有子目录中找 TODO</td></tr>
+        <tr><td><code>-n</code></td><td>显示行号</td><td><code>grep -n "function" script.sh</code>——告诉我函数在第几行</td></tr>
+        <tr><td><code>-c</code></td><td>计数（输出匹配行数而非内容）</td><td><code>grep -c "404" access.log</code>——今天有多少个 404</td></tr>
+        <tr><td><code>-l</code></td><td>只显示包含匹配的文件名</td><td><code>grep -rl "password" /etc/</code>——哪些配置文件里有 password</td></tr>
+        <tr><td><code>-w</code></td><td>匹配整个单词</td><td><code>grep -w "is" file.txt</code>——只匹配单词 is，不匹配 this</td></tr>
+        <tr><td><code>-A N</code></td><td>显示匹配行及之后 N 行（After）</td><td><code>grep -A 5 "error" log</code>——看错误后的上下文</td></tr>
+        <tr><td><code>-B N</code></td><td>显示匹配行及之前 N 行（Before）</td><td><code>grep -B 3 "error" log</code>——看错误前的上下文</td></tr>
+        <tr><td><code>-C N</code></td><td>显示匹配行前后各 N 行（Context）</td><td><code>grep -C 5 "error" log</code>——看错误前后的完整上下文</td></tr>
+      </tbody>
+    </table>
+
+    </div><h4>-E —— 开启扩展正则的万能钥匙</h4>
+    <p>默认 grep 使用<strong>基本正则（BRE）</strong>，需要转义 <code>+</code>、<code>?</code>、<code>|</code>、<code>{</code>、<code>}</code>、<code>(</code>、<code>)</code> 这些符号——非常麻烦。加上 <code>-E</code> 就启用<strong>扩展正则（ERE）</strong>，这些符号不用转义，写起来流畅很多。实际上 <code>egrep</code> 就是 <code>grep -E</code> 的别名。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="a0430d28c82e9d748c39f1a88ded82d26531f26e4d90cf09eea2c8eec32a3359"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 不用 -E：每个特殊符号都要加反斜杠转义</span>
+grep <span class="hljs-string">"error\|fail\|warn"</span> app.log         <span class="hljs-comment"># 匹配 error 或 fail 或 warn</span>
+
+<span class="hljs-comment"># 用了 -E：清爽很多</span>
+grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"error|fail|warn"</span> app.log        <span class="hljs-comment"># 等价于上面，但不需要转义</span>
+
+<span class="hljs-comment"># 正则组合示例</span>
+grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"</span> access.log  <span class="hljs-comment"># 找 IP</span>
+grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"2026-07-3[0-1] [0-2][0-9]:[0-5][0-9]"</span> app.log                <span class="hljs-comment"># 找特定时间段</span>
+grep<span class="hljs-attr"> -iE</span> <span class="hljs-string">"^(error|fatal|critical)"</span> app.log                            <span class="hljs-comment"># 找日志开头是这些的</span></code></pre>
+
+    <h4>--include 和 --exclude —— 精确控制搜索范围</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="fcc81fd1e084abb07d70a82ac23064588b1451884cad362de44e88a4832ab555"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 只在 .log 文件中搜索</span>
+grep<span class="hljs-attr"> -r</span> <span class="hljs-string">"ERROR"</span> /var/log/<span class="hljs-attr"> --include</span>=<span class="hljs-string">"*.log"</span>
+
+<span class="hljs-comment"># 排除二进制文件和压缩包</span>
+grep<span class="hljs-attr"> -r</span> <span class="hljs-string">"password"</span> /etc/<span class="hljs-attr"> --exclude</span>=<span class="hljs-string">"*.{gz,bz2,png}"</span>
+
+<span class="hljs-comment"># 排除整个目录</span>
+grep<span class="hljs-attr"> -r</span> <span class="hljs-string">"pattern"</span> .<span class="hljs-attr"> --exclude-dir</span>={node_modules,.<span class="hljs-built_in">git</span>,.cache}</code></pre>
+
+    <div class="box box-info"><strong>grep 性能提示</strong>在超大的日志文件（几十 GB）中 grep，记得加 <code>--binary-files=without-match</code> 跳过二进制文件，避免误匹配二进制数据。如果只需要"文件里有没有这个字符串"，用 <code>grep -l</code> 而不是 <code>grep -c</code>——前者找到第一个匹配就停止读文件，后者需要读完全文。</div>
+  </div>
+</div>
+
+<!-- ═══════ 第二节 ═══════ -->
+<h2 class="section-title" id="sec09-2"><span class="icon">2</span>grep 高级实战</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>查日志三板斧——每天都要用的 grep 组合技</h3><span class="tag tag-required">实战</span></div>
+  <div class="card-body">
+    <h4>实战 1：在 Nginx 所有站点配置中找一个域名</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="1559b519701234c66eb53e7524df700a439a9b33430e40ef1aeca2ef97acee30"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 在 /etc/nginx/ 下所有子目录的 .conf 文件中搜索 example.com</span>
+grep<span class="hljs-attr"> -r</span> <span class="hljs-string">"example.com"</span> /etc/nginx/<span class="hljs-attr"> --include</span>=<span class="hljs-string">"*.conf"</span><span class="hljs-attr"> -n</span>
+
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># /etc/nginx/sites-enabled/myapp.conf:12:  server_name example.com www.example.com;</span>
+<span class="hljs-comment"># /etc/nginx/sites-enabled/myapp.conf:45:  proxy_pass http://backend.example.com:8080;</span>
+<span class="hljs-comment"># 直接告诉你文件、行号、内容——改哪里一目了然</span></code></pre>
+
+    <h4>实战 2：从 Nginx 日志中统计各种错误</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="6ce396d9b59dda9b39413d1da8b29768f9bcdb2d17a99426ef0498a1b3f3b435"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 统计 404 错误的总次数</span>
+grep<span class="hljs-attr"> -c</span> <span class="hljs-string">" 404 "</span> /var/log/nginx/access.log
+
+<span class="hljs-comment"># 只看最近 1000 行里的 404</span>
+<span class="hljs-built_in">tail</span> -1000 /var/log/nginx/access.log | grep<span class="hljs-attr"> -c</span> <span class="hljs-string">" 404 "</span>
+
+<span class="hljs-comment"># 找所有非 200 和 304 的请求（排除正常请求和缓存命中）</span>
+grep<span class="hljs-attr"> -vE</span> <span class="hljs-string">" (200|304) "</span> access.log | <span class="hljs-built_in">head</span> -20
+
+<span class="hljs-comment"># 找出所有包含 "ERROR" 的日志行及其前后 2 行上下文</span>
+grep<span class="hljs-attr"> -C</span> 2 <span class="hljs-string">"ERROR"</span> /var/log/app.log<span class="hljs-attr"> --color</span>=auto</code></pre>
+
+    <h4>实战 3：过滤注释和空行——看"有效配置"</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="b0c6ea8f68de49b0381d9402e7ddecbf933bf8e6bc1c57bd4a1aca4f6722eae2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 很多配置文件注释比有效行还多</span>
+<span class="hljs-comment"># 只看真正起作用的配置行（排除注释和空行）</span>
+grep<span class="hljs-attr"> -vE</span> <span class="hljs-string">'^\s*(#|$)'</span> /etc/ssh/sshd_config
+
+<span class="hljs-comment"># 或者等价写法</span>
+grep<span class="hljs-attr"> -v</span> <span class="hljs-string">'^#'</span> /etc/ssh/sshd_config | grep<span class="hljs-attr"> -v</span> <span class="hljs-string">'^$'</span></code></pre>
+    <p class="out-label">▶ 输出效果（原来 120 行的配置文件变成 30 行有效配置）</p>
+
+    <h4>实战 4：从系统日志中找出 OOM Killer 杀掉的进程</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="5bf971e73f19d4e72adad2e9ada5f3a508192949a383beb724cb48a9f5151c9c"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 找出被 OOM Killer 杀掉的进程</span>
+dmesg | grep<span class="hljs-attr"> -i</span> <span class="hljs-string">"killed process"</span>
+
+<span class="hljs-comment"># 更详细的 OOM 分析</span>
+dmesg | grep<span class="hljs-attr"> -A</span> 5<span class="hljs-attr"> -B</span> 2<span class="hljs-attr"> -i</span> <span class="hljs-string">"out of memory"</span></code></pre>
+
+    <h4>实战 5：按时间范围搜索——配合 journalctl 或 syslog</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="37312b11cad433b549571c6df337d1832a9fcfc904958de302f8705dea22d427"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 从 syslog 中找出今天下午 2-4 点之间的 sshd 登录记录</span>
+grep <span class="hljs-string">"sshd.*Accepted"</span> /var/log/auth.log | grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"Jul 31 (14|15|16):"</span>
+
+<span class="hljs-comment"># 找出所有 root 用户执行的 sudo 命令</span>
+grep <span class="hljs-string">"sudo.*COMMAND"</span> /var/log/auth.log | grep <span class="hljs-string">"USER=root"</span></code></pre>
+
+    <div class="box box-warning"><strong>grep 的常见误区</strong><code>grep "404" access.log</code> 也会匹配 <code>/page/404.html</code> 这种 URL 路径中包含 404 的行，未必是真正的 404 状态码。更精确的写法是 <code>grep '" 404 '</code> 或 <code>grep -E '\s404\s'</code>，用空格限定边界。在日志分析中，精确匹配比泛匹配重要得多。</div>
+  <figure class="merged-illustration" data-image-id="chapter09/01-grep-line-filter-context.png"><img src="assets/chapter09/01-grep-line-filter-context.png" alt="说明 grep 以整行为单位、上下文不是匹配本身，以及状态码边界误报。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+</div>
+
+<!-- ═══════ 第三节 ═══════ -->
+<h2 class="section-title" id="sec09-3"><span class="icon">3</span>sed 流编辑器</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>sed —— 不是让你打开 vim 一行行改，是一口气改完百万行</h3><span class="tag tag-required">基础</span></div>
+  <div class="card-body">
+    <h4>sed 的设计哲学</h4>
+    <p><strong>sed</strong>（Stream Editor）名字里自带"流"——它处理的是流动的文本数据，一行一行地读入、加工、输出。它的设计哲学是：<strong>默认不修改原文件，把修改后的内容输出到屏幕上</strong>。只有加了 <code>-i</code> 参数才会原地修改。这个设计让你在改动生效前总能先看效果。</p>
+
+    <h4>最核心的操作：查找替换 s/old/new/</h4>
+    <p>sed 最常用的模式是 <code>s/模式/替换内容/标志</code>。90% 的 sed 使用场景都是查找替换。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="91aa69d0551baea9460fa31ed1f9b168ebadcefac68f6f1c1144b136935dbd5b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 基本替换：将每行的第一个 old 替换为 new</span>
+sed <span class="hljs-string">'s/old/new/'</span> file.txt
+
+<span class="hljs-comment"># 全局替换：将该行所有的 old 都替换（g = global）</span>
+sed <span class="hljs-string">'s/old/new/g'</span> file.txt
+
+<span class="hljs-comment"># 查看效果（不修改文件），确认无误后再加 -i</span>
+sed <span class="hljs-string">'s/8080/80/g'</span> <span class="hljs-built_in">nginx</span>.conf     <span class="hljs-comment"># 先看看改了什么</span>
+sed<span class="hljs-attr"> -i</span> <span class="hljs-string">'s/8080/80/g'</span> <span class="hljs-built_in">nginx</span>.conf  <span class="hljs-comment"># 确认无误，原地修改</span></code></pre>
+
+    <h4>替换标志详解</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>标志</th><th>含义</th><th>示例</th></tr></thead>
+      <tbody>
+        <tr><td><code>g</code></td><td>全局替换（一行中所有匹配项都替换）</td><td><code>s/a/b/g</code></td></tr>
+        <tr><td><code>2</code></td><td>只替换每行的第 2 个匹配</td><td><code>s/a/b/2</code></td></tr>
+        <tr><td><code>i</code></td><td>忽略大小写</td><td><code>s/error/critical/i</code></td></tr>
+        <tr><td><code>p</code></td><td>打印被修改的行</td><td><code>s/a/b/p</code>（常配合 -n 使用）</td></tr>
+      </tbody>
+    </table>
+
+    </div><h4>sed -i 的三种安全用法</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="24039843338fbec301b4d8e315178a8c17e53887e89a32b6ca8a7e5f3f91f9f6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 方式1：-i 加备份后缀（最安全！自动生成备份文件）</span>
+sed<span class="hljs-attr"> -i</span>.bak <span class="hljs-string">'s/port 8080/port 80/g'</span> <span class="hljs-built_in">nginx</span>.conf
+<span class="hljs-comment"># 修改后原文件变成 nginx.conf.bak，nginx.conf 是新文件</span>
+
+<span class="hljs-comment"># 方式2：-i 直接原地修改（无备份，谨慎！）</span>
+sed<span class="hljs-attr"> -i</span> <span class="hljs-string">'s/port 8080/port 80/g'</span> <span class="hljs-built_in">nginx</span>.conf
+
+<span class="hljs-comment"># 方式3：先 dry-run 确认，再 -i</span>
+sed <span class="hljs-string">'s/port 8080/port 80/g'</span> <span class="hljs-built_in">nginx</span>.conf | grep<span class="hljs-attr"> --color</span> <span class="hljs-string">"port 80"</span>
+<span class="hljs-comment"># 确认替换结果符合预期，再执行</span>
+sed<span class="hljs-attr"> -i</span> <span class="hljs-string">'s/port 8080/port 80/g'</span> <span class="hljs-built_in">nginx</span>.conf</code></pre>
+
+    <h4>实战：批量修改 Nginx 所有站点配置的端口</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="971375ab09b78c654d26ff131b84c16df97e73953d5c26fa4027a272316c71cf"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 将所有站点配置中的 8080 改为 80（先备份！）</span>
+sed<span class="hljs-attr"> -i</span>.bak <span class="hljs-string">'s/8080/80/g'</span> /etc/nginx/sites-enabled/*
+
+<span class="hljs-comment"># 如果改错了，用备份文件恢复</span>
+<span class="hljs-keyword">for</span> f <span class="hljs-keyword">in</span> /etc/nginx/sites-enabled/*.bak; <span class="hljs-keyword">do</span>
+    <span class="hljs-built_in">mv</span> <span class="hljs-string">"<span class="hljs-variable">$f</span>"</span> <span class="hljs-string">"<span class="hljs-variable">${f%.bak}</span>"</span>
+<span class="hljs-keyword">done</span></code></pre>
+
+    <h4>sed 正则替换——比基本替换更强大</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="5423d2cd38ee530817b2f53327970fc5d4b5141379c511928a76b9505112d17a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 使用 &amp; 引用整个匹配到的文本</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Hello World"</span> | sed <span class="hljs-string">'s/.*/[&amp;]/'</span>
+<span class="hljs-comment"># 输出: [Hello World]</span>
+
+<span class="hljs-comment"># 使用 \1 \2 引用捕获组（用 \( \) 包裹分组）</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"server=localhost port=3306"</span> | sed <span class="hljs-string">'s/.*server=\([^ ]*\).*port=\([^ ]*\).*/\1:\2/'</span>
+<span class="hljs-comment"># 输出: localhost:3306</span>
+
+<span class="hljs-comment"># -E 启用扩展正则（更清晰）</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"server=localhost port=3306"</span> | sed<span class="hljs-attr"> -E</span> <span class="hljs-string">'s/.*server=([^ ]*).*port=([^ ]*).*/\1:\2/'</span>
+<span class="hljs-comment"># 输出: localhost:3306</span></code></pre>
+
+    <div class="box box-info"><strong>sed 的默认行为</strong>sed 处理每一行时，默认会把它打印出来（称为"模式空间自动打印"）。如果你不想让修改后的行和原行同时出现，记得分情况处理：做替换时不需要加 <code>-n</code>；做过滤/范围选择时通常需要 <code>-n</code> + <code>p</code> 来抑制默认输出。</div>
+  </div>
+</div>
+
+<!-- ═══════ 第四节 ═══════ -->
+<h2 class="section-title" id="sec09-4"><span class="icon">4</span>sed 进阶操作</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>不止查找替换——sed 的 5 种高级操作模式</h3><span class="tag tag-required">进阶</span></div>
+  <div class="card-body">
+    <h4>操作 1：删除行 d（delete）</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="9e279b4af7ab40b6eac4613787564c2062769d299e3e53f6f3c0900a89fa7f4d"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 删除匹配 pattern 的行</span>
+sed <span class="hljs-string">'/DEBUG/d'</span> app.log
+
+<span class="hljs-comment"># 删除第 5 到第 10 行</span>
+sed <span class="hljs-string">'5,10d'</span> file.txt
+
+<span class="hljs-comment"># 删除空行</span>
+sed <span class="hljs-string">'/^$/d'</span> config.conf
+
+<span class="hljs-comment"># 删除注释行（以 # 开头的行）</span>
+sed <span class="hljs-string">'/^#/d'</span> config.conf
+
+<span class="hljs-comment"># 一行删除空行和注释（用 ; 或 -e 连接多条命令）</span>
+sed<span class="hljs-attr"> -e</span> <span class="hljs-string">'/^$/d'</span><span class="hljs-attr"> -e</span> <span class="hljs-string">'/^#/d'</span> /etc/ssh/sshd_config</code></pre>
+
+    <h4>操作 2：打印特定行 p（print）</h4>
+    <p>用 <code>-n</code> 抑制 sed 的默认输出，再用 <code>p</code> 明确告诉 sed 打印哪些行。这其实是一种"精准行提取"操作。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="9c74de05b78fded97b592e9932680248754c8c5999dcdd9db2edf27405b77b31"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 打印第 20 到第 30 行</span>
+sed<span class="hljs-attr"> -n</span> <span class="hljs-string">'20,30p'</span> access.log
+
+<span class="hljs-comment"># 打印包含 "ERROR" 的行</span>
+sed<span class="hljs-attr"> -n</span> <span class="hljs-string">'/ERROR/p'</span> app.log
+
+<span class="hljs-comment"># 从 "START" 到 "END" 之间的所有行</span>
+sed<span class="hljs-attr"> -n</span> <span class="hljs-string">'/START/,/END/p'</span> file.txt
+
+<span class="hljs-comment"># 打印文件的最后 10 行（等价于 tail -10）</span>
+sed<span class="hljs-attr"> -n</span> <span class="hljs-string">'$p; $p; N; 7,$D; $p'</span> file.txt   <span class="hljs-comment"># 这只是演示，实际用 tail 就行</span></code></pre>
+
+    <h4>操作 3：在特定行前/后插入文本 i/a（insert/append）</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="e1676cc5b1f35428ebd71f1f756a872cf3b0b69ea53308d2503035f29fa33bfa"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 在第 3 行之前插入一行</span>
+sed <span class="hljs-string">'3i\# === 这是新插入的注释 ==='</span> file.txt
+
+<span class="hljs-comment"># 在最后一行之后追加内容</span>
+sed <span class="hljs-string">'$a\# 文件末尾'</span> file.txt
+
+<span class="hljs-comment"># 在匹配 "Listen 80" 的行后面加一行</span>
+sed <span class="hljs-string">'/Listen 80/a\    # 这是新增的注释'</span> httpd.conf</code></pre>
+
+    <h4>操作 4：整行替换 c（change）</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="744184e61d311ea4d29d78f47afe2b12e897ea101f99616f4fe81023c045b02a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 把包含 "Listen 80" 的行整行替换为新内容</span>
+sed <span class="hljs-string">'/Listen 80/c\Listen 443'</span> httpd.conf</code></pre>
+
+    <h4>操作 5：多条件组合——sed 脚本</h4>
+    <p>用 <code>-e</code> 串联多条 sed 命令，或用 <code>;</code> 分隔，复杂操作可以写进一个文件当脚本用。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="a94842a8d9250b10f78f719c8f96113e138399fa99629229f0740d7a314b8d32"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 一条 sed 命令做三件事：删空行、删注释、替换端口</span>
+sed<span class="hljs-attr"> -e</span> <span class="hljs-string">'/^$/d'</span><span class="hljs-attr"> -e</span> <span class="hljs-string">'/^#/d'</span><span class="hljs-attr"> -e</span> <span class="hljs-string">'s/8080/80/g'</span> <span class="hljs-built_in">nginx</span>.conf
+
+<span class="hljs-comment"># 将多条 sed 命令写进文件（sed 脚本）</span>
+<span class="hljs-built_in">cat</span> &gt; cleanup.sed &lt;&lt; <span class="hljs-string">'EOF'</span>
+/^$/d
+/^<span class="hljs-comment">#/d</span>
+s/ localhost / 0.0.0.0 /g
+s/ 8080 / 80 /g
+EOF
+
+sed<span class="hljs-attr"> -f</span> cleanup.sed <span class="hljs-built_in">nginx</span>.conf</code></pre>
+
+    <div class="box box-warning"><strong>sed -i 的跨平台差异</strong>macOS 的 BSD sed 和 Linux 的 GNU sed 在 <code>-i</code> 的行为上不同。macOS 要求 <code>sed -i '' 's/a/b/g' file</code>（必须带备份后缀参数），Linux 可以 <code>sed -i 's/a/b/g' file</code>。如果你的脚本需要在 macOS 和 Linux 上通用，要么用 <code>sed -i.bak</code> 然后删掉 .bak，要么用 perl 替代 <code>perl -i -pe 's/a/b/g' file</code>。</div>
+  </div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter09/02-sed-pattern-space-safe-edit.png"><img src="assets/chapter09/02-sed-pattern-space-safe-edit.png" alt="展示逐行模式空间、默认输出、-n 与安全的 -i.bak 修改闭环。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第五节 ═══════ -->
+<h2 class="section-title" id="sec09-5"><span class="icon">5</span>awk 文本分析</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>awk —— 不只是"打印第 N 列"，是一台完整的文本数据分析引擎</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>awk 的本质：表格化数据处理</h4>
+    <p>awk 的思维模型非常简单而强大：把每一行文本按分隔符切成若干个<strong>字段（field）</strong>，然后你可以像操作数据库表格一样处理这些字段——<code>$1</code> 是第一列，<code>$2</code> 是第二列，<code>$NF</code> 是最后一列，<code>$0</code> 是整行。它的默认分隔符是<strong>空白字符</strong>（空格和 Tab），所以处理日志（典型的是空格分隔的列）天然匹配。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="6baf96311fcf46ab124d191201ffb26b531be8a7e393c27be11b50a53373e422"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 最简单的 awk：打印每一行的第 1 和第 3 列</span>
+awk <span class="hljs-string">'{print $1, $3}'</span> data.txt
+
+<span class="hljs-comment"># 从管道读取（最常用的方式）</span>
+<span class="hljs-built_in">ls</span><span class="hljs-attr"> -l</span> | awk <span class="hljs-string">'{print $9, $5}'</span>     <span class="hljs-comment"># 打印文件名和大小</span>
+ps aux | awk <span class="hljs-string">'{print $1, $2, $11}'</span> <span class="hljs-comment"># 打印用户名、PID、命令</span></code></pre>
+
+    <h4>核心语法：模式-动作 对</h4>
+    <p>awk 的核心语法是 <code>模式 { 动作 }</code>：对匹配"模式"的每一行执行"动作"。模式可以是正则表达式、条件判断或特殊的 BEGIN/END；动作就是你想做的操作。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="54fd37c058322e59d19ad5ef48df873be8f01832eff48c5a84287e0e305dd674"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 只有一个模式（没有动作）：默认动作是 print $0（打印整行）</span>
+awk <span class="hljs-string">'/ERROR/'</span> app.log    <span class="hljs-comment"># 等价于 awk '/ERROR/ {print $0}' app.log</span>
+
+<span class="hljs-comment"># 只有动作（没有模式）：对每一行都执行</span>
+awk <span class="hljs-string">'{print $1}'</span> access.log    <span class="hljs-comment"># 打印每行的第一列</span>
+
+<span class="hljs-comment"># 模式 + 动作：只处理包含 ERROR 的行</span>
+awk <span class="hljs-string">'/ERROR/ {print $1, $2, $3}'</span> app.log</code></pre>
+
+    <h4>awk 的内置变量——你的数据分析工具箱</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>变量</th><th>含义</th><th>典型用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>$0</code></td><td>当前行的完整内容</td><td>打印整行、判断整行</td></tr>
+        <tr><td><code>$1, $2, ...</code></td><td>第 1 列、第 2 列...</td><td>提取指定字段</td></tr>
+        <tr><td><code>$NF</code></td><td>最后一列</td><td>动态取最后一列，不管有多少列</td></tr>
+        <tr><td><code>NF</code></td><td>当前行的列数</td><td><code>awk 'NF&gt;10'</code>——只打印超过 10 列的行</td></tr>
+        <tr><td><code>NR</code></td><td>当前行号（从 1 开始）</td><td><code>awk 'NR&gt;=10 &amp;&amp; NR&lt;=20'</code>——打印 10-20 行</td></tr>
+        <tr><td><code>FNR</code></td><td>当前文件内的行号</td><td>处理多文件时，NR 累积，FNR 每个文件重置</td></tr>
+        <tr><td><code>FS</code></td><td>输入字段分隔符（默认空格/Tab）</td><td>用 <code>-F':'</code> 或 <code>FS=":"</code> 设置</td></tr>
+        <tr><td><code>OFS</code></td><td>输出字段分隔符（默认空格）</td><td><code>OFS=","</code> 输出 CSV 格式</td></tr>
+        <tr><td><code>RS</code></td><td>输入记录分隔符（默认换行）</td><td>设 <code>RS=""</code> 按段落分隔</td></tr>
+      </tbody>
+    </table>
+
+    </div><h4>-F 分隔符——处理 CSV、冒号分隔、等号分隔的文件</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="ae1519597f5313ef3b52ae3b7c50a2cd13ba84138145d56758be7e6fb5a4c2f3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 处理 /etc/passwd（冒号分隔）</span>
+awk<span class="hljs-attr"> -F</span><span class="hljs-string">':'</span> <span class="hljs-string">'{print $1, $3, $7}'</span> /etc/passwd
+<span class="hljs-comment"># 输出：root 0 /bin/bash</span>
+
+<span class="hljs-comment"># 处理 CSV 文件（逗号分隔）</span>
+awk<span class="hljs-attr"> -F</span><span class="hljs-string">','</span> <span class="hljs-string">'{print $1, $3}'</span> data.csv
+
+<span class="hljs-comment"># 处理空格和逗号混合的分隔符</span>
+awk<span class="hljs-attr"> -F</span><span class="hljs-string">'[, ]+'</span> <span class="hljs-string">'{print $1, $2}'</span> messy_data.txt</code></pre>
+
+    <h4>BEGIN 和 END —— 预处理和汇总</h4>
+    <p><strong>BEGIN</strong> 块在处理任何输入行<strong>之前</strong>执行一次（用于初始化），<strong>END</strong> 块在处理完所有输入行<strong>之后</strong>执行一次（用于输出汇总结果）。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="a4a9da94fdd9796943c2877783d37aa9830735c5ae5085670851b08f1cd369fe"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># BEGIN：打印表头</span>
+awk <span class="hljs-string">'BEGIN {print "文件名\t大小\t权限"} {print $9, $5, $1}'</span> &lt; &lt;(<span class="hljs-built_in">ls</span><span class="hljs-attr"> -l</span>)
+
+<span class="hljs-comment"># END：计算总和和平均值</span>
+awk <span class="hljs-string">'{sum += $3} END {print "总和:", sum, "平均值:", sum/NR}'</span> data.txt
+
+<span class="hljs-comment"># BEGIN + END：完整的报告</span>
+awk <span class="hljs-string">'
+BEGIN { print "===== 磁盘使用报告 =====" }
+{ usage[$1] = $5 }
+END {
+    for (fs in usage) {
+        print fs, usage[fs]
+    }
+    print "===== 报告结束 ====="
+}
+'</span> &lt; &lt;(<span class="hljs-built_in">df</span><span class="hljs-attr"> -h</span>)</code></pre>
+  </div>
+</div>
+
+<!-- ═══════ 第六节 ═══════ -->
+<h2 class="section-title" id="sec09-6"><span class="icon">6</span>awk 数据处理实战</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">运</span><h3>真正的生产力——awk 数据聚合、统计、格式化实战</h3><span class="tag tag-suggested">实战</span></div>
+  <div class="card-body">
+    <h4>实战 1：列求和与平均值</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="24efa1f6a0cd94397eff36f8a34528ad8a166e9321b1d7b06117febfa354a897"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 对第 3 列所有值求和，最后打印平均值（NR=总行数）</span>
+awk <span class="hljs-string">'{sum += $3} END {print "总和:", sum, "平均值:", sum/NR}'</span> data.txt
+
+<span class="hljs-comment"># 只看第 5 列大于 1000 的行的第 3 列总和</span>
+awk <span class="hljs-string">'$5 &gt; 1000 {sum += $3} END {print sum}'</span> data.txt</code></pre>
+    <p class="out-label">▶ 示例数据 data.txt</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="3f05c541e3ea9f7e80f42f7f072a3f064f2e47061e1f6b3f6176b880b10f20a4"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">John   80  1750
+Alice  92  2100
+Bob    65  1350
+<span class="hljs-comment"># awk '...' → 总和: 5200, 平均值: 1733.33</span></code></pre>
+
+    <h4>实战 2：关联数组统计——IP 访问次数排行榜</h4>
+    <p>这是 awk 最强大的功能：用<strong>关联数组</strong>（associative array）做数据聚合。数组的键可以是任何字符串，值可以是数字或字符串。每次遇到相同的键，就把值加上去——天然适合做频次统计。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="de388dd1eecdd3cd18af5a0243d9086024fd0d10323e5662a57864166440f5a5"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 统计每个 IP 的请求次数——Nginx 日志分析必用</span>
+awk <span class="hljs-string">'{ip[$1]++} END {for (i in ip) print ip[i], i}'</span> access.log | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> | <span class="hljs-built_in">head</span> -10</code></pre>
+    <p class="out-label">▶ 输出</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="c0ffdc6832cbe4d9b1716ab2b035625ffbf859f69974e7e07954df0e9ce983dc"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">15234 10.0.0.100
+ 8921 10.0.0.200
+ 4567 10.0.0.50
+ 3120 192.168.1.1
+<span class="hljs-comment"># 10.0.0.100 发出了 15234 个请求——这个 IP 需要重点关注</span></code></pre>
+
+    <h4>实战 3：统计 HTTP 状态码分布</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="dd4bad4ae83ecdeaa5cbfb99581d48534a62cc1de2ae98ef4c95149b35b357ec"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># Nginx access.log 中，状态码通常是 $9</span>
+awk <span class="hljs-string">'{status[$9]++} END {for (s in status) printf "%s: %d\n", s, status[s]}'</span> access.log | <span class="hljs-built_in">sort</span>
+
+<span class="hljs-comment"># 带百分比</span>
+awk <span class="hljs-string">'{status[$9]++; total++} END {for (s in status) printf "%s: %d (%.1f%%)\n", s, status[s], status[s]/total*100}'</span> access.log</code></pre>
+    <p class="out-label">▶ 输出</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="362459845a6772116d406612e60c67e3629d584d67d51f122bf531d499b88228"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">200: 48520 (92.3%)
+301:  1230 (2.3%)
+404:  2340 (4.5%)
+500:   480 (0.9%)
+<span class="hljs-comment"># 一眼看出服务器状态——500 错误占 0.9%，需要排查</span></code></pre>
+
+    <h4>实战 4：按时间段统计带宽——找出流量高峰</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="24791c7c7bbbf0a83273f17812752c60f1a85b452b6ed3fdf5a87d8fe8f8fb5f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># access.log 格式：[31/Jul/2026:14:30:00 +0800]</span>
+<span class="hljs-comment"># 提取小时，按小时统计字节数</span>
+awk <span class="hljs-string">'{
+    split($4, a, ":")           # 切分时间戳字段
+    hour = substr(a[1], length(a[1])-1)  # 提取小时
+    bytes[hour] += $10          # 字节数通常是第 10 列
+}
+END {
+    for (h in bytes) printf "%s:00 - %.2f MB 请求\n", h, bytes[h]/1024/1024
+}'</span> access.log | <span class="hljs-built_in">sort</span></code></pre>
+
+    <h4>实战 5：awk 做计算——比 Excel 还快</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="f8a368f19ef5f9f1914ec86f3c8d6c48d8c8dd64e29888480a9c625a22a48f38"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 计算第 3 列的最大值、最小值</span>
+awk <span class="hljs-string">'NR==1{max=$3; min=$3}
+     {if($3&gt;max) max=$3; if($3&lt;min) min=$3}
+     END{print "最大:", max, "最小:", min}'</span> data.txt
+
+<span class="hljs-comment"># 计算平均响应时间（第 10 列是响应时间，单位为微秒）</span>
+awk <span class="hljs-string">'{sum+=$10; count++} END {print "平均响应时间:", sum/count/1000, "ms"}'</span> access.log
+
+<span class="hljs-comment"># 中位数（P50 响应时间）</span>
+awk <span class="hljs-string">'{a[NR]=$10} END {
+    asort(a)
+    if (NR%2) print a[int(NR/2)+1]
+    else print (a[NR/2]+a[NR/2+1])/2
+}'</span> access.log</code></pre>
+
+    <div class="box box-info"><strong>awk 的 printf 格式化</strong>awk 内置了 C 风格的 <code>printf</code> 函数：<code>printf "%-20s %10d\n", $1, $2</code>——左对齐 20 字符宽字符串，右对齐 10 字符宽整数。在处理数据报告时非常好用。格式占位符：<code>%s</code>（字符串）、<code>%d</code>（整数）、<code>%f</code>（浮点数）、<code>%10.2f</code>（宽10字符，保留2位小数）。</div>
+  </div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter09/03-awk-fields-and-aggregation.png"><img src="assets/chapter09/03-awk-fields-and-aggregation.png" alt="展示 FS 分字段、模式—动作、BEGIN/END 与关联数组计数。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第七节 ═══════ -->
+<h2 class="section-title" id="sec09-7"><span class="icon">7</span>三剑客管道组合</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">运</span><h3>一加一加一大于三 —— grep + sed + awk 协同作战</h3><span class="tag tag-suggested">综合实战</span></div>
+  <div class="card-body">
+    <h4>组合哲学：每个工具只做自己最擅长的事</h4>
+    <p>三剑客真正的威力不在于单独使用，而在于<strong>管道组合</strong>。grep 负责过滤（找到目标行），sed 负责编辑（查找替换），awk 负责分析（统计聚合）。三者各司其职，数据在管道中流转——这就是 Unix 哲学："小工具，大组合"。</p>
+
+    <h4>综合实战 1：找出产生 404 错误最多的前 10 个 IP</h4>
+    <p>这是运维工作中最经典的三剑客协作案例——一条命令定位攻击者或爬虫。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="e5a8f71710b3ef322b47290b696667fb4ccea41f41100662c8544da7704fbb06"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># step1: grep 过滤出包含 404 的行</span>
+<span class="hljs-comment"># step2: awk 提取 IP（第1列）</span>
+<span class="hljs-comment"># step3: sort 排序（让 uniq 能正确统计）</span>
+<span class="hljs-comment"># step4: uniq -c 统计每个 IP 出现的次数</span>
+<span class="hljs-comment"># step5: sort -rn 按次数降序</span>
+<span class="hljs-comment"># step6: head -10 取前 10 名</span>
+grep <span class="hljs-string">' 404 '</span> /var/log/nginx/access.log \
+    | awk <span class="hljs-string">'{print $1}'</span> \
+    | <span class="hljs-built_in">sort</span> \
+    | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> \
+    | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> \
+    | <span class="hljs-built_in">head</span> -10</code></pre>
+    <p class="out-label">▶ 输出</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="53f72b077d7e17d955488bf6e62ef6df40395de66a268ec8e6b85cd2396bdc31"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">  15234 10.0.0.100     <span class="hljs-comment"># ← 这个 IP 有 15234 个 404 请求</span>
+    8921 10.0.0.200     <span class="hljs-comment">#    很可能是扫描器或恶意爬虫</span>
+    4567 10.0.0.50
+     234 192.168.1.10
+      89 172.16.0.5
+<span class="hljs-comment"># 把 10.0.0.100 加入 Nginx 黑名单或防火墙拒绝列表</span></code></pre>
+
+    <h4>综合实战 2：分析慢请求——哪些 URL 最慢</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="4ade61136cc756538594bd6e54fdf14a0a9b3a1c4fc08aa584c48ce982184091"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 提取请求时间大于 1 秒的 URL（Nginx 日志中 $request_time 通常在第 10 列之后）</span>
+<span class="hljs-comment"># step1: grep 不做过滤，用 awk 直接条件筛选</span>
+<span class="hljs-comment"># step2: awk 条件 + 聚合</span>
+<span class="hljs-comment"># step3: sort + head 取前 10</span>
+awk <span class="hljs-string">'$NF &gt; 1 {url[$7]++; time[$7]+=$NF}
+     END {
+         for (u in url) printf "%.2fs %d次 %s\n", time[u]/url[u], url[u], u
+     }'</span> access.log \
+    | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> \
+    | <span class="hljs-built_in">head</span> -10
+
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># 5.23s  45次  /api/users/search</span>
+<span class="hljs-comment"># 3.14s 120次  /api/reports/generate</span>
+<span class="hljs-comment"># 2.01s  67次  /dashboard</span></code></pre>
+
+    <h4>综合实战 3：跨文件批量配置修改</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="e882e4d06e1a6f40a68a4ae2c175068ded871a399563c99c980ec6bce1a4e3c2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 场景：把 /etc/nginx/sites-enabled/ 下所有配置文件的 8080 改为 80</span>
+<span class="hljs-comment"># step1: grep -rl 找出包含 8080 的所有文件</span>
+<span class="hljs-comment"># step2: xargs 将文件名传给 sed</span>
+<span class="hljs-comment"># step3: sed -i.bak 批量修改（先备份！）</span>
+grep<span class="hljs-attr"> -rl</span> <span class="hljs-string">'8080'</span> /etc/nginx/sites-enabled/ | xargs sed<span class="hljs-attr"> -i</span>.bak <span class="hljs-string">'s/8080/80/g'</span>
+
+<span class="hljs-comment"># 确认修改内容</span>
+grep<span class="hljs-attr"> -r</span> <span class="hljs-string">'port.*80'</span> /etc/nginx/sites-enabled/
+
+<span class="hljs-comment"># 如果改错了，恢复</span>
+<span class="hljs-built_in">ls</span> /etc/nginx/sites-enabled/*.bak  <span class="hljs-comment"># 确认备份存在</span>
+<span class="hljs-comment"># 恢复一个文件：mv /etc/nginx/sites-enabled/myapp.conf.bak /etc/nginx/sites-enabled/myapp.conf</span></code></pre>
+
+    <h4>综合实战 4：服务器安全审计——找 SSH 暴力破解</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="fa39c56bfe90434ab9c154be08f01a0f692bab9d31726050b031478c07342af8"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 找出尝试登录失败超过 10 次的 IP（SSH 暴力破解检测）</span>
+grep <span class="hljs-string">"Failed password"</span> /var/log/auth.log \
+    | awk <span class="hljs-string">'{print $(NF-3)}'</span> \
+    | <span class="hljs-built_in">sort</span> \
+    | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> \
+    | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> \
+    | awk <span class="hljs-string">'$1 &gt; 10 {print $2, "失败", $1, "次"}'</span></code></pre>
+    <p class="out-label">▶ 输出</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="4a7b5505b0e35c614b28f3248df75d0afbbfe0cbdf6d09d667b3be0edf8e5c83"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">203.0.113.50 失败 342 次    <span class="hljs-comment"># ← 典型的暴力破解！封禁这个 IP</span>
+198.51.100.23 失败 156 次
+192.0.2.99 失败 23 次</code></pre>
+
+    <h4>三剑客协作黄金法则</h4>
+    <figure class="merged-illustration" data-image-id="chapter09/04-production-text-pipelines.png"><img src="assets/chapter09/04-production-text-pipelines.png" alt="展示 404 Top IP 分析流水线和 grep→xargs→sed 的安全批量修改。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="subcard-grid merged-waterfall-panel">
+      <section class="merged-subcard-section">
+        <h5>grep → awk → sort → uniq → sort</h5>
+        <p>经典的"查找-提取-统计-聚合"流水线：grep 过滤 → awk 提取字段 → sort 排序 → uniq -c 计数 → sort -rn 降序 → head 取 top N。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>grep → xargs → sed</h5>
+        <p>经典的"查找-批量修改"流水线：grep -rl 找到所有包含目标字符串的文件 → xargs 传递文件列表 → sed -i 批量修改。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>awk 一条就够了</h5>
+        <p>简单的过滤+提取+统计，用一条 awk 就能完成（awk 内置条件过滤和数组聚合）。不要在 awk 的外面再套 grep 和 sort——awk 自己就能搞定。</p>
+      </section>
+    </div>
+
+    <div class="box box-info"><strong>性能金字塔</strong>简单过滤：grep &gt; sed &gt; awk（grep 速度最快）。简单替换：sed &gt; awk &gt; grep（sed 专用）。复杂统计分析：awk &gt; 一切（关联数组 + 内置函数无可替代）。跨文件批量：grep + xargs + sed 是最佳组合。记住：<strong>永远不要让 awk 做 grep 的事，也不要让 grep 做 awk 的事</strong>。</div>
+  </div>
+</div>
+
+<!-- /container -->
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>HTTP</b> · Hypertext Transfer Protocol 超文本传输协议</p><p class="kc-annotation-line"><b>URL</b> · Uniform Resource Locator 统一资源定位符</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第 9 章 — 文本处理三剑客</p>
+  <p style="margin-top:4px">grep 过滤 · sed 编辑 · awk 分析 · 管道协作 · 所向披靡</p>
+</footer>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

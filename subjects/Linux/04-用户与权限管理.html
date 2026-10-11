@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-abp-filters-channel="b4575162-b489-4477-b584-6e0eb736adfc"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>用户与权限管理 · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fdf4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#15803d}.badge-implement{background:#f0fdf4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 用户与权限管理</span><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" title="上一章">← 上一章</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" aria-current="page" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+<header class="site-header">
+  <h1>用户与权限管理</h1>
+  <p class="subtitle">Linux 安全的基石 —— 从多用户隔离到精准权限控制</p>
+  <div class="meta-row editorial-meta">
+    <span>安 / 实 / 操</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：掌握权限模型本质，排查一切 Permission denied</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec04-1">一、用户与组概念</a>
+    <a href="#sec04-2">二、权限三要素 rwx</a>
+    <a href="#sec04-3">三、chmod / chown / chgrp</a>
+    <a href="#sec04-4">四、SUID / SGID / Sticky Bit</a>
+    <a href="#sec04-5">五、sudo 与 visudo</a>
+    <a href="#sec04-6">六、权限排错实战</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第一节 ═══════════ -->
+<h2 class="section-title" id="sec04-1"><span class="icon">1</span>用户与组概念</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">安</span><h3>为什么 Linux 是天生多用户系统？</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：为什么要有"用户"这个概念？</h4>
+    <p>Linux 从 UNIX 继承了多用户基因。最初一台 PDP-11 小型机要同时服务几十个终端，每个人登录后看到的是"自己的"环境，不能动别人的文件。这套机制的三个支柱是：<strong>隔离（每个人看到自己的文件）、权限分配（谁能读谁不能读）、分权制衡（root管系统，普通人用应用）</strong>。</p>
+    <p>每个用户有一个唯一的整数 UID（User ID）。UID=0 是 root——不是名字叫 root 所以是管理员，而是 UID 为 0 的那个实体拥有最高特权。你可以把 root 改名叫 superman，但只要 UID 还是 0，它就是管理员。</p>
+
+    <h4>核心文件速查</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>文件</th><th>存储内容</th><th>典型行示例</th></tr></thead>
+      <tbody><tr><td><code>/etc/passwd</code></td><td>用户清单（7个字段，冒号分隔）</td><td><code>alice:x:1001:1001:Alice:/home/alice:/bin/bash</code></td></tr>
+      <tr><td><code>/etc/shadow</code></td><td>密码哈希（仅 root 可读）</td><td><code>alice:$6$salt$hashedpw:19000:0:99999:7:::</code></td></tr>
+      <tr><td><code>/etc/group</code></td><td>组清单</td><td><code>dev:x:1002:alice,bob,carol</code></td></tr>
+      <tr><td><code>/etc/gshadow</code></td><td>组密码哈希</td><td><code>dev:!::alice,bob</code></td></tr>
+    </tbody></table>
+    </div>
+
+    <p><code>/etc/passwd</code> 每行格式：<code>用户名:密码占位符x:UID:GID:GECOS描述:家目录:登录Shell</code>。注意密码字段现在固定为 <code>x</code>，实际密码哈希存在 <code>/etc/shadow</code> 中——这是安全性进化，因为 <code>/etc/passwd</code> 必须世界可读（所有程序都要查询用户信息），但密码哈希不能给所有人看。</p>
+
+    <h4>主组与附加组</h4>
+    <p>每个用户属于<strong>一个主组</strong>（primary group，写在 /etc/passwd 的 GID 字段）和<strong>多个附加组</strong>（supplementary groups，写在 /etc/group 里把用户名加进去）。</p>
+    <figure class="merged-illustration" data-image-id="chapter04/01-uid-primary-supplementary-groups.png"><img src="assets/chapter04/01-uid-primary-supplementary-groups.png" alt="解释内核如何用 UID/GID/组集合选择 owner、group 或 others 权限。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="14859a4ccae8fcaf07131f3d6370705f674e27f0b3a3dad631a468e45f44b042"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 创建用户时指定主组和附加组</span>
+useradd<span class="hljs-attr"> -m</span><span class="hljs-attr"> -g</span> developers<span class="hljs-attr"> -G</span> <span class="hljs-built_in">docker</span>,sudo alice
+<span class="hljs-comment"># -g developers  → 主组是 developers</span>
+<span class="hljs-comment"># -G docker,sudo → 附加组是 docker 和 sudo（用户同时属于这三个组）</span></code></pre>
+    <div class="box box-info"><strong>为什么需要"附加组"？</strong> 实际场景：用户 alice 的主组是 developers（她创建的文件默认 belong to developers 组）。但她同时需要访问 Docker（需要加入 docker 组）和 sudo 权限。如果只有主组，她必须不停切换组。附加组解决了这个问题——一个用户可以同时拥有多个组的身份。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第二节 ═══════════ -->
+<h2 class="section-title" id="sec04-2"><span class="icon">2</span>权限三要素 rwx</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">实</span><h3>Owner + Group + Others 三围权限模型</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：ls -l 输出的那串神秘字符到底是什么？</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="7b98730acacede7f6ba8b14a40b539169188a721e1cb58ba1087774774900ef7"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ ls</span><span class="hljs-attr"> -l</span> script.sh<span class="hljs-attr">
+-rwxr-xr--</span> 1 alice dev 2048 Jul 31 10:00 script.sh</code></pre>
+    <p>第一个字符是文件类型（<code>-</code> 普通文件、<code>d</code> 目录、<code>l</code> 符号链接）。后面 9 个字符分为三组，每组 3 位：</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>组位</th><th>字符</th><th>对象</th><th>含义</th></tr></thead>
+      <tbody><tr><td>1-3</td><td><code>rwx</code></td><td>Owner (alice)</td><td>属主可读、可写、可执行</td></tr>
+      <tr><td>4-6</td><td><code>r-x</code></td><td>Group (dev)</td><td>组成员可读、可执行，不可写</td></tr>
+      <tr><td>7-9</td><td><code>r--</code></td><td>Others (其他所有人)</td><td>其他人只能读</td></tr>
+    </tbody></table>
+    </div>
+
+    <h4>rwx 在文件和目录上的含义完全不同</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>权限</th><th>数字</th><th>对文件的意义</th><th>对目录的意义</th></tr></thead>
+      <tbody><tr><td>r (read)</td><td>4</td><td>可以读取文件内容 (cat/more)</td><td>可以列出目录下的文件名 (ls)</td></tr>
+      <tr><td>w (write)</td><td>2</td><td>可以修改文件内容 (但删除文件要看目录的w)</td><td>可以在目录中创建/删除/重命名文件</td></tr>
+      <tr><td>x (execute)</td><td>1</td><td>可以作为程序/脚本运行</td><td>可以 <code>cd</code> 进入该目录（成为当前工作目录）</td></tr>
+    </tbody></table>
+    <figure class="merged-illustration" data-image-id="chapter04/02-rwx-file-vs-directory.png"><img src="assets/chapter04/02-rwx-file-vs-directory.png" alt="对照文件/目录语义，并展示访问路径要求所有父目录具有 x。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+
+    <h4>权限的数字表示法——八进制加法</h4>
+    <p>r=4, w=2, x=1。每一组权限值就是这三个数字的和。例如 rwx = 4+2+1 = 7，r-x = 4+0+1 = 5，r-- = 4+0+0 = 4。所以 <code>rwxr-xr--</code> = 754。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="51aadf3a0acc92220283ccdfb8ecfdeb5b88dc7a37a52bf26c5551bd0f996313"><code data-static-highlight="11.9.0" class="editorial-code language-plaintext nohighlight" data-highlighted="yes">rwx r-x r--  →  7   5   4   →   权限值 754
+rw- r-- r--  →  6   4   4   →   权限值 644
+rwx rwx ---  →  7   7   0   →   权限值 770</code></pre>
+
+    <div class="box box-warning"><strong>经典的"不受欢迎的锁"陷阱</strong>：目录权限是 rw- (6)，但没有 x。你能 ls 看到文件名，但无法 cd 进去，也无法访问其中任何文件。很多新手看到 Permission denied 会反复检查文件权限，而忽略了<strong>每一个父目录都需要 x 权限</strong>。比如要访问 <code>/home/alice/project/code/main.c</code>，从根开始，<code>/</code>、<code>/home</code>、<code>/home/alice</code>、<code>/home/alice/project</code>、<code>/home/alice/project/code</code> 这五个目录 <strong>全部要有 x 权限</strong>。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第三节 ═══════════ -->
+<h2 class="section-title" id="sec04-3"><span class="icon">3</span>chmod / chown / chgrp</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>权限变更三大命令的完整语法与实战</h3><span class="tag tag-required">实操</span></div>
+  <div class="card-body">
+    <h4>chmod —— 改权限（change mode）</h4>
+    <p>两种语法：数字法（直接设置）和符号法（增量修改）。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="c920b21d294523eb3bb87ffb8f9e55289897662f54f00f7289597ad2383855be"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 数字法：精确设置（最常用） ===</span>
+<span class="hljs-built_in">chmod</span> 755 script.sh     <span class="hljs-comment"># rwxr-xr-x → 属主全权，其他人读+执行</span>
+<span class="hljs-built_in">chmod</span> 644 config.txt    <span class="hljs-comment"># rw-r--r-- → 属主可读写，其他人只读</span>
+<span class="hljs-built_in">chmod</span> 600 id_rsa        <span class="hljs-comment"># rw------- → 只有属主可读写（SSH私钥标准权限）</span>
+<span class="hljs-built_in">chmod</span> 777 shared/       <span class="hljs-comment"># ⚠️ 危险！所有人都能读、写、进入</span>
+
+<span class="hljs-comment"># === 符号法：增量修改 ===</span>
+<span class="hljs-built_in">chmod</span> u+x script.sh     <span class="hljs-comment"># 给属主(user)添加执行权限</span>
+<span class="hljs-built_in">chmod</span> g-w shared.txt    <span class="hljs-comment"># 移除组(group)的写权限</span>
+<span class="hljs-built_in">chmod</span> o=r report.txt    <span class="hljs-comment"># 设置其他人(other)权限为只读</span>
+<span class="hljs-built_in">chmod</span> a+r public.txt    <span class="hljs-comment"># 所有人(all)添加读权限</span>
+<span class="hljs-built_in">chmod</span> u+x,g+x bin/      <span class="hljs-comment"># 属主和组都加执行权限</span></code></pre>
+
+    <h4>chown —— 改属主（change owner）</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="a0a9499143055437bcb3bfce722d008e41d1f8993b2e62f34bb1d56ca20bb090"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes"><span class="hljs-string">chown</span> <span class="hljs-string">alice</span> <span class="hljs-string">file.txt</span>              <span class="hljs-comment"># 只改属主为 alice</span>
+<span class="hljs-string">chown</span> <span class="hljs-string">alice:dev</span> <span class="hljs-string">file.txt</span>           <span class="hljs-comment"># 改属主为 alice，组改为 dev</span>
+<span class="hljs-string">chown</span> <span class="hljs-string">:docker</span> <span class="hljs-string">file.txt</span>             <span class="hljs-comment"># 只改组为 docker（冒号前面留空）</span>
+<span class="hljs-string">chown</span> <span class="hljs-string">-R</span> <span class="hljs-string">alice:dev</span> <span class="hljs-string">/home/alice</span>     <span class="hljs-comment"># -R 递归修改整个目录树</span></code></pre>
+    <p><strong>注意：</strong>普通用户不能随便 chown 把文件送给别人（这是安全机制——防止你把自己的恶意文件伪装成 root 的文件）。只有 root 可以任意更改文件属主。</p>
+
+    <h4>chgrp —— 改属组（change group）</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="27d801a03b199afbff2f288c2348ab8ef9847cba31a3906bcdcd7d8814927428"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">chgrp</span> developers project/          <span class="hljs-comment"># 将目录的组改为 developers</span>
+<span class="hljs-built_in">chgrp</span><span class="hljs-attr"> -R</span> <span class="hljs-built_in">docker</span> /var/lib/docker    <span class="hljs-comment"># 递归修改组</span></code></pre>
+
+    <h4>umask —— 新文件的默认权限掩码</h4>
+    <p>umask 不是"设置默认权限"，而是"屏蔽掉不希望出现的权限"。Linux 创建文件时的最大权限是 666（rw-rw-rw-），创建目录的最大权限是 777（rwxrwxrwx）。umask 值从最大权限中减去，得到实际权限。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="3f419c8148139ed861e2be8097e7f9fe9b0909231c1661fb063f941d1c956207"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ umask</span>
+0022
+
+<span class="hljs-comment"># 计算：新文件权限 = 666 - 022 = 644 (rw-r--r--)</span>
+<span class="hljs-comment">#       新目录权限 = 777 - 022 = 755 (rwxr-xr-x)</span>
+
+<span class="hljs-comment"># 查看和设置 umask</span>
+<span class="hljs-built_in">$ umask</span>           <span class="hljs-comment"># 查看当前 umask</span>
+0022
+<span class="hljs-built_in">$ umask</span> 027       <span class="hljs-comment"># 设置更严格的 umask（属主rwx，组rx，其他人无权限）</span>
+<span class="hljs-comment"># 设置后：文件 = 666 - 027 = 640 (rw-r-----)</span>
+<span class="hljs-comment">#         目录 = 777 - 027 = 750 (rwxr-x---)</span></code></pre>
+    <div class="box box-info"><strong>生产环境最佳实践：</strong>Server 配置文件建议 umask 027 或 077，确保新创建的文件默认不被其他用户读取。Web 应用的上传目录需要 umask 002，保证 Web 服务器用户（如 www-data）和开发团队可以协同读写。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第四节 ═══════════ -->
+<h2 class="section-title" id="sec04-4"><span class="icon">4</span>SUID / SGID / Sticky Bit</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-security">安</span><h3>特殊权限位——让"不是你"的身份执行操作</h3><span class="tag tag-required">进阶</span></div>
+  <div class="card-body">
+    <h4>问题：普通用户怎么能修改自己的密码？</h4>
+    <p>用户的密码哈希存在 <code>/etc/shadow</code> 中，这个文件的权限是 <code>-rw-r----- 1 root shadow</code>——只有 root 能写。但 alice 这个普通用户在终端执行 <code>passwd</code> 修改自己密码时，确实写入了 /etc/shadow。怎么做到的？答案就是 <strong>SUID (Set User ID)</strong>。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="efd8ff81d4145254b2092ec8bad726cd458c4b95f19d03a085b8685cad39246e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ ls</span><span class="hljs-attr"> -l</span> /usr/bin/passwd<span class="hljs-attr">
+-rwsr-xr-x</span> 1 root root 59976 Jul 15 2024 /usr/bin/passwd
+<span class="hljs-comment">#     ^</span>
+<span class="hljs-comment">#     看这里：属主的 x 位变成了 s ——这就是 SUID 标志</span></code></pre>
+    <p><strong>SUID 的含义：</strong>当执行这个文件时，进程的实际 UID 不变（alice），但有效 UID 变成文件属主的 UID（root）。所以 passwd 进程以 root 身份运行，拥有写 /etc/shadow 的权限。</p>
+
+    <h4>三种特殊权限位详解</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>权限位</th><th>数字</th><th>显示位置</th><th>效果</th><th>典型用例</th></tr></thead>
+      <tbody><tr>
+        <td>SUID</td><td>4</td><td>属主 x 位变 s<br><code>-rwsr-xr-x</code></td>
+        <td>以<strong>文件属主</strong>身份执行</td>
+        <td><code>/usr/bin/passwd</code>（临时root权限改密码）<br><code>/usr/bin/su</code>（切换用户）</td>
+      </tr>
+      <tr>
+        <td>SGID</td><td>2</td><td>组 x 位变 s<br><code>-rwxr-sr-x</code></td>
+        <td>以<strong>文件属组</strong>身份执行</td>
+        <td><code>/usr/bin/crontab</code></td>
+      </tr>
+      <tr>
+        <td>SGID(目录)</td><td>2</td><td>组 x 位变 s<br><code>drwxr-sr-x</code></td>
+        <td>目录中新建文件<strong>继承父目录的组</strong></td>
+        <td>项目共享目录：<code>chmod g+s /data/shared/</code></td>
+      </tr>
+      <tr>
+        <td>Sticky Bit</td><td>1</td><td>其他人 x 位变 t<br><code>drwxrwxrwt</code></td>
+        <td>只有<strong>文件所有者</strong>才能删除文件</td>
+        <td><code>/tmp</code>（所有人可写但只能删自己的）</td>
+      </tr>
+    </tbody></table>
+    <figure class="merged-illustration" data-image-id="chapter04/03-special-permission-bits.png"><img src="assets/chapter04/03-special-permission-bits.png" alt="分别展示 SUID 有效 UID、SGID 有效 GID/目录继承组、Sticky 删除规则。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+
+    <h4>设置特殊权限</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="1c967fe21a8b99da36fb6ea2e7b6ddcad1e7051ad875494d0a787a072d693d70"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 数字法：特殊权限位写在最前面（四位数字）</span>
+<span class="hljs-built_in">chmod</span> 4755 /usr/local/bin/myadmin   <span class="hljs-comment"># 4=SUID + 755 → -rwsr-xr-x</span>
+<span class="hljs-built_in">chmod</span> 2755 /data/shared             <span class="hljs-comment"># 2=SGID + 755 → drwxr-sr-x</span>
+<span class="hljs-built_in">chmod</span> 1777 /tmp                     <span class="hljs-comment"># 1=Sticky+ 777 → drwxrwxrwt</span>
+
+<span class="hljs-comment"># 符号法</span>
+<span class="hljs-built_in">chmod</span> u+s mybinary    <span class="hljs-comment"># 设置 SUID</span>
+<span class="hljs-built_in">chmod</span> g+s shared/     <span class="hljs-comment"># 设置 SGID</span>
+<span class="hljs-built_in">chmod</span> +t /tmp         <span class="hljs-comment"># 设置 Sticky Bit</span></code></pre>
+
+    <div class="box box-danger"><strong>安全警告：</strong>SUID 是双刃剑。一个 SUID root 程序如果有漏洞（如缓冲区溢出），攻击者就拿到了 root shell。运维必须定期审计系统中的 SUID 文件：<code>find / -perm -4000 -type f -ls 2&gt;/dev/null</code></div>
+  </div>
+</div>
+
+<!-- ═══════════ 第五节 ═══════════ -->
+<h2 class="section-title" id="sec04-5"><span class="icon">5</span>sudo 与 visudo</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-security">安</span><h3>受控特权提升——不要以 root 登录</h3><span class="tag tag-required">安全</span></div>
+  <div class="card-body">
+    <h4>问题：既然 root 能做任何事，为什么还要 sudo？</h4>
+    <p>直接以 root 登录有三个致命缺陷：① <strong>没有审计——</strong>不知道谁在什么时候做了什么；② <strong>没有限制——</strong>敲错一条命令就可能删掉整个系统（<code>rm -rf /</code>）；③ <strong>无法撤销——</strong>root 权限一旦泄露，攻击者拥有全部控制权。</p>
+    <p>sudo 的设计哲学是<strong>"最小权限原则"</strong>：只给需要的用户、需要的命令、需要的参数组合。每次 sudo 操作都会记录日志（<code>/var/log/auth.log</code> 或 <code>/var/log/secure</code>），出问题可以追溯到人。</p>
+
+    <h4>sudoers 文件结构与 visudo</h4>
+    <p><strong>必须用 visudo 编辑 /etc/sudoers！</strong>原因有二：visudo 会锁定文件防止多人同时编辑导致覆盖；visudo 在保存时会做语法检查，语法出错会拒绝保存并提示错误位置。如果用普通编辑器直接修改导致语法错误，整个 sudo 将无法工作——而你只能用 root 修复。</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="4c7ea1f29d36288bdfeee803a17b57a9cbffee3b4c90026de438da6b044cf6ad"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /etc/sudoers 中的一条规则</span>
+<span class="hljs-comment"># 用户  主机  =(以谁的身份运行)  可执行的命令</span>
+alice    ALL  =(ALL:ALL)        ALL
+<span class="hljs-comment">#  ↑      ↑        ↑              ↑</span>
+<span class="hljs-comment">#  用户   任意主机  以任何人身份    任何命令 → 等同于root权限</span>
+
+<span class="hljs-comment"># 更精细的控制——只允许特定命令</span>
+bob    ALL=(ALL)    /usr/bin/systemctl restart <span class="hljs-built_in">nginx</span>, /usr/bin/systemctl status <span class="hljs-built_in">nginx</span>
+<span class="hljs-comment"># bob 只能重启和查看 nginx，不能做其他事</span>
+
+<span class="hljs-comment"># 不需要密码</span>
+carol  ALL=(ALL)    NOPASSWD: /usr/bin/docker</code></pre>
+
+    <figure class="merged-illustration" data-image-id="chapter04/04-sudo-least-privilege-flow.png"><img src="assets/chapter04/04-sudo-least-privilege-flow.png" alt="展示策略匹配、验证、单命令提权、拒绝分支与日志审计。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>sudoers 规则语法详解</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="8b1811fccf9355a4b6751a23553642ae2d0891f866aa9892bb7816b40ed925d5"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 格式：who host=(runas) tag:commands</span>
+<span class="hljs-comment"># 给 alice 授予管理员权限（标准做法）</span>
+alice ALL=(ALL:ALL) ALL
+
+<span class="hljs-comment"># 允许 dev 组的所有成员执行 apt 命令（无需密码）</span>
+%dev ALL=(ALL) NOPASSWD: /usr/bin/apt, /usr/bin/apt-get
+
+<span class="hljs-comment"># 允许监控用户查看服务状态（不允许多余操作）</span>
+%monitoring ALL=(ALL) NOPASSWD: /usr/bin/systemctl status *, /usr/bin/journalctl
+
+<span class="hljs-comment"># 推荐：给运维团队加上 sudo 权限</span>
+usermod<span class="hljs-attr"> -aG</span> sudo alice        <span class="hljs-comment"># Debian/Ubuntu 系 → 加入 sudo 组</span>
+usermod<span class="hljs-attr"> -aG</span> wheel bob         <span class="hljs-comment"># Red Hat/CentOS 系 → 加入 wheel 组（需确保 wheel 在 sudoers 中已启用）</span></code></pre>
+
+    <h4>sudo 常用命令</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="1c2c7c9dfb62c77746dba2ef4cc132fd9705a38e8a3bdee16dc31e80dd56e865"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">sudo<span class="hljs-attr"> -l</span>            <span class="hljs-comment"># 列出当前用户可执行的 sudo 命令（知道自己有哪些权限）</span>
+sudo<span class="hljs-attr"> -v</span>            <span class="hljs-comment"># 刷新 sudo 时间戳（延长免密码时间，默认5分钟）</span>
+sudo<span class="hljs-attr"> -k</span>            <span class="hljs-comment"># 立即让 sudo 时间戳失效（下次必须输密码）</span>
+sudo<span class="hljs-attr"> -u</span> www-data <span class="hljs-built_in">whoami</span>    <span class="hljs-comment"># 以 www-data 用户身份执行命令（不是必须切到root）</span></code></pre>
+    <div class="box box-info"><strong>sudo 日志审计：</strong>所有 sudo 执行的命令都会记录在 <code>/var/log/auth.log</code>（Debian/Ubuntu）或 <code>/var/log/secure</code>（RHEL/CentOS）。查询某人用 sudo 做了什么：<code>grep 'alice.*COMMAND' /var/log/auth.log</code>。</div>
+  </div>
+</div>
+
+<!-- ═══════════ 第六节 ═══════════ -->
+<h2 class="section-title" id="sec04-6"><span class="icon">6</span>权限排错实战</h2>
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>遇到 Permission denied 不要慌——系统性排查流程</h3><span class="tag tag-suggested">诊断</span></div>
+  <div class="card-body">
+    <h4>排查三步法</h4>
+    <figure class="merged-illustration" data-image-id="chapter04/05-permission-denied-troubleshooting.png"><img src="assets/chapter04/05-permission-denied-troubleshooting.png" alt="扩展为身份→操作→目标 rwx→父目录 x→ACL→SELinux/AppArmor 的诊断链。" loading="lazy" decoding="async" width="1672" height="941"></figure><ol>
+      <li><strong>确认"你是谁"：</strong><code>whoami</code>、<code>id</code>（查看 UID、GID 和所有附加组）</li>
+      <li><strong>检查目标文件/目录的实际权限：</strong><code>ls -la /path/to/file</code>，注意属主、属组、rwx 三组权限</li>
+      <li><strong>检查路径上每一个父目录的 x 权限：</strong><code>namei -l /path/to/file</code>（namei 自动展开路径中的每一层并显示权限）</li>
+    </ol>
+
+    <h4>经典排错场景</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="bf9a8ca4d76f8cb0b66254149d387c45c584d23735728470705f50dcf659edfa"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 场景1：shell 脚本明明有执行权限但无法运行</span>
+<span class="hljs-built_in">$ ls</span><span class="hljs-attr"> -l</span> script.sh<span class="hljs-attr">
+-rw-r--r--</span> 1 alice alice 512 Jul 31 10:00 script.sh
+<span class="hljs-built_in">$ ./script.sh</span><span class="hljs-attr">
+-bash</span>: ./script.sh: Permission denied
+
+<span class="hljs-comment"># 原因：没有执行权限。解决：</span>
+<span class="hljs-built_in">$ chmod</span> u+x script.sh
+
+<span class="hljs-comment"># 场景2：脚本有执行权限，但还是 Permission denied</span>
+<span class="hljs-built_in">$ ls</span><span class="hljs-attr"> -l</span> script.sh<span class="hljs-attr">
+-rwxr--r--</span> 1 root root 512 Jul 31 10:00 script.sh
+<span class="hljs-built_in">$ ./script.sh</span>          <span class="hljs-comment"># alice 作为其他人，只有 r-- 权限</span><span class="hljs-attr">
+-bash</span>: ./script.sh: Permission denied
+
+<span class="hljs-comment"># 原因：alice 是 other 组，只有 r，没有 x。</span>
+
+<span class="hljs-comment"># 场景3：cd 目录失败</span>
+<span class="hljs-built_in">$ cd</span> /var/log/private/<span class="hljs-attr">
+-bash</span>: <span class="hljs-built_in">cd</span>: /var/log/private/: Permission denied
+<span class="hljs-built_in">$ ls</span><span class="hljs-attr"> -ld</span> /var/log/private/
+drwxr----- 2 root adm 4096 Jul 31 10:00 /var/log/private/
+<span class="hljs-comment"># alice 既不是 root 也不在 adm 组 → 没有 x 权限 → 无法 cd</span></code></pre>
+
+    <h4>实用排查命令</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="86527aae0341662dd136392427e24d955bf01fd44f635c4fc8390665c430cde7"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># namei —— 查看路径上每一层的权限（最强大的权限排查工具）</span>
+<span class="hljs-built_in">$ namei</span><span class="hljs-attr"> -l</span> /home/alice/project/data/file.txt
+f: /home/alice/project/data/file.txt
+drwxr-xr-x root  root  /
+drwxr-xr-x root  root  home
+drwx------ alice alice alice       ← 这里！其他人没有 x 权限
+drwxr-xr-x alice alice project
+drwxr-xr-x alice alice data<span class="hljs-attr">
+-rw-r--r--</span> alice alice file.txt
+
+<span class="hljs-comment"># find —— 查找某用户的所有文件</span>
+find /home<span class="hljs-attr"> -user</span> alice<span class="hljs-attr"> -type</span> f
+
+<span class="hljs-comment"># 查找权限不安全的文件</span>
+find /<span class="hljs-attr"> -perm</span><span class="hljs-attr"> -o</span>+w<span class="hljs-attr"> -type</span> f<span class="hljs-attr"> -ls</span> 2&gt;/dev/null    <span class="hljs-comment"># 其他用户可写的文件</span>
+find /<span class="hljs-attr"> -perm</span> -4000<span class="hljs-attr"> -type</span> f<span class="hljs-attr"> -ls</span> 2&gt;/dev/null   <span class="hljs-comment"># SUID 文件</span>
+find /<span class="hljs-attr"> -perm</span> -2000<span class="hljs-attr"> -type</span> d<span class="hljs-attr"> -ls</span> 2&gt;/dev/null   <span class="hljs-comment"># SGID 目录</span></code></pre>
+
+    <div class="box box-warning"><strong>还有一个常见陷阱——SELinux / AppArmor：</strong>如果传统权限检查（rwx）全部正确但仍然 Permission denied，检查 SELinux 上下文（<code>ls -Z</code> 或 <code>getenforce</code>）。SELinux 在传统权限之上叠加了一层强制访问控制。临时禁用确认问题：<code>setenforce 0</code>（不建议长期关闭）。</div>
+  </div>
+</div>
+
+<!-- /container -->
+
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第4章</p>
+  <p style="margin-top:4px">"权限不是限制，是秩序——分权制衡是系统安全的基石"</p>
+</footer>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

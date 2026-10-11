@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>备份与恢复策略 · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fdf4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#15803d}.badge-implement{background:#f0fdf4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}.badge-clarify{background:#eff6ff;color:#2563eb}.badge-principle{background:#fef3c7;color:#b45309}.badge-apply{background:#f5f3ff;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 备份与恢复策略</span><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" title="上一章">← 上一章</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" aria-current="page" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+
+<header class="site-header">
+  <h1>备份与恢复策略</h1>
+  <p class="subtitle">数据安全的最后一道防线 —— 备份不是成本，恢复能力才是真正的资产</p>
+  <div class="meta-row editorial-meta">
+    <span>操 / 安 / 实</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：建立可恢复的备份体系，把灾难降级为麻烦</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec15-1">3-2-1备份原则</a>
+    <a href="#sec15-2">备份工具对比</a>
+    <a href="#sec15-3">rsync深度实战</a>
+    <a href="#sec15-4">数据库备份</a>
+    <a href="#sec15-5">灾难恢复验证</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第1节：3-2-1 备份原则 ═══════════ -->
+<h2 class="section-title" id="sec15-1"><span class="icon">1</span>3-2-1 备份原则</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-principle">原</span><h3>3 份数据 x 2 种介质 x 1 份异地 —— 为什么这个公式值千金</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：只有一个备份文件就安全了吗？</h4>
+    <p>假设你的服务器在阿里云华东1区，你设定每天凌晨3点在该服务器本地做一次全量备份，命名为 <code>/backup/mysql_daily.sql.gz</code>。某天下午2点华东1区的某个机房发生火灾，你的服务器和它上面的备份一起化为乌有——你失去了所有数据。</p>
+    <p>这就是 3-2-1 原则要解决的问题。<strong>备份不是存档——备份是"当灾难发生时你有能力恢复"的保障。</strong>3-2-1 原则是所有备份体系的基石：</p>
+
+    <div class="subcard-grid merged-waterfall-panel">
+      <section class="merged-subcard-section">
+        <h5>3：保存 3 份完整的数据</h5>
+        <p>1 份生产数据 + 2 份备份。两份备份在不同时间点、不同位置，提供交叉保护。如果第一份备份因静默损坏而失效，你还有第二份。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>2：使用 2 种不同的存储介质</h5>
+        <p>比如：本地磁盘 + 对象存储（S3/OSS），或本地 NAS + 异地磁带。不同介质有不同的故障模式——磁盘坏道和云存储权限误删不会同时发生。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>1：至少 1 份备份存放在异地</h5>
+        <p>"异地"意味着物理距离——至少 100 公里以上，或跨越云厂商的 Region。火灾、地震、洪水——异地备份是唯一对抗物理灾难的武器。</p>
+      </section>
+    </div>
+
+    <div class="box box-info">
+      <strong>用数学理解 3-2-1：故障概率的乘法原理</strong><br>
+      假设单个磁盘在一年内损坏的概率是 1%（p=0.01），同一时间点两份备份同时损坏的概率是 p^2 = 0.0001（万分之一）。如果两份备份在不同介质 + 不同地域，同时丢失的概率基本趋近于零。备份的本质就是用冗余对抗概率。
+    </div>
+
+    <h4>常见的三个备份误区</h4>
+    <p><strong>误区一：RAID 就是备份。</strong>RAID 保护的是磁盘物理故障。但如果有人执行了 <code>rm -rf /</code>，RAID 会忠实地在两个盘上同时删除那个目录。<strong>RAID 解决的是可用性（availability），备份解决的是恢复性（recoverability）。</strong></p>
+    <p><strong>误区二：云快照就是备份。</strong>云厂商的快照（Snapshot）不能替代完整的备份策略。快照和你的生产环境在同一个云账号下——账号被盗或被误删除，快照和 ECS 会一起消失。<strong>快照要复制到另一个账号或另一个 Region。</strong></p>
+    <p><strong>误区三：做了备份就等于安全。</strong>一个从没被恢复过的备份是薛定谔的备份——你无法确定它在需要时能否成功恢复。只有经过实际恢复演练的备份才是真正的保险。</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-clarify">清</span><h3>RTO 与 RPO —— 运维角度的两个核心指标</h3><span class="tag tag-suggested">进阶</span></div>
+  <div class="card-body">
+    <h4>问题：做备份要花多少钱？怎么回答老板？</h4>
+    <p>备份的成本应该用两个指标来量化：</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>指标</th><th>全称</th><th>含义</th><th>影响成本</th></tr></thead>
+      <tr><td><strong>RTO</strong></td><td>Recovery Time Objective</td><td>从灾难发生到服务恢复可用的<strong>最长可接受时间</strong></td><td>RTO 越短 → 需热备/双活/自动切换 → 成本指数增长</td></tr>
+      <tr><td><strong>RPO</strong></td><td>Recovery Point Objective</td><td>允许丢失的数据量（以<strong>时间长度</strong>表示）</td><td>RPO 越小 → 备份频率越高 → 存储和带宽成本越高</td></tr>
+    </table>
+    </div>
+
+    <p>举例：电商网站设定 RTO=4h、RPO=1h。如果下午 2:00 数据库崩了，你必须在下午 6:00 之前恢复服务，最多丢失下午 1:00~2:00 之间的一小时数据。要实现 RPO=1h，每小时就要做一次备份。要实现 RTO=4h，你必须有自动化恢复脚本。</p>
+
+    <p><strong>老板问"备份要多少钱"时的回答框架：</strong>给出阶梯式方案——RPO=24h 方案成本 X 元/月，RPO=1h 方案成本 Y 元/月，RPO=5min 方案成本 Z 元/月。让业务方根据自身损失承受能力来选择。数据丢失 1 天的业务损失是多少？把这个数字和 Y 比较。</p>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter15/01-321-rpo-rto.png"><img src="assets/chapter15/01-321-rpo-rto.png" alt="把副本、介质、异地边界与两项目标放在同一灾难时间线上。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第2节：备份工具对比 ═══════════ -->
+<h2 class="section-title" id="sec15-2"><span class="icon">2</span>备份工具对比</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-clarify">清</span><h3>四大备份工具的适用场景 —— rsync / tar / dd / BorgBackup</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：备份工具这么多，该用哪个？</h4>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>工具</th><th>本质</th><th>速度</th><th>空间占用</th><th>适用场景</th></tr></thead>
+      <tr><td><strong>rsync</strong></td><td>文件级增量同步（只传差异）</td><td>增量极快</td><td>快照完整 + 硬链接可去重</td><td>文件服务器、代码仓库、日志归档的日常同步</td></tr>
+      <tr><td><strong>tar</strong></td><td>完整归档（打包+压缩）</td><td>全量慢</td><td>压缩后体积小</td><td>临时备份、迁移前打快照</td></tr>
+      <tr><td><strong>dd</strong></td><td>位级镜像（逐扇区复制）</td><td>极慢</td><td>占满全盘空间</td><td>磁盘克隆、取证镜像（非日常备份用）</td></tr>
+      <tr><td><strong>BorgBackup</strong></td><td>去重+压缩+加密增量备份</td><td>增量极快</td><td>去重后空间极小</td><td>现代生产环境首选推荐方案</td></tr>
+    </table>
+    </div>
+
+    <h4>tar —— 最简单直接的归档工具</h4>
+    <p>tar (Tape ARchive) 是 Linux 上最通用的打包工具。tar 本身只做打包（把多个文件拼成一个大文件，保留目录结构和权限），配合 gzip/bzip2/xz 来做压缩。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="6d88c38e6ffc19395e2477dcfc8e06530f9d0e6d400707a236dfe7ca84f7522d"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 创建一个完整的 gzip 压缩备份</span>
+tar czf /backup/full_backup_$(<span class="hljs-built_in">date</span> +%Y%m%d).tar.gz /etc /home /var/www
+<span class="hljs-comment"># c=创建归档, z=gzip压缩, f=指定文件名</span>
+
+<span class="hljs-comment"># 列出归档内容（不解压查看）</span>
+tar tzf /backup/full_backup_20260731.tar.gz
+
+<span class="hljs-comment"># 解压到指定目录（恢复时用）</span>
+tar xzf /backup/full_backup_20260731.tar.gz<span class="hljs-attr"> -C</span> /restore/path/</code></pre>
+
+    <p><strong>tar 的缺陷：</strong>每次备份都是全量——备份 100GB 的目录需要 100GB 的存储空间（压缩后 30-50GB）。每天备份，一个月需要 1.5TB。tar 没有去重能力，同样的文件在 30 个备份中存储了 30 份。</p>
+
+    <h4>dd —— 位级磁盘镜像</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="a2431b1bf1c7ca4a4fd337476e16ccca496c32e1c07eeebec33caf206dfd5c9f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 全盘镜像（极度占用空间，只适合磁盘克隆场景）</span>
+<span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/dev/sda of=/backup/disk_image.img bs=4M status=progress
+
+<span class="hljs-comment"># 恢复镜像到磁盘</span>
+<span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/backup/disk_image.img of=/dev/sdb bs=4M status=progress</code></pre>
+
+    <div class="box box-warning">
+      <strong>不要用 dd 做日常备份</strong><br>
+      dd 复制的是每一个扇区，包括空白的、已删除但未回收的空间。500GB 硬盘即使只用了 50GB 数据，dd 镜像仍是 500GB。dd 适用场景只有：磁盘克隆、取证镜像。日常备份绝不使用 dd。
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-apply">推</span><h3>BorgBackup —— 现代备份工具的最佳选择</h3><span class="tag tag-suggested">推荐</span></div>
+  <div class="card-body">
+    <h4>有没有一个工具同时做到：增量、去重、压缩、加密、远程？</h4>
+    <p><strong>BorgBackup</strong>（项目名 Borg）和其 Go 改写版 Restic 是当前 Linux 备份领域的最优解。设计理念：把数据切分成可变长度的 chunk，用 SHA-256 哈希内容寻址，相同 chunk 只存一份（去重）。每次备份只传输新 chunk（增量）。所有 chunk 在存储前压缩和加密。支持 SSH、S3、B2 等后端。</p>
+
+    <p>场景：服务器上有 500GB 网站文件，每天变化不到 100MB。使用 Borg：第一次全量耗时 2 小时，之后每天传输 100MB 左右，耗时不到 5 分钟。其中可能只有 20MB 是真正的新 chunk，另外 80MB 是已存在但被重新排列的 chunk。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="827542a780212076f510558af06c6ae4725839d94f74ebee47d1a434b8807d3f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 安装 Borg ===</span>
+sudo <span class="hljs-built_in">apt</span> install borgbackup          <span class="hljs-comment"># Debian/Ubuntu</span>
+sudo <span class="hljs-built_in">dnf</span> install borgbackup          <span class="hljs-comment"># RHEL/CentOS/Rocky</span>
+
+<span class="hljs-comment"># === 初始化一个备份仓库 ===</span>
+borg init<span class="hljs-attr"> --encryption</span>=repokey /backup/borg-repo
+
+<span class="hljs-comment"># === 创建第一次备份 ===</span>
+borg create /backup/borg-repo::backup-$(<span class="hljs-built_in">date</span> +%Y%m%d) /etc /home /var/www
+
+<span class="hljs-comment"># === 后续增量备份（自动只处理变化部分）===</span>
+borg create /backup/borg-repo::backup-$(<span class="hljs-built_in">date</span> +%Y%m%d) /etc /home /var/www
+
+<span class="hljs-comment"># === 查看备份列表 ===</span>
+borg list /backup/borg-repo
+
+<span class="hljs-comment"># === 查看备份的详细信息 ===</span>
+borg info /backup/borg-repo::backup-20260731
+<span class="hljs-comment"># 关键指标: Original size / Compressed size / Deduplicated size</span>
+
+<span class="hljs-comment"># === 恢复某个备份 ===</span>
+<span class="hljs-built_in">mkdir</span> /restore &amp;&amp; <span class="hljs-built_in">cd</span> /restore
+borg extract /backup/borg-repo::backup-20260731
+
+<span class="hljs-comment"># === 清理旧备份 ===</span>
+borg prune<span class="hljs-attr"> --keep-daily</span>=7<span class="hljs-attr"> --keep-weekly</span>=4<span class="hljs-attr"> --keep-monthly</span>=6 /backup/borg-repo
+<span class="hljs-comment"># 保留: 最近7天 + 最近4周 + 最近6个月</span>
+
+<span class="hljs-comment"># === 远程备份 ===</span>
+borg init user@backup-server:/backup/borg-repo<span class="hljs-attr"> --encryption</span>=repokey
+borg create user@backup-server:/backup/borg-repo::backup-$(<span class="hljs-built_in">date</span> +%Y%m%d) /etc /home</code></pre>
+
+    <div class="box box-info">
+      <strong>Borg 的去重原理（变长分块 content-defined chunking）</strong><br>
+      Borg 根据内容决定切割点（用滚动哈希找特征边界）。即使在文件中间插入了一条记录，只有插入点附近的 chunk 会变化，其余不变。这种算法在日志文件和 binlog 这种"追加写"场景下效果极显著——99% 内容不变，只有尾部 chunk 需要存储。
+    </div>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter15/03-borg-chunk-dedup.png"><img src="assets/chapter15/03-borg-chunk-dedup.png" alt="展示可变长度分块、内容哈希、去重、压缩、加密、Archive 索引与恢复组合。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第3节：rsync深度实战 ═══════════ -->
+<h2 class="section-title" id="sec15-3"><span class="icon">3</span>rsync 深度实战</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>rsync —— 增量同步的王牌，运维的日常工具</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：rsync 和 scp 有什么区别？</h4>
+    <p>scp 每次传输整个文件——即使文件只有一行变化，也要整个重传。rsync 使用<strong>滚动校验和（rolling checksum）算法</strong>比较源和目标，只传输不相同的字节级增量。对 10GB 的数据库 dump 文件，如果只改变 5MB，rsync 只传 5MB，scp 传 10GB。</p>
+    <p><strong>rsync 的另一个强大特性：保留元数据。</strong>文件权限、属主、时间戳、符号链接用 scp 拷过去会丢失。rsync 的 <code>-a</code>（archive）选项会保留所有元数据。</p>
+
+    <h4>rsync 常用参数速查</h4>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>含义</th><th>何时使用</th></tr></thead>
+      <tr><td><code>-a</code></td><td>归档模式，保留权限/时间/所有者</td><td>备份时必用</td></tr>
+      <tr><td><code>-v</code></td><td>详细输出</td><td>首次测试时用</td></tr>
+      <tr><td><code>-z</code></td><td>传输时压缩数据</td><td>慢速网络</td></tr>
+      <tr><td><code>-P</code></td><td>断点续传 + 进度条</td><td>传输大文件必用</td></tr>
+      <tr><td><code>-n</code></td><td>dry-run 只演示</td><td>执行危险操作前先验证</td></tr>
+      <tr><td><code>--delete</code></td><td>删除目标端多余文件</td><td>需完全镜像时慎用</td></tr>
+      <tr><td><code>--exclude</code></td><td>排除指定模式的文件</td><td>跳过日志/缓存文件</td></tr>
+      <tr><td><code>--link-dest</code></td><td>硬链接增量去重</td><td>定时快照式备份核心</td></tr>
+      <tr><td><code>--bwlimit</code></td><td>限制带宽 (KB/s)</td><td>生产时间同步</td></tr>
+    </table>
+    </div>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="b837a90854b894a53956ccf2efb7b3d4960be5d626e0495bb87b225f2f3139ba"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. 本地备份：把 /data 同步到 /backup/data</span>
+rsync<span class="hljs-attr"> -avzP</span> /data/ /backup/data/
+<span class="hljs-comment"># 注意源路径结尾的 / —— 加 / 表示同步目录内容，不加 / 表示同步目录本身</span>
+
+<span class="hljs-comment"># 2. 远程备份：本机 /data 同步到远程</span>
+rsync<span class="hljs-attr"> -avzP</span> /data/ user@backup-server:/backup/data/
+
+<span class="hljs-comment"># 3. 从远程拉取</span>
+rsync<span class="hljs-attr"> -avzP</span> user@server:/data/ /local/backup/
+
+<span class="hljs-comment"># 4. 完全镜像（删除目标多出的文件）</span>
+rsync<span class="hljs-attr"> -avzP</span><span class="hljs-attr"> --delete</span> /source/ user@host:/dest/
+<span class="hljs-comment"># 执行前务必 dry-run 验证：</span>
+rsync<span class="hljs-attr"> -avzPn</span><span class="hljs-attr"> --delete</span> /source/ user@host:/dest/</code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">运</span><h3>rsync + 硬链接增量 —— 零空间做全量快照</h3><span class="tag tag-required">进阶</span></div>
+  <div class="card-body">
+    <h4>问题：如何每天做全量快照，但磁盘只增长 100MB？</h4>
+    <p>答案就是 <code>--link-dest</code> 配合硬链接。前一天全量快照在 <code>/backup/20260730/</code> 下，今天执行 rsync 时用 <code>--link-dest=../20260730</code> 指定"如果源文件和 20260730 里的一样，不复制数据——创建一个硬链接指向它"。硬链接不消耗额外空间，你看到的 30 天快照各自独立，但相同文件的磁盘数据只有一份。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="be95eae8b58907a2d2c3e5d5488275e95749f7e820d266e528c40c56331a3ff3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># 每日增量快照脚本：每次生成完整目录树快照，空间零浪费</span>
+<span class="hljs-built_in">set</span><span class="hljs-attr"> -euo</span> pipefail
+
+BACKUP_ROOT=<span class="hljs-string">"/backup/snapshots"</span>
+SOURCE=<span class="hljs-string">"/data"</span>
+DATE=$(<span class="hljs-built_in">date</span> +%Y%m%d)
+TODAY=<span class="hljs-string">"<span class="hljs-variable">${BACKUP_ROOT}</span>/<span class="hljs-variable">${DATE}</span>"</span>
+
+LATEST=$(<span class="hljs-built_in">ls</span> -1 <span class="hljs-string">"<span class="hljs-variable">${BACKUP_ROOT}</span>"</span> | grep <span class="hljs-string">'^[0-9]\{8\}$'</span> | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -n</span> | <span class="hljs-built_in">tail</span> -1)
+
+<span class="hljs-keyword">if</span> [[<span class="hljs-attr"> -n</span> <span class="hljs-string">"<span class="hljs-variable">${LATEST}</span>"</span> ]]; <span class="hljs-keyword">then</span>
+    LINK_OPTION=<span class="hljs-string">"--link-dest=<span class="hljs-variable">${BACKUP_ROOT}</span>/<span class="hljs-variable">${LATEST}</span>"</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"基准快照: <span class="hljs-variable">${BACKUP_ROOT}</span>/<span class="hljs-variable">${LATEST}</span>"</span>
+<span class="hljs-keyword">else</span>
+    LINK_OPTION=<span class="hljs-string">""</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"首次备份，执行完整复制"</span>
+<span class="hljs-keyword">fi</span>
+
+<span class="hljs-built_in">mkdir</span><span class="hljs-attr"> -p</span> <span class="hljs-string">"<span class="hljs-variable">${TODAY}</span>"</span>
+
+rsync<span class="hljs-attr"> -avz</span><span class="hljs-attr"> --delete</span><span class="hljs-attr"> --exclude</span>=<span class="hljs-string">".cache"</span><span class="hljs-attr"> --exclude</span>=<span class="hljs-string">"*.log"</span> \
+    <span class="hljs-variable">${LINK_OPTION}</span> <span class="hljs-string">"<span class="hljs-variable">${SOURCE}</span>/"</span> <span class="hljs-string">"<span class="hljs-variable">${TODAY}</span>/"</span>
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"快照完成: <span class="hljs-variable">${TODAY}</span>"</span>
+
+<span class="hljs-comment"># 验证硬链接效果</span>
+<span class="hljs-built_in">du</span><span class="hljs-attr"> -sh</span> <span class="hljs-variable">${BACKUP_ROOT}</span>/2*
+<span class="hljs-comment"># 输出: 42G (第一天), 28K (第二天), 120M (第三天)</span>
+<span class="hljs-comment"># 三个目录总共只占用约 42.2G —— du 统计的是逻辑大小非物理</span></code></pre>
+
+    <div class="box box-info">
+      <strong>硬链接的陷阱</strong><br>
+      硬链接不能跨文件系统——--link-dest 指向的目录和目标必须在同一个 mount point。用 <code>df -h /backup/snapshots</code> 查看实际文件系统使用量。
+    </div>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter15/02-rsync-hardlink-snapshots.png"><img src="assets/chapter15/02-rsync-hardlink-snapshots.png" alt="解释未变化文件共享 inode、变化文件新写数据块和旧快照仍可浏览。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第4节：数据库备份 ═══════════ -->
+<h2 class="section-title" id="sec15-4"><span class="icon">4</span>数据库备份</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>为什么不能 rsync 数据库文件 —— 一致性问题</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：rsync 那么强，直接把 /var/lib/mysql/ 同步到备份服务器？</h4>
+    <p><strong>绝对不行。</strong>运行中的 InnoDB 数据文件处于持续写入状态。rsync 读取这些文件时没有锁机制——它可能读到事务写到一半的不一致状态。恢复后 InnoDB 检测到 LSN 不匹配，最好的情况是丢失最近事务，最坏是数据文件无法打开。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="a60ed54db444eb0632d29d650dbc48deb574599ef8e140379fbf21ee84781082"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 方法1：mysqldump 逻辑备份（中小型数据库）===</span>
+
+<span class="hljs-comment"># 单个数据库备份</span>
+mysqldump<span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span> mydatabase | gzip &gt; /backup/mydb_$(<span class="hljs-built_in">date</span> +%Y%m%d).sql.gz
+
+<span class="hljs-comment"># 全部数据库备份</span>
+mysqldump<span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span><span class="hljs-attr"> --all-databases</span> | gzip &gt; /backup/all_db_$(<span class="hljs-built_in">date</span> +%Y%m%d).sql.gz
+
+<span class="hljs-comment"># 生产级备份（完整选项）</span>
+mysqldump<span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span> \
+   <span class="hljs-attr"> --single-transaction</span> \
+   <span class="hljs-attr"> --routines</span><span class="hljs-attr"> --triggers</span><span class="hljs-attr"> --events</span> \
+   <span class="hljs-attr"> --all-databases</span> \
+    | gzip &gt; /backup/full_dump_$(<span class="hljs-built_in">date</span> +%Y%m%d_%H%M).sql.gz
+<span class="hljs-comment"># --single-transaction: 启动事务读到 InnoDB 一致快照，不锁表</span>
+
+<span class="hljs-comment"># === 方法2：Percona XtraBackup 物理热备（大型数据库）===</span>
+sudo <span class="hljs-built_in">apt</span> install percona-xtrabackup-84
+sudo xtrabackup<span class="hljs-attr"> --backup</span><span class="hljs-attr"> --target-dir</span>=/backup/mysql_hot_$(<span class="hljs-built_in">date</span> +%Y%m%d)<span class="hljs-attr"> --user</span>=root<span class="hljs-attr"> --password</span>=xxx
+
+<span class="hljs-comment"># 准备（恢复前必须执行——回放 redo log）</span>
+sudo xtrabackup<span class="hljs-attr"> --prepare</span><span class="hljs-attr"> --target-dir</span>=/backup/mysql_hot_20260731
+
+<span class="hljs-comment"># 恢复</span>
+sudo <span class="hljs-built_in">systemctl</span> stop <span class="hljs-built_in">mysql</span>
+sudo <span class="hljs-built_in">rm</span><span class="hljs-attr"> -rf</span> /var/lib/mysql/*
+sudo xtrabackup<span class="hljs-attr"> --copy-back</span><span class="hljs-attr"> --target-dir</span>=/backup/mysql_hot_20260731
+sudo <span class="hljs-built_in">chown</span><span class="hljs-attr"> -R</span> <span class="hljs-built_in">mysql</span>:<span class="hljs-built_in">mysql</span> /var/lib/mysql
+sudo <span class="hljs-built_in">systemctl</span> start <span class="hljs-built_in">mysql</span>
+
+<span class="hljs-comment"># === 恢复 mysqldump 备份 ===</span>
+<span class="hljs-built_in">mysql</span><span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span> mydatabase &lt; /backup/mydb_20260731.sql
+<span class="hljs-comment"># 或先解压:</span>
+gunzip<span class="hljs-attr"> -c</span> /backup/mydb_20260731.sql.gz | <span class="hljs-built_in">mysql</span><span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span> mydatabase</code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-checklist">查</span><h3>数据库备份最佳实践清单</h3><span class="tag tag-suggested">清单</span></div>
+  <div class="card-body">
+    <h4>数据库备份 ≠ 文件备份 —— 四个关键差异</h4>
+
+    <ol>
+      <li><strong>不备份数据库的原始数据文件。</strong>MySQL 的 <code>/var/lib/mysql/</code>、PostgreSQL 的 <code>/var/lib/postgresql/</code>、MongoDB 的 <code>/var/lib/mongodb/</code>——都不要用 rsync/tar 直接对运行中的实例复制。</li>
+      <li><strong>备份前检查数据库是否在线。</strong>如果数据库没启动时执行 mysqldump，它会连接失败，但脚本如果没有检查退出码，可能创建一个内容为"Error: mysql not found"的假备份。</li>
+      <li><strong>备份文件应立即验证。</strong>3KB 的 .sql.gz 不可能是完整的。备份后检查文件大小并执行 <code>gunzip -t</code> 验证压缩完整性。</li>
+      <li><strong>binlog 持续备份（Point-in-Time Recovery）。</strong>mysqldump 的 --single-transaction 只保证备份开始瞬间的一致性。备份到下一次备份之间的变化只有 binlog 记录了。开启 log_bin 并定时备份 binlog。</li>
+    </ol>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="7ee34659a638bfda4c1005312319fc8b5ab596720160c9a93fa5589a3b7d0902"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 验证备份文件完整性</span>
+gunzip<span class="hljs-attr"> -t</span> /backup/mydb_20260731.sql.gz
+
+<span class="hljs-comment"># 检查备份文件大小（至少 &gt; 1MB）</span>
+BACKUP_SIZE=$(<span class="hljs-built_in">stat</span><span class="hljs-attr"> -c</span>%s /backup/mydb_20260731.sql.gz)
+<span class="hljs-keyword">if</span> [ <span class="hljs-variable">$BACKUP_SIZE</span><span class="hljs-attr"> -lt</span> 1024000 ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"ERROR: 备份文件异常小: <span class="hljs-variable">${BACKUP_SIZE}</span> bytes"</span>
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"备份验证通过: <span class="hljs-variable">${BACKUP_SIZE}</span> bytes"</span></code></pre>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter15/04-database-pitr.png"><img src="assets/chapter15/04-database-pitr.png" alt="对照错误的在线文件复制、正确的一致性基线和日志时间点恢复。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第5节：灾难恢复验证 ═══════════ -->
+<h2 class="section-title" id="sec15-5"><span class="icon">5</span>灾难恢复验证</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-security">安</span><h3>如果你的备份从未被恢复过，它就不存在 —— 恢复演练方法论</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：备份脚本运行了三年从没报错，恢复时发现所有备份文件都是 0 字节</h4>
+    <p>这不是虚构。很多公司的备份任务在 crontab 环境下某个环境变量缺失，导致 mysqldump 连接数据库前就失败，然后把错误信息写入了备份文件。<strong>备份脚本的"成功运行"完全不等于产生了有效的备份。</strong></p>
+
+    <h4>恢复演练标准流程（每季度一次）</h4>
+
+    <div class="subcard-grid merged-waterfall-panel">
+      <section class="merged-subcard-section">
+        <h5>第 1 步：准备演练环境</h5>
+        <p>使用云上按需创建的临时实例。环境应接近生产——相同 OS 版本、数据库版本、中间件版本。绝不在生产服务器上做恢复演练。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>第 2 步：传输备份文件</h5>
+        <p>从备份存储拉取最近的备份。记录传输耗时作为 RTO 基线的一部分。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>第 3 步：执行恢复</h5>
+        <p>严格按照恢复手册操作数据库还原、文件恢复、服务启动。全程记录每一步耗时，标记任何偏差或遇到的问题。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>第 4 步：验证完整性</h5>
+        <p>数据库：运行校验查询，检查关键表的行数和校验和。文件：对比恢复文件数量和大小。应用：访问关键页面和 API 端点。</p>
+      </section>
+      <section class="merged-subcard-section">
+        <h5>第 5 步：记录与复盘</h5>
+        <p>记录总恢复时间，与 RTO 对比。找出瓶颈（网络传输慢？解压慢？数据库启动慢？）。更新恢复手册，修正在实战中发现的任何遗漏。</p>
+      </section>
+    </div>
+
+    <h4>恢复演练的自动化脚本框架</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="47da1e735406ea9d136a82e6e0f0d975928dea7913a1d1adac36322580fe4875"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># restore_drill.sh: 自动化恢复演练脚本</span>
+<span class="hljs-built_in">set</span><span class="hljs-attr"> -euo</span> pipefail
+
+LOG_FILE=<span class="hljs-string">"/var/log/restore_drill_<span class="hljs-subst">$(date +%Y%m%d_%H%M)</span>.log"</span>
+RESTORE_DIR=<span class="hljs-string">"/tmp/restore_drill"</span>
+BACKUP_SERVER=<span class="hljs-string">"backup-server"</span>
+BACKUP_PATH=<span class="hljs-string">"/backup/latest"</span>
+
+<span class="hljs-function"><span class="hljs-title">log</span></span>() { <span class="hljs-built_in">echo</span> <span class="hljs-string">"[<span class="hljs-subst">$(date '+%H:%M:%S')</span>] $*"</span> | <span class="hljs-built_in">tee</span><span class="hljs-attr"> -a</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_FILE</span>"</span>; }
+<span class="hljs-function"><span class="hljs-title">fatal</span></span>() { <span class="hljs-built_in">log</span> <span class="hljs-string">"FATAL: $*"</span>; <span class="hljs-built_in">exit</span> 1; }
+
+START_TIME=$(<span class="hljs-built_in">date</span> +%s)
+
+<span class="hljs-comment"># Step 1: 准备环境</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 1: 准备演练环境"</span>
+<span class="hljs-built_in">mkdir</span><span class="hljs-attr"> -p</span> <span class="hljs-string">"<span class="hljs-variable">$RESTORE_DIR</span>"</span>
+
+<span class="hljs-comment"># Step 2: 拉取备份</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 2: 拉取备份文件"</span>
+<span class="hljs-built_in">scp</span> <span class="hljs-string">"<span class="hljs-variable">${BACKUP_SERVER}</span>:<span class="hljs-variable">${BACKUP_PATH}</span>/*"</span> <span class="hljs-string">"<span class="hljs-variable">$RESTORE_DIR</span>/"</span> || fatal <span class="hljs-string">"备份拉取失败"</span>
+
+<span class="hljs-comment"># Step 3: 数据库恢复</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 3: 恢复数据库"</span>
+sudo <span class="hljs-built_in">systemctl</span> stop <span class="hljs-built_in">mysql</span>
+sudo <span class="hljs-built_in">rm</span><span class="hljs-attr"> -rf</span> /var/lib/mysql/*
+<span class="hljs-comment"># 解压并导入</span>
+gunzip<span class="hljs-attr"> -c</span> <span class="hljs-string">"<span class="hljs-variable">$RESTORE_DIR</span>/mydb.sql.gz"</span> | <span class="hljs-built_in">mysql</span><span class="hljs-attr"> -u</span> root || fatal <span class="hljs-string">"数据库恢复失败"</span>
+sudo <span class="hljs-built_in">systemctl</span> start <span class="hljs-built_in">mysql</span>
+
+<span class="hljs-comment"># Step 4: 验证</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 4: 验证数据完整性"</span>
+ROW_COUNT=$(<span class="hljs-built_in">mysql</span><span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -N</span><span class="hljs-attr"> -e</span> <span class="hljs-string">"SELECT COUNT(*) FROM mydb.orders"</span>)
+<span class="hljs-built_in">log</span> <span class="hljs-string">"orders 表行数: <span class="hljs-variable">${ROW_COUNT}</span>"</span>
+<span class="hljs-keyword">if</span> [ <span class="hljs-string">"<span class="hljs-variable">$ROW_COUNT</span>"</span><span class="hljs-attr"> -lt</span> 1000 ]; <span class="hljs-keyword">then</span>
+    fatal <span class="hljs-string">"数据行数异常: <span class="hljs-variable">${ROW_COUNT}</span>"</span>
+<span class="hljs-keyword">fi</span>
+
+<span class="hljs-comment"># Step 5: 统计</span>
+END_TIME=$(<span class="hljs-built_in">date</span> +%s)
+ELAPSED=$(( (END_TIME - START_TIME) / <span class="hljs-number">60</span> ))
+<span class="hljs-built_in">log</span> <span class="hljs-string">"恢复演练完成，总耗时: <span class="hljs-variable">${ELAPSED}</span> 分钟"</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"RTO 目标: 240分钟，实际: <span class="hljs-variable">${ELAPSED}</span>分钟，状态: <span class="hljs-subst">$([ $ELAPSED -le 240 ] &amp;&amp; echo PASS || echo FAIL)</span>"</span></code></pre>
+
+    <p class="out-label">▶ 参考执行输出</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="6971728743148d0345aad6d7b7884b22fe0553c8829c9f5c7e9f9bea3403b75e"><code data-static-highlight="11.9.0" class="editorial-code language-plaintext nohighlight" data-highlighted="yes">[03:00:01] Phase 1: 准备演练环境
+[03:00:01] Phase 2: 拉取备份文件
+[03:15:42] Phase 3: 恢复数据库
+[03:28:15] Phase 4: 验证数据完整性
+[03:28:16] orders 表行数: 152340
+[03:28:16] 恢复演练完成，总耗时: 28 分钟
+[03:28:16] RTO 目标: 240分钟，实际: 28分钟，状态: PASS</code></pre>
+
+    <div class="box box-warning">
+      <strong>恢复演练的三个铁律</strong><br>
+      1. <strong>演练环境必须和生产完全隔离。</strong>曾经有人把演练还原覆盖了生产数据库——不要犯这个错误。<br>
+      2. <strong>每季度至少一次。</strong>频率低于季度，备份环境的变化将超过恢复脚本的适应能力。<br>
+      3. <strong>演练结果要存档。</strong>如果出现审计或合规检查，这些记录证明你的备份策略不只是纸上谈兵。对 PCI-DSS、SOC2、ISO 27001 等合规框架，定期恢复演练是不可缺少的审计项。
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">总</span><h3>备份体系的自动化架构 —— 把这一切串起来</h3><span class="tag tag-suggested">总结</span></div>
+  <div class="card-body">
+    <h4>完整的每日备份流程</h4>
+    <p>把本章所有知识点串成一个完整的 cron 驱动备份体系：</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="425d47b292d8e59adeca7d517f65329f0d70cbf82eb5bac4e8864cefe41c9dab"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># /usr/local/bin/daily_backup.sh —— 每日自动备份主控脚本</span>
+<span class="hljs-built_in">set</span><span class="hljs-attr"> -euo</span> pipefail
+
+BACKUP_BASE=<span class="hljs-string">"/backup"</span>
+REMOTE=<span class="hljs-string">"backup@offsite-server:/backup/<span class="hljs-subst">$(hostname)</span>"</span>
+LOG=<span class="hljs-string">"/var/log/backup/<span class="hljs-subst">$(date +%Y%m%d)</span>.log"</span>
+LOCK=<span class="hljs-string">"/tmp/daily_backup.lock"</span>
+
+<span class="hljs-function"><span class="hljs-title">log</span></span>() { <span class="hljs-built_in">echo</span> <span class="hljs-string">"[<span class="hljs-subst">$(date '+%Y-%m-%d %H:%M:%S')</span>] $*"</span> | <span class="hljs-built_in">tee</span><span class="hljs-attr"> -a</span> <span class="hljs-string">"<span class="hljs-variable">$LOG</span>"</span>; }
+<span class="hljs-function"><span class="hljs-title">cleanup</span></span>() { <span class="hljs-built_in">rm</span><span class="hljs-attr"> -f</span> <span class="hljs-string">"<span class="hljs-variable">$LOCK</span>"</span>; }
+<span class="hljs-built_in">trap</span> cleanup EXIT
+
+<span class="hljs-comment"># 防止并发运行</span>
+<span class="hljs-keyword">if</span> [<span class="hljs-attr"> -f</span> <span class="hljs-string">"<span class="hljs-variable">$LOCK</span>"</span> ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">log</span> <span class="hljs-string">"FATAL: 备份任务已在运行中"</span>
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+<span class="hljs-built_in">touch</span> <span class="hljs-string">"<span class="hljs-variable">$LOCK</span>"</span>
+
+<span class="hljs-built_in">log</span> <span class="hljs-string">"===== 每日备份开始 ====="</span>
+
+<span class="hljs-comment"># 1. 数据库备份</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 1: 数据库备份"</span>
+mysqldump<span class="hljs-attr"> -u</span> backup<span class="hljs-attr"> --single-transaction</span><span class="hljs-attr"> --all-databases</span> \
+    | gzip &gt; <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/db/<span class="hljs-subst">$(hostname)</span>_db_<span class="hljs-subst">$(date +%Y%m%d)</span>.sql.gz"</span>
+gunzip<span class="hljs-attr"> -t</span> <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/db/<span class="hljs-subst">$(hostname)</span>_db_<span class="hljs-subst">$(date +%Y%m%d)</span>.sql.gz"</span>
+
+<span class="hljs-comment"># 2. 文件增量快照</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 2: 文件增量快照"</span>
+LATEST=$(<span class="hljs-built_in">ls</span> -1 <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/"</span> | grep <span class="hljs-string">'^[0-9]\{8\}$'</span> | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -n</span> | <span class="hljs-built_in">tail</span> -1)
+LINK_DEST=<span class="hljs-string">""</span>
+[<span class="hljs-attr"> -n</span> <span class="hljs-string">"<span class="hljs-variable">$LATEST</span>"</span> ] &amp;&amp; LINK_DEST=<span class="hljs-string">"--link-dest=../<span class="hljs-variable">${LATEST}</span>"</span>
+<span class="hljs-built_in">mkdir</span><span class="hljs-attr"> -p</span> <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/<span class="hljs-subst">$(date +%Y%m%d)</span>"</span>
+rsync<span class="hljs-attr"> -az</span><span class="hljs-attr"> --delete</span> <span class="hljs-variable">$LINK_DEST</span> /etc/ /home/ /var/www/ \
+    <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/<span class="hljs-subst">$(date +%Y%m%d)</span>/"</span>
+
+<span class="hljs-comment"># 3. 远程同步（异地备份）</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 3: 远程同步"</span>
+rsync<span class="hljs-attr"> -az</span><span class="hljs-attr"> --bwlimit</span>=5000 <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/db/"</span> <span class="hljs-string">"<span class="hljs-variable">${REMOTE}</span>/db/"</span>
+rsync<span class="hljs-attr"> -az</span><span class="hljs-attr"> --bwlimit</span>=5000 <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/"</span> <span class="hljs-string">"<span class="hljs-variable">${REMOTE}</span>/files/"</span>
+
+<span class="hljs-comment"># 4. 清理旧备份</span>
+<span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 4: 清理"</span>
+find <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/db/"</span><span class="hljs-attr"> -name</span> <span class="hljs-string">"*.sql.gz"</span><span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -delete</span>
+find <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/"</span><span class="hljs-attr"> -maxdepth</span> 1<span class="hljs-attr"> -type</span> d<span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -exec</span> <span class="hljs-built_in">rm</span><span class="hljs-attr"> -rf</span> {} \;
+
+<span class="hljs-built_in">log</span> <span class="hljs-string">"===== 每日备份完成 ====="</span></code></pre>
+
+    <p>把这个脚本加入 <code>crontab -e</code>：</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="f355843eca273c5f7a5f858bcdf5fdcc2e0e304787e1d1c670d4bc356a6b44f1"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 每天凌晨 3 点执行完全备份</span>
+0 3 * * * /usr/local/bin/daily_backup.sh</code></pre>
+  </div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter15/05-backup-restore-drill-loop.png"><img src="assets/chapter15/05-backup-restore-drill-loop.png" alt="连接每日备份、异地校验、隔离恢复演练、实测 RTO/RPO 和 runbook 改进。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
+
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第15章</p>
+  <p style="margin-top:4px">备份与恢复策略 —— "备份是成本，恢复能力才是真正的资产"</p>
+</footer>
+
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body>
+</html>

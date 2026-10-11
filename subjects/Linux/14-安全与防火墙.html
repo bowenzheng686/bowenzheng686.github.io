@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>安全与防火墙 · Linux系统</title>
+<style>
+:root{--bg:#f5f7fa;--card-bg:#fff;--primary:#16A34A;--primary-light:#dcfce7;--accent:#e53e3e;--success:#16A34A;--success-light:#f0fdf4;--warning:#c05621;--warning-light:#fffaf0;--text:#2d3748;--text-secondary:#4a5568;--text-muted:#718096;--border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow:0 4px 6px rgba(0,0,0,.07);--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+.site-header{background:linear-gradient(135deg,#14532d,#16A34A,#4ade80);color:#fff;padding:48px 24px 40px;text-align:center}
+.site-header h1{font-size:2.2rem;font-weight:800;margin-bottom:8px}.site-header .subtitle{font-size:1rem;opacity:.85}
+.site-header .meta-row{margin-top:16px;font-size:.85rem;opacity:.7;display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.container{max-width:1120px;margin:0 auto;padding:32px 20px}.toc{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-bottom:36px}
+.toc h2{font-size:1.15rem;color:var(--primary);margin-bottom:16px}.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px}
+.toc-grid a{display:block;padding:6px 10px;color:var(--text-secondary);text-decoration:none;border-radius:6px;font-size:.9rem}.toc-grid a:hover{background:var(--primary-light);color:var(--primary)}
+.section-title{font-size:1.5rem;font-weight:700;color:#14532d;margin:48px 0 20px;padding-bottom:10px;border-bottom:3px solid var(--primary);display:flex;align-items:center;gap:10px}
+.section-title .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:24px;overflow:hidden}.card:hover{box-shadow:var(--shadow)}
+.card-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-header .badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.85rem;flex-shrink:0}
+.badge-concept{background:#dcfce7;color:#15803d}.badge-implement{background:#f0fdf4;color:#16A34A}.badge-security{background:#fff5f5;color:#e53e3e}.badge-operate{background:#fffaf0;color:#c05621}.badge-checklist{background:#ecfdf5;color:#0e7490}.badge-clarify{background:#eff6ff;color:#2563eb}.badge-principle{background:#fef3c7;color:#b45309}.badge-apply{background:#f5f3ff;color:#0e7490}
+.card-header h3{font-size:1.05rem;font-weight:700;color:var(--text)}.card-header .tag{margin-left:auto;font-size:.75rem;padding:2px 10px;border-radius:20px;font-weight:500}
+.tag-required{background:#fed7d7;color:#9b2c2c}.tag-suggested{background:#fefcbf;color:#975a16}
+.card-body{padding:20px 24px}.card-body h4{font-size:.95rem;font-weight:700;color:var(--text);margin:20px 0 10px}.card-body h4:first-child{margin-top:0}
+.card-body p{margin-bottom:14px;color:var(--text-secondary);line-height:1.9}
+.card-body ul,.card-body ol{padding-left:22px;margin-bottom:14px;color:var(--text-secondary);line-height:1.9}.card-body li{margin-bottom:6px}
+.table-wrap{overflow-x:auto;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:.88rem}
+thead th{background:#f7fafc;color:var(--text);font-weight:700;padding:10px 12px;border:1px solid var(--border);text-align:left}
+tbody td{padding:8px 12px;border:1px solid var(--border);color:var(--text-secondary)}tbody tr:nth-child(even){background:#fafbfc}
+.box{border-radius:var(--radius-sm);padding:14px 18px;margin:14px 0;font-size:.9rem;border-left:4px solid;line-height:1.8}
+.box-info{background:#dcfce7;border-color:#16A34A;color:#14532d}.box-warning{background:#fffaf0;border-color:#dd6b20;color:#7b341e}.box-danger{background:#fff5f5;border-color:#e53e3e;color:#742a2a}
+.box strong{margin-bottom:4px}
+code{background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:.85em;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace;color:#2d3748}
+pre{background:#1e293b;color:#e2e8f0;padding:16px 20px;border-radius:var(--radius-sm);overflow-x:auto;font-size:.82rem;line-height:1.6;margin:8px 0 14px 0;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace}
+p.out-label{font-size:.78rem;color:#16A34A;font-weight:600;margin:12px 0 0 0;padding:4px 0}p.err-label{font-size:.78rem;color:#e53e3e;font-weight:600;margin:12px 0 0 0;padding:4px 0}
+.subcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.subcard{background:#f7fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}.subcard h5{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.subcard p,.subcard li{font-size:.85rem;color:var(--text-secondary)}
+.gloss-inline{margin-top:18px;padding:10px 14px;background:#f7fafc;border-radius:8px;border-left:3px solid #a0aec0;font-size:.78rem;line-height:1.6;color:var(--text-muted)}
+.gloss-inline .gi{display:inline-block;margin-right:12px;white-space:nowrap}.gloss-inline .gk{font-weight:700;color:var(--primary)}
+.site-footer{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:768px){.site-header h1{font-size:1.5rem}.container{padding:20px 12px}.card-body{padding:16px}.toc-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+
+
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 安全与防火墙</span><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" title="上一章">← 上一章</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" aria-current="page" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+
+<header class="site-header">
+  <h1>安全与防火墙</h1>
+  <p class="subtitle">加固 Linux —— 从 SSH 硬化的第一道防线到 SELinux 的纵深防御</p>
+  <div class="meta-row editorial-meta">
+    <span>安 / 操 / 实</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：从默认安装到生产级安全，每一步都可执行</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec14-1">安全加固清单</a>
+    <a href="#sec14-2">iptables基础</a>
+    <a href="#sec14-3">ufw简化防火墙</a>
+    <a href="#sec14-4">Fail2ban防爆破</a>
+    <a href="#sec14-5">SELinux/AppArmor</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第1节：安全加固清单 ═══════════ -->
+<h2 class="section-title" id="sec14-1"><span class="icon">1</span>安全加固清单</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-security">安</span><h3>一台刚装的 Ubuntu Server 距离"安全"还有多远 —— 10 步加固清单</h3><span class="tag tag-required">必修</span></div>
+  <div class="card-body">
+    <h4>问题：默认安装的 Linux 安全吗？</h4>
+    <p>默认安装的 Linux 并不"不安全"，但它是<strong>面向开发者便利性优化</strong>的，不是面向"暴露在公网的生产环境"优化的。默认配置下 root 账户有密码就可以直接 SSH 登录、SSH 允许密码认证、没有自动安全更新——这些在本地虚拟机里无所谓，放到公网就是致命的攻击面。</p>
+
+    <p>下面十条是<strong>上公网的 Linux 必须执行的最低安全措施</strong>。这不是可选的"最佳实践"，而是"不做就是在赌运气"。</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>编号</th><th>加固项</th><th>配置位置</th><th>目的</th></tr></thead>
+      <tbody><tr><td><strong>1</strong></td><td>禁用 root 直接 SSH 登录</td><td><code>/etc/ssh/sshd_config: PermitRootLogin no</code></td><td>防止暴力破解 root 密码。你只用普通用户登录，需要时 sudo</td></tr>
+      <tr><td><strong>2</strong></td><td>启用 SSH 公钥认证，禁止密码登录</td><td><code>/etc/ssh/sshd_config: PasswordAuthentication no</code> + <code>PubkeyAuthentication yes</code></td><td>密码可以猜、可以撞库。4096 位 RSA 密钥不可暴力破解</td></tr>
+      <tr><td><strong>3</strong></td><td>修改 SSH 默认端口 (22 → 高位端口)</td><td><code>/etc/ssh/sshd_config: Port 2222</code></td><td>不是真正的安全措施，但能过滤掉 99% 的自动扫描脚本</td></tr>
+      <tr><td><strong>4</strong></td><td>最小化安装原则</td><td>不安装不需要的包，用 <code>--no-install-recommends</code></td><td>减少攻击面。每个安装的包都是潜在的漏洞入口</td></tr>
+      <tr><td><strong>5</strong></td><td>启用自动安全更新</td><td><code>apt install unattended-upgrades</code> + 配置</td><td>已知漏洞的补丁安装不应依赖人工记忆</td></tr>
+      <tr><td><strong>6</strong></td><td>配置防火墙 (iptables/ufw)，默认拒绝入站</td><td><code>ufw default deny incoming</code></td><td>只开放你明确需要的端口，其余全部拒绝</td></tr>
+      <tr><td><strong>7</strong></td><td>安装 Fail2ban</td><td><code>apt install fail2ban</code></td><td>检测暴力破解 → 自动封禁攻击 IP</td></tr>
+      <tr><td><strong>8</strong></td><td>禁止 ICMP redirect / IP forwarding</td><td><code>/etc/sysctl.conf</code> 中设置 net.ipv4 内核参数</td><td>防止中间人攻击和路由劫持</td></tr>
+      <tr><td><strong>9</strong></td><td>定期审计已安装包与监听端口</td><td><code>ss -tlnp</code> + <code>dpkg -l</code> 审计</td><td>确认没有意外开启的服务在监听公网端口</td></tr>
+      <tr><td><strong>10</strong></td><td>日志集中与监控告警</td><td>rsyslog → 远程日志服务器 或 journald → ELK</td><td>黑客第一件事是删日志。日志不在本地，他就删不掉</td></tr>
+    </tbody></table>
+    </div>
+
+    <h4>第 1~3 条：SSH 加固的完整操作</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="c387c051f815a02ac25057a99683acf96521b7c8a21df86e0a7580a43aa5a2ce"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 第一步：在修改 SSH 配置之前，先确认你可以用密钥登录（重要！）===</span>
+<span class="hljs-comment"># 生成 SSH 密钥对（在本地工作机上执行，不是在服务器上）</span>
+<span class="hljs-built_in">ssh</span>-keygen<span class="hljs-attr"> -t</span> ed25519<span class="hljs-attr"> -C</span> <span class="hljs-string">"your_email@example.com"</span>
+
+<span class="hljs-comment"># 把公钥复制到服务器</span>
+<span class="hljs-built_in">ssh</span>-copy-id<span class="hljs-attr"> -i</span> ~/.ssh/id_ed25519.pub user@your-server
+
+<span class="hljs-comment"># 验证：用密钥登录（不应要求输入密码）</span>
+<span class="hljs-built_in">ssh</span> user@your-server
+
+<span class="hljs-comment"># === 第二步：修改 SSH 配置 ===</span>
+sudo <span class="hljs-built_in">cp</span> /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(<span class="hljs-built_in">date</span> +%Y%m%d)
+sudo vim /etc/ssh/sshd_config
+
+<span class="hljs-comment"># 修改以下配置项：</span>
+<span class="hljs-comment"># PermitRootLogin no          ← 禁用 root 直接登录</span>
+<span class="hljs-comment"># PubkeyAuthentication yes    ← 启用公钥认证</span>
+<span class="hljs-comment"># PasswordAuthentication no   ← 禁用密码登录（确认密钥能用后再关！）</span>
+<span class="hljs-comment"># Port 2222                   ← 可选：改端口（别忘了在防火墙放行新端口）</span>
+
+<span class="hljs-comment"># 测试新配置的语法是否正确</span>
+sudo sshd<span class="hljs-attr"> -t</span>
+
+<span class="hljs-comment"># 重载 SSH 配置（保持当前连接不断开！）</span>
+sudo <span class="hljs-built_in">systemctl</span> reload sshd</code></pre>
+
+    <div class="box box-danger">
+      <strong>致命错误警告</strong><br>
+      <strong>在禁用 PasswordAuthentication 之前，必须先用密钥成功登录一次！</strong>如果先把密码关掉、然后发现密钥复制失败了——你从这台机器上被彻底锁死了，只能通过 VNC 或云控制台恢复。<br>
+      <strong>重载 sshd 时用 reload 而不要用 restart。</strong>reload 会让 sshd 重新读取配置文件，但不会断开现有的 SSH 连接。restart 会杀掉所有当前连接——包括你自己的。
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>自动安全更新 —— 补丁比漏洞晚一天叫事故，同年叫灾难</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：手动执行 apt upgrade 的频率有多高？够不够快？</h4>
+    <p>2021 年的 Log4Shell 漏洞在公开当天就出现了扫描 exploit。如果运维是第二天才手动更新——整个第一天，你的所有 Java 应用都在对着公网敞着大门。<strong>对于已知的 CVE，手动更新永远不够快。</strong>Debian/Ubuntu 提供 <code>unattended-upgrades</code> 这个包，可以把安全补丁的安装变成全自动的。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="d051c02cdafb09bfc6d3fedefb52b9e0b1f0286dfee8339c9d6dd80de0b901c9"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 安装并启用自动安全更新</span>
+sudo <span class="hljs-built_in">apt</span> install unattended-upgrades <span class="hljs-built_in">apt</span>-listchanges
+sudo dpkg-reconfigure<span class="hljs-attr"> -plow</span> unattended-upgrades
+
+<span class="hljs-comment"># 编辑配置文件，控制哪些更新自动安装</span>
+sudo vim /etc/apt/apt.conf.d/50unattended-upgrades
+
+<span class="hljs-comment"># 核心配置段：</span>
+Unattended-Upgrade::Allowed-Origins {
+    <span class="hljs-string">"<span class="hljs-variable">${distro_id}</span>:<span class="hljs-variable">${distro_codename}</span>-security"</span>;  <span class="hljs-comment"># 只自动安装安全更新</span>
+    <span class="hljs-comment"># 下面三行默认是注释掉的——不要打开，否则普通更新也自动安装了</span>
+    <span class="hljs-comment"># "${distro_id}:${distro_codename}-updates";</span>
+};
+<span class="hljs-comment"># 自动移除不再需要的依赖包</span>
+Unattended-Upgrade::Remove-Unused-Dependencies <span class="hljs-string">"true"</span>;
+<span class="hljs-comment"># 自动重启（仅当需要重启时）</span>
+Unattended-Upgrade::Automatic-Reboot <span class="hljs-string">"true"</span>;
+Unattended-Upgrade::Automatic-Reboot-Time <span class="hljs-string">"02:00"</span>;
+<span class="hljs-comment"># 邮件通知</span>
+Unattended-Upgrade::Mail <span class="hljs-string">"admin@example.com"</span>;
+
+<span class="hljs-comment"># 验证自动更新是否在正常工作</span>
+sudo <span class="hljs-built_in">systemctl</span> status unattended-upgrades
+<span class="hljs-built_in">cat</span> /var/log/unattended-upgrades/unattended-upgrades.log | <span class="hljs-built_in">tail</span> -20</code></pre>
+
+    <div class="box box-info">
+      <strong>自动更新 ≠ 盲目更新</strong><br>
+      <code>unattended-upgrades</code> 默认只安装来自 <code>-security</code> 通道的包——这些是 Debian 安全团队验证过的补丁，不会改变软件的行为版本号，只打漏洞补丁。它不会自动升级 MySQL 8.0 到 8.1，只会在 MySQL 8.0 出了安全漏洞时打补丁。对于数据库这样的核心服务，你仍然应该手动控制大版本升级的时间窗口。
+    </div>
+
+    <h4>安全审计：看看你的安全有多"漏"</h4>
+    <pre data-presentation-code="v1" data-presentation-highlight="1e4206ed26762ff43214efb86888d098c20f97091f43624a27fd1553374e8a05"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 当前有哪些服务在监听端口（检查是否暴露了不该暴露的）</span>
+<span class="hljs-built_in">ss</span><span class="hljs-attr"> -tlnp</span> | grep LISTEN
+<span class="hljs-comment"># 输出示例：22 (sshd), 3306 (mysql 绑在 0.0.0.0 上！), 80 (nginx)</span>
+<span class="hljs-comment"># 3306 绑定 0.0.0.0 意味着 MySQL 直接暴露在公网——这是一个严重问题</span>
+
+<span class="hljs-comment"># 修复：把 MySQL 绑定到 127.0.0.1（只允许本地连接）</span>
+sudo vim /etc/mysql/mysql.conf.d/mysqld.cnf
+<span class="hljs-comment"># 修改: bind-address = 127.0.0.1</span>
+
+<span class="hljs-comment"># 查看所有已安装的包（审计不需要的包）</span>
+dpkg<span class="hljs-attr"> -l</span> | grep<span class="hljs-attr"> -v</span> <span class="hljs-string">'^ii'</span>    <span class="hljs-comment"># 已移除但仍留了配置的包</span>
+dpkg<span class="hljs-attr"> -l</span> | <span class="hljs-built_in">wc</span><span class="hljs-attr"> -l</span>            <span class="hljs-comment"># 总包数——越多越不安全</span></code></pre>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter14/01-ssh-safe-hardening.png"><img src="assets/chapter14/01-ssh-safe-hardening.png" alt="展示保留旧会话、验证新钥匙、语法检查、reload 和最后关闭密码入口的安全顺序。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第2节：iptables基础 ═══════════ -->
+<h2 class="section-title" id="sec14-2"><span class="icon">2</span>iptables 基础 —— 内核级防火墙</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-implement">实</span><h3>iptables 三链五表 —— 每个数据包在 Linux 内核里的"过五关"</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：ufw 一条 allow 命令背后，iptables 到底做了什么？</h4>
+    <p>iptables 不是"一个防火墙程序"——它是<strong>Linux 内核 Netfilter 框架的用户态配置工具</strong>。真正的过滤发生在内核层面，比你运行的任何用户态进程都早。每个经过网卡的数据包都会在 Netfilter 的几个"钩子点"上被规则链检查，然后决定是放行（ACCEPT）、拒绝（REJECT/DROP）、还是转发。</p>
+
+    <p>iptables 的核心概念只有三个：<strong>链</strong>（chain，数据包经过的位置）、<strong>表</strong>（table，做什么类型的处理）、<strong>规则</strong>（rule，匹配条件和动作）。一条规则的结构如下：<code>iptables -A 链名 -p 协议 --dport 端口 -j 动作</code>。</p>
+
+    <h4>三条默认链（Chain）——数据包的三个必经岗哨</h4>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>链名</th><th>触发时机</th><th>用于什么场景</th></tr></thead>
+      <tbody><tr><td><strong>INPUT</strong></td><td>数据包到达本机网络栈，目标 IP 是本机</td><td>保护本机：开放 SSH 端口、拒绝外部扫描</td></tr>
+      <tr><td><strong>OUTPUT</strong></td><td>本机进程发出的数据包</td><td>限制本机对外访问：禁止服务器连接外部未知地址</td></tr>
+      <tr><td><strong>FORWARD</strong></td><td>数据包不发给本机，需要经过本机转发到其他主机</td><td>服务器做路由器/NAT/堡垒机时使用。普通服务器这条链通常为空</td></tr>
+    </tbody></table>
+    </div>
+
+    <p><strong>INPUT 链的策略是关键：</strong>一条默认规则 <code>-P INPUT DROP</code> 意味着"所有入站流量默认拒绝，只放行我明确允许的端口和协议"。这就是"最小权限原则"的在网络层的体现。生产环境的标准策略是：</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="f76fca633af9e5797688e555ffccfae4a6df3156e841d3812599cabec2f3ca81"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 设置默认策略（先执行这些，再添加放行规则）===</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> INPUT DROP      <span class="hljs-comment"># 入站流量默认拒绝</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> FORWARD DROP    <span class="hljs-comment"># 转发默认拒绝（不做路由器的话）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> OUTPUT ACCEPT   <span class="hljs-comment"># 出站默认允许（大多数服务器场景下没问题）</span>
+
+<span class="hljs-comment"># === 基础规则：让系统能正常工作 ===</span>
+<span class="hljs-comment"># 1. 允许回环接口（localhost 必须通——很多服务依赖它）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -i</span> lo<span class="hljs-attr"> -j</span> ACCEPT
+
+<span class="hljs-comment"># 2. 允许已建立连接和相关的回复流量（最关键的一条规则）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -m</span> state<span class="hljs-attr"> --state</span> ESTABLISHED,RELATED<span class="hljs-attr"> -j</span> ACCEPT
+
+<span class="hljs-comment"># 3. 允许 SSH（端口 22）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> tcp<span class="hljs-attr"> --dport</span> 22<span class="hljs-attr"> -j</span> ACCEPT
+
+<span class="hljs-comment"># 4. 允许 HTTP/HTTPS（如果你的服务器是 Web 服务器）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> tcp<span class="hljs-attr"> --dport</span> 80<span class="hljs-attr"> -j</span> ACCEPT
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> tcp<span class="hljs-attr"> --dport</span> 443<span class="hljs-attr"> -j</span> ACCEPT
+
+<span class="hljs-comment"># 5. 允许 ICMP ping（方便排错，生产环境也建议保留）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> icmp<span class="hljs-attr"> --icmp-type</span> echo-request<span class="hljs-attr"> -j</span> ACCEPT</code></pre>
+
+    <p><strong>理解 ESTABLISHED,RELATED 这条规则的重要性。</strong>当你的服务器向外部发起了一个连接（比如 apt update 去连 Ubuntu 的仓库），回复的数据包进入你的服务器时，它不是"新的入站连接"——它是已经建立的出站连接的回复。如果没有 ESTABLISHED,RELATED 规则，INPUT 链默认 DROP 会把这部分合法的回包也丢掉，导致你的服务器无法访问外网。</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>iptables 实用命令 —— 查看、保存、恢复</h3><span class="tag tag-suggested">操作</span></div>
+  <div class="card-body">
+    <h4>问题：配了 iptables 规则，重启后全没了？</h4>
+    <p>iptables 规则存储在<strong>内核内存</strong>中，重启就消失。必须显式保存。Debian/Ubuntu 用 <code>iptables-persistent</code> 包来管理规则的持久化。RHEL/CentOS 用 <code>iptables-services</code>。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="7d1de10df7c93ccfedbadbdd9a395d08aaddd384b50cfd070b3a627ce568002d"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 查看规则 ===</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -L</span><span class="hljs-attr"> -n</span><span class="hljs-attr"> -v</span>              <span class="hljs-comment"># 详细列表（-n 不解析 DNS 加速, -v 显示计数器和流量）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -L</span><span class="hljs-attr"> -n</span><span class="hljs-attr"> -v</span><span class="hljs-attr"> --line-numbers</span>  <span class="hljs-comment"># 带行号，方便删除</span>
+
+<span class="hljs-comment"># === 删除规则 ===</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -D</span> INPUT 3            <span class="hljs-comment"># 删除 INPUT 链的第 3 条规则</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -F</span> INPUT              <span class="hljs-comment"># 清空 INPUT 链的所有规则（危险！配合默认 DROP 会断开所有连接）</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -F</span>                    <span class="hljs-comment"># 清空所有链的所有规则（更危险！）</span>
+
+<span class="hljs-comment"># === 插入规则（在指定行号位置插入）===</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -I</span> INPUT 1<span class="hljs-attr"> -p</span> tcp<span class="hljs-attr"> --dport</span> 8080<span class="hljs-attr"> -j</span> ACCEPT  <span class="hljs-comment"># 在 INPUT 链第 1 位插入</span>
+
+<span class="hljs-comment"># === 保存与恢复（Debian/Ubuntu）===</span>
+sudo <span class="hljs-built_in">apt</span> install <span class="hljs-built_in">iptables</span>-persistent netfilter-persistent
+sudo netfilter-persistent save     <span class="hljs-comment"># 保存当前规则（重启后生效）</span>
+sudo netfilter-persistent reload   <span class="hljs-comment"># 从配置文件重新加载规则</span>
+<span class="hljs-comment"># 规则实际保存在: /etc/iptables/rules.v4 和 /etc/iptables/rules.v6</span>
+
+<span class="hljs-comment"># === 保存与恢复（传统方式）===</span>
+sudo <span class="hljs-built_in">iptables</span>-save &gt; /etc/iptables.rules
+sudo <span class="hljs-built_in">iptables</span>-restore &lt; /etc/iptables.rules</code></pre>
+
+    <div class="box box-warning">
+      <strong>iptables 和 Docker 的冲突</strong><br>
+      Docker 会在 iptables 里添加自己的 FORWARD 和 NAT 规则来实现容器网络和端口映射。如果你执行 <code>iptables -F</code> 清空所有规则，Docker 的网络会直接崩掉——容器将无法访问外网。处理 Docker 规则时，只删除你自己添加的部分，不要动 Docker 自动生成的 <code>DOCKER</code> 链。
+    </div>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter14/02-netfilter-packet-paths.png"><img src="assets/chapter14/02-netfilter-packet-paths.png" alt="解释本机入站、本机发出、路由转发分别经过哪些 Netfilter 链。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第3节：ufw ═══════════ -->
+<h2 class="section-title" id="sec14-3"><span class="icon">3</span>ufw —— iptables 的简化前端</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-operate">操</span><h3>ufw —— 如果你不想手写 iptables 规则，就用它</h3><span class="tag tag-required">推荐</span></div>
+  <div class="card-body">
+    <h4>问题：iptables 的命令实在太难记了，有没有简化的办法？</h4>
+    <p>ufw (Uncomplicated Firewall) 是 iptables 的一个"人性化前端"。你在 ufw 里敲一个 <code>ufw allow 22/tcp</code>，它会在底层生成相应的 iptables 规则并插入到合适的位置。ufw 最大的好处不是省键盘——而是<strong>规则的可读性</strong>。三个月后你回来看 iptables 规则，可能自己都看不懂；回来看 ufw 规则，一目了然。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="e741e076264aef04e740c47638fba7b3195da79596a8622ec79fb724eeafc853"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 安装与启用 ===</span>
+sudo <span class="hljs-built_in">apt</span> install ufw
+
+<span class="hljs-comment"># 启用前先确认 SSH 端口已放行！（否则你会把自己锁在外面）</span>
+sudo ufw allow 22/tcp        <span class="hljs-comment"># 先放行 SSH</span>
+
+<span class="hljs-comment"># 设置默认策略</span>
+sudo ufw default deny incoming   <span class="hljs-comment"># 入站默认拒绝</span>
+sudo ufw default allow outgoing  <span class="hljs-comment"># 出站默认允许</span>
+
+sudo ufw <span class="hljs-built_in">enable</span>               <span class="hljs-comment"># 启用防火墙</span>
+sudo ufw status verbose       <span class="hljs-comment"># 查看详细状态和规则列表</span></code></pre>
+    <p class="out-label">▶ ufw status verbose 输出示例</p>
+    <pre data-presentation-code="v1" data-presentation-highlight="cba9aed5986f3c2a6434258121200f587448e86686799f6258cc923c6e7fb89a"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes"><span class="hljs-attr">Status:</span> <span class="hljs-string">active</span>
+<span class="hljs-attr">Logging:</span> <span class="hljs-string">on</span> <span class="hljs-string">(low)</span>
+<span class="hljs-attr">Default:</span> <span class="hljs-string">deny</span> <span class="hljs-string">(incoming),</span> <span class="hljs-string">allow</span> <span class="hljs-string">(outgoing),</span> <span class="hljs-string">deny</span> <span class="hljs-string">(routed)</span>
+<span class="hljs-attr">New profiles:</span> <span class="hljs-string">skip</span>
+
+<span class="hljs-string">To</span>                         <span class="hljs-string">Action</span>      <span class="hljs-string">From</span>
+<span class="hljs-string">--</span>                         <span class="hljs-string">------</span>      <span class="hljs-string">----</span>
+<span class="hljs-number">22</span><span class="hljs-string">/tcp</span>                     <span class="hljs-string">ALLOW</span> <span class="hljs-string">IN</span>    <span class="hljs-string">Anywhere</span>
+<span class="hljs-number">80</span><span class="hljs-string">,443/tcp</span>                 <span class="hljs-string">ALLOW</span> <span class="hljs-string">IN</span>    <span class="hljs-string">Anywhere</span>
+<span class="hljs-number">22</span><span class="hljs-string">/tcp</span> <span class="hljs-string">(v6)</span>                <span class="hljs-string">ALLOW</span> <span class="hljs-string">IN</span>    <span class="hljs-string">Anywhere</span> <span class="hljs-string">(v6)</span>
+<span class="hljs-number">80</span><span class="hljs-string">,443/tcp</span> <span class="hljs-string">(v6)</span>            <span class="hljs-string">ALLOW</span> <span class="hljs-string">IN</span>    <span class="hljs-string">Anywhere</span> <span class="hljs-string">(v6)</span></code></pre>
+
+    <h4>日常操作：允许、拒绝、限制、删除</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="ee7fdce400e4360c32428fb7d35138f044770121148bf3231058ff860ab3c020"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 基本放行规则 ===</span>
+ufw allow 22/tcp                    <span class="hljs-comment"># 放行 TCP 22 端口</span>
+ufw allow 80,443/tcp                <span class="hljs-comment"># 放行多个端口</span>
+ufw allow 3000:4000/tcp             <span class="hljs-comment"># 放行一个端口范围</span>
+ufw allow from 192.168.1.0/24       <span class="hljs-comment"># 放行来自某个内网的流量</span>
+ufw allow from 192.168.1.0/24 to any port 3306 proto tcp  <span class="hljs-comment"># 指定来源+目标+端口+协议</span>
+
+<span class="hljs-comment"># === 拒绝特定 IP（屏蔽内鬼）===</span>
+ufw deny from 192.168.1.100         <span class="hljs-comment"># 拒绝该 IP 的所有流量</span>
+ufw deny from 10.0.0.0/8           <span class="hljs-comment"># 拒绝整个网段</span>
+ufw deny out to 8.8.8.8            <span class="hljs-comment"># 拒绝本机访问某个目标（出站限制）</span>
+
+<span class="hljs-comment"># === 限制连接（比 deny 温和——限速但不完全封禁）===</span>
+ufw <span class="hljs-built_in">limit</span> 22/tcp                    <span class="hljs-comment"># SSH 端口限速，每个 IP 在 30 秒内最多新建 6 个连接</span>
+<span class="hljs-comment"># 底层原理：ufw 添加了一条 iptables limit 规则，连接超过阈值后自动拒绝</span>
+<span class="hljs-comment"># 这可以拦住暴力破解的基本流量而不影响正常使用</span>
+
+<span class="hljs-comment"># === 删除规则 ===</span>
+ufw status numbered                 <span class="hljs-comment"># 带编号查看</span>
+ufw delete 3                        <span class="hljs-comment"># 删除编号为 3 的规则</span>
+ufw delete allow 8080/tcp           <span class="hljs-comment"># 按规则内容精确删除</span>
+
+<span class="hljs-comment"># === 日志设置 ===</span>
+ufw logging on                      <span class="hljs-comment"># 开启日志（记录在 /var/log/ufw.log）</span>
+ufw logging medium                  <span class="hljs-comment"># 中等详细度（默认 low）</span>
+ufw logging off                     <span class="hljs-comment"># 关闭日志（不推荐——出问题时没有排查线索）</span></code></pre>
+
+    <div class="box box-danger">
+      <strong>ufw 大忌：在 SSH 连接中调 ufw enable 之前不确认放行 SSH</strong><br>
+      这个错误几乎每个运维新手都会犯一次。SSH 到服务器 → 敲 <code>ufw enable</code> → 默认策略 DROP incoming → SSH 连接断开 → 你被锁在外面了。正确的顺序永远是：<strong>先放行 SSH → 再设置默认策略 → 最后 enable</strong>。云服务器可以通过 VNC 控制台救回来，物理服务器就只能跑机房了。
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ 第4节：Fail2ban ═══════════ -->
+<h2 class="section-title" id="sec14-4"><span class="icon">4</span>Fail2ban —— 防暴力破解神器</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-security">安</span><h3>Fail2ban 的原理：监控日志 → 识别攻击模式 → 自动封 IP</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：SSH 公网开放了，24 小时后 auth.log 里多了十万条登录失败</h4>
+    <p>任何暴露在公网的 SSH 服务器都会在几分钟内被扫描到。攻击者不会手动尝试密码——他们用自动化工具（Hydra、Ncrack）对着字典轮番尝试。一天几十万次的尝试量，虽然密码足够复杂就不会被猜中，但持续的攻击会给系统带来持续的负载（每个 SSH 连接尝试都涉及加密握手）。</p>
+
+    <p>Fail2ban 的工作机制非常简单：它有一个<strong>filter</strong>（过滤器），用正则表达式去实时监控日志文件（如 <code>/var/log/auth.log</code>）；当发现某个 IP 在指定时间内（如 10 分钟）失败达到指定次数（如 5 次），它就在 iptables 中添加一条规则——把那个 IP 的流量全部 DROP 掉，持续一段时间（如 1 小时）；时间过后自动释放。这就是自愈式安全——不需要人介入，攻击自动被封堵。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="2f50f0777182f89797ac3e654a43a6c21d2b1481e1019bf2c6945cc3efcd6ab9"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 安装 ===</span>
+sudo <span class="hljs-built_in">apt</span> install fail2ban
+
+<span class="hljs-comment"># 安装后默认就启用了 sshd jail，无需额外配置即可工作</span>
+<span class="hljs-comment"># 但默认配置比较保守，建议定制</span>
+
+<span class="hljs-comment"># === 创建本地配置文件（不要直接修改 /etc/fail2ban/jail.conf！）===</span>
+<span class="hljs-comment"># jail.conf 是上游配置文件，升级 fail2ban 时会被覆盖</span>
+<span class="hljs-comment"># 你的自定义配置应该写在 jail.local 里，它会覆盖 jail.conf 中的相同设置</span>
+sudo <span class="hljs-built_in">cp</span> /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+sudo vim /etc/fail2ban/jail.local</code></pre>
+
+    <h4>核心配置项详解</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="15301ce86ce1feef74a8e487b631fd9459eb91eabcd86912ed790fec508244bc"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /etc/fail2ban/jail.local 中的关键配置</span>
+[DEFAULT]
+<span class="hljs-comment"># IP 被封禁的时间（秒）。默认 600（10分钟），生产建议 3600（1小时）</span>
+bantime = 3600
+
+<span class="hljs-comment"># 查找的时间窗口（秒）。在这个时间窗口内失败次数达到阈值就封禁</span>
+findtime = 600       <span class="hljs-comment"># 10 分钟窗口</span>
+
+<span class="hljs-comment"># 失败次数阈值。findtime 内失败 maxretry 次即触发封禁</span>
+maxretry = 5
+
+<span class="hljs-comment"># 动作：封禁时做什么。默认是 iptables-multiport——加到 iptables DROP</span>
+banaction = <span class="hljs-built_in">iptables</span>-multiport
+<span class="hljs-comment"># 也可以用 ufw——会在 ufw 中添加拒绝规则</span>
+<span class="hljs-comment"># banaction = ufw</span>
+
+<span class="hljs-comment"># 忽略的 IP（永远不会被封禁的白名单）</span>
+ignoreip = 127.0.0.1/8 192.168.0.0/16 10.0.0.0/8
+
+<span class="hljs-comment"># === sshd jail 配置 ===</span>
+[sshd]
+enabled = <span class="hljs-literal">true</span>
+port    = <span class="hljs-built_in">ssh</span>
+logpath = %(sshd_log)s      <span class="hljs-comment"># 自动识别 /var/log/auth.log</span>
+maxretry = 3                 <span class="hljs-comment"># SSH 更严格：10分钟内失败3次即封</span>
+
+<span class="hljs-comment"># === nginx-http-auth jail（保护有密码的 Web 目录）===</span>
+[<span class="hljs-built_in">nginx</span>-http-auth]
+enabled = <span class="hljs-literal">true</span>
+port    = http,https
+logpath = /var/log/nginx/error.log
+maxretry = 5</code></pre>
+
+    <h4>日常运维命令</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="3e0ab084ce27a5d36780c2a368df12b49f6c4e8b7f5010bc29e3f87d00669229"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 重启 Fail2ban 使配置生效</span>
+sudo <span class="hljs-built_in">systemctl</span> restart fail2ban
+
+<span class="hljs-comment"># 查看所有 jail 的状态</span>
+sudo fail2ban-client status
+
+<span class="hljs-comment"># 查看某个 jail 的详细状态——当前封禁了多少 IP</span>
+sudo fail2ban-client status sshd
+<span class="hljs-comment"># 输出示例：</span>
+<span class="hljs-comment"># Status for the jail: sshd</span>
+<span class="hljs-comment"># |- Filter</span>
+<span class="hljs-comment"># |  |- Currently failed: 3          ← 当前有 3 个 IP 失败了但还没达到阈值</span>
+<span class="hljs-comment"># |  `- Total failed: 15234          ← 历史总失败次数</span>
+<span class="hljs-comment"># `- Actions</span>
+<span class="hljs-comment">#    |- Currently banned: 28         ← 当前有 28 个 IP 被封了</span>
+<span class="hljs-comment">#    `- Total banned: 1200           ← 历史总封禁数</span>
+
+<span class="hljs-comment"># 手动解封某个 IP（需要解封时）</span>
+sudo fail2ban-client <span class="hljs-built_in">set</span> sshd unbanip 192.168.1.100
+
+<span class="hljs-comment"># 手动添加封禁</span>
+sudo fail2ban-client <span class="hljs-built_in">set</span> sshd banip 10.0.0.50
+
+<span class="hljs-comment"># 查看 Fail2ban 在 iptables 中添加了哪些规则</span>
+sudo <span class="hljs-built_in">iptables</span><span class="hljs-attr"> -L</span> f2b-sshd<span class="hljs-attr"> -n</span><span class="hljs-attr"> -v</span></code></pre>
+
+    <div class="box box-info">
+      <strong>Fail2ban 不是万能的</strong><br>
+      Fail2ban 只能防暴力破解（同 IP 反复尝试）。对于分布式攻击——攻击者用一万个不同的 IP，每个 IP 只试一次——Fail2ban 无法拦截（因为没有一个 IP 达到次数阈值）。对于这种攻击，需要使用更高级的威胁情报服务（如 CrowdSec 或 Cloudflare WAF）或 VPN/跳板机来隐藏 SSH 端口。
+    </div>
+  </div>
+</div>
+
+
+<figure class="merged-illustration" data-image-id="chapter14/03-fail2ban-ban-loop.png"><img src="assets/chapter14/03-fail2ban-ban-loop.png" alt="展示日志匹配、时间窗计数、jail/action、临时封禁与自动解禁闭环。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第5节：SELinux/AppArmor ═══════════ -->
+<h2 class="section-title" id="sec14-5"><span class="icon">5</span>SELinux / AppArmor —— 强制访问控制</h2>
+
+<div class="card">
+  <div class="card-header"><span class="badge badge-concept">概</span><h3>DAC 不够 —— 为什么 root 也需要被限制</h3><span class="tag tag-required">核心</span></div>
+  <div class="card-body">
+    <h4>问题：Linux 的 rwx 权限还不够安全吗？</h4>
+    <p>传统的 Linux 权限模型叫 DAC（Discretionary Access Control，自主访问控制）——文件所有者可以自己决定谁能读、谁能写。这个模型有一个根本缺陷：<strong>如果某个进程以 root 身份运行，它可以访问任何文件。</strong>一个被远程代码执行漏洞攻陷的 Nginx 进程（以 www-data 运行）可以读写 <code>/var/www/html/</code>，理论上不应该能访问 <code>/etc/shadow</code>——但在 DAC 模型下，如果该进程能通过提权漏洞变成 root，它就可以访问一切。</p>
+
+    <p><strong>MAC（Mandatory Access Control，强制访问控制）解决了这个问题。</strong>MAC 的规则不由用户设定，而是由系统管理员设定的全局策略——<strong>策略比用户权限更高</strong>。在 MAC 下，即使你拿到了 root 权限，只要策略说这个进程不能读那个文件，root 也读不了。这是纵深防御（Defense in Depth）的经典体现：防火墙是第一层，最小权限是第二层，MAC 是第三层——每一层被突破后，下一层继续保护系统。</p>
+
+    <h4>SELinux 与 AppArmor —— 两大 MAC 阵营</h4>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>特性</th><th>SELinux</th><th>AppArmor</th></tr></thead>
+      <tbody><tr><td><strong>默认使用的发行版</strong></td><td>RHEL / CentOS / Fedora / Rocky / Alma</td><td>Debian / Ubuntu / openSUSE</td></tr>
+      <tr><td><strong>策略粒度</strong></td><td>文件路径 + inode + 进程标签（进程→文件映射，路径无关）</td><td>文件路径（path-based）</td></tr>
+      <tr><td><strong>配置方式</strong></td><td>标签系统（type enforcement）+ 丰富的布尔开关</td><td>每个应用一个 profile 文件（AA profile）</td></tr>
+      <tr><td><strong>学习曲线</strong></td><td>陡峭——概念多（类型、域、角色、MLS）</td><td>平缓——profile 像一种简单的配置语法</td></tr>
+      <tr><td><strong>排错工具</strong></td><td><code>audit2allow</code> 从审计日志生成策略，<code>sealert</code> 分析告警</td><td><code>aa-logprof</code> 交互式更新 profile</td></tr>
+      <tr><td><strong>三模式</strong></td><td>enforcing（强制执行）/ permissive（只记录不阻止）/ disabled</td><td>enforce（强制执行）/ complain（只记录不阻止）</td></tr>
+    </tbody></table>
+    </div>
+
+    <h4>SELinux：强大的代价是复杂</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="f76e751f90f2bb11bee897690f8a9e751f25e657e9e72cc6a8fd9c890f8c6c2c"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看 SELinux 状态</span>
+getenforce
+<span class="hljs-comment"># 输出: Enforcing（正在执行）/ Permissive（只记录）/ Disabled（关闭）</span>
+
+<span class="hljs-comment"># 查看详细状态</span>
+sestatus
+<span class="hljs-comment"># 输出: SELinux status: enabled, SELinuxfs mount: /sys/fs/selinux,</span>
+<span class="hljs-comment">#       Current mode: enforcing, Mode from config file: enforcing,</span>
+<span class="hljs-comment">#       Policy version: 33, Policy from config file: targeted</span>
+
+<span class="hljs-comment"># 临时切换模式（不需要重启）</span>
+sudo setenforce 0       <span class="hljs-comment"># 改为 Permissive（调试用）</span>
+sudo setenforce 1       <span class="hljs-comment"># 改回 Enforcing</span>
+
+<span class="hljs-comment"># 永久修改：编辑 /etc/selinux/config</span>
+<span class="hljs-comment"># SELINUX=enforcing → SELINUX=permissive</span>
+
+<span class="hljs-comment"># 查看为何某个操作被 SELinux 拒绝了</span>
+sudo sealert<span class="hljs-attr"> -a</span> /var/log/audit/audit.log
+<span class="hljs-comment"># 它会告诉你：什么进程访问什么文件被拒绝，并提供修复命令</span>
+
+<span class="hljs-comment"># 从审计日志自动生成策略模块（排错神器）</span>
+sudo grep denied /var/log/audit/audit.log | audit2allow<span class="hljs-attr"> -M</span> mypolicy
+sudo semodule<span class="hljs-attr"> -i</span> mypolicy.pp</code></pre>
+
+    <p><strong>SELinux 实战建议：</strong>新装的 RHEL/CentOS 系统，SELinux 默认是 enforcing 模式。很多第三方软件或自定义部署的应用会因为 SELinux 的策略限制而无法正常运行（比如 Nginx 放在 <code>/opt/app/</code> 而不是 <code>/usr/share/nginx/html/</code>）。不要一遇到问题就关掉 SELinux——先切到 permissive 模式，让系统正常运行的同时记录所有违规日志，再用 <code>audit2allow</code> 生成并加载自定义策略，最后切回 enforcing。这才是正确的姿势。</p>
+
+    <h4>AppArmor：比 SELinux 简单得多</h4>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="49004c18d536b0cb66d47d42cc5a76b48174bdded6cbe9fe00935a0330b3aa9b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看 AppArmor 状态</span>
+sudo aa-status
+<span class="hljs-comment"># 输出: apparmor module is loaded.</span>
+<span class="hljs-comment">#   X profiles are loaded. X profiles are in enforce mode.</span>
+
+<span class="hljs-comment"># 列出所有受 AppArmor 约束的进程</span>
+sudo aa-status | grep<span class="hljs-attr"> -A</span> 100 <span class="hljs-string">"processes are in enforce"</span>
+
+<span class="hljs-comment"># 查看某个 profile（例如 MySQL 的）</span>
+<span class="hljs-built_in">cat</span> /etc/apparmor.d/usr.sbin.mysqld
+
+<span class="hljs-comment"># 切换某个 profile 为 complain 模式（调试用）</span>
+sudo aa-complain /usr/sbin/mysqld
+
+<span class="hljs-comment"># 切换回 enforce 模式</span>
+sudo aa-enforce /usr/sbin/mysqld
+
+<span class="hljs-comment"># 使用 aa-logprof 分析日志，交互式更新 profile（类似 SELinux 的 audit2allow）</span>
+sudo aa-logprof</code></pre>
+
+    <div class="box box-warning">
+      <strong>生产环境中的 MAC 使用原则</strong><br>
+      1. <strong>不要在刚部署应用时开 enforcing 模式。</strong>先 permissive/complain，确认一切正常后再 enforce。<br>
+      2. <strong>不要因为"麻烦"就永久关闭 MAC。</strong>MAC 是防御内核/服务漏洞的最后一道屏障。历史上多次大规模 Linux 漏洞（如 Dirty Cow）在 SELinux enforcing 的系统上无法被利用。<br>
+      3. <strong>容器中 SELinux 尤其重要。</strong>Docker 容器共享宿主内核，如果一个容器逃逸到宿主机，SELinux 的标签机制能在内核层面阻止它访问宿主文件。
+    </div>
+  </div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter14/04-dac-mac-selinux-apparmor.png"><img src="assets/chapter14/04-dac-mac-selinux-apparmor.png" alt="对照 DAC 与 MAC，并连接 SELinux 标签、AppArmor profile 及学习到强制的落地阶梯。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
+
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>DAC</b> · Digital-to-Analog Converter 数模转换器</p><p class="kc-annotation-line"><b>ICMP</b> · Internet Control Message Protocol 互联网控制消息协议</p><p class="kc-annotation-line"><b>MAC</b> · Media Access Control 媒体访问控制</p><p class="kc-annotation-line"><b>WAF</b> · Web Application Firewall Web 应用防火墙</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第14章</p>
+  <p style="margin-top:4px">安全与防火墙 ——"安全不是一个产品，而是一个过程"</p>
+</footer>
+
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

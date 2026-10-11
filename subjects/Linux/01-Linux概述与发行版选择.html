@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Linux概述与发行版选择 · Linux系统</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --card-bg: #fff;
+  --primary: #16A34A;
+  --primary-light: #dcfce7;
+  --accent: #e53e3e;
+  --success: #15803d;
+  --success-light: #f0fdf4;
+  --warning: #c05621;
+  --warning-light: #fffaf0;
+  --text: #2d3748;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --shadow: 0 4px 6px rgba(0,0,0,.07);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.85; font-size: 15px;
+}
+.site-header {
+  background: linear-gradient(135deg, #14532d, #16A34A, #4ade80);
+  color: #fff; padding: 48px 24px 40px; text-align: center;
+}
+.site-header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; }
+.site-header .subtitle { font-size: 1rem; opacity: .85; }
+.site-header .meta-row {
+  margin-top: 16px; font-size: .85rem; opacity: .7;
+  display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+}
+.container { max-width: 1120px; margin: 0 auto; padding: 32px 20px; }
+.toc {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 28px 32px; margin-bottom: 36px;
+}
+.toc h2 { font-size: 1.15rem; color: var(--primary); margin-bottom: 16px; }
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 6px;
+}
+.toc-grid a {
+  display: block; padding: 6px 10px; color: var(--text-secondary);
+  text-decoration: none; border-radius: 6px; font-size: .9rem;
+}
+.toc-grid a:hover { background: var(--primary-light); color: var(--primary); }
+.section-title {
+  font-size: 1.5rem; font-weight: 700; color: #14532d;
+  margin: 48px 0 20px; padding-bottom: 10px;
+  border-bottom: 3px solid var(--primary);
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title .icon {
+  width: 36px; height: 36px; background: var(--primary);
+  border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 1.1rem;
+}
+.card {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden;
+}
+.card:hover { box-shadow: var(--shadow); }
+.card-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.card-header .badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  font-weight: 700; font-size: .85rem; flex-shrink: 0;
+}
+.badge-concept { background: #dcfce7; color: #16A34A; }
+.badge-principle { background: #fef3c7; color: #b45309; }
+.badge-clarify { background: #eff6ff; color: #2563eb; }
+.badge-implement { background: #fce7f3; color: #be185d; }
+.badge-operate { background: #fff7ed; color: #c2410c; }
+.badge-apply { background: #f5f3ff; color: #0e7490; }
+.card-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.card-header .tag {
+  margin-left: auto; font-size: .75rem; padding: 2px 10px;
+  border-radius: 20px; font-weight: 500;
+}
+.tag-core { background: #dcfce7; color: #166534; }
+.tag-compare { background: #fef3c7; color: #92400e; }
+.card-body { padding: 20px 24px; }
+.card-body h4 {
+  font-size: .95rem; font-weight: 700; color: var(--text);
+  margin: 20px 0 10px;
+}
+.card-body h4:first-child { margin-top: 0; }
+.card-body p { margin-bottom: 14px; color: var(--text-secondary); line-height: 1.9; }
+.card-body ul, .card-body ol {
+  padding-left: 22px; margin-bottom: 14px; color: var(--text-secondary); line-height: 1.9;
+}
+.card-body li { margin-bottom: 6px; }
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table {
+  width: 100%; border-collapse: collapse; font-size: .88rem;
+}
+thead th {
+  background: #f7fafc; color: var(--text); font-weight: 700;
+  padding: 10px 12px; border: 1px solid var(--border); text-align: left;
+}
+tbody td {
+  padding: 8px 12px; border: 1px solid var(--border); color: var(--text-secondary);
+}
+tbody tr:nth-child(even) { background: #fafbfc; }
+.box {
+  border-radius: var(--radius-sm); padding: 14px 18px; margin: 14px 0;
+  font-size: .9rem; border-left: 4px solid; line-height: 1.8;
+}
+.box-info { background: #ecfdf5; border-color: #16A34A; color: #14532d; }
+.box-warning { background: #fffaf0; border-color: #dd6b20; color: #7b341e; }
+.box-danger { background: #fff5f5; border-color: #e53e3e; color: #742a2a; }
+.box-tip { background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+code {
+  background: #edf2f7; padding: 2px 6px; border-radius: 4px;
+  font-size: .85em; font-family: "SF Mono","Fira Code","Consolas","Monaco",monospace;
+  color: #2d3748;
+}
+pre {
+  background: #1e293b; color: #e2e8f0; padding: 16px 20px;
+  border-radius: var(--radius-sm); overflow-x: auto; font-size: .82rem;
+  line-height: 1.6; margin: 8px 0 14px 0;
+  font-family: "SF Mono","Fira Code","Consolas","Monaco",monospace;
+}
+p.out-label {
+  font-size: .78rem; color: #16A34A; font-weight: 600;
+  margin: 12px 0 0 0; padding: 4px 0;
+}
+p.err-label {
+  font-size: .78rem; color: #e53e3e; font-weight: 600;
+  margin: 12px 0 0 0; padding: 4px 0;
+}
+.subcard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px; margin: 12px 0;
+}
+.subcard {
+  background: #f7fafc; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 16px;
+}
+.subcard h5 { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.subcard p, .subcard li { font-size: .85rem; color: var(--text-secondary); }
+.gloss-inline {
+  margin-top: 18px; padding: 10px 14px; background: #f7fafc;
+  border-radius: 8px; border-left: 3px solid #a0aec0;
+  font-size: .78rem; line-height: 1.6; color: var(--text-muted);
+}
+.gloss-inline .gi { display: inline-block; margin-right: 12px; white-space: nowrap; }
+.gloss-inline .gk { font-weight: 700; color: var(--primary); }
+.site-footer {
+  text-align: center; padding: 32px 20px; color: var(--text-muted);
+  font-size: .82rem; border-top: 1px solid var(--border); margin-top: 48px;
+}
+@media(max-width:768px) {
+  .site-header h1 { font-size: 1.5rem; }
+  .container { padding: 20px 12px; }
+  .card-body { padding: 16px; }
+  .toc-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · Linux概述与发行版选择</span><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" aria-current="page" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+
+<header class="site-header">
+  <h1>Linux 概述与发行版选择</h1>
+  <p class="subtitle">为什么 Linux 统治了服务器世界 —— 从历史渊源到实际选型</p>
+  <div class="meta-row editorial-meta">
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：真正理解 Linux 的本质</span>
+    <span>主题：终端绿 (Terminal Green)</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc">
+  <h2>本章目录</h2>
+  <div class="toc-grid">
+    <a href="#sec01-1">起源与哲学</a>
+    <a href="#sec01-2">vs Windows Server</a>
+    <a href="#sec01-3">三大发行版家族</a>
+    <a href="#sec01-4">Shell 与终端</a>
+  </div>
+</nav>
+
+<!-- ═══════════ 第1节：起源与哲学 ═══════════ -->
+<h2 class="section-title" id="sec01-1"><span class="icon">1</span>Linux 的起源与哲学</h2>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-concept">概</span>
+    <h3>从 UNIX 到 GNU/Linux —— 一段关于自由的故事</h3>
+    <span class="tag tag-core">核心</span>
+  </div>
+  <div class="card-body">
+
+    <h4>时间线：三股力量的汇合</h4>
+    <p>1969 年，Ken Thompson 和 Dennis Ritchie 在贝尔实验室写下了 UNIX 的第一行代码。UNIX 的哲学简单到极致：<strong>一切皆文件</strong>、<strong>每个程序只做一件事并把它做好</strong>、<strong>程序的输出可以作为另一个程序的输入</strong>。这三条铁律至今仍是 Linux 系统设计的灵魂。</p>
+
+    <p>1983 年，Richard Stallman 发起 GNU (GNU's Not Unix) 计划，目标是打造一个完全自由的操作系统。自由软件运动的核心理念——<strong>用户可以自由地运行、复制、分发、研究、修改和改进软件</strong>——直接催生了 GPL (通用公共许可证) 这一"病毒式"开源协议：任何基于 GPL 代码的衍生作品也必须以 GPL 协议发布。到 1990 年，GNU 几乎完成了操作系统的所有组件，除了最关键的那个——<strong>内核</strong>。</p>
+
+    <p>1991 年，芬兰赫尔辛基大学的学生 Linus Torvalds 在 comp.os.minix 新闻组发了一封著名的帖子："我正在做一个（免费的）操作系统，只是个爱好，不会像 GNU 那样大和专业。" 这个"爱好"后来叫 Linux Kernel 0.01。Linux 内核填补了 GNU 计划的最后一块拼图——<strong>GNU + Linux = GNU/Linux，一个完整的自由操作系统</strong>。</p>
+
+    <div class="box box-info">
+      <strong>关键区分</strong><br>
+      Linux = 内核（管理 CPU、内存、设备、进程的底层软件）<br>
+      GNU/Linux = 完整操作系统（内核 + GNU 工具链 + 包管理器 + 桌面环境...）<br>
+      开源 意味着任何人都能阅读、修改和分发源代码。你可以在 GitHub 上读到 Linux 内核的全部源码，逐行审查它在做什么。
+    </div>
+
+    <figure class="merged-illustration" data-image-id="chapter01/01-unix-gnu-linux-timeline.png"><img src="assets/chapter01/01-unix-gnu-linux-timeline.png" alt="展示 UNIX 哲学、GNU 工具链与 Linux 内核如何汇合成 GNU/Linux。" loading="lazy" decoding="async" width="1672" height="941"></figure><figure class="merged-illustration" data-image-id="chapter01/02-kernel-vs-distribution-stack.png"><img src="assets/chapter01/02-kernel-vs-distribution-stack.png" alt="区分 Linux 内核、完整用户态栈和具体发行版。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>"一切皆文件" —— Linux 最深刻的抽象</h4>
+    <p>在 Linux 中，磁盘是文件 (<code>/dev/sda</code>)，进程是文件 (<code>/proc/1234</code>)，网络连接是文件 (<code>/proc/net/tcp</code>)，甚至内存也是文件 (<code>/proc/meminfo</code>)。这意味着你可以用同一个 <code>cat</code> 命令读 CPU 信息，用同一个 <code>echo</code> 命令控制设备。这种统一抽象是 Linux 最优雅的设计——<strong>学习一套操作，操作一切资源</strong>。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="f50ef33c83b7b27f41b0053d9891193b83c79aa5e6e5e5cbb5f0dc92a5f9d28e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">cat</span> /proc/cpuinfo     <span class="hljs-comment"># 直接读取 CPU 信息，就像读普通文件一样</span>
+<span class="hljs-built_in">cat</span> /proc/meminfo     <span class="hljs-comment"># 读取内存信息</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"hello"</span> &gt; /dev/null  <span class="hljs-comment"># 丢弃输出，/dev/null 是黑洞设备</span></code></pre>
+
+    <div class="gloss-inline">
+      <span class="gi"><span class="gk">UNIX</span> 1969 Bell Labs</span>
+      <span class="gi"><span class="gk">GNU</span> 1983 Richard Stallman</span>
+      <span class="gi"><span class="gk">Linux</span> 1991 Linus Torvalds</span>
+      <span class="gi"><span class="gk">GPL</span> Copyleft 协议</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-principle">原</span>
+    <h3>自由软件的四项基本自由</h3>
+    <span class="tag tag-core">理念</span>
+  </div>
+  <div class="card-body">
+    <p>为什么开源如此重要？Richard Stallman 定义了自由软件的四项基本自由。这不是关于钱——是 <strong>关于控制权</strong>：</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>自由</th><th>含义</th><th>实际价值</th></tr></thead>
+      <tbody><tr><td><strong>自由 0</strong></td><td>为任何目的运行程序</td><td>不受厂商限制，你决定软件用途</td></tr>
+      <tr><td><strong>自由 1</strong></td><td>研究程序如何工作并修改它</td><td>源码可审计 → 无后门 → 可定制</td></tr>
+      <tr><td><strong>自由 2</strong></td><td>重新分发副本以帮助他人</td><td>免费分享 → 社区加速 → 零边际成本</td></tr>
+      <tr><td><strong>自由 3</strong></td><td>分发修改后的版本</td><td>分支衍生 → 适者生存 → 持续进化</td></tr>
+    </tbody></table>
+    </div><p>这四项自由直接解释了为什么 Linux 统治了服务器世界：<strong>没有人可以撤销你的使用权</strong>。不会有一家公司突然宣布"下个版本要按核心数收费"。你的基础设施建立在你可以永远控制的代码之上。</p>
+  </div>
+</div>
+
+
+<!-- ═══════════ 第2节：Linux vs Windows Server ═══════════ -->
+<h2 class="section-title" id="sec01-2"><span class="icon">2</span>Linux 对比 Windows Server</h2>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-clarify">清</span>
+    <h3>为什么服务器领域 Linux 碾压 Windows</h3>
+    <span class="tag tag-compare">对比</span>
+  </div>
+  <div class="card-body">
+
+    <h4>核心维度逐条对比</h4>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>维度</th><th>Linux</th><th>Windows Server</th></tr></thead>
+      <tbody><tr><td><strong>费用</strong></td><td>完全免费，无 license 费。RHEL 付费买的是支持服务，软件本身开源</td><td>按核心数收费 (Windows Server Datacenter 一个 16 核许可 ≈ 6,000 美元+)</td></tr>
+      <tr><td><strong>稳定性</strong></td><td>uptime 以年计。很多生产服务器的 uptime 远超 1000 天。内核更新可以不重启 (livepatch)</td><td>补丁星期二 → 每月强制重启。更新管理是运维痛点的头号来源</td></tr>
+      <tr><td><strong>安全性</strong></td><td>Unix 权限模型 (rwx + owner/group/other) 简洁透明。最小攻击面：不装 GUI 的服务器没有浏览器/桌面组件</td><td>GUI 引入大量攻击面。权限模型复杂 (ACL + AD 集成)。注册表的复杂性是隐藏风险</td></tr>
+      <tr><td><strong>资源消耗</strong></td><td>无 GUI 模式，64MB RAM 即可运行。一个基本的 Nginx 容器镜像只有几 MB</td><td>GUI 是必选项 (Server Core 是后来补的)，起步内存需求 2GB+</td></tr>
+      <tr><td><strong>自动化</strong></td><td>SSH + Bash 脚本 = 运维自动化原生支持。所有配置是文本文件 → git 管理 → 基础设施即代码</td><td>PowerShell 强大但生态封闭。很多配置在 GUI 里点 → 不可复现 → 不可版本化</td></tr>
+      <tr><td><strong>云原生</strong></td><td>容器 (Docker/K8s) 是 Linux 原生技术。98% 的 K8s 节点是 Linux</td><td>容器支持是后期移植，性能和兼容性差距明显</td></tr>
+      <tr><td><strong>硬件兼容</strong></td><td>从 ARM (树莓派) 到 x86 到 IBM Z 大型机到超算 (TOP500 100% Linux)</td><td>主要 x86_64。ARM 支持仍在完善中</td></tr>
+    </tbody></table>
+
+    </div><div class="box box-info">
+      <strong>一个真实数据点</strong><br>
+      根据 W3Techs 和 Netcraft 的统计，全球 96% 以上的顶级云服务器运行 Linux。前 100 万访问量网站中 Linux 占比超过 90%。这不是偏好——这是行业最优实践的共识。
+    </div>
+
+    <h4>什么时候 Windows Server 仍有意义</h4>
+    <p>公平地说，Windows Server 在特定场景仍有不可替代的优势：企业 AD 域管理生态 (如果全公司已经深度绑定微软套件)、.NET Framework 遗留应用 (新 .NET Core 已跨平台)、SQL Server 的某些企业特性 (虽然 SQL Server on Linux 已可用)。但即使在这些场景，趋势也是向 Linux 迁移。</p>
+
+  </div>
+</div>
+
+
+<!-- ═══════════ 第3节：三大发行版家族 ═══════════ -->
+<h2 class="section-title" id="sec01-3"><span class="icon">3</span>主流发行版家族 —— 选择指南</h2>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-clarify">清</span>
+    <h3>Debian 系 —— 桌面与云服务器的王者</h3>
+    <span class="tag tag-core">重点</span>
+  </div>
+  <div class="card-body">
+
+    <h4>Ubuntu —— 最流行的云镜像</h4>
+    <p>由 Canonical 公司维护。每个版本有明确的支持周期：LTS (长期支持版) 提供 5 年免费安全更新 + 额外 5 年 ESM (付费)。apt 包管理 + PPA (个人软件包存档) 生态极其丰富——几乎所有开源软件的官方打包都优先提供 Ubuntu/deb 包格式。</p>
+    <p><strong>适用场景：</strong>云服务器首选镜像 (AWS/Google Cloud/Azure 官方推荐)、开发环境、中小型生产环境。有海量中文教程和 StackOverflow 答案。如果你不确定用哪个发行版——<strong>就选 Ubuntu LTS</strong>。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="b4d5dbd039f7d8eb4638836ec9f472486d277807f725db47394cb54daf81f6e5"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># Ubuntu 版本查看</span>
+lsb_release<span class="hljs-attr"> -a</span>        <span class="hljs-comment"># 查看版本代号和版本号</span>
+<span class="hljs-built_in">cat</span> /etc/os-release   <span class="hljs-comment"># 更详细的信息</span>
+<span class="hljs-built_in">uname</span><span class="hljs-attr"> -r</span>              <span class="hljs-comment"># 查看内核版本</span></code></pre>
+
+    <h4>Debian —— 稳定压倒一切</h4>
+    <p>Debian 是 Ubuntu 的"父亲"，由社区完全控制而非商业公司。它的保守是著名的——软件包版本不是最新的，但一定是最稳定的。Debian Stable 分支的包在进入之前经过了长达数年的测试。社交媒体上流传过一句玩笑："Debian Stable 的版本号主要是用来提醒你时间在流动的。"</p>
+    <p><strong>适用场景：</strong>核心数据库服务器、金融交易系统、电信基础设施、任何"绝对不能出问题"的关键服务。如果你需要极致稳定且愿意接受稍旧的软件版本——选 Debian。</p>
+
+    <div class="box box-tip">
+      <strong>Ubuntu vs Debian 决策速查</strong><br>
+      <strong>Ubuntu：</strong>更新更快、教程更多、云原生支持更好、PPA 生态丰富<br>
+      <strong>Debian：</strong>更稳定、更保守、社区驱动无商业利益、适合核心基础设施<br>
+      两者共享 apt/dpkg 包管理体系，切换成本极低。
+    </div>
+
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-concept">概</span>
+    <h3>Red Hat 系 —— 企业 Linux 的标准</h3>
+    <span class="tag tag-core">重点</span>
+  </div>
+  <div class="card-body">
+
+    <h4>RHEL —— 付费获得商业支持</h4>
+    <p>Red Hat Enterprise Linux 是企业 Linux 的标杆。你付的钱买的不是"软件许可"，而是<strong>生产级支持服务 + 认证硬件兼容性 + 法律保障 (专利 indemnification)</strong>。银行、政府、航空、电信——这些机构选择 RHEL 的原因不是技术本身，而是"有人负责"。RHEL 使用 RPM 包格式 + yum/dnf 包管理器。</p>
+
+    <h4>RHEL 兼容替代品 (免费)</h4>
+    <p>CentOS Linux 曾是 RHEL 最著名的免费克隆版 (RHEL 源代码 → 删 Logo → 重新编译 = CentOS)，但 Red Hat 在 2020 年宣布 CentOS 8 提前终止 (2021年底)，CentOS 7 在 2024 年 6 月结束生命周期。这一刀直接引发了社区的两个新分支：</p>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>发行版</th><th>定位</th><th>与 RHEL 的关系</th></tr></thead>
+      <tbody><tr><td><strong>Rocky Linux</strong></td><td>CentOS 原作者 Gregory Kurtzer 创建</td><td>100% bug-for-bug 兼容 RHEL</td></tr>
+      <tr><td><strong>AlmaLinux</strong></td><td>CloudLinux 公司发起</td><td>100% 兼容 RHEL，社区治理</td></tr>
+      <tr><td><strong>CentOS Stream</strong></td><td>Red Hat 官方维护</td><td>RHEL 的"上游预览版"——介于 Fedora 和 RHEL 之间</td></tr>
+      <tr><td><strong>Fedora</strong></td><td>Red Hat 社区版</td><td>最新技术的前沿试验场 → 稳定后进入 RHEL</td></tr>
+    </tbody></table>
+
+    </div><p><strong>决策速查：</strong>有钱买支持 → RHEL。免费但需要 RHEL 兼容性 → Rocky Linux 或 AlmaLinux。喜欢尝鲜 → Fedora。需要 RHEL 测试环境 → CentOS Stream。</p>
+
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-principle">原</span>
+    <h3>其他重要发行版 —— 另一种选择</h3>
+    <span class="tag tag-compare">进阶</span>
+  </div>
+  <div class="card-body">
+
+    <div class="subcard-grid merged-waterfall-panel">
+
+      <section class="merged-subcard-section">
+        <h5>Arch Linux</h5>
+        <p>滚动更新 (rolling release)，没有"大版本"概念——系统持续更新到最新。pacman 包管理器 + AUR (Arch User Repository，用户维护的海量包仓库) 是极客天堂。安装过程需手动分区、chroot、配置引导。适用：想深入理解 Linux 的极客、需要最新内核/驱动的场景。不推荐用于生产服务器。</p>
+      </section>
+
+      <section class="merged-subcard-section">
+        <h5>openSUSE</h5>
+        <p>德国制造。最出名的是 YaST (Yet another Setup Tool)——一个集成的系统配置管理中心，可以管理磁盘、网络、软件、服务。RPM 包格式但使用 zypper 包管理器。Tumbleweed 分支是滚动更新的稳定版。适用：欧洲企业环境、喜欢图形化管理的管理员。</p>
+      </section>
+
+      <section class="merged-subcard-section">
+        <h5>Alpine Linux</h5>
+        <p>极致轻量——基础镜像仅 5 MB！使用 musl libc (而不是 glibc) + BusyBox (而不是 GNU coreutils)，完全不依赖 GNU 工具链。apk 包管理器。<strong>Docker 容器镜像的首选 base image。</strong>适用：容器化微服务、小型嵌入式设备、任何追求最小镜像体积的场景。</p>
+      </section>
+
+    </div>
+
+    <figure class="merged-illustration" data-image-id="chapter01/03-distro-family-selection.png"><img src="assets/chapter01/03-distro-family-selection.png" alt="按血缘、包管理生态和场景建立选型路径。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="box box-warning">
+      <strong>发行版选择的核心原则</strong><br>
+      不要因为"看起来很酷"而选择一个小众发行版用于生产环境。选择发行版的标准是：<strong>社区规模 × 文档丰富度 × 人才市场 × 厂商支持</strong>。据 Stack Overflow 2023 调查，专业开发者中使用 Linux 的超过 40%，其中 Ubuntu 占绝对主导地位。
+    </div>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="16a2b97d09f6fbe2dd85bba37818fc93b06eba7964ec862aff26dafb3a37ffa4"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 快速查看当前发行版信息</span>
+<span class="hljs-built_in">cat</span> /etc/os-release      <span class="hljs-comment"># 所有现代 Linux 发行版都支持</span>
+hostnamectl              <span class="hljs-comment"># systemd 系统，显示更丰富的信息</span>
+<span class="hljs-built_in">cat</span> /etc/*-release       <span class="hljs-comment"># 兼容老的发行版</span></code></pre>
+
+  </div>
+</div>
+
+
+<!-- ═══════════ 第4节：Shell 与终端 ═══════════ -->
+<h2 class="section-title" id="sec01-4"><span class="icon">4</span>Shell 与终端 —— 你与 Linux 对话的界面</h2>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-concept">概</span>
+    <h3>Shell 是什么 —— 理解你每天敲命令的地方</h3>
+    <span class="tag tag-core">基础</span>
+  </div>
+  <div class="card-body">
+
+    <h4>三层关系：终端 → Shell → 内核</h4>
+    <p>很多人分不清"终端"和"Shell"，这两个概念经常混用但本质不同：</p>
+
+    <figure class="merged-illustration" data-image-id="chapter01/04-terminal-shell-kernel-flow.png"><img src="assets/chapter01/04-terminal-shell-kernel-flow.png" alt="串起输入、Shell 解析、fork/exec、系统调用和结果返回。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="table-wrap"><table>
+      <thead><tr><th>概念</th><th>是什么</th><th>例子</th></tr></thead>
+      <tbody><tr><td><strong>终端 (Terminal)</strong></td><td>一个图形程序，提供一个窗口让你输入和显示文本</td><td>GNOME Terminal、Windows Terminal、iTerm2、Alacritty</td></tr>
+      <tr><td><strong>终端模拟器</strong></td><td>通过 SSH 连接到远程 Linux 时，本地程序模拟一个物理终端</td><td>PuTTY、ssh 命令本身、MobaXterm</td></tr>
+      <tr><td><strong>Shell</strong></td><td>命令解释器——接收文本命令 → 翻译成系统调用 → 传给内核执行</td><td>Bash、Zsh、Fish、sh、dash</td></tr>
+    </tbody></table>
+
+    </div><p><strong>一句话：</strong>终端是你打开的那个窗口 (GUI 程序)。Shell 是在窗口里运行的那个解释器 (命令行程序)。你在终端里敲 <code>ls</code> → Shell 收到 "ls" → Shell 在 PATH 里找到 <code>/bin/ls</code> → 调用 <code>fork()</code> 创建子进程 → 调用 <code>exec()</code> 执行 <code>/bin/ls</code> → 系统调用通知内核读取目录 → 结果返回给 Shell → Shell 打印到终端。</p>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="bc371f24ed75f2e7e9dbb638762836c41df2fbce053aec8b9e8cd87f699778a6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">echo</span> <span class="hljs-variable">$SHELL</span>             <span class="hljs-comment"># 查看当前使用的是什么 Shell</span>
+<span class="hljs-built_in">cat</span> /etc/shells          <span class="hljs-comment"># 查看系统安装了哪些 Shell</span>
+ps<span class="hljs-attr"> -p</span> $$                 <span class="hljs-comment"># 查看当前进程 ($$ 是当前 Shell 的 PID)</span></code></pre>
+
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge badge-clarify">清</span>
+    <h3>三大 Shell 对比：Bash / Zsh / Fish</h3>
+    <span class="tag tag-compare">选择</span>
+  </div>
+  <div class="card-body">
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>特性</th><th>Bash</th><th>Zsh</th><th>Fish</th></tr></thead>
+      <tbody><tr><td><strong>默认安装</strong></td><td>几乎所有 Linux 发行版的默认 Shell</td><td>需手动安装，macOS 默认</td><td>需手动安装</td></tr>
+      <tr><td><strong>脚本兼容性</strong></td><td>POSIX sh 兼容 + Bash 扩展</td><td>兼容 Bash 大部分语法</td><td><strong>不兼容 Bash 语法！</strong>脚本语法完全不同</td></tr>
+      <tr><td><strong>自动补全</strong></td><td>基本：Tab 补全文件/命令名</td><td>丰富：命令参数补全、大小写容错</td><td>智能：基于历史的模糊匹配，开箱即用</td></tr>
+      <tr><td><strong>生态</strong></td><td>最大最全，几乎所有脚本都用 #!/bin/bash</td><td>oh-my-zsh 插件生态极强 (300+ 插件)</td><td>oh-my-fish / fisher 插件管理器</td></tr>
+      <tr><td><strong>语法高亮</strong></td><td>无原生支持</td><td>插件支持 (zsh-syntax-highlighting)</td><td>内置！敲命令时实时高亮</td></tr>
+      <tr><td><strong>适用场景</strong></td><td>写脚本、服务器操作、面试</td><td>日常开发、交互式使用</td><td>纯交互式使用，不写脚本</td></tr>
+    </tbody></table>
+
+    </div><div class="box box-info">
+      <strong>选择的智慧</strong><br>
+      <strong>服务器上只用 Bash。</strong>不管你在本地用 Zsh 或 Fish 多顺手，你 SSH 到任何一台 Linux 服务器时，它默认的 Shell 就是 Bash。如果连 Bash 都不熟，你将在生产服务器前束手无策。<br>
+      <strong>本机开发装 Zsh + oh-my-zsh。</strong>自动补全、语法高亮、Git 状态显示能极大改善日常体验。<br>
+      <strong>Fish 适合初学者。</strong>开箱即用的体验最好，但不要用它写脚本——语法不同，可移植性为零。
+    </div>
+
+    <pre data-presentation-code="v1" data-presentation-highlight="e1ed6eede99092235e3b6998969b003f8dea7307c21e89f459044b7ae81c51c0"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 安装 Zsh + oh-my-zsh (Ubuntu/Debian)</span>
+sudo <span class="hljs-built_in">apt</span> install zsh
+sh<span class="hljs-attr"> -c</span> <span class="hljs-string">"<span class="hljs-subst">$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)</span>"</span>
+
+<span class="hljs-comment"># 将默认 Shell 切换为 Zsh</span>
+chsh<span class="hljs-attr"> -s</span> $(<span class="hljs-built_in">which</span> zsh)
+
+<span class="hljs-comment"># 验证</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-variable">$SHELL</span>             <span class="hljs-comment"># /usr/bin/zsh</span></code></pre>
+
+  </div>
+</div>
+
+<!-- /container -->
+
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>ACL</b> · Access Control List 访问控制列表</p><p class="kc-annotation-line"><b>CPU</b> · Central Processing Unit 中央处理器</p><p class="kc-annotation-line"><b>GUI</b> · Graphical User Interface 图形用户界面</p><p class="kc-annotation-line"><b>RAM</b> · Random-Access Memory 随机存取存储器</p><p class="kc-annotation-line"><b>SQL</b> · Structured Query Language 结构化查询语言</p><p class="kc-annotation-line"><b>SSH</b> · Secure Shell 安全外壳协议</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第1章</p>
+  <p style="margin-top:4px">问题驱动 · 追本溯源 —— 理解"为什么"，而不只是"怎么用"</p>
+</footer>
+
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>

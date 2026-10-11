@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>性能调优与监控 · Linux系统</title>
+
+
+
+<style>
+:root {
+  --bg: #f5f7fa;
+  --card-bg: #fff;
+  --primary: #16A34A;
+  --primary-light: #dcfce7;
+  --accent: #e53e3e;
+  --success: #15803d;
+  --success-light: #f0fdf4;
+  --warning: #c05621;
+  --warning-light: #fffaf0;
+  --text: #2d3748;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --shadow: 0 4px 6px rgba(0,0,0,.07);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.85; font-size: 15px;
+}
+.site-header {
+  background: linear-gradient(135deg, #14532d, #16A34A, #4ade80);
+  color: #fff; padding: 48px 24px 40px; text-align: center;
+}
+.site-header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; }
+.site-header .subtitle { font-size: 1rem; opacity: .85; }
+.site-header .meta-row {
+  margin-top: 16px; font-size: .85rem; opacity: .7;
+  display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+}
+.container { max-width: 1120px; margin: 0 auto; padding: 32px 20px; }
+.toc {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 28px 32px; margin-bottom: 36px;
+}
+.toc h2 { font-size: 1.15rem; color: var(--primary); margin-bottom: 16px; }
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 6px;
+}
+.toc-grid a {
+  display: block; padding: 6px 10px; color: var(--text-secondary);
+  text-decoration: none; border-radius: 6px; font-size: .9rem;
+}
+.toc-grid a:hover { background: var(--primary-light); color: var(--primary); }
+.section-title {
+  font-size: 1.5rem; font-weight: 700; color: #14532d;
+  margin: 48px 0 20px; padding-bottom: 10px;
+  border-bottom: 3px solid var(--primary);
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title .icon {
+  width: 36px; height: 36px; background: var(--primary);
+  border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 1.1rem;
+}
+.card {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden;
+}
+.card:hover { box-shadow: var(--shadow); }
+.card-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.card-header .badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  font-weight: 700; font-size: .85rem; flex-shrink: 0;
+}
+.badge-concept { background: #dcfce7; color: #16A34A; }
+.badge-principle { background: #fef3c7; color: #b45309; }
+.badge-clarify { background: #eff6ff; color: #2563eb; }
+.badge-implement { background: #fce7f3; color: #be185d; }
+.badge-operate { background: #fff7ed; color: #c2410c; }
+.badge-apply { background: #f5f3ff; color: #0e7490; }
+.badge-ops { background: #e0f2fe; color: #0369a1; }
+.card-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.card-header .tag {
+  margin-left: auto; font-size: .75rem; padding: 2px 10px;
+  border-radius: 20px; font-weight: 500;
+}
+.tag-core { background: #dcfce7; color: #166534; }
+.tag-practice { background: #fff7ed; color: #9a3412; }
+.tag-advanced { background: #fce7f3; color: #9d174d; }
+.card-body { padding: 20px 24px; }
+.card-body h4 {
+  font-size: .95rem; font-weight: 700; color: var(--text);
+  margin: 20px 0 10px;
+}
+.card-body h4:first-child { margin-top: 0; }
+.card-body p { margin-bottom: 14px; color: var(--text-secondary); line-height: 1.9; }
+.card-body ul, .card-body ol {
+  padding-left: 22px; margin-bottom: 14px; color: var(--text-secondary); line-height: 1.9;
+}
+.card-body li { margin-bottom: 6px; }
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table {
+  width: 100%; border-collapse: collapse; font-size: .88rem;
+}
+thead th {
+  background: #f7fafc; color: var(--text); font-weight: 700;
+  padding: 10px 12px; border: 1px solid var(--border); text-align: left;
+}
+tbody td {
+  padding: 8px 12px; border: 1px solid var(--border); color: var(--text-secondary);
+}
+tbody tr:nth-child(even) { background: #fafbfc; }
+.box {
+  border-radius: var(--radius-sm); padding: 14px 18px; margin: 14px 0;
+  font-size: .9rem; border-left: 4px solid; line-height: 1.8;
+}
+.box-info { background: #ecfdf5; border-color: #16A34A; color: #14532d; }
+.box-warning { background: #fffaf0; border-color: #dd6b20; color: #7b341e; }
+.box-danger { background: #fff5f5; border-color: #e53e3e; color: #742a2a; }
+.box-tip { background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+code {
+  background: #edf2f7; padding: 2px 6px; border-radius: 4px;
+  font-size: .85em; font-family: "SF Mono","Fira Code","Consolas","Monaco",monospace;
+  color: #2d3748;
+}
+pre {
+  background: #1e293b; color: #e2e8f0; padding: 16px 20px;
+  border-radius: var(--radius-sm); overflow-x: auto; font-size: .82rem;
+  line-height: 1.6; margin: 8px 0 14px 0;
+  font-family: "SF Mono","Fira Code","Consolas","Monaco",monospace;
+}
+p.out-label {
+  font-size: .78rem; color: #16A34A; font-weight: 600;
+  margin: 12px 0 0 0; padding: 4px 0;
+}
+p.err-label {
+  font-size: .78rem; color: #e53e3e; font-weight: 600;
+  margin: 12px 0 0 0; padding: 4px 0;
+}
+.subcard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px; margin: 12px 0;
+}
+.subcard {
+  background: #f7fafc; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 16px;
+}
+.subcard h5 { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.subcard p, .subcard li { font-size: .85rem; color: var(--text-secondary); }
+.gloss-inline {
+  margin-top: 18px; padding: 10px 14px; background: #f7fafc;
+  border-radius: 8px; border-left: 3px solid #a0aec0;
+  font-size: .78rem; line-height: 1.6; color: var(--text-muted);
+}
+.gloss-inline .gi { display: inline-block; margin-right: 12px; white-space: nowrap; }
+.gloss-inline .gk { font-weight: 700; color: var(--primary); }
+.site-footer {
+  text-align: center; padding: 32px 20px; color: var(--text-muted);
+  font-size: .82rem; border-top: 1px solid var(--border); margin-top: 48px;
+}
+@media(max-width:768px) {
+  .site-header h1 { font-size: 1.5rem; }
+  .container { padding: 20px 12px; }
+  .card-body { padding: 16px; }
+  .toc-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+<style id="merged-illustration-styles">.merged-illustration{display:block!important;width:auto!important;max-width:1120px!important;margin:1.6rem auto!important;text-align:center;break-inside:avoid;box-sizing:border-box}
+.merged-illustration img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;border-radius:10px;box-shadow:0 4px 18px rgba(15,23,42,.12)}
+@media (max-width:720px){.merged-illustration{max-width:calc(100% - 24px)!important;margin:1.15rem auto!important}.merged-illustration img{border-radius:7px}}</style><style id="merged-waterfall-panel-styles">.subcard-grid.merged-waterfall-panel{display:block!important;width:100%;max-width:100%;box-sizing:border-box;margin:0!important;padding:1.25rem 1.5rem!important;overflow:visible!important;border:1px solid var(--border,#e2e8f0)!important;border-radius:var(--radius-sm,8px)!important;background:#f7fafc!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;width:auto!important;min-width:0!important;box-sizing:border-box;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.35rem!important;padding-top:0!important;border:0!important}
+.subcard-grid.merged-waterfall-panel>.merged-subcard-section>h5:first-child{margin-top:0}
+@media (max-width:720px){.subcard-grid.merged-waterfall-panel{padding:1rem!important}.subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:1.1rem!important}}</style><style id="merged-annotation-styles">.kc-acronym-grid.kc-annotation-list{display:block!important;grid-template-columns:none!important;gap:0!important;padding:1rem 1.25rem!important;border:1px solid var(--border,#d7e4e7)!important;border-radius:var(--radius-sm,10px)!important;background:#f6fbfb!important;box-sizing:border-box}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line{display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;line-height:1.75}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line+.kc-annotation-line{margin-top:.45rem!important}
+.kc-acronym-grid.kc-annotation-list>.kc-annotation-line>b{color:#0f766e}</style><style id="merged-standard-layout-styles">:root{--std-bg:#f5f7fa;--std-card:#fff;--std-primary:#16A34A;--std-primary-dark:#14532d;--std-primary-accent:#4ade80;--std-primary-light:#dcfce7;--std-text:#2d3748;--std-text-secondary:#4a5568;--std-text-muted:#718096;--std-border:#e2e8f0;--std-radius:12px;--std-radius-sm:8px;--std-shadow-sm:0 1px 3px rgba(15,23,42,.07);--std-shadow:0 6px 20px rgba(15,23,42,.09)}
+html{scroll-behavior:smooth}
+body{display:block!important;align-items:initial!important;width:auto!important;min-height:100vh;margin:0!important;padding:0!important;background:var(--std-bg)!important;color:var(--std-text)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;font-size:15px!important;line-height:1.85!important}
+body>.site-header,body>.header-section,body>header.header,body>div.header{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0!important;padding:48px 24px 40px!important;background:linear-gradient(135deg,var(--std-primary-dark),var(--std-primary),var(--std-primary-accent))!important;color:#fff!important;text-align:center!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{margin:0 0 8px!important;color:#fff!important;font-size:2.2rem!important;font-weight:800!important;line-height:1.25!important;letter-spacing:0!important}
+body>.site-header .subtitle,body>.header-section .subtitle,body>header.header .subtitle,body>div.header .subtitle{margin:0!important;color:#fff!important;font-size:1rem!important;opacity:.86!important}
+.meta-row,.badge-group{display:flex!important;justify-content:center!important;gap:16px!important;flex-wrap:wrap!important;margin-top:16px!important;color:#fff!important;font-size:.85rem!important;opacity:.82!important}
+.container{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:0 auto!important;padding:32px 20px!important}
+.stats-bar{display:flex!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:16px 24px!important;gap:20px!important;flex-wrap:wrap!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;color:var(--std-text-secondary)!important}
+.toc,.site-toc{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 36px!important;padding:28px 32px!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow)!important}
+.toc h2,.site-toc h2{margin:0 0 16px!important;color:var(--std-primary)!important;font-size:1.15rem!important;font-weight:700!important}
+.toc-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;gap:6px!important}
+.toc-grid a,.toc a,.site-toc a{display:block!important;padding:6px 10px!important;color:var(--std-text-secondary)!important;text-decoration:none!important;border-radius:6px!important;font-size:.9rem!important}
+.toc-grid a:hover,.toc a:hover,.site-toc a:hover{background:var(--std-primary-light)!important;color:var(--std-primary)!important}
+.section-title{display:flex!important;align-items:center!important;gap:10px!important;margin:46px 0 20px!important;padding:0 0 10px!important;color:var(--std-primary-dark)!important;font-size:1.5rem!important;font-weight:700!important;line-height:1.35!important;border-bottom:3px solid var(--std-primary)!important}
+.section-title .icon{display:inline-flex!important;width:36px!important;height:36px!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;background:var(--std-primary)!important;color:#fff!important;border-radius:8px!important;font-size:1.05rem!important}
+.card{display:block!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:0 0 24px!important;padding:0!important;background:var(--std-card)!important;border:1px solid var(--std-border)!important;border-radius:var(--std-radius)!important;box-shadow:var(--std-shadow-sm)!important;overflow:hidden!important;color:var(--std-text)!important}
+.card:hover{box-shadow:var(--std-shadow)!important}
+.card-header{display:flex!important;align-items:center!important;gap:12px!important;box-sizing:border-box!important;margin:0!important;padding:18px 24px!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--std-border)!important;border-radius:0!important}
+.card-header h3,.card-title{margin:0!important;color:var(--std-text)!important;font-size:1.05rem!important;font-weight:700!important;line-height:1.45!important}
+.card-subtitle{color:var(--std-text-muted)!important;font-size:.82rem!important}
+.card-header .badge,.card-icon{display:inline-flex!important;width:34px!important;height:34px!important;align-items:center!important;justify-content:center!important;flex:0 0 34px!important;border-radius:8px!important;font-size:.85rem!important;font-weight:700!important}
+.card-header .tag{margin-left:auto!important;padding:2px 10px!important;border-radius:20px!important;font-size:.75rem!important}
+.card-body{display:block!important;box-sizing:border-box!important;margin:0!important;padding:20px 24px!important;color:var(--std-text-secondary)!important}
+.card-body h4{margin:20px 0 10px!important;color:var(--std-text)!important;font-size:.96rem!important;font-weight:700!important}
+.card-body h4:first-child{margin-top:0!important}
+.card-body p{margin:0 0 14px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body ul,.card-body ol{margin:0 0 14px!important;padding-left:22px!important;color:var(--std-text-secondary)!important;line-height:1.9!important}
+.card-body li{margin-bottom:6px!important}
+.card-footer{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:12px 24px!important;border-top:1px solid var(--std-border)!important;color:var(--std-text-muted)!important;font-size:.78rem!important}
+.table-wrap{width:100%!important;margin:12px 0!important;overflow-x:auto!important}
+table{width:100%!important;border-collapse:collapse!important;margin:10px 0!important;background:var(--std-card)!important;font-size:.88rem!important}
+th{padding:10px 12px!important;background:var(--std-primary-light)!important;color:var(--std-text)!important;font-weight:700!important;text-align:left!important;border:1px solid var(--std-border)!important}
+td{padding:8px 12px!important;color:var(--std-text-secondary)!important;border:1px solid var(--std-border)!important}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--std-primary-light) 24%,#fff)!important}
+.box{box-sizing:border-box!important;margin:14px 0!important;padding:14px 18px!important;border-radius:var(--std-radius-sm)!important;border-left:4px solid var(--std-primary)!important;font-size:.9rem!important;line-height:1.8!important}
+.box-info{background:#effafa!important;border-color:var(--std-primary)!important;color:var(--std-primary-dark)!important}
+.box-warning{background:#fffaf0!important;border-color:#dd6b20!important;color:#7b341e!important}
+.box-danger{background:#fff5f5!important;border-color:#e53e3e!important;color:#742a2a!important}
+.box-success{background:#f0fff4!important;border-color:#38a169!important;color:#22543d!important}
+code{padding:2px 6px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:4px!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.85em!important}
+pre{box-sizing:border-box!important;margin:8px 0 14px!important;padding:16px 20px!important;overflow-x:auto!important;background:#1e293b!important;color:#e2e8f0!important;border:1px solid #334155!important;border-radius:var(--std-radius-sm)!important;font-family:"SF Mono","Fira Code","Consolas","Monaco",monospace!important;font-size:.82rem!important;line-height:1.65!important}
+pre code{padding:0!important;background:transparent!important;color:inherit!important;border:0!important;font-size:inherit!important}
+.grid2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.grid3{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.flow-row{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important;margin:8px 0!important}
+.site-footer{display:block!important;width:100%!important;max-width:1120px!important;box-sizing:border-box!important;margin:48px auto 0!important;padding:28px 20px!important;color:var(--std-text-muted)!important;text-align:center!important;font-size:.82rem!important;border:0!important;border-top:1px solid var(--std-border)!important;background:transparent!important}
+.kc-acronyms{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin:32px 0 0!important;padding:0!important}
+@media(max-width:768px){body>.site-header,body>.header-section,body>header.header,body>div.header{padding:34px 16px 30px!important}body>.site-header h1,body>.header-section h1,body>header.header h1,body>div.header h1{font-size:1.55rem!important}.container{padding:20px 12px!important}.toc,.site-toc{padding:20px 18px!important}.toc-grid{grid-template-columns:1fr!important}.card-header{padding:15px 16px!important}.card-body{padding:16px!important}.grid2,.grid3{grid-template-columns:1fr!important}.section-title{margin-top:34px!important;font-size:1.25rem!important}}</style><style id="merged-reading-design-styles">/* Reading-first refinement: one content column, consistent rhythm, no cropped media. */
+html{font-size:16px!important;scroll-padding-top:24px}
+body{--std-primary-light:color-mix(in srgb,var(--std-primary) 9%,white);--primary-light:var(--std-primary-light);--text-secondary:var(--std-text-secondary);--text-muted:var(--std-text-muted);--border:var(--std-border);--radius-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+.kc-skip{position:absolute;left:16px;top:-80px;z-index:100;padding:10px 16px;background:#fff;color:var(--std-primary-dark);border-radius:6px}
+.kc-skip:focus{top:10px}
+.kc-global-nav{display:flex;align-items:center;gap:18px;max-width:1120px;margin:0 auto;padding:14px 20px;color:#526174;font-size:13px;line-height:1.5;position:relative;z-index:10}
+.kc-global-nav a{color:var(--std-primary-dark);text-decoration:none;white-space:nowrap}
+.kc-global-nav a:hover{text-decoration:underline}
+.kc-global-nav .kc-current{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kc-global-nav details{position:relative;flex-shrink:0}
+.kc-global-nav summary{cursor:pointer;color:var(--std-primary-dark)}
+.kc-chapter-menu{position:absolute;right:0;top:28px;min-width:300px;max-width:80vw;max-height:65vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--std-border);border-radius:10px;box-shadow:0 12px 30px #10253c20}
+.kc-chapter-menu a{display:block;white-space:normal;padding:9px 12px;border-radius:6px}
+.kc-chapter-menu a[aria-current=page]{background:var(--std-primary-light);font-weight:700}
+body>.site-header{padding:44px 24px 38px!important}
+body>.site-header h1{font-size:34px!important;line-height:1.4!important;max-width:1040px;margin:0 auto 8px!important}
+body>.site-header .subtitle{font-size:16px!important;line-height:1.8!important;max-width:960px;margin:0 auto!important}
+body>.site-header .editorial-meta{display:flex!important;position:static!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 22px!important;width:auto!important;max-width:1000px!important;margin:16px auto 0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#eefcf9!important;font-size:13px!important;font-weight:400!important;opacity:1!important;line-height:1.8!important;letter-spacing:0!important}
+body>.site-header .editorial-meta>*{display:inline-block!important;width:auto!important;height:auto!important;flex:0 1 auto!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;letter-spacing:0!important}
+body>.site-header .editorial-meta span{color:inherit!important;font-size:inherit!important}
+body>.site-header::before,body>.site-header::after{display:none!important}
+body>.container{padding:30px 20px 44px!important}
+.container{min-width:0;overflow-wrap:anywhere}
+.container .toc{font-family:inherit!important;margin-bottom:32px!important;padding:24px 28px!important;box-shadow:0 3px 14px #142e4310!important}
+.container .toc h2{font-size:18px!important;line-height:1.5!important;margin:0 0 12px!important}
+.container .toc>.subtitle,.container .toc>.toc-subtitle{font-size:14px!important;line-height:1.75!important;color:#64748b!important;margin:0 0 12px!important}
+.container .toc-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 22px!important}
+.container .toc-grid a{font-family:inherit!important;font-size:14.5px!important;font-weight:400!important;line-height:1.8!important;padding:7px 9px!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere}
+.container .toc-grid a:hover{background:var(--std-primary-light)!important}
+.container .section-title{font-size:23px!important;line-height:1.5!important;margin:36px 0 18px!important}
+.container .card{min-width:0!important;margin:0 0 26px!important;box-shadow:0 2px 8px #142e4308!important}
+.container .card-header{min-width:0!important;padding:20px 28px!important;flex-wrap:wrap!important;gap:10px 12px!important}
+.container .card-header>div:not(.badge):not(.badge-group):not(.card-icon):not(.card-num):not(.card-divider){min-width:0;flex:1}
+.container .card-header>.badge-group{display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin:0 0 0 auto!important;width:auto!important}
+.container .card-header>h2,.container .card-header>h3{flex:1 1 240px;min-width:0}
+.container .card-header h2,.container .card-header h3,.container .card-header .card-title{font-family:inherit!important;font-size:18px!important;line-height:1.55!important;margin:0!important;color:var(--std-text)!important}
+.container .card-subtitle{font-size:13.5px!important;line-height:1.75!important;margin-top:4px!important;color:#64748b!important}
+.container .card-body{min-width:0!important;padding:24px 28px!important;font-size:15px!important;line-height:1.9!important;overflow-wrap:anywhere}
+.container .card-body> :last-child{margin-bottom:0!important}
+.container .card-body p,.container .card-body ul,.container .card-body ol,.container .card-body li{font-size:15px!important;line-height:1.9!important}
+.container .card-body h3{font-size:18px!important;line-height:1.65!important;margin:22px 0 10px!important}
+.container .card-body h4,.container .card-body h5,.container .card-body h6{font-size:16px!important;line-height:1.7!important;margin:20px 0 10px!important;color:var(--std-text)!important}
+.container .card-body h3:first-child,.container .card-body h4:first-child,.container .card-body h5:first-child{margin-top:0!important}
+.container .box,.container .note,.container .callout,.container .highlight-box,.container .info-item{font-size:15px!important;line-height:1.9!important;max-width:100%!important;min-width:0!important}
+.container .box-info,.container .box-warning,.container .box-danger,.container .warn,.container .danger,.container .warning-box,.container .danger-box,.container .decision-tree{font-size:15px!important;line-height:1.9!important;min-width:0;max-width:100%}
+.container .t-label,.container .gd,.container small{font-size:14px!important;line-height:1.85!important}
+.container .card-body .tag{font-size:14px!important;line-height:1.8!important;white-space:normal!important;max-width:100%}
+.container .box>strong:first-child{display:block;margin-bottom:8px;color:var(--std-primary-dark)}
+.container .card-body .out-label{font-size:14px!important;line-height:1.8!important;color:#526174!important}
+.container .card-num{display:none!important}
+.container .card-header .card-num{display:inline-flex!important;position:static!important;width:auto!important;height:auto!important;opacity:1!important;font-size:12px!important;line-height:1.5!important;padding:4px 8px!important;background:var(--std-primary-light)!important;color:var(--std-primary-dark)!important;border-radius:6px!important}
+.container .card-divider{display:none!important}
+.container .card-footer{padding:14px 28px!important;font-size:13px!important;line-height:1.8!important;flex-wrap:wrap}
+.container pre{display:block!important;max-width:100%!important;min-width:0!important;margin:14px 0 18px!important;padding:20px 22px!important;font-size:14px!important;line-height:1.8!important;white-space:pre!important;overflow-x:auto!important;overflow-wrap:normal!important;tab-size:4}
+.container pre code{font-size:inherit!important;white-space:inherit!important;overflow-wrap:normal!important;word-break:normal!important;line-height:inherit!important}
+.container code{font-size:14px!important;overflow-wrap:anywhere;white-space:normal}
+.container .cmd,.container .code-inline,.container .inline-code{font-size:14px!important;white-space:normal!important;overflow-wrap:anywhere;max-width:100%}
+.container .cmd-block{font-size:14px!important;line-height:1.85!important;white-space:pre-wrap!important;overflow-wrap:anywhere;max-width:100%!important;padding:16px 20px!important}
+.container .table-wrap{display:block!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;margin:16px 0!important;border-radius:7px}
+.container table{font-size:14px!important;line-height:1.85!important;margin:0!important}
+.container th,.container td{font-size:14px!important;line-height:1.85!important;padding:11px 14px!important;vertical-align:top!important}
+.container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;grid-template-columns:none!important;columns:auto!important;margin:18px 0!important;padding:20px 22px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important;overflow:visible!important}
+.container .editorial-stack>.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section{display:block!important;float:none!important;position:static!important;width:auto!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;color:var(--std-text-secondary)!important}
+.container .editorial-stack>.editorial-stack-section+.editorial-stack-section,.container .subcard-grid.merged-waterfall-panel>.merged-subcard-section+.merged-subcard-section{margin-top:24px!important;border:0!important;padding-top:0!important}
+.container .editorial-stack-section>strong:first-child,.container .editorial-stack-section>.cmd-title{display:block;font-size:16px!important;line-height:1.7!important;font-weight:700;margin-bottom:10px;color:var(--std-primary-dark)!important}
+.container .editorial-stack-section>h3:first-child,.container .editorial-stack-section>h4:first-child,.container .editorial-stack-section>h5:first-child{margin-top:0!important}
+.container .editorial-stack.editorial-code-stack{padding:0!important;background:#1e293b!important;border-color:#334155!important;overflow:hidden!important}
+.container .editorial-code-stack>pre{margin:0!important;border:0!important;border-radius:0!important;padding:20px 22px!important;box-shadow:none!important}
+.container .editorial-code-stack>pre+pre{padding-top:8px!important}
+.container .gloss-inline{display:block!important;margin:16px 0!important;padding:16px 20px!important;border:1px solid var(--std-border)!important;border-radius:8px!important;background:#f8fafc!important;font-size:14px!important;line-height:1.9!important}
+.container .gloss-inline .gi{display:block!important;width:auto!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;font-size:14px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .gloss-inline .gi+.gi{margin-top:8px!important}
+.container .gloss-inline .gk{display:inline!important;font-size:14px!important;font-weight:650!important;margin-right:8px;color:var(--std-primary-dark)!important}
+.container .editorial-readable{font-size:15px!important;line-height:1.9!important;white-space:normal!important;overflow-wrap:anywhere}
+.container .flow-row{gap:8px!important;max-width:100%;min-width:0}
+.container .flow-row>*{max-width:100%;overflow-wrap:anywhere;white-space:normal!important}
+.container .flow-diagram{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-width:0!important}
+.container .flow-step{font-size:13px!important;line-height:1.6!important}
+.container figure,.container .merged-illustration{display:block!important;float:none!important;width:auto!important;max-width:100%!important;margin:24px auto!important;padding:0!important;min-width:0!important;text-align:center;box-sizing:border-box}
+.container img{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;margin:0 auto!important;box-shadow:0 2px 10px #142e430c!important;border-radius:8px!important}
+.container figcaption{font-size:13px!important;line-height:1.8!important;color:#64748b!important;margin-top:10px!important}
+.container .editorial-media-slot{padding:0 28px!important;max-width:100%!important}
+.container .kc-acronyms{margin-top:30px!important}
+.container>.kc-acronyms{width:100%!important;padding:0!important;margin:30px 0 26px!important;clear:both}
+.container .editorial-diagram-source{margin:12px 0 22px;color:#64748b;font-size:13px}
+.container .editorial-diagram-source>summary{cursor:pointer;padding:8px 0}
+.container .editorial-generated-diagram img{max-width:min(100%,760px)!important;cursor:zoom-in}
+.container .kc-acronyms h2,.container .kc-acronyms h3{font-size:18px!important;line-height:1.7!important;margin:0 0 12px!important}
+.container .kc-annotation-line{font-size:14px!important;line-height:1.9!important}
+.container mjx-container[display="true"]{display:block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:12px 0;margin:16px 0!important;font-size:105%!important}
+.container mjx-container:not([display="true"]){display:inline-block!important;max-width:100%!important;overflow-x:auto;overflow-y:hidden;padding:3px 0;vertical-align:middle}
+@media(max-width:768px){
+ .kc-global-nav{gap:10px;padding:12px 16px;font-size:12px;flex-wrap:wrap}.kc-global-nav .kc-current{flex-basis:calc(100% - 75px)}
+ body>.site-header{padding:32px 18px!important}body>.site-header h1{font-size:27px!important}body>.site-header .subtitle{font-size:15px!important}
+ body>.container{padding:22px 14px 32px!important}.container .toc{padding:20px!important}.container .toc-grid{grid-template-columns:1fr!important;gap:2px!important}
+ .container .card-header{padding:18px!important}.container .card-body{padding:20px 18px!important}.container .card-footer{padding:12px 18px!important}.container .card-header .tag{margin-left:0!important}
+ .container .editorial-stack,.container .subcard-grid.merged-waterfall-panel{padding:16px!important}.container .editorial-code-stack{padding:0!important}
+ .container pre{font-size:13px!important;padding:16px!important}.container .gloss-inline{padding:14px!important}.container .editorial-media-slot{padding:0 18px!important}
+ .container .table-wrap table{min-width:560px}.container .table-wrap table td,.container .table-wrap table th{word-break:normal;overflow-wrap:normal}
+}</style><style id="chapter-presentation-repair">/* Match the legacy header selector specificity, including .header variants. */
+body>.site-header.site-header{position:relative!important;text-align:center!important;transform:none!important;clip-path:none!important}
+body>.site-header.site-header h1{display:block!important;position:static!important;float:none!important;transform:none!important;left:auto!important;right:auto!important;width:100%!important;max-width:1040px!important;box-sizing:border-box!important;margin:0 auto 8px!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+body>.site-header.site-header .subtitle{display:block!important;position:static!important;float:none!important;transform:none!important;width:100%!important;max-width:960px!important;box-sizing:border-box!important;margin:0 auto!important;padding:0!important;text-align:center!important;overflow-wrap:anywhere!important}
+.container .card-header{color:var(--std-text,#1e293b)!important}
+.container pre:has(>code.editorial-code){background:#1e293b!important;color:#e2e8f0!important}
+.container pre>code.editorial-code{display:block!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e2e8f0!important;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;overflow:visible!important;white-space:pre!important}
+.container code.editorial-code .hljs-comment,.container code.editorial-code .hljs-quote{color:#a2afc2!important}
+.container code.editorial-code .hljs-keyword,.container code.editorial-code .hljs-doctag,.container code.editorial-code .hljs-type{color:#ff9b95!important}
+.container code.editorial-code .hljs-string,.container code.editorial-code .hljs-regexp{color:#a5d6ff!important}
+.container code.editorial-code .hljs-number,.container code.editorial-code .hljs-literal,.container code.editorial-code .hljs-attr,.container code.editorial-code .hljs-attribute,.container code.editorial-code .hljs-variable,.container code.editorial-code .hljs-meta,.container code.editorial-code .hljs-operator{color:#91caff!important}
+.container code.editorial-code .hljs-title,.container code.editorial-code .hljs-section{color:#d2a8ff!important}
+.container code.editorial-code .hljs-built_in,.container code.editorial-code .hljs-symbol{color:#ffc084!important}
+.container code.editorial-code .hljs-name,.container code.editorial-code .hljs-selector-tag{color:#9be9a8!important}
+.container .editorial-chapter-summary .card-body{font-size:15px!important;line-height:1.9!important;color:var(--std-text-secondary,#475569)!important;text-align:left!important}
+.container .editorial-chapter-summary .card-body>div{display:block!important;margin:14px 0!important;padding:0!important;text-align:left!important;font-size:15px!important;line-height:1.9!important;color:inherit!important}
+.container .editorial-chapter-summary .card-body p{font-size:15px!important;line-height:1.9!important;color:inherit!important;text-align:left!important;margin:10px 0!important}
+.container .editorial-chapter-summary .card-body h4{font-size:17px!important;line-height:1.7!important;font-weight:650!important;text-align:left!important;margin:22px 0 12px!important;color:var(--std-primary-dark,#0f766e)!important}
+.container .editorial-chapter-summary .card-body>:first-child{margin-top:0!important}
+.kc-chapter-menu a{white-space:normal!important;overflow-wrap:anywhere;line-height:1.65}
+@media(max-width:768px){
+ .kc-global-nav details{position:static!important}
+ .kc-global-nav .kc-chapter-menu{position:absolute!important;left:12px!important;right:12px!important;top:100%!important;width:auto!important;max-width:none!important;max-height:min(70vh,640px)!important;box-sizing:border-box!important;overflow-y:auto!important;margin-top:4px!important}
+}</style><style id="reading-math-overflow-style">/* SVG ink bounds can overflow its own layout box by a few pixels. That is
+   not a reason to turn every inline symbol into a horizontal scroll area. */
+.container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+<body>
+<a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 性能调优与监控</span><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" title="上一章">← 上一章</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" aria-current="page" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
+
+<header class="site-header">
+  <h1>性能调优与监控</h1>
+  <p class="subtitle">让系统跑得更快 —— 从 CPU 到磁盘的全栈性能分析</p>
+  <div class="meta-row editorial-meta">
+    <span>工具链：top / perf / iostat / vmstat / netdata</span>
+    <span>风格：问题驱动 · 追本溯源</span>
+    <span>目标：系统变慢了，你能找出根因</span>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+
+<nav class="toc"><h2>本章目录</h2><div class="toc-grid">
+<a href="#sec16-1">全栈性能工具链</a>
+<a href="#sec16-2">CPU分析与perf</a>
+<a href="#sec16-3">内存OOM诊断</a>
+<a href="#sec16-4">磁盘IO优化</a>
+<a href="#sec16-5">netdata简介</a>
+<a href="#sec16-6">性能排查思路</a>
+</div></nav>
+
+<!-- ═══════════════ 16.1 全栈性能分析工具链 ═══════════════ -->
+<h2 class="section-title" id="sec16-1"><span class="icon">1</span>全栈性能分析工具链</h2>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-operate">操</span><h3>层级一：CPU —— 谁在消耗计算资源</h3><span class="tag tag-core">基础</span></div>
+<div class="card-body">
+<h4>top —— 交互式进程监控</h4>
+<p><code>top</code> 是 Linux 性能分析的"第一面镜子"。启动后每 3 秒刷新一次，按 <code>1</code> 展开所有 CPU 核心，按 <code>P</code> 按 CPU 使用率排序，按 <code>M</code> 按内存排序。你盯着它看三分钟的 CPU 使用率曲线，就能知道系统是否满载。</p>
+<p>关键指标解读：<strong>load average</strong>（右上角三个数字）——分别表示 1、5、15 分钟的平均负载。如果 1 分钟的值远大于 5 和 15 分钟的值，说明负载正在快速上升；如果三个值都很高，说明系统长期过载。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="47b19350035c18f8598353a6e6f145e5699bf3dd3e61e286322d9a21bde7a445"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">top
+<span class="hljs-comment"># 进入后按快捷键:</span>
+<span class="hljs-comment">#   1   — 展开/折叠所有 CPU 核心</span>
+<span class="hljs-comment">#   P   — 按 CPU 使用率降序排列</span>
+<span class="hljs-comment">#   M   — 按内存使用率降序排列</span>
+<span class="hljs-comment">#   c   — 显示进程的完整命令行</span>
+<span class="hljs-comment">#   k   — 杀掉一个进程（输入 PID 和信号）</span>
+<span class="hljs-comment">#   q   — 退出</span>
+
+<span class="hljs-comment"># 非交互式快照（脚本中常用）</span>
+top<span class="hljs-attr"> -bn1</span> | <span class="hljs-built_in">head</span> -20</code></pre>
+<p class="out-label">▶ top 关键输出解读</p>
+<pre data-presentation-code="v1" data-presentation-highlight="d76e519b2b4feffacaf1092a7600256c9577524911841dbf88f24dd111e37ba0"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes"><span class="hljs-string">top</span> <span class="hljs-bullet">-</span> <span class="hljs-number">14</span><span class="hljs-string">:32:18</span> <span class="hljs-string">up</span> <span class="hljs-number">45</span> <span class="hljs-string">days,</span>  <span class="hljs-number">2</span><span class="hljs-string">:15,</span>  <span class="hljs-number">3</span> <span class="hljs-string">users,</span>  <span class="hljs-attr">load average:</span> <span class="hljs-number">4.52</span><span class="hljs-string">,</span> <span class="hljs-number">2.10</span><span class="hljs-string">,</span> <span class="hljs-number">1.85</span>
+<span class="hljs-attr">Tasks:</span> <span class="hljs-number">312</span> <span class="hljs-string">total,</span>   <span class="hljs-number">2</span> <span class="hljs-string">running,</span> <span class="hljs-number">310</span> <span class="hljs-string">sleeping,</span>   <span class="hljs-number">0</span> <span class="hljs-string">stopped,</span>   <span class="hljs-number">0</span> <span class="hljs-string">zombie</span>
+<span class="hljs-string">%Cpu(s):</span> <span class="hljs-number">87.3</span> <span class="hljs-string">us,</span>  <span class="hljs-number">5.1</span> <span class="hljs-string">sy,</span>  <span class="hljs-number">0.0</span> <span class="hljs-string">ni,</span>  <span class="hljs-number">6.8</span> <span class="hljs-string">id,</span>  <span class="hljs-number">0.0</span> <span class="hljs-string">wa,</span>  <span class="hljs-number">0.0</span> <span class="hljs-string">hi,</span>  <span class="hljs-number">0.8</span> <span class="hljs-string">si</span>
+<span class="hljs-comment">#        ^^^^^^^                                ^^^^^</span>
+<span class="hljs-comment">#        用户态占比87%→某个应用吃满了CPU          空闲仅6.8%→CPU严重不足</span></code></pre>
+
+<h4>htop —— 彩色增强版 top</h4>
+<p><code>htop</code> 是 <code>top</code> 的现代化替代品：彩色柱状图显示 CPU、内存、Swap 使用情况，鼠标可点击，支持树状视图显示父子进程关系，F3 搜索、F9 杀进程，用户体验远好于 <code>top</code>。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="1072bc39a863efb64dd4e64cd0333c7e7d75e045239693b22c6e4e45a75a8c38"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 安装</span>
+<span class="hljs-built_in">apt</span> install htop        <span class="hljs-comment"># Debian/Ubuntu</span>
+<span class="hljs-built_in">dnf</span> install htop        <span class="hljs-comment"># RHEL/Fedora</span>
+
+<span class="hljs-comment"># 启动（彩色界面）</span>
+htop
+
+<span class="hljs-comment"># 常用快捷键:</span>
+<span class="hljs-comment">#   F3   — 搜索进程</span>
+<span class="hljs-comment">#   F4   — 过滤进程名</span>
+<span class="hljs-comment">#   F5   — 树状视图（看父子关系）</span>
+<span class="hljs-comment">#   F6   — 选择排序字段</span>
+<span class="hljs-comment">#   F9   — 发送信号给进程</span>
+<span class="hljs-comment">#   F10  — 退出</span></code></pre>
+
+<h4>mpstat —— 每核 CPU 详细统计</h4>
+<p><code>mpstat</code> 属于 <code>sysstat</code> 包，能看到每个 CPU 核心的使用率，包括用户态、内核态、IO 等待、软中断等细分。这个工具能回答"是哪个核心在工作，还是全都在工作"。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="94fea2c6d6938bfcd0802022a52738be032274f077dc879f13c68e388377ee7e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 每秒输出一次，共 5 次</span>
+mpstat 1 5
+
+<span class="hljs-comment"># 只看特定核心</span>
+mpstat<span class="hljs-attr"> -P</span> 0 1    <span class="hljs-comment"># 只看 CPU0</span></code></pre>
+
+<p class="out-label">▶ mpstat 输出解读</p>
+<pre data-presentation-code="v1" data-presentation-highlight="27617ec2cc5a849cc7f6cd7442b6eb8f10b99694bd6d3b742de4dcf610fb40a5"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes"><span class="hljs-attr">Average:</span>  <span class="hljs-string">CPU</span>   <span class="hljs-string">%usr</span>  <span class="hljs-string">%nice</span>  <span class="hljs-string">%sys</span>  <span class="hljs-string">%iowait</span>  <span class="hljs-string">%irq</span>  <span class="hljs-string">%soft</span>  <span class="hljs-string">%steal</span>  <span class="hljs-string">%idle</span>
+<span class="hljs-attr">Average:</span>  <span class="hljs-string">all</span>  <span class="hljs-number">65.2</span>   <span class="hljs-number">0.0</span>   <span class="hljs-number">8.1</span>     <span class="hljs-number">12.3</span>    <span class="hljs-number">0.0</span>   <span class="hljs-number">1.2</span>     <span class="hljs-number">0.0</span>    <span class="hljs-number">13.2</span>
+<span class="hljs-comment">#                   ^^^^          ^^^^^^</span>
+<span class="hljs-comment">#                  用户态65%       IO等待12.3%→磁盘拖慢了CPU!</span></code></pre>
+
+<div class="box box-tip"><strong>bpytop —— 美观的终端看板</strong><br>如果你想让监控变得赏心悦目，<code>bpytop</code>（Python 版）或 <code>btop</code>（C++ 版）提供炫酷的终端图形界面——CPU 实时折线图、网络吞吐曲线、磁盘 IO 柱状图、进程 CPU 排名，一个终端窗口看清全貌。安装：<code>apt install btop</code> 或 <code>pip install bpytop</code>。</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-apply">运</span><h3>层级二：内存 —— 系统还剩多少可用内存</h3><span class="tag tag-core">基础</span></div>
+<div class="card-body">
+<h4>free —— 内存概览</h4>
+<p><code>free -h</code> 是看内存的第一选择。<code>available</code> 列才是"真正可用的内存"——它包括了可以被回收的缓存和缓冲区。<code>free</code> 列是"完全未被使用的内存"，这个值小不一定是坏事，因为 Linux 会积极利用剩余内存做文件缓存。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="cc0117766ddbd87bc6bc728f3e645ea322f05703df706bef96e6abdf73763337"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">free<span class="hljs-attr"> -h</span>
+<span class="hljs-comment">#               total    used    free   shared  buff/cache   available</span>
+<span class="hljs-comment"># Mem:           15Gi   3.2Gi   2.1Gi    1.1Gi       9.7Gi        11Gi</span>
+<span class="hljs-comment"># Swap:         2.0Gi   1.5Gi   0.5Gi</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-comment"># 关键判断:</span>
+<span class="hljs-comment">#   available &lt; 总内存的10%  → 内存紧张</span>
+<span class="hljs-comment">#   Swap used &gt; 0 且持续增长 → 内存不足，系统在用磁盘当内存</span></code></pre>
+
+<h4>vmstat —— 虚拟内存统计</h4>
+<p><code>vmstat 1</code> 每秒输出一行虚拟内存统计。最关键的列是 <strong>si (swap in) 和 so (swap out)</strong>，如果这两个值持续 &gt; 0，说明系统正在频繁交换——内存严重不足，磁盘成为瓶颈。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="ddd32cd44c4930dd60bdd3b354ad56ba28f89aa74d7afa4309d31ece391b9902"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">vmstat 1 10
+<span class="hljs-comment"># procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----</span>
+<span class="hljs-comment">#  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs  us sy id wa</span>
+<span class="hljs-comment">#  2  0  512M  2.1G   1.2G   8.5G    0    0    12    45  500 1200  15  5 75  5</span>
+<span class="hljs-comment">#                                      ^^  ^^</span>
+<span class="hljs-comment">#                                      si持续&gt;0 → 严重内存不足!</span></code></pre>
+
+<h4>smem —— 更准确的内存统计</h4>
+<p>传统工具用 RSS（驻留集大小）衡量进程内存，但 RSS 包含了共享库——两个进程使用同一个 <code>libc.so</code>，RSS 会重复计算。smem 给出 <strong>PSS（比例共享集）</strong>——共享内存按进程数均分，真正反映每个进程的"公平内存占用"。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="731b841778aad0059b9bea502a19af4ff3ed88abd54e3cd4ee6eead139f5628f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> install smem
+
+<span class="hljs-comment"># 按 PSS 排序显示进程内存</span>
+smem<span class="hljs-attr"> -rs</span> pss
+
+<span class="hljs-comment"># 饼图显示内存分布（需要 --bar 样式）</span>
+smem<span class="hljs-attr"> --pie</span>=name</code></pre>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-implement">实</span><h3>层级三：磁盘 IO —— 存储是不是拖后腿了</h3><span class="tag tag-practice">进阶</span></div>
+<div class="card-body">
+<h4>iostat —— IO 统计的瑞士军刀</h4>
+<p><code>iostat -x 1</code> 显示每个磁盘设备的扩展统计。<strong>%util</strong> 是"磁盘繁忙时间占比"，接近 100% 就说明磁盘已成瓶颈。但要注意：对于 NVMe SSD，%util 接近 100% 不代表无法再提升吞吐——因为 SSD 内部有并行通道。</p>
+<p>更关键的是 <strong>await</strong>（平均 IO 响应时间）和 <strong>avgqu-sz</strong>（平均队列深度）。await &gt; 20ms 说明单次 IO 延迟高（HDD 的正常值是 5~10ms，SSD 应 &lt; 1ms）；avgqu-sz &gt; 1 说明请求在排队等待。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="ef5958dd982383b50037608b6f5ecf09ddfedad14dd29481b3ee8ae536f38c5a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># -x 扩展统计，1 每秒采样</span>
+iostat<span class="hljs-attr"> -x</span> 1
+
+<span class="hljs-comment"># 只看某个磁盘</span>
+iostat<span class="hljs-attr"> -x</span> sda 1
+
+<span class="hljs-comment"># 人类可读单位</span>
+iostat<span class="hljs-attr"> -xh</span> 1</code></pre>
+<p class="out-label">▶ iostat 关键指标解读</p>
+<pre data-presentation-code="v1" data-presentation-highlight="227fa1f3275e2340bf6f10ae6819b7cd822b7908e797f802b80ee2978f066ac9"><code data-static-highlight="11.9.0" class="editorial-code language-plaintext nohighlight" data-highlighted="yes">Device   r/s   w/s   rkB/s  wkB/s  await  r_await  w_await  %util
+sda     45.0  120.0  1800   9600   18.5    8.2      22.3    98.5
+#                                      ^^^^                      ^^^^
+#                                    平均等待18ms               磁盘98.5%时间在忙→瓶颈!</code></pre>
+
+<h4>iotop —— 哪个进程在大量读写磁盘</h4>
+<p>就像 <code>top</code> 看 CPU，<code>iotop</code> 看磁盘。它能实时显示每个进程的读写速率。当你发现磁盘 IO 飙升但不知道谁造成的，<code>iotop</code> 就是答案。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="b4c29a1a721297bc43ab0aeb64fb82fe9ce7774baa49a73b633b14fe8a2478a5"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> install iotop
+
+<span class="hljs-comment"># 只显示正在读写磁盘的进程</span>
+iotop<span class="hljs-attr"> -o</span>
+
+<span class="hljs-comment"># 批处理模式（非交互，适合脚本）</span>
+iotop<span class="hljs-attr"> -bon</span> 1</code></pre>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-operate">操</span><h3>层级四：网络 —— 流量从哪来到哪去</h3><span class="tag tag-practice">进阶</span></div>
+<div class="card-body">
+<h4>iftop —— 实时网络带宽监控</h4>
+<p>类似 <code>top</code> 的界面，但显示的是实时网络流量——每个连接的源/目标 IP 和端口、2秒/10秒/40秒的流量带宽。一眼就能看出谁在占用带宽。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="ceefa784adddd33faf125c399c90d226ed1d147c459bfa8bbd273def3fc0d120"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> install iftop
+
+<span class="hljs-comment"># 监控 eth0 网卡</span>
+iftop<span class="hljs-attr"> -i</span> eth0
+
+<span class="hljs-comment"># 显示端口号（而非服务名）</span>
+iftop<span class="hljs-attr"> -i</span> eth0<span class="hljs-attr"> -P</span>
+
+<span class="hljs-comment"># 快捷键: t 切换显示样式, p 暂停, q 退出</span></code></pre>
+
+<h4>nethogs —— 按进程查看网络流量</h4>
+<p><code>iftop</code> 按 IP 分组，<code>nethogs</code> 按进程分组。当你看到流量飙升但不知道是哪个程序在跑，<code>nethogs</code> 直接告诉你进程名和 PID。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="8e26c3648671953ecfab99321231ceab1d8f3548bdec08a127bb8b9f240c082f"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> install nethogs
+
+<span class="hljs-comment"># 监控 eth0，实时按进程显示</span>
+nethogs eth0
+
+<span class="hljs-comment"># 输出示例:</span>
+<span class="hljs-comment">#  PID  USER   PROGRAM         DEV   SENT   RECEIVED</span>
+<span class="hljs-comment"># 1234  www    nginx           eth0  5.2MB  120.3KB/sec</span>
+<span class="hljs-comment"># 5678  root   sshd            eth0  0.8KB    0.5KB/sec</span></code></pre>
+
+<h4>ss —— 替换 netstat 的现代工具</h4>
+<p><code>ss</code> 比 <code>netstat</code> 更快（直接从内核读取 socket 信息），是查看当前网络连接的首选。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="b2e09a909e4d3d71e9de564ebaf5fbeaa82081c186b059a8ed463ae2059d476a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">ss</span><span class="hljs-attr"> -tlnp</span>       <span class="hljs-comment"># 所有监听的 TCP 端口 + 进程名</span>
+<span class="hljs-built_in">ss</span><span class="hljs-attr"> -antp</span>       <span class="hljs-comment"># 所有 TCP 连接（含状态）+ 进程</span>
+<span class="hljs-built_in">ss</span><span class="hljs-attr"> -s</span>          <span class="hljs-comment"># 汇总统计</span>
+<span class="hljs-built_in">ss</span><span class="hljs-attr"> -t</span> state established  <span class="hljs-comment"># 只看已建立的连接</span></code></pre>
+</div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter16/01-performance-resource-map.png"><img src="assets/chapter16/01-performance-resource-map.png" alt="将四类现象、指标与首选工具连接到同一个“请求延迟”症状。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 16.2 CPU 分析与 perf ═══════════════ -->
+<h2 class="section-title" id="sec16-2"><span class="icon">2</span>CPU 分析与 perf —— 函数级热点采样</h2>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-implement">实</span><h3>场景：某个进程 CPU 使用率 100%，但不知道它在干什么</h3><span class="tag tag-advanced">高级</span></div>
+<div class="card-body">
+<h4>第一步：用 top 找到高 CPU 进程的 PID</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="0102340c32f0224395def6dd8fe63daff6ada1e245e7dd1c255083c174d96709"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">top<span class="hljs-attr"> -c</span>
+<span class="hljs-comment"># 按 P 排序，看到:</span>
+<span class="hljs-comment">#   PID  USER   %CPU  COMMAND</span>
+<span class="hljs-comment">#  1234  app    99.2  /usr/bin/myapp --config /etc/app.conf</span>
+<span class="hljs-comment">#  → 目标是 PID 1234</span></code></pre>
+
+<h4>第二步：strace —— 追踪系统调用</h4>
+<p><code>strace</code> 附着到进程上，打印该进程发出的每一个系统调用。如果 CPU 高是因为程序在做无意义的循环（如重复 <code>read()</code> 失败、<code>poll()</code> 空转），strace 能直接暴露。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="f583d603ec14bab3e16c7a0dab7b87f3f4e97f1fb6a7b080a4126d94738ec9b0"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 附着到运行中的进程</span>
+<span class="hljs-built_in">strace</span><span class="hljs-attr"> -p</span> 1234
+
+<span class="hljs-comment"># 统计系统调用次数和耗时（这才是真正的分析）</span>
+<span class="hljs-built_in">strace</span><span class="hljs-attr"> -c</span><span class="hljs-attr"> -p</span> 1234
+<span class="hljs-comment"># 运行 30 秒后 Ctrl+C，显示:</span>
+<span class="hljs-comment">#   % time   seconds  calls    syscall</span>
+<span class="hljs-comment">#   85.23    45.200   5000000  read       ← 85% 时间花在 read()!</span>
+<span class="hljs-comment">#   10.12     5.370   1000000  write</span>
+<span class="hljs-comment">#    3.15     1.670    500000  openat     ← openat 被调用了 50 万次?!</span>
+
+<span class="hljs-comment"># 只追踪特定的系统调用</span>
+<span class="hljs-built_in">strace</span><span class="hljs-attr"> -e</span> trace=<span class="hljs-built_in">read</span>,write<span class="hljs-attr"> -p</span> 1234</code></pre>
+<p class="out-label">▶ strace -c 输出解读</p>
+<pre data-presentation-code="v1" data-presentation-highlight="5de395031cd92e51b00d57cc136e1321c0b4075e0bbbfcb6f3e6fb40ee136e4a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">strace</span><span class="hljs-attr"> -c</span><span class="hljs-attr"> -p</span> 1234
+^Cstrace: Process 1234 detached
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 89.45    12.345678        1234     10000           <span class="hljs-built_in">read</span>
+  6.23     0.860234         860      1000           write
+  4.32     0.596432          59     10000           poll
+------ ----------- ----------- --------- --------- ----------------
+100.00    13.802344                 21000           total
+<span class="hljs-comment"># 结论: read() 消耗了 89% 的时间 → 去查读的文件或 socket&lt;/code&gt;</span></code></pre>
+
+<div class="box box-warning"><strong>strace 的性能开销</strong><br><code>strace</code> 会显著拖慢目标进程——每个系统调用都要经过 ptrace 拦截。在生产环境的繁忙进程上不要长时间使用 <code>strace -p</code>。先用 <code>-c</code> 统计模式跑 10 秒，拿到系统调用分布就够了。</div>
+
+<h4>第三步：perf top —— 函数级别的实时热点</h4>
+<p><code>strace</code> 告诉你"进程发起了什么系统调用"，<code>perf top</code> 告诉你"CPU 时间花在了哪些函数上"——深入到代码行级别甚至汇编指令级别。<code>perf</code> 利用内核的硬件性能计数器（PMU）进行采样，开销远小于 strace。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="31c3f2985721d35ce22826a72c36dfa8191946247eae58ef91973e098dd8b283"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 系统级实时采样（看所有进程的函数热点）</span>
+<span class="hljs-built_in">perf</span> top
+
+<span class="hljs-comment"># 只看特定进程</span>
+<span class="hljs-built_in">perf</span> top<span class="hljs-attr"> -p</span> 1234
+
+<span class="hljs-comment"># 输出示例:</span>
+<span class="hljs-comment">#   Samples: 450K of event 'cycles', Event count: 123456789012</span>
+<span class="hljs-comment">#   Overhead  Shared Object        Symbol</span>
+<span class="hljs-comment">#     42.15%  libcrypto.so.3       [.] sha256_block_data_order  ← 42% CPU 在计算 SHA256!</span>
+<span class="hljs-comment">#     18.32%  myapp                [.] process_request</span>
+<span class="hljs-comment">#     10.56%  [kernel]             [k] copy_user_enhanced_fast_string</span>
+<span class="hljs-comment">#      7.21%  libc.so.6            [.] __memcpy_avx_unaligned</span></code></pre>
+
+<h4>perf record + perf report —— 离线采样分析</h4>
+<p><code>perf top</code> 是实时看，<code>perf record</code> 是录下来再分析。录制 30 秒的采样数据，然后用 <code>perf report</code> 交互式浏览。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="c3bd14e40d167404d39e267df75417c7d4114e5b69a1d017b9e6c12b8c555377"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 录制某个进程 30 秒</span>
+<span class="hljs-built_in">perf</span> record<span class="hljs-attr"> -p</span> 1234<span class="hljs-attr"> -g</span> -- <span class="hljs-built_in">sleep</span> 30
+
+<span class="hljs-comment"># 交互式查看报告</span>
+<span class="hljs-built_in">perf</span> report
+
+<span class="hljs-comment"># 火焰图风格（需要 FlameGraph 脚本）</span>
+<span class="hljs-built_in">perf</span> script | stackcollapse-<span class="hljs-built_in">perf</span>.pl | flamegraph.pl &gt; flame.svg
+<span class="hljs-comment"># 火焰图: 横轴=函数占比，纵轴=调用栈深度</span>
+<span class="hljs-comment">#         宽的函数条=CPU 时间最多的函数</span></code></pre>
+
+<h4>解码 /proc/stat —— 内核级 CPU 计数</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="109c5a247d0a1ce41a7f55fc03c0ad2963c9a6c5341828a2881dcd43f464bf1b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">cat</span> /proc/stat | <span class="hljs-built_in">head</span> -5
+<span class="hljs-comment"># cpu  用户态时间 user  低优先级 nice  内核态 system  idle  iowait  irq  softirq  steal</span>
+<span class="hljs-comment"># cpu  1234567 12345   67890      234567    1234567890 45678   0     1234    0</span>
+<span class="hljs-comment">#      ^^^^^^                    ^^^^^^^^^</span>
+<span class="hljs-comment">#      用户态 cpu 时间            空闲时间</span>
+
+<span class="hljs-comment"># 计算 CPU 使用率</span>
+<span class="hljs-comment"># 从 /proc/stat 读数后，过 1 秒再读，差值即 1 秒内 CPU 在各状态的时间</span>
+<span class="hljs-comment"># CPU 使用率 = 100 - (idle差值 / 总差值 * 100)</span></code></pre>
+</div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter16/02-cpu-hotspot-funnel.png"><img src="assets/chapter16/02-cpu-hotspot-funnel.png" alt="展示从进程/线程到系统调用和函数采样的证据漏斗。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 16.3 内存分析与 OOM Killer ═══════════════ -->
+<h2 class="section-title" id="sec16-3"><span class="icon">3</span>内存分析与 OOM Killer 调优</h2>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-ops">运</span><h3>场景：应用莫名其妙被杀了，日志里什么都没有</h3><span class="tag tag-advanced">高级</span></div>
+<div class="card-body">
+<h4>OOM Killer 是什么</h4>
+<p>当系统内存（RAM + Swap）全部耗尽，内核无法分配新的内存页时，OOM Killer（Out-Of-Memory Killer）会被唤醒。它根据一套评分规则选择一个进程杀掉，释放其内存，让系统继续运行。这就像沉船时扔掉最不重要的货物——但有时它会扔掉你最重要那个。</p>
+
+<h4>查 OOM 日志 —— 确认 OOM Killer 是否触发过</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="22c3ef3ca2aafc9f78962db45f821aaceb2e88667e6e8c4293aeadc67003e556"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看内核日志中的 OOM 记录</span>
+dmesg | grep<span class="hljs-attr"> -i</span> <span class="hljs-string">"killed process"</span>
+
+<span class="hljs-comment"># 或者（systemd 系统）</span>
+<span class="hljs-built_in">journalctl</span><span class="hljs-attr"> -k</span> | grep<span class="hljs-attr"> -i</span> oom
+
+<span class="hljs-comment"># 查看系统日志</span>
+grep<span class="hljs-attr"> -i</span> <span class="hljs-string">"out of memory"</span> /var/log/syslog
+grep<span class="hljs-attr"> -i</span> <span class="hljs-string">"killed process"</span> /var/log/syslog
+
+<span class="hljs-comment"># 典型 OOM 日志片段:</span>
+<span class="hljs-comment"># Out of memory: Killed process 12345 (java) total-vm:8589934592kB,</span>
+<span class="hljs-comment"># anon-rss:4194304kB, file-rss:0kB, shmem-rss:0kB, UID:1000</span>
+<span class="hljs-comment">#                      ^^^^^^^^                    ^^^^^^^^^^</span>
+<span class="hljs-comment">#                      程序名                       实际使用物理内存 4GB</span></code></pre>
+
+<h4>OOM Score 机制</h4>
+<p>每个进程都有一个 <code>oom_score</code>（分值越高，越优先被杀）和一个 <code>oom_score_adj</code>（管理员可调的偏移量）。最终评分 = 内核计算的基础分 + <code>oom_score_adj</code>。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="65fcd231ca3c721d7490878551215c5875a582fa17cf09cef265a669a89f69a3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看某个进程的 OOM 评分</span>
+<span class="hljs-built_in">cat</span> /proc/1234/oom_score        <span class="hljs-comment"># 当前评分</span>
+<span class="hljs-built_in">cat</span> /proc/1234/oom_score_adj    <span class="hljs-comment"># 手动调整的偏移</span>
+
+<span class="hljs-comment"># 查看系统的 OOM 阈值</span>
+<span class="hljs-built_in">cat</span> /proc/sys/vm/overcommit_memory     <span class="hljs-comment"># 0/1/2</span>
+<span class="hljs-built_in">cat</span> /proc/sys/vm/overcommit_ratio      <span class="hljs-comment"># overcommit_memory=2 时的百分比</span>
+
+<span class="hljs-comment"># 保护重要进程不被 OOM Killer 杀掉（设置低分值）</span>
+<span class="hljs-built_in">echo</span> -1000 &gt; /proc/1234/oom_score_adj   <span class="hljs-comment"># 完全免疫</span>
+<span class="hljs-built_in">echo</span> -500  &gt; /proc/1234/oom_score_adj   <span class="hljs-comment"># 降低被杀优先级</span>
+
+<span class="hljs-comment"># 标记进程"优先被杀"（测试用）</span>
+<span class="hljs-built_in">echo</span> 1000  &gt; /proc/1234/oom_score_adj   <span class="hljs-comment"># 最容易被杀</span></code></pre>
+
+<div class="box box-info"><strong>oom_score_adj 取值范围</strong><br>范围是 -1000（完全免疫 OOM Killer）到 1000（必定被杀）。-1000 用于 SSHD、systemd 等守护进程，确保系统核心服务不会因 OOM 而挂掉。生产环境中数据库、消息队列等关键服务建议设为 -500 到 -800。</div>
+
+<h4>手动触发 OOM —— 测试 OOM Killer 行为</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="dc21ce7f94e0f975d2e610b2320196e2d99dce8934372e609371332d83e1160b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 开启系统请求触发功能</span>
+<span class="hljs-built_in">echo</span> 1 &gt; /proc/sys/kernel/sysrq
+
+<span class="hljs-comment"># 手动触发 OOM Killer（模拟内存耗尽）</span>
+<span class="hljs-built_in">echo</span> f &gt; /proc/sysrq-trigger
+<span class="hljs-comment"># 内核会在 dmesg 中打印 killer 选择过程和结果</span></code></pre>
+
+<h4>找出内存消耗大户的具体文件</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="5d3bc81420a1668b89b1a7391b1cc0cd942827d2fdeac57db7aafeeb558396c2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /proc/pid/smaps 显示进程的详细内存映射</span>
+<span class="hljs-built_in">cat</span> /proc/1234/smaps | grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"^(Rss|Pss|Swap):"</span>
+
+<span class="hljs-comment"># 进程的内存各部分分别来自哪些文件</span>
+pmap<span class="hljs-attr"> -x</span> 1234
+
+<span class="hljs-comment"># 谁在用最多的物理内存</span>
+ps aux<span class="hljs-attr"> --sort</span>=-%mem | <span class="hljs-built_in">head</span> -11
+</code></pre>
+</div>
+</div>
+
+<figure class="merged-illustration" data-image-id="chapter16/03-memory-pressure-oom.png"><img src="assets/chapter16/03-memory-pressure-oom.png" alt="解释 page reclaim、swap、候选分数、受害进程与根因证据。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 16.4 磁盘 IO 优化 ═══════════════ -->
+<h2 class="section-title" id="sec16-4"><span class="icon">4</span>磁盘 IO 优化 —— 让磁盘不再拖后腿</h2>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-implement">实</span><h3>场景：数据库写入慢，发现磁盘 IO 等待高达 40%</h3><span class="tag tag-practice">进阶</span></div>
+<div class="card-body">
+<h4>noatime 挂载 —— 零成本的性能提升</h4>
+<p>每次读取文件后，Linux 默认会更新该文件的 <strong>atime</strong>（访问时间）元数据。对于读密集型应用（Nginx 静态文件、数据库读查询），这会带来大量的元数据写入——每次读都要写一次磁盘。<code>noatime</code> 选项关闭 atime 更新，能显著减少写入量，延长 SSD 寿命。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="763e9555d9d0f9e346a33b87c80ca1a6ea8951ca0c490f20f0cd0228ccb31b55"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看当前挂载选项</span>
+mount | grep <span class="hljs-string">"^/dev"</span>
+<span class="hljs-comment"># /dev/sda1 on / type ext4 (rw,relatime,errors=remount-ro)</span>
+<span class="hljs-comment">#                        ^^^^^^^^ relatime 是折中方案（仅在 atime &lt; mtime 时更新）</span>
+
+<span class="hljs-comment"># 临时改为 noatime</span>
+mount<span class="hljs-attr"> -o</span> remount,noatime /
+
+<span class="hljs-comment"># 永久修改（/etc/fstab）</span>
+<span class="hljs-comment"># 修改前:</span>
+<span class="hljs-comment">#   UUID=xxx  /  ext4  defaults  0  1</span>
+<span class="hljs-comment"># 修改后:</span>
+<span class="hljs-comment">#   UUID=xxx  /  ext4  defaults,noatime  0  1</span></code></pre>
+
+<h4>I/O Scheduler —— 磁盘调度策略选择</h4>
+<p>I/O Scheduler 决定了多个 IO 请求的排队和执行顺序。不同的调度器适用于不同硬件：</p>
+<ul>
+  <li><strong>none (multiqueue)</strong>：适合 NVMe SSD。硬件自己处理排队，内核不应干预</li>
+  <li><strong>mq-deadline</strong>：适合 SATA SSD。保证读写请求的延迟上限，简单高效</li>
+  <li><strong>bfq</strong>：适合桌面系统或 HDD。按进程分配带宽，保证交互式应用的响应速度</li>
+  <li><strong>kyber</strong>：适合低延迟场景。根据完成时间动态调整队列深度</li>
+</ul>
+<pre data-presentation-code="v1" data-presentation-highlight="b009d8d6bcbd07dbc7da865b7fce3d3d3710d029c5ef6658c3d1a4195e6fc3e6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看当前调度器</span>
+<span class="hljs-built_in">cat</span> /sys/block/sda/queue/scheduler
+<span class="hljs-comment"># [mq-deadline] none</span>
+<span class="hljs-comment">#   ↑当前生效      ↑可选</span>
+
+<span class="hljs-comment"># 临时切换</span>
+<span class="hljs-built_in">echo</span> none &gt; /sys/block/nvme0n1/queue/scheduler
+
+<span class="hljs-comment"># 永久设置（通过内核启动参数）</span>
+<span class="hljs-comment"># 编辑 /etc/default/grub</span>
+<span class="hljs-comment"># GRUB_CMDLINE_LINUX="elevator=none"</span>
+<span class="hljs-comment"># update-grub</span></code></pre>
+
+<h4>XFS 文件系统 + 读写优化组合</h4>
+<p>对于数据库服务器，推荐 <strong>XFS + noatime + 增加队列深度</strong> 的组合。XFS 的日志机制和延迟分配策略在大量并发写场景下优于 ext4。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="561e4dbf6bafe6c80fbf773360c5b3a3ee9b43a0513dab4f989f9d6f3fe2fb8b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 格式化为 XFS</span>
+mkfs.xfs<span class="hljs-attr"> -f</span> /dev/sdb1
+
+<span class="hljs-comment"># 挂载时的优化选项</span>
+mount<span class="hljs-attr"> -o</span> noatime,nodiratime,logbsize=256k,logbufs=8,inode64 /dev/sdb1 /data
+
+<span class="hljs-comment"># fstab 永久挂载:</span>
+<span class="hljs-comment"># /dev/sdb1  /data  xfs  defaults,noatime,nodiratime,inode64  0  2</span>
+
+<span class="hljs-comment"># 增加磁盘队列深度（提高并发处理能力）</span>
+<span class="hljs-built_in">cat</span> /sys/block/sda/queue/nr_requests    <span class="hljs-comment"># 查看当前值（通常 128）</span>
+<span class="hljs-built_in">echo</span> 1024 &gt; /sys/block/sda/queue/nr_requests  <span class="hljs-comment"># 增大到 1024</span></code></pre>
+
+<h4>文件系统基准测试</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="bc93d4d9edc283ef637b2e3096f4f3d1162580bbcec7dd8175f6e8c0846c01f2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># fio —— 灵活的 IO 基准测试</span>
+fio<span class="hljs-attr"> --name</span>=<span class="hljs-built_in">test</span><span class="hljs-attr"> --rw</span>=randread<span class="hljs-attr"> --bs</span>=4k<span class="hljs-attr"> --size</span>=1G \
+   <span class="hljs-attr"> --numjobs</span>=4<span class="hljs-attr"> --runtime</span>=60<span class="hljs-attr"> --time_based</span> \
+   <span class="hljs-attr"> --ioengine</span>=libaio<span class="hljs-attr"> --direct</span>=1<span class="hljs-attr"> --filename</span>=/data/testfile
+
+<span class="hljs-comment"># 输出:</span>
+<span class="hljs-comment">#   read: IOPS=125k, BW=489MiB/s (513MB/s)</span>
+<span class="hljs-comment">#   lat (usec): min=15, max=1500, avg=32.45</span>
+<span class="hljs-comment">#           ^^^^                    ^^^^^</span>
+<span class="hljs-comment">#           125K 随机读 IOPS         平均延迟 32 微秒</span></code></pre>
+
+<h4>检查磁盘健康状态 —— SMART</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="3bcc82edb8476218e082f1408493ba1e14df1679e1f86b7aa7456cff7d802e0c"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">apt</span> install smartmontools
+
+<span class="hljs-comment"># 查看磁盘 SMART 信息</span>
+smartctl<span class="hljs-attr"> -a</span> /dev/sda
+
+<span class="hljs-comment"># 重点看:</span>
+<span class="hljs-comment">#   Reallocated_Sector_Ct  → 重映射扇区数（&gt;0 就要警惕）</span>
+<span class="hljs-comment">#   Current_Pending_Sector → 待处理坏扇区（&gt;0 说明有读写失败）</span>
+<span class="hljs-comment">#   Power_On_Hours         → 磁盘已运行时间</span>
+<span class="hljs-comment">#   Wear_Leveling_Count    → SSD 磨损计数（越低越好）</span>
+
+<span class="hljs-comment"># 短期自检</span>
+smartctl<span class="hljs-attr"> -t</span> short /dev/sda
+smartctl<span class="hljs-attr"> -l</span> selftest /dev/sda  <span class="hljs-comment"># 查看自检结果</span></code></pre>
+</div>
+</div>
+
+<!-- ═══════════════ 16.5 netdata 简介 ═══════════════ -->
+<h2 class="section-title" id="sec16-5"><span class="icon">5</span>netdata 实时监控仪表盘</h2>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-operate">操</span><h3>场景：需要一个开箱即用的监控面板，不想配 Prometheus + Grafana</h3><span class="tag tag-practice">进阶</span></div>
+<div class="card-body">
+<h4>netdata 是什么</h4>
+<p>netdata 是一款轻量级实时监控工具，安装后自动发现 CPU、内存、磁盘、网络、进程、Nginx、MySQL 等 200+ 数据源，在 <code>http://localhost:19999</code> 提供 Web 仪表盘。它开箱即用、零配置、实时更新（每秒刷新）、资源占用极低（~1% CPU，几十 MB 内存）。</p>
+<p>netdata 的核心价值：让系统管理员 <strong>30 秒内</strong> 拥有一个全功能监控仪表盘，而不需要部署 Prometheus、Grafana、Node Exporter 等一整套组件。</p>
+
+<h4>一键安装</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="610de650347b13021a5981ee4bc8d3995f55b524b7af8e69518f026c2114b2ba"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 官方一键安装脚本</span>
+<span class="hljs-built_in">wget</span><span class="hljs-attr"> -O</span> /tmp/netdata-kickstart.sh https://get.netdata.cloud/kickstart.sh
+sh /tmp/netdata-kickstart.sh<span class="hljs-attr"> --no-updates</span><span class="hljs-attr"> --stable-channel</span>
+
+<span class="hljs-comment"># 安装完成后:</span>
+<span class="hljs-comment">#   Web 仪表盘: http://服务器IP:19999</span>
+<span class="hljs-comment">#   后台服务:   systemctl status netdata</span>
+
+<span class="hljs-comment"># 或者用包管理器（版本可能较旧）</span>
+<span class="hljs-built_in">apt</span> install netdata        <span class="hljs-comment"># Debian/Ubuntu</span>
+<span class="hljs-built_in">dnf</span> install netdata        <span class="hljs-comment"># Fedora</span></code></pre>
+
+<h4>netdata 的核心视图</h4>
+<ul>
+  <li><strong>系统概览</strong>：CPU 利用率、负载、磁盘 IO、网络流量 —— 一张总览图看清全局</li>
+  <li><strong>CPU 详情</strong>：每个核心的使用率曲线、中断分布、软中断、上下文切换率</li>
+  <li><strong>内存详情</strong>：RAM + Swap 使用趋势、内核内存类型（Slab/KernelStack/PageTables）拆分</li>
+  <li><strong>磁盘详情</strong>：每个磁盘的 IOPS、吞吐量、延迟、积压（backlog）—— 一眼定位慢盘</li>
+  <li><strong>网络详情</strong>：每个网卡的流量、丢包率、错误计数 —— 发现网卡故障</li>
+  <li><strong>进程监控</strong>：按应用的 CPU / 内存 / IO / 网络分组统计</li>
+  <figure class="merged-illustration" data-image-id="chapter16/05-evidence-troubleshooting-loop.png"><img src="assets/chapter16/05-evidence-troubleshooting-loop.png" alt="把资源定位、进程深入、假设验证、同负载复测和监控基线组成闭环。" loading="lazy" decoding="async" width="1536" height="1024"></figure><li><strong>Nginx / MySQL / Redis 等</strong>：自动发现，提供服务专属仪表盘（如 MySQL 的 QPS、慢查询、连接数）</li>
+</ul>
+
+<h4>配置告警</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="87db53ba9e27c45202ebd1c0fe532977acb774ae3231ec9c4c6b1dd8627104f4"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># netdata 自带 200 多个预设告警规则</span>
+<span class="hljs-comment"># 配置文件在 /etc/netdata/health.d/</span>
+
+<span class="hljs-comment"># 查看当前告警状态</span>
+<span class="hljs-built_in">curl</span> http://localhost:19999/api/v1/alarms
+
+<span class="hljs-comment"># 自定义告警（如磁盘使用超过 90%）</span>
+<span class="hljs-comment"># 编辑 /etc/netdata/health.d/disk.conf</span>
+<span class="hljs-comment"># alarm: disk_space_90</span>
+<span class="hljs-comment">#    on: disk_space._used_percent</span>
+<span class="hljs-comment">#   calc: $used</span>
+<span class="hljs-comment">#  units: %</span>
+<span class="hljs-comment">#  every: 1m</span>
+<span class="hljs-comment">#   warn: $this &gt; 80</span>
+<span class="hljs-comment">#   crit: $this &gt; 90</span></code></pre>
+
+<div class="box box-info"><strong>netdata vs Prometheus + Grafana</strong><br>netdata 适合单机或少量服务器的快速监控，部署成本几乎为零。Prometheus + Grafana 适合大规模集群、需要长期存储和复杂查询的场景。两者可以互补：netdata 提供实时视图，Prometheus 从 netdata 拉取指标做长期存储和聚合。</div>
+</div>
+</div>
+
+<!-- ═══════════════ 16.6 性能排查思路 ═══════════════ -->
+<h2 class="section-title" id="sec16-6"><span class="icon">6</span>性能排查思路速查 —— 找瓶颈的四步法</h2>
+
+<div class="card">
+<div class="card-header"><span class="badge badge-apply">运</span><h3>场景：用户反馈"网站好慢"，你怎么排查？</h3><span class="tag tag-core">实战</span></div>
+<div class="card-body">
+<h4>四步排查法（USE 方法的实战版）</h4>
+<p>一切性能问题都可以归为四类资源之一：CPU、内存、磁盘、网络。<strong>按顺序排查，每步找到瓶颈后针对性解决，不要跳跃。</strong></p>
+
+<div class="subcard-grid merged-waterfall-panel">
+<section class="merged-subcard-section">
+<h5>第一步：看 CPU</h5>
+<p>命令：<code>top</code>、<code>htop</code>、<code>mpstat 1</code></p>
+<p>查什么：load average 是否 &gt; CPU 核心数？<code>%idle</code> 是否 &lt; 10%？哪个进程 <code>%CPU</code> 最高？</p>
+<p>常见根因：应用程序死循环、正则回溯、JSON 大解析、无限递归</p>
+<p>工具链：<code>top</code> 找到 PID → <code>strace -c -p PID</code> 看系统调用 → <code>perf top -p PID</code> 看函数热点</p>
+</section>
+<section class="merged-subcard-section">
+<h5>第二步：看内存</h5>
+<p>命令：<code>free -h</code>、<code>vmstat 1</code>、<code>ps aux --sort=-%mem</code></p>
+<p>查什么：<code>available</code> 是否 &lt; 10%？<code>si/so</code> 是否 &gt; 0？是否触发了 OOM Killer？</p>
+<p>常见根因：内存泄漏、缓存未释放、Java 堆设置过大、管道阻塞</p>
+<p>工具链：<code>free -h</code> 看全局 → <code>vmstat 1</code> 看交换 → <code>smem -rs pss</code> 找进程</p>
+</section>
+<section class="merged-subcard-section">
+<h5>第三步：看磁盘 IO</h5>
+<p>命令：<code>iostat -x 1</code>、<code>iotop</code></p>
+<p>查什么：<code>%util</code> 是否 &gt; 90%？<code>await</code> 是否 &gt; 20ms？<code>avgqu-sz</code> 是否 &gt; 1？</p>
+<p>常见根因：大量日志写入、swap 频繁、数据库全表扫描、备份任务</p>
+<p>工具链：<code>iostat -x</code> 看磁盘 → <code>iotop -o</code> 找进程 → 优化挂载选项、调度器</p>
+<figure class="merged-illustration" data-image-id="chapter16/04-disk-io-await.png"><img src="assets/chapter16/04-disk-io-await.png" alt="展示请求路径、队列、await 分解、NVMe 指标边界与策略匹配。" loading="lazy" decoding="async" width="1536" height="1024"></figure></section>
+<section class="merged-subcard-section">
+<h5>第四步：看网络</h5>
+<p>命令：<code>iftop</code>、<code>nethogs</code>、<code>ss -s</code>、<code>ping -c 50</code></p>
+<p>查什么：带宽是否打满？连接数是否异常？丢包率是否 &gt; 1%？延迟是否飙升？</p>
+<p>常见根因：DDoS 攻击、上游 API 的超时重试风暴、慢客户端占用连接池</p>
+<p>工具链：<code>iftop</code> 看流量 → <code>nethogs</code> 找程序 → <code>mtr</code> 追踪路由丢包</p>
+</section>
+</div>
+
+<h4>性能排查黄金命令组合</h4>
+<pre data-presentation-code="v1" data-presentation-highlight="62b4ea42346c3639530bf1b975976059a12efccc5f12307bd6ba8f70be18a59a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 一次性运行所有关键指标检查（复制粘贴到终端即可）</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== CPU ==="</span> &amp;&amp; top<span class="hljs-attr"> -bn1</span> | <span class="hljs-built_in">head</span> -5 &amp;&amp; <span class="hljs-built_in">echo</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 内存 ==="</span> &amp;&amp; free<span class="hljs-attr"> -h</span> &amp;&amp; <span class="hljs-built_in">echo</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 磁盘 IO ==="</span> &amp;&amp; iostat<span class="hljs-attr"> -x</span> 1 2 | <span class="hljs-built_in">tail</span><span class="hljs-attr"> -n</span> +4 &amp;&amp; <span class="hljs-built_in">echo</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 网络 ==="</span> &amp;&amp; <span class="hljs-built_in">ss</span><span class="hljs-attr"> -s</span> &amp;&amp; <span class="hljs-built_in">echo</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 进程 TOP5 ==="</span> &amp;&amp; ps aux<span class="hljs-attr"> --sort</span>=-%cpu | <span class="hljs-built_in">head</span> -6 &amp;&amp; <span class="hljs-built_in">echo</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== OOM 事件 ==="</span> &amp;&amp; dmesg | grep<span class="hljs-attr"> -i</span> oom | <span class="hljs-built_in">tail</span> -3 &amp;&amp; <span class="hljs-built_in">echo</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 磁盘使用 ==="</span> &amp;&amp; <span class="hljs-built_in">df</span><span class="hljs-attr"> -h</span> | grep<span class="hljs-attr"> -v</span> tmpfs</code></pre>
+
+<h4>CPU 上下文切换 —— 容易被忽略的瓶颈</h4>
+<p>高 CPU 不一定是"程序在干活"，也可能是因为大量上下文切换导致的调度开销。上下文切换率高（&gt; 10000/s）说明系统在频繁切换进程或线程，CPU 时间大量消耗在切换而不是实际计算上。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="5029cb08e2f37dee9229b41be85be5165b5aa99c2a4b92fd70176b042ad0c376"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">vmstat 1 5
+<span class="hljs-comment"># 关注 cs (context switches) 列:</span>
+<span class="hljs-comment"># procs  -----------memory---------- ---swap-- -----io---- -system-- ----cpu----</span>
+<span class="hljs-comment">#  r  b   swpd   free  buff  cache   si   so    bi    bo   in    cs  us sy id wa</span>
+<span class="hljs-comment">#  3  0      0  1024M  256M  4096M    0    0    12    32  800 15000  15  5 75  5</span>
+<span class="hljs-comment">#                                                          ^^^^^^</span>
+<span class="hljs-comment">#                                                         15000次上下文切换/秒 → 偏高!</span></code></pre>
+
+<div class="box box-warning"><strong>避免做"二传手"</strong><br>排查性能问题时最常见的错误是：用 A 命令看了一下，拿不准，又用 B 命令看了一下，还是拿不准——然后重启系统了事。正确的做法是：<strong>每一个异常指标都要追问为什么</strong>。IO 高 → 是哪个程序在读写 → 在读写什么文件 → 为什么读那么多 → 能不能缓存？CPU 高 → 是哪种 CPU（用户态/内核态/IO等待）→ 哪个进程 → 哪个函数 → 能不能优化？一路追问到代码层面，才叫"排障"。</div>
+</div>
+</div>
+
+<!-- /container -->
+
+<section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>MQ</b> · Message Queue 消息队列</p></div></div></section>
+</div><footer class="site-footer">
+  <p>Linux 系统知识卡片系列 · 第16章</p>
+  <p style="margin-top:4px">问题驱动 · 追本溯源 —— "变慢了"不是终点，"为什么变慢"才是起点</p>
+</footer>
+
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
