@@ -1,0 +1,11 @@
+title: "Bowenzheng686 的个人主页"
+description: "记录技术学习、项目实践与日常思考"
+
+theme: jekyll-theme-minimal
+
+url: "https://bowenzheng686.github.io"
+baseurl: ""
+
+lang: "zh-CN"
+timezone: "Asia/Shanghai"
+show_downloads: false
