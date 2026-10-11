@@ -1,27 +1,105 @@
 ---
 layout: default
 title: 首页
+home: true
 ---
 
-# 你好，我是 Bowenzheng686
+<main id="main-content">
+  <section id="top" class="hero section-shell" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow hero-kicker"><span class="status-dot" aria-hidden="true"></span>探索技术 · 记录实践 · 保持好奇</p>
+      <h1 id="hero-title" class="hero-title"><span>Bowen 的技术笔记</span></h1>
+      <p class="hero-description">记录编程实践、网络探索与日常思考。<br>让每次学习，都留下可以回看的轨迹。</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#writing">阅读文章 <span aria-hidden="true">→</span></a>
+        <a class="button button-secondary" href="#about">关于我 <span aria-hidden="true">↘</span></a>
+      </div>
+      <div class="hero-footnote">
+        <a href="https://github.com/bowenzheng686" target="_blank" rel="noopener noreferrer">在 GitHub 继续探索 <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
 
-欢迎来到我的个人主页。
+    <a class="hero-scroll" href="#writing" aria-label="向下浏览文章"><span>SCROLL TO EXPLORE</span><span aria-hidden="true">↓</span></a>
+  </section>
 
-这里记录我的技术学习、项目实践与日常思考。
+  {% assign post_count = site.posts | size %}
+  <section id="writing" class="section-shell writing" aria-labelledby="writing-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">WRITING</p>
+        <h2 id="writing-title">最新文章 <span class="count-badge" aria-label="{{ post_count }} 篇文章">{{ post_count }}</span></h2>
+      </div>
+      <p class="section-intro">把过程写下来，把问题想明白。</p>
+    </div>
 
-## 关于我
+    {% if post_count > 0 %}
+    <div class="writing-toolbar">
+      <div class="search-field">
+        <label class="accessible" for="post-search">搜索文章标题、摘要或分类</label>
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input id="post-search" type="search" name="q" placeholder="搜索标题、摘要或分类…" autocomplete="off" spellcheck="false" aria-controls="post-grid" aria-describedby="filter-status">
+      </div>
+      <div id="post-filters" class="filter-list" role="group" aria-label="按文章分类筛选">
+        <button class="filter-button" type="button" data-filter="all" aria-pressed="true">全部</button>
+        {% assign sorted_categories = site.categories | sort %}
+        {% for category in sorted_categories %}
+        <button class="filter-button" type="button" data-filter="category" data-category="{{ category[0] | escape }}" aria-pressed="false">{{ category[0] | escape }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <p id="filter-status" class="filter-status" role="status" aria-live="polite">共 {{ post_count }} 篇文章</p>
+    <ul id="post-grid" class="post-grid">
+      {% for post in site.posts %}
+      {% assign post_excerpt = post.excerpt | strip_html | strip_newlines | strip %}
+      {% capture post_search %}{{ post.title }} {{ post_excerpt }} {{ post.categories | join: ' ' }}{% endcapture %}
+      <li class="post-item" data-search="{{ post_search | escape }}" data-categories='{{ post.categories | jsonify | escape }}'>
+        <a class="post-card" href="{{ post.url | relative_url }}">
+          <div class="post-meta">
+            <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y.%m.%d" }}</time>
+            <span class="post-category">{{ post.categories | first | default: '随笔' | escape }}</span>
+          </div>
+          <h3 class="post-title">{{ post.title | escape }}</h3>
+          <p class="post-excerpt">{% if post_excerpt != '' %}{{ post_excerpt | truncate: 140 | escape }}{% else %}点击阅读全文。{% endif %}</p>
+          <div class="post-card-footer"><span>阅读全文</span><span aria-hidden="true">↗</span></div>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    <p id="no-results" class="empty-state filter-empty" hidden>没有找到匹配的文章。试试其他关键词，或切换到“全部”分类。</p>
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-state-icon" aria-hidden="true">✦</span>
+      <p class="eyebrow">FIRST PAGE</p>
+      <h3>故事，从下一篇开始。</h3>
+      <p>这里还没有发布的文章。<br>新的想法，会在写下时慢慢成形。</p>
+      <a class="text-link" href="https://github.com/bowenzheng686" target="_blank" rel="noopener noreferrer" aria-label="先去 GitHub 看看，在新标签页打开">先去 GitHub 看看 <span aria-hidden="true">↗</span></a>
+    </div>
+    {% endif %}
+  </section>
 
-这里可以填写你的个人介绍，例如正在学习的内容、
-感兴趣的技术方向，以及希望分享的项目。
+  <section id="about" class="section-shell about" aria-labelledby="about-title">
+    <div class="about-heading">
+      <p class="eyebrow">ABOUT THIS SPACE</p>
+      <h2 id="about-title">在探索中，<br>不断更新自己。</h2>
+      <p class="about-signature">BOWENZHENG686</p>
+    </div>
+    <div class="about-copy">
+      <p class="about-lead">这是一个用来记录、整理与分享的地方。</p>
+      <p>把遇到的问题拆开，把实践里的发现写下，也给尚未想清楚的事留一点空间。</p>
+      <p>这里用来收集技术学习与日常思考中的笔记：记录问题、理解过程，再把有用的发现整理成可以回看的文字。</p>
+      <ul class="topic-tags" aria-label="关注的话题">
+        <li>编程与开发</li>
+        <li>系统与网络</li>
+        <li>学习与思考</li>
+      </ul>
+    </div>
+  </section>
 
-## 我的 GitHub
-
-[访问我的 GitHub 主页](https://github.com/bowenzheng686)
-
-## 最新文章
-
-{% for post in site.posts %}
-- [{{ post.title }}]({{ post.url | relative_url }}) · {{ post.date | date: "%Y-%m-%d" }}
-{% else %}
-第一篇文章正在准备中。
-{% endfor %}
+  <section class="section-shell contact-strip" aria-labelledby="contact-title">
+    <div>
+      <p class="eyebrow">KEEP EXPLORING</p>
+      <h2 id="contact-title">更多探索，在 GitHub。</h2>
+    </div>
+    <a class="button button-secondary" href="https://github.com/bowenzheng686" target="_blank" rel="noopener noreferrer" aria-label="访问 GitHub，在新标签页打开">访问 GitHub <span aria-hidden="true">↗</span></a>
+  </section>
+</main>
