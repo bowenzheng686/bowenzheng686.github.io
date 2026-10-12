@@ -20,6 +20,28 @@ home: true
       </div>
     </div>
 
+    <div class="hero-visual" aria-hidden="true">
+      <div class="holo-aura"></div>
+      <div class="holo-grid"></div>
+      <div class="holo-stage" id="holo-stage">
+        <div class="holo-orbit holo-orbit-one"></div>
+        <div class="holo-orbit holo-orbit-two"></div>
+        <div class="holo-orbit holo-orbit-three"></div>
+        <div class="holo-cube">
+          <div class="cube-face cube-front"><span>&lt;/&gt;</span><small>CREATE</small></div>
+          <div class="cube-face cube-back"><span>∞</span><small>EXPLORE</small></div>
+          <div class="cube-face cube-right"><span>01</span><small>BUILD</small></div>
+          <div class="cube-face cube-left"><span>⌘</span><small>THINK</small></div>
+          <div class="cube-face cube-top"><span>✦</span><small>DISCOVER</small></div>
+          <div class="cube-face cube-bottom"><span>{ }</span><small>LEARN</small></div>
+        </div>
+        <span class="holo-node holo-node-one"></span>
+        <span class="holo-node holo-node-two"></span>
+        <span class="holo-node holo-node-three"></span>
+      </div>
+      <div class="holo-coordinate holo-coordinate-top">BOWEN / DIGITAL SPACE <span>001</span></div>
+      <div class="holo-coordinate holo-coordinate-bottom"><span class="holo-live"></span> IDEAS IN MOTION <span>● ● ●</span></div>
+    </div>
     <a class="hero-scroll" href="#writing" aria-label="向下浏览文章"><span>SCROLL TO EXPLORE</span><span aria-hidden="true">↓</span></a>
   </section>
 
