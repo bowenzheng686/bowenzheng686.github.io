@@ -7,8 +7,8 @@ home: true
 <main id="main-content">
   <section id="top" class="hero section-shell" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow hero-kicker"><span class="status-dot" aria-hidden="true"></span>探索技术 · 记录实践 · 保持好奇</p>
-      <h1 id="hero-title" class="hero-title"><span>Bowen 的技术笔记</span></h1>
+      <p class="eyebrow hero-kicker"><span class="status-dot" aria-hidden="true"></span>BOWEN / NOTES &amp; EXPERIMENTS</p>
+      <h1 id="hero-title" class="hero-title">Bowen 的<br><span>技术笔记。</span></h1>
       <p class="hero-description">记录编程实践、网络探索与日常思考。<br>让每次学习，都留下可以回看的轨迹。</p>
       <div class="hero-actions">
         <a class="button button-primary" href="#writing">阅读文章 <span aria-hidden="true">→</span></a>
@@ -55,11 +55,17 @@ home: true
     </div>
     <ul class="post-grid">
       <li class="post-item">
-        <a class="post-card" href="{{ '/subjects/Linux/' | relative_url }}">
-          <div class="post-meta"><span class="post-category">Linux 系统</span><span>18 个章节</span></div>
-          <h3 class="post-title">Linux 系统学习笔记</h3>
-          <p class="post-excerpt">从发行版、文件系统与权限，到服务、存储、容器和故障排查。</p>
-          <div class="post-card-footer"><span>查看全部章节</span><span aria-hidden="true">↗</span></div>
+        <a class="post-card subject-spotlight" href="{{ '/subjects/Linux/' | relative_url }}">
+          <div class="subject-content">
+            <div class="post-meta"><span class="post-category">LINUX / FIELD NOTES</span><span>18 个章节</span></div>
+            <h3 class="post-title">从命令行开始，<br>理解整个系统。</h3>
+            <p class="post-excerpt">从发行版、文件系统与权限，到服务、存储、容器和故障排查。</p>
+            <div class="post-card-footer"><span>探索 Linux 学习笔记</span><span aria-hidden="true">↗</span></div>
+          </div>
+          <div class="subject-preview" aria-hidden="true">
+            <div class="preview-toolbar"><span class="preview-dots"><i></i><i></i><i></i></span><span>linux / field-notes</span></div>
+            <div class="preview-code"><p><span>$</span> cat learning-path.md</p><p>01&nbsp; 发行版与文件系统</p><p>02&nbsp; 用户、权限与进程</p><p>03&nbsp; 服务、存储与网络</p><p>04&nbsp; 容器与故障排查</p><strong>18 CHAPTERS&nbsp; ↗</strong></div>
+          </div>
         </a>
       </li>
     </ul>
@@ -143,6 +149,6 @@ home: true
       <p class="eyebrow">KEEP EXPLORING</p>
       <h2 id="contact-title">更多探索，在 GitHub。</h2>
     </div>
-    <a class="button button-secondary" href="https://github.com/bowenzheng686" target="_blank" rel="noopener noreferrer" aria-label="访问 GitHub，在新标签页打开">访问 GitHub <span aria-hidden="true">↗</span></a>
+    <a class="button button-primary" href="https://github.com/bowenzheng686" target="_blank" rel="noopener noreferrer" aria-label="访问 GitHub，在新标签页打开">访问 GitHub <span aria-hidden="true">↗</span></a>
   </section>
 </main>
