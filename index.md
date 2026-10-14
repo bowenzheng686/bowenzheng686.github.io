@@ -68,6 +68,14 @@ home: true
           </div>
         </a>
       </li>
+      <li class="post-item">
+        <a class="post-card" href="{{ '/subjects/KVM/' | relative_url }}">
+          <div class="post-meta"><span class="post-category">KVM / VIRTUALIZATION</span><span>8 个章节</span></div>
+          <h3 class="post-title">KVM 虚拟化<br>学习笔记</h3>
+          <p class="post-excerpt">从虚拟化基础、虚拟机部署，到存储、网络、镜像、资源管理与实现原理。</p>
+          <div class="post-card-footer"><span>探索 KVM 学习笔记</span><span aria-hidden="true">↗</span></div>
+        </a>
+      </li>
     </ul>
     <p><a class="text-link" href="{{ '/subjects/' | relative_url }}">查看专题目录 →</a></p>
   </section>
