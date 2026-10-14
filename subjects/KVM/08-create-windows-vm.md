@@ -8,7 +8,7 @@ subject_page: true
 
 # 第 08 章 · 创建 Windows 虚拟机
 
-> 公开版已将实验密码、主机标识和网络地址替换为示例值，并省略可能包含环境信息的原始截图。执行命令前请按实际环境调整。
+> 公开版已将实验密码、主机标识和网络地址替换为示例值；正文图片已恢复，截图中的敏感区域已做本地像素覆盖。执行命令前请按实际环境调整。
 
 ## 8.1 准备工作
 
@@ -23,6 +23,7 @@ https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/
 
 **注意:** 建议下载virtio-win-0.1.141版本，
 
+![原文插图（第 160 页）]({{ '/subjects/KVM/assets/p160-img01.png' | relative_url }})
 
 可以检索 latest-virtio 和 stable-virtio
 
@@ -117,53 +118,69 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 [root@kvm-host ~]# virt-manager
 ````
 
+![原文插图（第 162 页）]({{ '/subjects/KVM/assets/p162-img01.png' | relative_url }})
 
 **双击打开 win2008**
 
+![原文插图（第 163 页）]({{ '/subjects/KVM/assets/p163-img01.png' | relative_url }})
 
 #### 选择语言
 
+![原文插图（第 163 页）]({{ '/subjects/KVM/assets/p163-img02.png' | relative_url }})
 
+![原文插图（第 164 页）]({{ '/subjects/KVM/assets/p164-img01.png' | relative_url }})
 
+![原文插图（第 164 页）]({{ '/subjects/KVM/assets/p164-img02.png' | relative_url }})
 
 注意：该画面会持续20s左右
 
 #### 选择图形版本
 
+![原文插图（第 165 页）]({{ '/subjects/KVM/assets/p165-img01.png' | relative_url }})
 
 **点击下一步**
 
+![原文插图（第 165 页）]({{ '/subjects/KVM/assets/p165-img02.png' | relative_url }})
 
 勾选 我接受许可条款，点击下一步
 
 #### 选择安装方式
 
+![原文插图（第 166 页）]({{ '/subjects/KVM/assets/p166-img01.png' | relative_url }})
 
+![原文插图（第 166 页）]({{ '/subjects/KVM/assets/p166-img02.png' | relative_url }})
 
 #### 确定驱动
 
 **选择 加载驱动程序**
 
+![原文插图（第 167 页）]({{ '/subjects/KVM/assets/p167-img01.png' | relative_url }})
 
 **点击浏览**
 
+![原文插图（第 167 页）]({{ '/subjects/KVM/assets/p167-img02.png' | relative_url }})
 
 点击 virtio-win-0.1.266
 
+![原文插图（第 168 页）]({{ '/subjects/KVM/assets/p168-img01.png' | relative_url }})
 
 找到amd64 下面的2k16，点击确定
 
+![原文插图（第 168 页）]({{ '/subjects/KVM/assets/p168-img02.png' | relative_url }})
 
 点击下一步即可，该画面会持续 20s 左右，需要检测驱动是否正常
 
+![原文插图（第 169 页）]({{ '/subjects/KVM/assets/p169-img01.png' | relative_url }})
 
 #### 安装系统
 
 验证通过后，会出现如下画面
 
+![原文插图（第 169 页）]({{ '/subjects/KVM/assets/p169-img02.png' | relative_url }})
 
 直接点击下一步即可，整个安装过程会持续9min 【第二步解压会持续7min左右】
 
+![原文插图（第 170 页）]({{ '/subjects/KVM/assets/p170-img01.png' | relative_url }})
 
 安装完毕后，会直接关闭主机
 
@@ -173,26 +190,33 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 点击启动虚拟机，启动画面会持续 1min左右，会进行初始化环境
 
+![原文插图（第 170 页）]({{ '/subjects/KVM/assets/p170-img02.png' | relative_url }})
 
 #### 基本配置
 
 设定密码，不能太简单，W!@#$%^w
 
+![原文插图（第 171 页）]({{ '/subjects/KVM/assets/p171-img01.png' | relative_url }})
 
 点击完成后，进入到画面
 
+![原文插图（第 171 页）]({{ '/subjects/KVM/assets/p171-img02.png' | relative_url }})
 
 不要使用 键盘，传输快捷键解锁，通过 “发送按键” 来实现
 
+![原文插图（第 172 页）]({{ '/subjects/KVM/assets/p172-img01.png' | relative_url }})
 
 发送按键后，查看效果
 
+![原文插图（第 172 页）]({{ '/subjects/KVM/assets/p172-img02.png' | relative_url }})
 
 输入密码 W!@#$%^w ，进行登录
 
+![原文插图（第 173 页）]({{ '/subjects/KVM/assets/p173-img01.png' | relative_url }})
 
 稍等10s钟，查看效果
 
+![原文插图（第 173 页）]({{ '/subjects/KVM/assets/p173-img02.png' | relative_url }})
 
 #### 网络配置
 
@@ -200,34 +224,45 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 点击 左下角，点击管理工具
 
+![原文插图（第 174 页）]({{ '/subjects/KVM/assets/p174-img01.png' | relative_url }})
 
 点击计算机管理后，点击设备管理器
 
+![原文插图（第 174 页）]({{ '/subjects/KVM/assets/p174-img02.png' | relative_url }})
 
+![原文插图（第 175 页）]({{ '/subjects/KVM/assets/p175-img01.png' | relative_url }})
 
 右键后，点击 更新驱动程序软件
 
+![原文插图（第 175 页）]({{ '/subjects/KVM/assets/p175-img02.png' | relative_url }})
 
 **点击 浏览计算机以查找驱动程序软件**
 
+![原文插图（第 176 页）]({{ '/subjects/KVM/assets/p176-img01.png' | relative_url }})
 
 点击浏览，
 
+![原文插图（第 176 页）]({{ '/subjects/KVM/assets/p176-img02.png' | relative_url }})
 
 选中 E盘 virtio-win-0.1.266 即可，然后点击确定
 
+![原文插图（第 177 页）]({{ '/subjects/KVM/assets/p177-img01.png' | relative_url }})
 
 确保 勾选 包括 子文件夹，然后点击下一步，稍等10s后，可以看到驱动自动安装完毕
 
+![原文插图（第 177 页）]({{ '/subjects/KVM/assets/p177-img02.png' | relative_url }})
 
 安装完成后，稍等一下，网络就会出现了
 
+![原文插图（第 178 页）]({{ '/subjects/KVM/assets/p178-img01.png' | relative_url }})
 
 点击 是即可，确认最后效果
 
+![原文插图（第 178 页）]({{ '/subjects/KVM/assets/p178-img02.png' | relative_url }})
 
 以同样的方式安装其他的几个叹号设备即可，但是注意关于人体学输入设备处，即使我们安装完毕后，依然会出现黄色叹号
 
+![原文插图（第 179 页）]({{ '/subjects/KVM/assets/p179-img01.png' | relative_url }})
 
 ### 模版制作
 
@@ -237,6 +272,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 命令：whoami/user
 
+![原文插图（第 179 页）]({{ '/subjects/KVM/assets/p179-img02.png' | relative_url }})
 
 如果基于现有的镜像进行克隆的话，会导致所有的windows的sid都是相同的。
 
@@ -244,14 +280,17 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 进入到VM主机的 C:\Windows\System32\Sysprep 目录下，找到一个文件
 
+![原文插图（第 180 页）]({{ '/subjects/KVM/assets/p180-img01.png' | relative_url }})
 
 **双击 sysprep 程序**
 
+![原文插图（第 180 页）]({{ '/subjects/KVM/assets/p180-img02.png' | relative_url }})
 
 勾选 通用，然后关机选项 选择 关机。 这就意味着，我一旦关机后，当前主机的所有定制信息都会被清理掉，重启后，会生成新的主机身份信息。
 
 点击确定后，查看效果
 
+![原文插图（第 181 页）]({{ '/subjects/KVM/assets/p181-img01.png' | relative_url }})
 
 该过程会持续 1min左右，然后会自动关闭主机
 
@@ -290,6 +329,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 启动主机后，通过vnc查看效果，启动后的vm主机需要自定义信息了
 
+![原文插图（第 182 页）]({{ '/subjects/KVM/assets/p182-img01.png' | relative_url }})
 
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/KVM/07-virtualization-principles.html' | relative_url }}">← 上一章：虚拟化原理</a>

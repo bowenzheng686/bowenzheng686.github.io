@@ -8,7 +8,7 @@ subject_page: true
 
 # 第 02 章 · 命令创建虚拟机
 
-> 公开版已将实验密码、主机标识和网络地址替换为示例值，并省略可能包含环境信息的原始截图。执行命令前请按实际环境调整。
+> 公开版已将实验密码、主机标识和网络地址替换为示例值；正文图片已恢复，截图中的敏感区域已做本地像素覆盖。执行命令前请按实际环境调整。
 
 ## 2.1 常见命令
 
@@ -16,6 +16,7 @@ subject_page: true
 
 **工具体系**
 
+![原文插图（第 48 页）]({{ '/subjects/KVM/assets/p048-img01.png' | relative_url }})
 
 **虚拟机的管理有两套管理工具：**
 
@@ -303,14 +304,17 @@ noautoconsole
 
 **打开vnc-viewer软件**
 
+![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img01.png' | relative_url }})
 
 只需要输入一个 192.0.2.12【kvm的主机地址】 即可
 
+![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img02.png' | relative_url }})
 
 通过vnc客户端连接到安装界面,kvm虚拟机的默认端口从5900开始
 
 双击 192.0.2.12 连接
 
+![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img01.png' | relative_url }})
 
 #### 系统安装
 
@@ -321,20 +325,25 @@ noautoconsole
 - 通过给内核传递参数，配置网卡
 - 按Tab键，编辑配置，在末尾追加 net.ifnames=0 biosdevname=0，编辑完毕后，直接按Enter
 
+![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img02.png' | relative_url }})
 
 接下来跟安装普通系统的步骤一致，毕竟是测试，所以注意以下几项：
 
 **网卡打开：**
 
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img01.png' | relative_url }})
 
 安装软件：最小化
 
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img02.png' | relative_url }})
 
 检查安装源：(默认)
 
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img03.png' | relative_url }})
 
 设置最简单密码：EXAMPLE_PASSWORD
 
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img04.png' | relative_url }})
 
 等待系统安装完毕后，点击reboot，重启虚拟机
 
@@ -359,12 +368,15 @@ vnc中虚拟机是不会重启的，需要在宿主机系统中，使用命令�
 
 **vnc连接登录**
 
+![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img01.png' | relative_url }})
 
 **查看ip地址**
 
+![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img02.png' | relative_url }})
 
 **查看路由信息**
 
+![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img03.png' | relative_url }})
 
 可以看到：操作方式是跟正常操作linux系统的方式是一致的。
 
@@ -815,6 +827,7 @@ vnc://localhost:0
 
 **vnc查看连接方式：**
 
+![原文插图（第 66 页）]({{ '/subjects/KVM/assets/p066-img01.png' | relative_url }})
 
 ##### console登录
 
@@ -916,6 +929,7 @@ s0:c0.c1023
 
 查看vnc效果，vnc的画面没有任何动的痕迹了 -- vnc界面卡死了，但是虚拟机并没有关机
 
+![原文插图（第 68 页）]({{ '/subjects/KVM/assets/p068-img01.png' | relative_url }})
 
 #### 恢复
 
@@ -943,6 +957,7 @@ s0:c0.c1023
 
 可以看到：vnc界面里面恢复了，而且可以进行操作
 
+![原文插图（第 69 页）]({{ '/subjects/KVM/assets/p069-img01.png' | relative_url }})
 
 #### 关闭实践
 
@@ -1296,9 +1311,11 @@ vnc://localhost:2988
 
 上面测试的信息是给 vnc 连接时候登录用的，不是给 virsh console 连接用的，因为virsh console 不走 vnc。
 
+![原文插图（第 76 页）]({{ '/subjects/KVM/assets/p076-img01.png' | relative_url }})
 
 **点击输入密码后的效果**
 
+![原文插图（第 77 页）]({{ '/subjects/KVM/assets/p077-img01.png' | relative_url }})
 
 ## 2.3 其他内容
 
@@ -1397,12 +1414,15 @@ noautoconsole
 
 clone的方式，仅限于关闭的主机场景
 
+![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img01.png' | relative_url }})
 
 **对第一个主机进行克隆操作**
 
+![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img02.png' | relative_url }})
 
 查看克隆后效果，克隆后的主机，和之前的主机运行效果一样，而且使用的不是同一个磁盘
 
+![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img03.png' | relative_url }})
 
 # 2 核心知识
 

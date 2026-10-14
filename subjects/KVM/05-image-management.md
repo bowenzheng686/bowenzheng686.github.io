@@ -8,7 +8,7 @@ subject_page: true
 
 # 第 05 章 · 镜像管理
 
-> 公开版已将实验密码、主机标识和网络地址替换为示例值，并省略可能包含环境信息的原始截图。执行命令前请按实际环境调整。
+> 公开版已将实验密码、主机标识和网络地址替换为示例值；正文图片已恢复，截图中的敏感区域已做本地像素覆盖。执行命令前请按实际环境调整。
 
 ## 5.1 磁盘基础
 
@@ -22,6 +22,7 @@ raw：
 
 老牌的格式了，性能上来说的话还是不错的。由于原生的裸格式，不支持snapshot。在虚拟机迁移方面还是有很大的限制。qcow2:是openstack默认也是比较推荐的格式，将差异保存在一个文件，文件比较小而且做快照也比较小，空间是动态增长的.现在比较主流的一种虚拟化镜像格式，支持快照功能。
 
+![原文插图（第 117 页）]({{ '/subjects/KVM/assets/p117-img01.png' | relative_url }})
 
 ### 确认模式
 
@@ -203,6 +204,7 @@ CentOS-7-x86_64-1.qcow2
 注意：由于是一个新的磁盘，所以系统在启动的时候，会导致失败，效果如下
 ````
 
+![原文插图（第 120 页）]({{ '/subjects/KVM/assets/p120-img01.png' | relative_url }})
 
 ### 非空磁盘实践
 
@@ -262,6 +264,7 @@ CentOS-7-x86_64.qcow2
 
 **查看登录效果**
 
+![原文插图（第 121 页）]({{ '/subjects/KVM/assets/p121-img01.png' | relative_url }})
 
 ## 5.3 克隆
 
@@ -428,6 +431,7 @@ autostart CentOS-7-clone.xml CentOS-7-x86_64.xml CentOS-backup.xml networks
 
 登录后确认效果，因为我们之前定制的是静态ip，所以只能从mac地址上查看到时不同的主机
 
+![原文插图（第 125 页）]({{ '/subjects/KVM/assets/p125-img01.png' | relative_url }})
 
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/KVM/04-network-management.html' | relative_url }}">← 上一章：网络管理</a>
