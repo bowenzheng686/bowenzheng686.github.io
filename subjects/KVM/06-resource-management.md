@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 资源管理'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -28,7 +29,7 @@ subject_page: true
 
 **热调整**
 
-````bash
+````text
 virsh setvcpus <虚拟机名称> <cpu个数> --live
     注意：
         默认后面会有 --live 属性，标识热调整，默认不会更改后端的配置
@@ -52,7 +53,7 @@ virsh start <虚拟机名称>
 
 **查看宿主机的cpu个数**
 
-````bash
+````console
 [root@kvm-host ~]# lscpu
 架构： x86_64
   CPU 运行模式： 32-bit, 64-bit
@@ -69,7 +70,7 @@ CPU: 8
 
 宿主机查看所有的cpu状态,宿主机的7个cpu都是处于工作状态中
 
-````bash
+````console
 [root@kvm-host ~]# cat /sys/devices/system/cpu/cpu1/online
 1
 [root@kvm-host ~]# cat /sys/devices/system/cpu/cpu2/online
@@ -88,7 +89,7 @@ CPU: 8
 
 cpu0里面有可能没有online，这不影响，如果非要看的话，可以手工添加个
 
-````bash
+````console
 [root@kvm-host ~]# cat /sys/devices/system/cpu/cpu0/online
 cat: /sys/devices/system/cpu/cpu0/online: 没有那个文件或目录
 [root@kvm-host ~]# ls /sys/devices/system/cpu/cpu0/
@@ -98,7 +99,7 @@ cache cpuidle crash_notes crash_notes_size driver firmware_node hotplug
 
 **看虚拟机当前的cpu状态**
 
-````bash
+````console
 [root@kvm-host ~]# virsh edit CentOS-7-x86_64
         ...
   <vcpu placement='static'>2</vcpu>
@@ -108,7 +109,7 @@ cache cpuidle crash_notes crash_notes_size driver firmware_node hotplug
 
 **关闭虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host ~]# virsh list --all
@@ -121,7 +122,7 @@ cache cpuidle crash_notes crash_notes_size driver firmware_node hotplug
 
 **编辑虚拟机配置**
 
-````bash
+````console
 [root@kvm-host ~]# virsh edit CentOS-7-x86_64
 域'CentOS-7-x86_64' XML 配置已被编辑。
 # 原内容
@@ -137,7 +138,7 @@ cache cpuidle crash_notes crash_notes_size driver firmware_node hotplug
 
 **启动虚拟机后查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 [root@kvm-host ~]# virsh dominfo CentOS-7-x86_64
@@ -153,7 +154,7 @@ CPU 时间： 8.0s
 持久： 是
 ````
 
-````bash
+````text
 自动启动： 禁用
 管理的保存： 否
 安全性模式： none
@@ -179,20 +180,20 @@ CPU关系的值：
 
 **增加cpu的数量不能超过限制**
 
-````bash
+````console
 [root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 8
 错误： 无效参数：请求的 vcpu 大于活动域的最大允许的 vcpu：8 > 4
 ````
 
 **增加cpu后检查**
 
-````bash
+````console
 [root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 4
 ````
 
 确认效果,cpu已经添加为4个了
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpuinfo CentOS-7-x86_64
 VCPU: 0
 CPU: 7
@@ -223,13 +224,13 @@ CPU关系: yyyyyyyy
 
 **删减cpu**
 
-````bash
+````console
 [root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 2
 ````
 
 删减cpu后检查，cpu的数量减少为2个
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpuinfo CentOS-7-x86_64
 VCPU: 0
 CPU: 1
@@ -245,7 +246,7 @@ CPU关系: yyyyyyyy
 
 查看配置,配置没有发生变动
 
-````bash
+````console
 [root@kvm-host ~]# grep vcpu /etc/libvirt/qemu/CentOS-7-x86_64.xml
   <vcpu placement='static' current='1'>4</vcpu>
 ````
@@ -256,13 +257,13 @@ CPU关系: yyyyyyyy
 
 **修改配置**
 
-````bash
+````console
 [root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 3 --config
 ````
 
 **cpu的运行数量没有变化**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpuinfo CentOS-7-x86_64
 VCPU: 0
 CPU: 6
@@ -278,7 +279,7 @@ CPU关系: yyyyyyyy
 
 **但是配置文件发生了改变**
 
-````bash
+````console
 [root@kvm-host ~]# grep vcpu /etc/libvirt/qemu/CentOS-7-x86_64.xml
   <vcpu placement='static' current='3'>4</vcpu>
 ````
@@ -287,7 +288,7 @@ CPU关系: yyyyyyyy
 
 **普通重置**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host ~]# virsh list
@@ -299,7 +300,7 @@ CPU关系: yyyyyyyy
 
 查看效果,会按照配置里面的 信息进行加载环境信息
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpuinfo CentOS-7-x86_64
 VCPU: 0
 CPU: 2
@@ -320,25 +321,25 @@ CPU关系: yyyyyyyy
 
 **将kvm的0号cpu绑定在宿主机的1号cpu上**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpupin CentOS-7-x86_64 0 1
 ````
 
 **将kvm的1号cpu绑定在宿主机的2号cpu上**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpupin CentOS-7-x86_64 1 2
 ````
 
 **将kvm的3号cpu绑定在宿主机的0号cpu上**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpupin CentOS-7-x86_64 2 0
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vcpuinfo CentOS-7-x86_64
 VCPU: 0
 CPU: 1
@@ -375,7 +376,7 @@ CPU关系: y-------
 
 **立刻生效**
 
-````bash
+````text
 virsh qemu-monitor-command <虚拟机名称> --hmp --cmd 命令
     命令解析：
         查看所有信息 info
@@ -387,7 +388,7 @@ virsh qemu-monitor-command <虚拟机名称> --hmp --cmd 命令
 
 **重启后生效**
 
-````bash
+````text
 virsh setmem <虚拟机名称> 定制容量
     注意：
         该方法上课时候不推荐，因为不是及时生效
@@ -403,7 +404,7 @@ virsh setmem <虚拟机名称> 定制容量
 
 **查看配置文件**
 
-````bash
+````console
 [root@kvm-host ~]# virsh dumpxml CentOS-7-x86_64|grep -i memo
   <memory unit='KiB'>1048576</memory>
   <currentMemory unit='KiB'>1048576</currentMemory>
@@ -411,7 +412,7 @@ virsh setmem <虚拟机名称> 定制容量
 
 **查看虚拟机内存信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh dominfo CentOS-7-x86_64| grep -E "mem|内存"
 最大内存： 1048576 KiB
 使用的内存： 1048576 KiB
@@ -423,7 +424,7 @@ virsh setmem <虚拟机名称> 定制容量
 
 **查看内存信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
 balloon
 balloon: actual=1024
@@ -431,14 +432,14 @@ balloon: actual=1024
 
 **调整内存信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
 balloon 512
 ````
 
 **确认内存信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
 balloon
 balloon: actual=512
@@ -454,7 +455,7 @@ balloon: actual=512
 
 在存在最大内存的前提下，是无法调整到限制之外的
 
-````bash
+````console
 [root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
 balloon 3000
 因为最大内存的限制，所以最大的值只能调整到1G
@@ -467,7 +468,7 @@ balloon: actual=1024
 
 **调整内存的限制**
 
-````bash
+````console
 [root@kvm-host ~]# virsh edit CentOS-7-x86_64
         ...
       4 <memory unit='KiB'>3170304</memory>
@@ -478,7 +479,7 @@ balloon: actual=1024
 
 **但是实际运行确没有生效**
 
-````bash
+````console
 [root@kvm-host ~]# virsh dumpxml CentOS-7-x86_64|grep -i memo
   <memory unit='KiB'>1048576</memory>
   <currentMemory unit='KiB'>1048576</currentMemory>
@@ -486,7 +487,7 @@ balloon: actual=1024
 
 重启vm之后，生效
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
@@ -500,7 +501,7 @@ balloon: actual=1024
 
 **动态调大内存**
 
-````bash
+````console
 [root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
 balloon 2048
 查看当前内存大小
@@ -514,7 +515,7 @@ balloon: actual=2048
 
 **动态调大内存**
 
-````bash
+````console
 [root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
 balloon 3000
 查看当前内存大小
@@ -525,7 +526,7 @@ balloon: actual=3000
 
 **确认虚拟机效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ])
@@ -566,7 +567,7 @@ qemu-img resize 虚拟磁盘名称 +5G
 
 **挂载磁盘**
 
-````bash
+````text
 virsh attach-disk <虚拟机名称> --source <新磁盘名> --target <磁盘类型名> --persistent
 注意：
     磁盘类型名一般是 sda~ 或者 vda~
@@ -587,7 +588,7 @@ virsh detach-disk <虚拟机名称> <磁盘类型名>
 
 查看磁盘空间效果，大概是11G
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ])
@@ -613,14 +614,14 @@ I/O 大小(最小/最佳)：512 字节 / 512 字节
 
 **确认磁盘文件**
 
-````bash
+````console
 [root@kvm-host ~]# virsh dumpxml CentOS-7-x86_64 | grep opt
       <source file='/opt/CentOS-7-x86_64.qcow2' index='2'/>
 ````
 
 **正常运行的vm主机无法查看磁盘状态**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img info /opt/CentOS-7-x86_64.qcow2
 qemu-img: Could not open '/opt/CentOS-7-x86_64.qcow2': Failed to get shared
 "write" lock
@@ -633,7 +634,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.qcow2]?
 
 **关闭虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 ````
@@ -642,7 +643,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.qcow2]?
 
 **查看当前磁盘状态**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img info /opt/CentOS-7-x86_64.qcow2
 image: /opt/CentOS-7-x86_64.qcow2
 file format: qcow2
@@ -669,14 +670,14 @@ Child node '/file':
 
 **调整磁盘大小**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img resize /opt/CentOS-7-x86_64.qcow2 +1G
 Image resized. # 调整成功的标识
 ````
 
 **查看磁盘状态**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img info /opt/CentOS-7-x86_64.qcow2
 ````
 
@@ -706,14 +707,14 @@ Child node '/file':
 
 **再次调整磁盘大小**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img resize /opt/CentOS-7-x86_64.qcow2 +2G
 Image resized. # 调整成功的标识
 ````
 
 **查看磁盘状态**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img info /opt/CentOS-7-x86_64.qcow2
 image: /opt/CentOS-7-x86_64.qcow2
 file format: qcow2
@@ -740,14 +741,14 @@ Child node '/file':
 
 **重启虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 ````
 
 **进入虚拟机查看磁盘大小**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ])
@@ -773,7 +774,7 @@ I/O 大小(最小/最佳)：512 字节 / 512 字节
 
 Gi 和 G
 
-````bash
+````console
 [root@kvm-host ~]# echo "scale=2; 13958643712 /1000 /1000 / 1000"| bc
 13.95
 [root@kvm-host ~]# echo "scale=2; 13958643712 /1024 /1024 / 1024"| bc
@@ -786,14 +787,14 @@ Gi 和 G
 
 **创建新磁盘**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img create -f raw /opt/storage.qcow2 2G
 Formatting '/opt/storage.qcow2', fmt=raw size=2147483648
 ````
 
 **增加新磁盘到虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh attach-disk CentOS-7-x86_64 --source /opt/storage.qcow2
 --target vdb --persistent
 成功附加磁盘
@@ -809,7 +810,7 @@ Formatting '/opt/storage.qcow2', fmt=raw size=2147483648
 
 **登录虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ])
@@ -823,7 +824,7 @@ Last login: Thu Mar 27 20:32:36 on ttyS0
 
 **登录到虚拟机中检查效果**
 
-````bash
+````console
 [root@localhost ~]# fdisk -l | grep vd
 磁盘 /dev/vda：14.0 GB, 13958643712 字节，27262976 个扇区
 /dev/vda1 * 2048 2099199 1048576 83 Linux
@@ -835,7 +836,7 @@ Last login: Thu Mar 27 20:32:36 on ttyS0
 
 **删除虚拟机的某磁盘**
 
-````bash
+````console
 [root@kvm-host ~]# virsh detach-disk CentOS-7-x86_64 --target vdb --persistent
 成功分离磁盘
 [root@kvm-host ~]# virsh domblklist --details CentOS-7-x86_64
@@ -847,7 +848,7 @@ Last login: Thu Mar 27 20:32:36 on ttyS0
 
 登录到虚拟机中检查效果，立刻生效了
 
-````bash
+````console
 [root@localhost ~]# fdisk -l | grep vd
 磁盘 /dev/vda：14.0 GB, 13958643712 字节，27262976 个扇区
 /dev/vda1 * 2048 2099199 1048576 83 Linux
@@ -861,21 +862,21 @@ Last login: Thu Mar 27 20:32:36 on ttyS0
 
 **关闭虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 ````
 
 **新增一块磁盘**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img create -f raw /opt/image.raw 2G
 Formatting '/opt/image.raw', fmt=raw size=2147483648
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# ll /opt/
 总用量 4991908
 -rw------- 1 qemu qemu 1681063936 3月 26 23:01 CentOS-7-clone.img
@@ -891,7 +892,7 @@ Formatting '/opt/image.raw', fmt=raw size=2147483648
 
 **编辑配置文件**
 
-````bash
+````console
 [root@linux-node1 ~]# virsh edit CentOS-7-x86_64
                 ...
   <devices>
@@ -916,7 +917,7 @@ Formatting '/opt/image.raw', fmt=raw size=2147483648
 
 **启动虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 [root@kvm-host ~]# virsh domblklist --details CentOS-7-x86_64
@@ -929,7 +930,7 @@ Formatting '/opt/image.raw', fmt=raw size=2147483648
 
 连接进入虚拟机确认新增磁盘已识别，但是，盘标识是 递增出来的
 
-````bash
+````console
 [root@localhost ~]# fdisk -l | grep vd
 磁盘 /dev/vda：14.0 GB, 13958643712 字节，27262976 个扇区
 /dev/vda1 * 2048 2099199 1048576 83 Linux
@@ -943,7 +944,7 @@ Formatting '/opt/image.raw', fmt=raw size=2147483648
 
 **格式化磁盘**
 
-````bash
+````console
 [root@localhost ~]# mkfs.ext4 /dev/vdb
 mke2fs 1.42.9 (28-Dec-2013)
 文件系统标签=
@@ -956,7 +957,7 @@ Writing superblocks and filesystem accounting information: 完成
 
 **新建一个目录来挂载新硬盘**
 
-````bash
+````console
 [root@localhost ~]# mkdir /data
 [root@localhost ~]# mount /dev/vdb /data/
 [root@localhost ~]# mount | grep vdb
@@ -966,7 +967,7 @@ Writing superblocks and filesystem accounting information: 完成
 
 **开机自动挂载**
 
-````bash
+````console
 [root@localhost ~]# blkid /dev/vdb
 /dev/vdb: UUID="00000000-0000-4000-8000-00000000000c" TYPE="ext4"
 [root@localhost ~]# echo 'UUID=00000000-0000-4000-8000-00000000000c /data ext4
@@ -983,7 +984,7 @@ defaults 0 0'>> /etc/fstab
 
 **向磁盘中增加数据**
 
-````bash
+````console
 [root@localhost ~]# dd if=/dev/zero of=/data/1M.img bs=10M count=1
 记录了1+0 的读入
 记录了1+0 的写出
@@ -1000,7 +1001,7 @@ drwx------. 2 root root 16K 3月 27 20:46 lost+found
 
 **从 CentOS-7-x86_64 中移除磁盘**
 
-````bash
+````console
 [root@kvm-host ~]# virsh detach-disk CentOS-7-x86_64 --target vdc --persistent
 成功分离磁盘
 [root@kvm-host ~]# virsh domblklist --details CentOS-7-x86_64
@@ -1012,7 +1013,7 @@ drwx------. 2 root root 16K 3月 27 20:46 lost+found
 
 直接查看效果,CentOS-7-x86_64 中已看不到磁盘了
 
-````bash
+````console
 [root@localhost ~]# fdisk -l | grep vd
 磁盘 /dev/vda：14.0 GB, 13958643712 字节，27262976 个扇区
 /dev/vda1 * 2048 2099199 1048576 83 Linux
@@ -1024,14 +1025,14 @@ drwx------. 2 root root 16K 3月 27 20:46 lost+found
 
 **启动vm主机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-clone
 域 'CentOS-7-clone' 已启动
 ````
 
 **挂载新磁盘**
 
-````bash
+````console
 [root@kvm-host ~]# virsh attach-disk CentOS-7-clone --source /opt/image.raw --
 target vdx --persistent
 成功附加磁盘
@@ -1045,7 +1046,7 @@ target vdx --persistent
 
 **登录到虚拟机确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-clone
 连接到域 'CentOS-7-clone'
 转义字符是 ^] (Ctrl + ])
@@ -1063,7 +1064,7 @@ Last login: Wed Mar 26 22:41:28 on tty1
 
 挂载磁盘确认效果,可以看到迁移之前的数据效果
 
-````bash
+````console
 [root@localhost ~]# mkdir /data
 [root@localhost ~]# mount /dev/vdb /data
 [root@localhost ~]# ll -h /data/

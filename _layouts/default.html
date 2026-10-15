@@ -384,6 +384,7 @@ html[data-theme="light"] .button-secondary:hover { background:#e5e5e5; }
 }
 
   </style>
+  {% if page.syntax_highlight %}<link rel="stylesheet" href="{{ '/assets/kvm-syntax.css' | relative_url }}">{% endif %}
 </head>
 <body class="{% if page.home %}page-home{% else %}page-article{% endif %}">
   <div class="cosmos-backdrop" aria-hidden="true"></div>

@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 存储管理'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -40,7 +41,7 @@ KVM平台以存储池的形式对存储进行统一管理。它可以理解为�
 
 **创建存储池**
 
-````bash
+````text
 常见两种创建方法，基于文件夹和文件系统，我们主要介绍基于文件夹的方式。
     定义永久池+创建池：virsh pool-define-as + virsh pool-build
     创建临时池+启动池：virsh pool-create-as
@@ -60,7 +61,7 @@ KVM平台以存储池的形式对存储进行统一管理。它可以理解为�
 
 **基于分区创建存储池：**
 
-````bash
+````text
 virsh pool-define-as <存储池名> fs --source-dev <分区名称> --target <挂载目录>
 基于磁盘创建存储池:
 virsh pool-define-as <存储池名> disk --source-dev <磁盘名称> --source-format gpt --
@@ -79,13 +80,13 @@ virsh pool-define-as <存储池名> netfs --source-host <nfs主机ip> --source-p
 
 **创建目录**
 
-````bash
+````console
 [root@kvm-host ~]# mkdir /kvm/images -p
 ````
 
 **创建存储池**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-define-as gavin_dpool --type dir --target
 /kvm/images
 定义池 gavin_dpool
@@ -95,7 +96,7 @@ virsh pool-define-as <存储池名> netfs --source-host <nfs主机ip> --source-p
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list --persistent
  名称 状态 自动开始
 ----------------------------
@@ -112,13 +113,13 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **创建目录**
 
-````bash
+````console
 [root@kvm-host ~]# mkdir /gavin/images -p
 ````
 
 **创建存储池**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-create-as gavin_cpool --type dir --target
 /gavin/images
 创建池 gavin_cpool
@@ -126,7 +127,7 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list --transient
  名称 状态 自动开始
 ---------------------------------
@@ -163,14 +164,14 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **启动创建的 gavin_dpool 存储池**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-start gavin_dpool
 池 gavin_dpool 已启动
 ````
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list
  名称 状态 自动开始
 ---------------------------------
@@ -188,14 +189,14 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 设置刚才启用的存储池自动运行。
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-autostart gavin_dpool
 池 gavin_dpool 标记为自动启动
 ````
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list
  名称 状态 自动开始
 ---------------------------------
@@ -224,7 +225,7 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **关闭存储池**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-destroy gavin_dpool
 销毁池 gavin_dpool
 [root@kvm-host ~]# virsh pool-destroy gavin_cpool
@@ -233,7 +234,7 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 检查效果，临时存储池一旦关闭后，就不再存在了
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list
  名称 状态 自动开始
 ----------------------------
@@ -275,7 +276,7 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **取消存储池目录**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-delete gavin_dpool
 池 gavin_dpool 被删除
 ````
@@ -284,7 +285,7 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **检查对象**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list --all
  名称 状态 自动开始
 -----------------------------------
@@ -299,7 +300,7 @@ autostart default.xml images.xml opt.xml gavin_dpool.xml
 
 **删除存储池配置文件**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-undefine gavin_dpool
 池 gavin_dpool 已经被取消定义
 [root@kvm-host ~]# ls /etc/libvirt/storage/
@@ -324,7 +325,7 @@ autostart default.xml images.xml opt.xml
 
 存储卷是结合存储池来使用的，所以我们就先来做存储卷的准备工作：创建存储池
 
-````bash
+````console
 [root@kvm-host ~]# mkdir /kvm/images
 [root@kvm-host ~]# virsh pool-define-as gavin_pool --type dir --target
 /kvm/images
@@ -335,7 +336,7 @@ autostart default.xml images.xml opt.xml
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh pool-list
  名称 状态 自动开始
 --------------------------------
@@ -349,7 +350,7 @@ autostart default.xml images.xml opt.xml
 
 **通过virsh中vol命令能够查看、创建、激活、注册、删除存储卷**
 
-````bash
+````console
 [root@kvm-host ~]# virsh --help | grep vol
  Storage Volume (指定关键字'volume'时可以显示此部分帮助信息)
     vol-clone 克隆卷。
@@ -401,7 +402,7 @@ allocation 1G --format raw
 
 **创建存储卷**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-create-as --pool gavin_pool --name gavin.img --
 capacity 2G --allocation 1G --format raw
 卷 gavin.img 创建了
@@ -409,7 +410,7 @@ capacity 2G --allocation 1G --format raw
 
 **查看存储位置**
 
-````bash
+````console
 [root@kvm-host ~]# ll /kvm/images
 总用量 1048576
 -rw------- 1 root root 2147483648 3月 25 22:03 gavin.img
@@ -417,7 +418,7 @@ capacity 2G --allocation 1G --format raw
 
 **查看存储池的存储卷列表**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-list gavin_pool
  名称 路径
 --------------------------------------
@@ -426,7 +427,7 @@ capacity 2G --allocation 1G --format raw
 
 **查看存储卷信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -436,7 +437,7 @@ capacity 2G --allocation 1G --format raw
 
 **查看存储卷配置信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-dumpxml gavin.img gavin_pool
 <volume type='file'>
   <name>gavin.img</name>
@@ -474,7 +475,7 @@ capacity 2G --allocation 1G --format raw
 
 **挂载动作：**
 
-````bash
+````text
     virsh attach-disk <虚拟机> <存储卷> <挂载设备>
     注意：挂载设备可以是vdx或者sdx，x是从b开始的字母
 卸载动作
@@ -486,7 +487,7 @@ capacity 2G --allocation 1G --format raw
 
 **磁盘的挂载和卸载操作依赖于运行中的虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 [root@kvm-host ~]# virsh list
@@ -499,14 +500,14 @@ capacity 2G --allocation 1G --format raw
 
 **挂载操作**
 
-````bash
+````console
 [root@kvm-host ~]# virsh attach-disk CentOS-7-x86_64 /kvm/images/gavin.img vdb
 成功附加磁盘
 ````
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ])
@@ -536,7 +537,7 @@ I/O 大小(最小/最佳)：512 字节 / 512 字节
 
 **格式化磁盘**
 
-````bash
+````console
 [root@localhost ~]# mkfs.ext4 /dev/vdb
 mke2fs 1.42.9 (28-Dec-2013)
 文件系统标签=
@@ -561,21 +562,21 @@ Writing superblocks and filesystem accounting information: 完成
 
 **挂载虚拟磁盘**
 
-````bash
+````console
 [root@localhost ~]# mkdir /gavin
 [root@localhost ~]# mount /dev/vdb /gavin/
 ````
 
 **确认效果**
 
-````bash
+````console
 [root@localhost ~]# df -h | grep vdb
 /dev/vdb 2.0G 6.0M 1.8G 1% /gavin
 ````
 
 **测试效果**
 
-````bash
+````console
 [root@localhost ~]# dd if=/dev/zero of=/gavin/test.1.txt bs=1M count=200
 记录了200+0 的读入
 记录了200+0 的写出
@@ -590,7 +591,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **卸载目录**
 
-````bash
+````console
 [root@localhost ~]# umount /gavin/
 [root@localhost ~]# # Ctrl + ] 退出虚拟机
 [root@kvm-host ~]#
@@ -598,21 +599,21 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **卸载磁盘**
 
-````bash
+````console
 [root@kvm-host ~]# virsh detach-disk CentOS-7-x86_64 vdb
 成功分离磁盘
 ````
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 [root@localhost ~]#fdisk -l
 ````
 
 **检查磁盘效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -634,7 +635,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **数据导出**
 
-````bash
+````text
     virsh vol-download <存储卷名称> <导出文件名> --pool <存储池>
 数据清除
     virsh vol-wipe <存储卷名称> --pool <存储池>
@@ -649,14 +650,14 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **导出卷中数据**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-download gavin.img file.txt --pool gavin_pool
 # 会有几秒的卡顿过程
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# ll file.txt
 -rw-r--r-- 1 root root 2147483648 3月 25 22:17 file.txt
 结果显示：
@@ -667,7 +668,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **清除卷中数据前查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -677,14 +678,14 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **清除卷中数据**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-wipe gavin.img --pool gavin_pool
 擦除卷 gavin.img
 ````
 
 **再次查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -696,7 +697,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **导入数据前检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -706,14 +707,14 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **导入卷中数据**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-upload gavin.img file.txt --pool gavin_pool
 # 会有几秒的卡顿过程
 ````
 
 **再次测试效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -727,7 +728,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **查看当前卷信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -737,7 +738,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **调整卷容量为3G**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-resize gavin.img 3G --pool gavin_pool
 成功将卷 'gavin.img' 大小改为 3G
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
@@ -749,7 +750,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **调整卷容量为5G**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-resize gavin.img 5G --pool gavin_pool
 成功将卷 'gavin.img' 大小改为 5G
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
@@ -761,7 +762,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 默认情况下，容量不支持缩容
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-resize gavin.img 1G --pool gavin_pool
 错误： 将卷 'gavin.img' 的大小改为 1G 失败
 错误： 无效参数：无法缩小现有分配的容量
@@ -779,7 +780,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **克隆存储卷**
 
-````bash
+````text
     virsh vol-clone <已存在的存储卷名称> <新的存储卷名称> --pool <存储池>
 删除存储卷
     virsh vol-delete <已存在的存储卷> <存储池>
@@ -789,7 +790,7 @@ drwx------. 2 root root 16384 3月 25 22:10 lost+found
 
 **克隆一个新的存储卷**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-clone gavin.img gavin-2.img gavin_pool
 从 gavin-2.img 克隆的卷 gavin.img
 [root@kvm-host ~]# virsh vol-list gavin_pool
@@ -803,7 +804,7 @@ gavin-2.img gavin.img
 
 **查看两个存储卷信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
 名称： gavin.img
 类型： 文件
@@ -820,14 +821,14 @@ gavin-2.img gavin.img
 
 **删除存储卷**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-delete gavin-2.img gavin_pool
 卷 gavin-2.img 被删除
 ````
 
 **查看存储卷列表**
 
-````bash
+````console
 [root@kvm-host ~]# virsh vol-list gavin_pool
  名称 路径
 --------------------------------------

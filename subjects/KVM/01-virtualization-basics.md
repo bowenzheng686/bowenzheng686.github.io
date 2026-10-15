@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 虚拟化基础'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -457,7 +458,7 @@ Proxmox virtualization environment 简称PVE，是一个开源免费的基于Lin
 
 **Rocky系统**
 
-````bash
+````console
 [root@kvm-host ~]# grep -i kvm /boot/config-5.14.0-427.13.1.el9_4.x86_64
 CONFIG_KVM_GUEST=y
 CONFIG_HAVE_KVM=y
@@ -498,7 +499,7 @@ CONFIG_PTP_1588_CLOCK_KVM=m
 # CONFIG_DRM_I915_GVT_KVMGT is not set
 ````
 
-````bash
+````console
 [root@kvm-host ~]# tree /lib/modules/5.14.0-
 427.13.1.el9_4.x86_64/kernel/arch/x86/kvm/
 /lib/modules/5.14.0-427.13.1.el9_4.x86_64/kernel/arch/x86/kvm/
@@ -510,7 +511,7 @@ CONFIG_PTP_1588_CLOCK_KVM=m
 
 **Ubuntu系统**
 
-````bash
+````console
 root@ubuntu-host:~# grep -i kvm /boot/config-6.11.0-19-generic
 CONFIG_KVM_GUEST=y
 CONFIG_KVM_COMMON=y
@@ -553,7 +554,7 @@ CONFIG_KVM_HYPERV=y
 CONFIG_KVM_XEN=y
 ````
 
-````bash
+````console
 # CONFIG_KVM_PROVE_MMU is not set
 CONFIG_KVM_EXTERNAL_WRITE_TRACKING=y
 CONFIG_KVM_MAX_NR_VCPUS=4096
@@ -609,7 +610,7 @@ C:\Windows\System32>bcdedit /set hypervisorlaunchtype off 操作成功完成。
 
 **inter的CPU效果**
 
-````bash
+````console
 [root@kvm-host ~]# egrep '(vmx|svm)' /proc/cpuinfo
 flags : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
 pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm constant_tsc
@@ -644,7 +645,7 @@ decodeassists umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor fsrm
 
 **Inter的CPU效果**
 
-````bash
+````console
 [root@kvm-host ~]# lsmod | egrep 'kvm|Module'
 Module Size Used by
 kvm_intel 442368 0
@@ -663,7 +664,7 @@ irqbypass 16384 1 kvm
 
 **查看设备文件**
 
-````bash
+````console
 [root@kvm-host ~]# ls /dev/kvm
 /dev/kvm
 ````
@@ -674,7 +675,7 @@ irqbypass 16384 1 kvm
 
 **Inter CPU效果**
 
-````bash
+````console
 root@ubuntu-host:~# egrep '(vmx|svm)' /proc/cpuinfo
 flags : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
 pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm constant_tsc
@@ -710,7 +711,7 @@ succor fsrm
 
 **Inter CPU效果**
 
-````bash
+````console
 root@ubuntu-host:~# lsmod | egrep 'kvm|Module'
 Module Size Used by
 kvm_intel 487424 0
@@ -720,7 +721,7 @@ irqbypass 12288 1 kvm
 
 **AMD的CPU效果**
 
-````bash
+````console
 root@ubuntu-host:~# lsmod | egrep 'kvm|Module'
 Module Size Used by
 kvm_amd 208896 0
@@ -733,7 +734,7 @@ irqbypass 12288 1 kvm
 
 **查看设备文件**
 
-````bash
+````console
 root@ubuntu-host:~# ls /dev/kvm
 /dev/kvm
 ````
@@ -744,7 +745,7 @@ root@ubuntu-host:~# ls /dev/kvm
 
 **常见工具包**
 
-````bash
+````text
 qemu-kvm:
     为kvm提供底层仿真支持
 libvirt-daemon:
@@ -808,7 +809,7 @@ Centos7-minial https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-M
 
 **安装kvm**
 
-````bash
+````console
 root@ubuntu-host:~# apt install -y qemu-kvm libvirt-daemon-system libvirt-clients
 bridge-utils virtinst virt-manager virt-viewer cpu-checker
 ````
@@ -817,7 +818,7 @@ bridge-utils virtinst virt-manager virt-viewer cpu-checker
 
 **查看虚拟网络**
 
-````bash
+````console
 root@ubuntu-host:~# brctl show
 bridge name bridge id STP enabled interfaces
 virbr0 8000.52540085ebc4 yes
@@ -827,7 +828,7 @@ virbr0 8000.52540085ebc4 yes
 
 **#如果没有开启CPU虚拟化功能会提示以下信息**
 
-````bash
+````console
 root@ubuntu-host:~# kvm-ok
 INFO: Your CPU does not support KVM extensions
 KVM acceleration can NOT be used
@@ -841,13 +842,13 @@ KVM acceleration can be used
 
 **安装软件**
 
-````bash
+````console
 root@ubuntu-host:~# apt -y install cockpit cockpit-machines
 ````
 
 默认情况下，该软件禁用了root用户登录
 
-````bash
+````console
 root@ubuntu-host:~# vim /etc/cockpit/disallowed-users
 root@ubuntu-host:~# cat /etc/cockpit/disallowed-users
 # List of users which are not allowed to login to Cockpit
@@ -858,7 +859,7 @@ root@ubuntu-host:~# systemctl restart cockpit
 
 **检查服务**
 
-````bash
+````console
 root@ubuntu-host:~# systemctl status cockpit.socket
 ● cockpit.socket - Cockpit Web Service Socket
      Loaded: loaded (/usr/lib/systemd/system/cockpit.socket; enabled; preset:
@@ -886,7 +887,7 @@ Service Socket.
 
 **检查端口**
 
-````bash
+````console
 root@ubuntu-host:~# netstat -tnulp | grep 9090
 tcp6 0 0 :::9090 :::* LISTEN
  1/systemd
@@ -916,7 +917,7 @@ tcp6 0 0 :::9090 :::* LISTEN
 
 **命令行执行**
 
-````bash
+````console
 root@ubuntu-host:~# virt-manager
 ````
 
@@ -930,7 +931,7 @@ root@ubuntu-host:~# virt-manager
 
 **准备依赖源**
 
-````bash
+````console
 [root@kvm-host ~]# yum install epel-release
 ````
 
@@ -938,7 +939,7 @@ root@ubuntu-host:~# virt-manager
 
 **方法1：**
 
-````bash
+````console
 [root@kvm-host ~]# yum groupinstall "Virtualization Host"
 方法2：
 [root@kvm-host ~]# yum install qemu-kvm libvirt virt-manager virt-install virt-
@@ -947,13 +948,13 @@ viewer bridge-utils
 
 **启动服务**
 
-````bash
+````console
 [root@kvm-host ~]# systemctl enable --now libvirtd
 ````
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# brctl show
 bridge name bridge id STP enabled interfaces
 virbr0 8000.5254006b689d yes
@@ -961,7 +962,7 @@ virbr0 8000.5254006b689d yes
 
 **查看路由信息**
 
-````bash
+````console
 root@ubuntu-host:~# route -n
 内核 IP 路由表
 目标 网关 子网掩码 标志 跃点 引用 使用 接口
@@ -984,13 +985,13 @@ ro --dhcp-script=/usr/lib/libvirt/libvirt_leaseshelper
 
 **安装软件**
 
-````bash
+````console
 [root@kvm-host ~]# yum install cockpit cockpit-machines
 ````
 
 默认情况下，该软件禁用了root用户登录
 
-````bash
+````console
 [root@kvm-host ~]# vim /etc/cockpit/disallowed-users
 [root@kvm-host ~]# cat /etc/cockpit/disallowed-users
 # List of users which are not allowed to login to Cockpit
@@ -999,13 +1000,13 @@ ro --dhcp-script=/usr/lib/libvirt/libvirt_leaseshelper
 
 **重启主机服务**
 
-````bash
+````console
 [root@kvm-host ~]# systemctl enable --now cockpit
 ````
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# systemctl status cockpit.service
 ● cockpit.service - Cockpit Web Service
      Loaded: loaded (/usr/lib/systemd/system/cockpit.service; static)
@@ -1026,7 +1027,7 @@ cockpit-tls (code=exited, status=0/SUCCESS)
 
 **确认端口**
 
-````bash
+````console
 [root@kvm-host ~]# netstat -tnulp | grep 9090
 tcp6 0 0 :::9090 :::* LISTEN 1/systemd
 ````
@@ -1053,7 +1054,7 @@ tcp6 0 0 :::9090 :::* LISTEN 1/systemd
 
 **上传一个虚拟机镜像**
 
-````bash
+````console
 [root@kvm-host ~]# mkdir /data/images -p
 上传文件
 [root@kvm-host ~]# ls /data/images/
@@ -1102,7 +1103,7 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 **命令行执行**
 
-````bash
+````console
 [root@kvm-host ~]# virt-manager
 ````
 
@@ -1112,7 +1113,7 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 注意： 如果rocky没有安装桌面环境的话，执行上面的命令会导致如下问题
 
-````bash
+````console
 [root@kvm-host ~]# virt-manager
 [root@kvm-host ~]#
 (virt-manager:37183): Gtk-WARNING **: 11:36:38.431: cannot open display:
@@ -1120,7 +1121,7 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 **解决方法：**
 
-````bash
+````console
 [root@kvm-host ~]# yum groupinstall "带 GUI 的服务器"
 [root@kvm-host ~]# yum update
 [root@kvm-host ~]# reboot
@@ -1130,7 +1131,7 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 安装完虚拟工具后,会自动生成一个 virbr0 网卡,类似于Vmware workstation 生成的VMnet8 网卡,充当虚拟机的 NAT 网卡
 
-````bash
+````console
 [root@kvm-host ~]# ifconfig virbr0
 virbr0: flags=4099<UP,BROADCAST,MULTICAST> mtu 1500
         inet 198.18.122.1 netmask 255.255.255.0 broadcast 198.18.122.255
@@ -1143,7 +1144,7 @@ virbr0: flags=4099<UP,BROADCAST,MULTICAST> mtu 1500
 
 改网卡的基本配置文件[配置文件的路径在Rocky和Ubuntu上路径及其效果一样]
 
-````bash
+````console
 [root@kvm-host ~]# cat /etc/libvirt/qemu/networks/default.xml
 <!--
 WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
@@ -1175,7 +1176,7 @@ virt-manager 是一个图形化虚拟机管理工具,方便管理和查看虚拟
 
 **命令行执行**
 
-````bash
+````console
 [root@kvm-host ~]# virt-manager
 ````
 
@@ -1241,7 +1242,7 @@ virt-manager 是一个图形化虚拟机管理工具,方便管理和查看虚拟
 
 **查看镜像文件目录大小**
 
-````bash
+````console
 [root@kvm-host ~]# du -sh /var/lib/libvirt/images/
 1.7G /var/lib/libvirt/images/
 查看镜像文件的标称容量
@@ -1255,7 +1256,7 @@ virt-manager 是一个图形化虚拟机管理工具,方便管理和查看虚拟
 
 **查看虚拟机保存配置**
 
-````bash
+````console
 [root@kvm-host ~]# ll /etc/libvirt/qemu/
 总用量 8
 drwx------ 2 root root 6 3月 18 15:55 autostart
@@ -1265,7 +1266,7 @@ drwx------ 3 root root 42 3月 24 21:11 networks
 
 **查看虚拟机的配置**
 
-````bash
+````console
 [root@kvm-host ~]# cat /etc/libvirt/qemu/centos7.0.xml
 <!--
 WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
@@ -1350,7 +1351,7 @@ xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
     </input>
 ````
 
-````bash
+````xml
     <input type='mouse' bus='ps2'/>
     <input type='keyboard' bus='ps2'/>
     <graphics type='vnc' port='-1' autoport='yes'>

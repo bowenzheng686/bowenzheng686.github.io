@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 镜像管理'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -28,7 +29,7 @@ raw：
 
 **查看虚拟机支持的磁盘格式种类**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img --help
 qemu-img version 9.0.0 (qemu-kvm-9.0.0-10.el9_5.2)
 Copyright (c) 2003-2024 Fabrice Bellard and the QEMU Project developers
@@ -61,7 +62,7 @@ More information on the QEMU project at <https://qemu.org>.
 
 **创建磁盘**
 
-````bash
+````text
     qemu-img create [-q] [-f fmt] [-o options] filename [size]
 查看某个具体磁盘格式的帮助信息：
     qemu-img create -f qcow2 -o ? file.qcow
@@ -86,7 +87,7 @@ More information on the QEMU project at <https://qemu.org>.
 
 **基本动作执行命令**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img create -f raw /opt/CentOS-7-x86_64-1.raw 3G
 Formatting '/opt/CentOS-7-x86_64-1.raw', fmt=raw size=3221225472
 确认效果
@@ -96,7 +97,7 @@ Formatting '/opt/CentOS-7-x86_64-1.raw', fmt=raw size=3221225472
 
 **创建一个基于前后端模式的qcow2的磁盘文件**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img create -f qcow2 -o
 backing_file=/kvm/images/gavin.img test-1.qcow2 3G
 qemu-img: test-1.qcow2: Backing file specified without backing format
@@ -109,7 +110,7 @@ Detected format of raw.
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# ll /opt/ -lh
 总用量 1.7G
 -rw-r--r-- 1 root root 3.0G 3月 26 21:55 CentOS-7-x86_64-1.raw
@@ -118,7 +119,7 @@ Detected format of raw.
 
 **查看磁盘的基本信息**
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img info /opt/CentOS-7-x86_64-1.raw
 image: /opt/CentOS-7-x86_64-1.raw
 file format: raw
@@ -137,7 +138,7 @@ Child node '/file':
 
 raw磁盘转换qcow2, 注意：正在使用的磁盘无法转换
 
-````bash
+````console
 [root@kvm-host ~]# cd /opt/
 [root@kvm-host opt]# ls
 CentOS-7-x86_64-1.raw CentOS-7-x86_64.raw
@@ -148,7 +149,7 @@ CentOS-7-x86_64-1.qcow2
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host opt]# ll -h
 总用量 1.7G
 -rw-r--r-- 1 root root 193K 3月 26 22:07 CentOS-7-x86_64-1.qcow2
@@ -162,7 +163,7 @@ CentOS-7-x86_64-1.qcow2
 
 **关闭虚拟机**
 
-````bash
+````console
 [root@kvm-host opt]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host opt]# virsh list --all
@@ -173,7 +174,7 @@ CentOS-7-x86_64-1.qcow2
 
 **编辑vm配置**
 
-````bash
+````console
 [root@kvm-host opt]# virsh edit CentOS-7-x86_64
 域'CentOS-7-x86_64' XML 配置已被编辑。
 # 源内容
@@ -198,7 +199,7 @@ CentOS-7-x86_64-1.qcow2
 
 **启动虚拟机**
 
-````bash
+````console
 [root@kvm-host opt]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 注意：由于是一个新的磁盘，所以系统在启动的时候，会导致失败，效果如下
@@ -210,14 +211,14 @@ CentOS-7-x86_64-1.qcow2
 
 **格式转换**
 
-````bash
+````console
 [root@kvm-host opt]# qemu-img convert -f raw CentOS-7-x86_64.raw -O qcow2
 CentOS-7-x86_64.qcow2
 ````
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host opt]# qemu-img convert -f raw CentOS-7-x86_64.raw -O qcow2
 CentOS-7-x86_64.qcow2
 [root@kvm-host opt]# ll -h
@@ -230,7 +231,7 @@ CentOS-7-x86_64.qcow2
 
 **关闭vm**
 
-````bash
+````console
 [root@kvm-host opt]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 注意：一定要确认一下，是否真的关闭了
@@ -238,7 +239,7 @@ CentOS-7-x86_64.qcow2
 
 **修改配置**
 
-````bash
+````console
 [root@kvm-host opt]# virsh edit CentOS-7-x86_64
 # 修改后内容如下
   <devices>
@@ -253,7 +254,7 @@ CentOS-7-x86_64.qcow2
 
 **启动虚拟机**
 
-````bash
+````console
 [root@kvm-host opt]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 [root@kvm-host opt]# virsh list
@@ -293,7 +294,7 @@ virt-clone -o <被克隆的虚拟机名称> --auto-clone
 
 **关闭虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host ~]# virsh list --all
@@ -306,7 +307,7 @@ virt-clone -o <被克隆的虚拟机名称> --auto-clone
 
 **克隆vm需要时间**
 
-````bash
+````console
 [root@kvm-host ~]# virt-clone -o CentOS-7-x86_64 -n CentOS-7-clone -f
 /opt/CentOS-7-clone.img
 正在分配 'CentOS-7-clone.img' 4% [=- ] 273 MB/s | 444 MB
@@ -345,7 +346,7 @@ virt-clone -o <被克隆的虚拟机名称> --auto-clone
 
 **查看虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 ----------------------------------
@@ -356,7 +357,7 @@ virt-clone -o <被克隆的虚拟机名称> --auto-clone
 
 **查看虚拟机相关文件**
 
-````bash
+````console
 [root@kvm-host ~]# ls /opt/
 CentOS-7-clone.img CentOS-7-x86_64-1.qcow2 CentOS-7-x86_64-1.raw CentOS-7-
 x86_64.qcow2 CentOS-7-x86_64.raw
@@ -368,7 +369,7 @@ autostart CentOS-7-clone.xml CentOS-7-x86_64.xml CentOS-backup.xml networks
 
 **查看文件区别**
 
-````bash
+````console
 [root@kvm-host ~]# cd /etc/libvirt/qemu/
 [root@kvm-host qemu]# diff CentOS-7-clone.xml CentOS-7-x86_64.xml
 4c4
@@ -401,7 +402,7 @@ autostart CentOS-7-clone.xml CentOS-7-x86_64.xml CentOS-backup.xml networks
 
 **查看虚拟机**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh list --all
  Id 名称 状态
 ----------------------------------
@@ -412,7 +413,7 @@ autostart CentOS-7-clone.xml CentOS-7-x86_64.xml CentOS-backup.xml networks
 
 **启动两台虚拟机**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh start CentOS-7-clone
 域 'CentOS-7-clone' 已启动
 [root@kvm-host qemu]# virsh start CentOS-7-x86_64
@@ -421,7 +422,7 @@ autostart CentOS-7-clone.xml CentOS-7-x86_64.xml CentOS-backup.xml networks
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh list
  Id 名称 状态
 ------------------------------

@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 网络管理'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -36,7 +37,7 @@ kvm类型的虚拟机，默认情况下使用的是nat网络，同一网络模�
 
 **查看kvm的网络配置目录**
 
-````bash
+````console
 [root@kvm-host ~]# tree /etc/libvirt/qemu/networks/
 /etc/libvirt/qemu/networks/
 ├── autostart
@@ -47,7 +48,7 @@ kvm类型的虚拟机，默认情况下使用的是nat网络，同一网络模�
 
 **查看虚拟网络**
 
-````bash
+````console
 [root@kvm-host ~]# ifconfig
 。。。
 ````
@@ -71,7 +72,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 **查看所有网络相关命令**
 
-````bash
+````console
 [root@kvm-host ~]# virsh -h | grep net-
     net-autostart 自动开始网络
     net-create 从一个 XML 文件创建一个网络
@@ -101,7 +102,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 **查看网络列表**
 
-````bash
+````console
 [root@kvm-host ~]# virsh net-list
  名称 状态 自动开始 持久
 -----------------------------------
@@ -114,7 +115,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 **查看网络信息**
 
-````bash
+````console
 [root@kvm-host ~]# virsh net-info default
 名称： default
 UUID: 00000000-0000-4000-8000-000000000007
@@ -126,7 +127,7 @@ UUID: 00000000-0000-4000-8000-000000000007
 
 **查看网络配置**
 
-````bash
+````console
 [root@kvm-host ~]# virsh net-dumpxml default
 <network connections='1'>
   <name>default</name>
@@ -156,7 +157,7 @@ UUID: 00000000-0000-4000-8000-000000000007
 
 **命令解析**
 
-````bash
+````text
 创建网络
     临时：virsh net-create <xml配置文件>
     永久：virsh net-define <xml配置文件>
@@ -176,7 +177,7 @@ virsh net-undefine <网络名称>
 
 **设置配置文件**
 
-````bash
+````console
 [root@kvm-host ~]# cd /etc/libvirt/qemu/networks/
 [root@kvm-host networks]# ls
 autostart default.xml
@@ -185,7 +186,7 @@ autostart default.xml
 
 **定制配置**
 
-````bash
+````console
 [root@kvm-host networks]# vim gavin-linshi.xml
 [root@kvm-host networks]# cat gavin-linshi.xml
 <!--
@@ -212,7 +213,7 @@ or other application using the libvirt API.
 
 **创建临时网络**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-list --all
  名称 状态 自动开始 持久
 -----------------------------------
@@ -224,7 +225,7 @@ or other application using the libvirt API.
 
 查看效果,创建的是一个临时的网络
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-list --all
  名称 状态 自动开始 持久
 -----------------------------------------
@@ -238,7 +239,7 @@ or other application using the libvirt API.
 
 **确认网络**
 
-````bash
+````console
 [root@kvm-host networks]# ifconfig
 。。。
 virbr0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
@@ -271,7 +272,7 @@ TX errors 0 dropped 0 overruns 0 carrier 0 collisions 0
 
 **设置配置文件**
 
-````bash
+````console
 [root@kvm-host ~]# cd /etc/libvirt/qemu/networks/
 [root@kvm-host networks]# ls
 autostart default.xml gavin-linshi.xml
@@ -280,7 +281,7 @@ autostart default.xml gavin-linshi.xml
 
 **定制配置**
 
-````bash
+````console
 [root@kvm-host networks]# vim gavin-yongjiu.xml
 [root@kvm-host networks]# cat gavin-yongjiu.xml
 <!--
@@ -307,7 +308,7 @@ or other application using the libvirt API.
 
 **查看网络效果**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-list --all
  名称 状态 自动开始 持久
 -----------------------------------------
@@ -317,7 +318,7 @@ or other application using the libvirt API.
 
 **定义永久网络**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-define gavin-yongjiu.xml
 从 gavin-yongjiu定义网络gavin-yongjiu.xml
 [root@kvm-host networks]# virsh net-list --all
@@ -330,14 +331,14 @@ or other application using the libvirt API.
 
 **启动网络**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-start gavin-yongjiu
 网络 gavin-yongjiu 已开始
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-list --all
  名称 状态 自动开始 持久
 ------------------------------------------
@@ -353,7 +354,7 @@ or other application using the libvirt API.
 
 **查看网卡**
 
-````bash
+````console
 [root@kvm-host networks]# ifconfig
 ...
 virbr0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
@@ -395,7 +396,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 **停止网络**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-destroy default
 网络 default 被删除
 [root@kvm-host networks]# virsh net-list --all
@@ -410,7 +411,7 @@ autostart default.xml gavin-linshi.xml gavin-yongjiu.xml
 
 **开启实践**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-start default
 网络 default 已开始
 [root@kvm-host networks]# virsh net-list --all
@@ -429,7 +430,7 @@ autostart default.xml gavin-linshi.xml gavin-yongjiu.xml
 
 **关闭网络**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-undefine default
 网络 default 已经被取消定义
 [root@kvm-host networks]# virsh net-list --all
@@ -447,7 +448,7 @@ autostart gavin-linshi.xml gavin-yongjiu.xml
 
 **删除网络**
 
-````bash
+````console
 [root@kvm-host networks]# virsh net-destroy default
 网络 default 被删除
 查看效果
@@ -462,7 +463,7 @@ autostart gavin-linshi.xml gavin-yongjiu.xml
 
 查看网络,virbr0 网卡被清理掉了
 
-````bash
+````console
 [root@kvm-host networks]# ifconfig
 ...
 virbr1: flags=4099<UP,BROADCAST,MULTICAST> mtu 1500
@@ -502,7 +503,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 **命令帮助**
 
-````bash
+````console
 [root@kvm-host ~]# brctl --help
 Usage: brctl [commands]
 commands:
@@ -528,7 +529,7 @@ commands:
 
 **查看ip地址信息**
 
-````bash
+````console
 [root@kvm-host ~]# ip addr
 ...
 5: vnet1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN
@@ -569,14 +570,14 @@ yum install bridge-utils
 
 **dns解析**
 
-````bash
+````console
 [root@kvm-host ~]# grep namese /etc/resolv.conf
 nameserver 192.0.2.2
 ````
 
 **查看当前主机的桥接状态**
 
-````bash
+````console
 [root@kvm-host ~]# brctl show
 bridge name bridge id STP enabled interfaces
 virbr1 8000.5254006b688d yes
@@ -589,7 +590,7 @@ virbr2 8000.5254006b687d yes
 
 **创建桥接网卡设备**
 
-````bash
+````console
 [root@kvm-host ~]# brctl addbr br0
 [root@kvm-host ~]# brctl stp br0 on
 [root@kvm-host ~]# brctl show
@@ -601,25 +602,25 @@ virbr2 8000.5254006b687d yes
 
 **删除物理网卡的ip地址**
 
-````bash
+````console
 [root@kvm-host ~]# ifconfig ens160 0 up
 ````
 
 **关联桥接设备和物理网卡设备**
 
-````bash
+````console
 [root@kvm-host ~]# brctl addif br0 ens160
 ````
 
 **给桥接网卡配置ip地址并启动**
 
-````bash
+````console
 [root@kvm-host ~]# ifconfig br0 192.0.2.12/24 up
 ````
 
 **给桥接网卡配置路由**
 
-````bash
+````console
 [root@kvm-host ~]# route add default gw 192.0.2.2
 注意：
     操作br0的另一种方法是 ip set dev br0 up/down
@@ -631,7 +632,7 @@ virbr2 8000.5254006b687d yes
 
 如果将命令分开执行的话，则会在关联桥接网卡和物理网卡的时候造成断网现象，所以建议将这几条命令同时执行或者使用脚本执行命令
 
-````bash
+````console
 [root@kvm-host ~]# vim bridge_setup_function.sh
 #!/bin/bash
 ````
@@ -743,7 +744,7 @@ main
 
 执行脚本的过程中，会出现网络中断
 
-````bash
+````console
 [root@kvm-host ~]# /bin/bash bridge_setup_function.sh
 成功创建网桥 br0
 成功开启 br0 的生成树协议
@@ -758,7 +759,7 @@ Session stopped
 
 稍等5秒钟之后，尝试按 R 重新连接，查看效果
 
-````bash
+````text
      ┌────────────────────────────────────────────────────────────────────┐
      │ • MobaXterm 20.2 • │
      │ (SSH client, X-server and networking tools) │
@@ -778,7 +779,7 @@ Last login: Wed Mar 26 21:29:52 2025 from 192.0.2.1
 
 **查看新的网络网卡配置**
 
-````bash
+````console
 [root@kvm-host ~]# ip a
 ...
 # ens160 已经没有网卡信息了
@@ -816,7 +817,7 @@ default qlen 1000
 
 **确认桥接设备信息**
 
-````bash
+````console
 [root@kvm-host ~]# brctl show
 bridge name bridge id STP enabled interfaces
 br0 8000.00505638d5d0 yes ens160
@@ -836,7 +837,7 @@ virsh edit CentOS-7-x86_64
 
 **修改虚拟机的网卡配置**
 
-````bash
+````console
 [root@kvm-host ~]# virsh edit CentOS-7-x86_64
 域'CentOS-7-x86_64' XML 配置已被编辑。
 # 源内容
@@ -864,7 +865,7 @@ virsh edit CentOS-7-x86_64
 
 **重启虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host ~]# virsh list --all
@@ -885,7 +886,7 @@ virsh edit CentOS-7-x86_64
 
 方法2：通过console连接虚拟机
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ])
@@ -903,7 +904,7 @@ Last login: Wed Mar 26 20:58:27 on tty1
 
 **查看虚拟机网络信息**
 
-````bash
+````console
 [root@localhost ~]# ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default
 qlen 1000
@@ -923,7 +924,7 @@ group default qlen 1000
 
 **测试网络联通**
 
-````bash
+````console
 [root@localhost ~]# ping -c1 www.baidu.com
 PING www.a.shifen.com (180.101.49.44) 56(84) bytes of data.
 64 bytes from 180.101.49.44 (180.101.49.44): icmp_seq=1 ttl=128 time=24.2 ms
@@ -936,7 +937,7 @@ rtt min/avg/max/mdev = 24.261/24.261/24.261/0.000 ms
 
 如果默认的dhcp不喜欢的话，可以编辑网卡配置
 
-````bash
+````console
 [root@localhost ~]# vim /etc/sysconfig/network-scripts/ifcfg-eth0
 [root@localhost ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth0
 TYPE="Ethernet"
@@ -957,7 +958,7 @@ DNS=192.0.2.2
 
 **重启网络**
 
-````bash
+````console
 [root@localhost ~]# service network restart
 Restarting network (via systemctl): [ 确定 ]
 [root@localhost ~]# ip a s eth0
@@ -974,7 +975,7 @@ group default qlen 1000
 
 **定制dns环境**
 
-````bash
+````console
 [root@localhost ~]# cat /etc/resolv.conf
 # Generated by NetworkManager
 nameserver 192.0.2.2
@@ -989,7 +990,7 @@ rtt min/avg/max/mdev = 24.173/24.173/24.173/0.000 ms
 
 宿主机连接虚拟机，可以正常联通
 
-````bash
+````console
 [root@kvm-host ~]# ssh root@192.0.2.200
 The authenticity of host '192.0.2.200 (192.0.2.200)' can't be established.
 ED25519 key fingerprint is SHA256:LuAC3WTX+gjlRAPZeVejVEljaxui2LRUJE8V64jMFzY.

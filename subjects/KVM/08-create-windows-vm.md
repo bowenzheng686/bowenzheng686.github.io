@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 创建 Windows 虚拟机'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -73,7 +74,7 @@ https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/
 
 **安装虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# cd /data/images/
 [root@kvm-host images]# mv 14393.0.161119-
 1705.RS1_REFRESH_SERVER_EVAL_X64FRE_ZH-CN.ISO
@@ -85,7 +86,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 **创建虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virt-install \
 --os-variant=win2k16 --virt-type=kvm \
 --name win2016 --ram 4096 --vcpus=2 \
@@ -94,7 +95,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 --graphics vnc,listen=0.0.0.0 --noautoconsole \
 ````
 
-````bash
+````console
 --disk path=/opt/win2016.qcow2,size=20,bus=virtio,format=qcow2 \
 --disk path=/data/images/virtio-win-0.1.266.iso,device=cdrom
 开始安装......
@@ -114,7 +115,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 **打开虚拟机管理工具**
 
-````bash
+````console
 [root@kvm-host ~]# virt-manager
 ````
 
@@ -298,7 +299,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 执行如下命令,该过程可能会持续7分钟，当然也看主机，有些主机可能只需要 几十秒
 
-````bash
+````console
 [root@kvm-host ~]# virt-clone -o win2016 -n win2016-2 -f /opt/win2016-2.qcow2
 正在分配 'win2016-2.qcow2' 3% [= ] 496 MB/s | 707 MB
  00:00:39
@@ -314,7 +315,7 @@ CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
 
 **查看克隆后效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 ----------------------------------

@@ -1,0 +1,60 @@
+/* KVM notes: Rouge token colors on a consistent code-block background. */
+.prose pre,
+.prose .highlight pre {
+  background: #171b25;
+  color: #e8edf5;
+  border-color: #384153;
+}
+.prose pre code,
+.prose .highlight pre code { color: inherit; }
+.prose pre .code-copy { color: #e8edf5; border-color: #7b879d; }
+.prose .highlight .c,
+.prose .highlight .c1,
+.prose .highlight .cm,
+.prose .highlight .cp,
+.prose .highlight .cs { color: #a4afc1; font-style: italic; }
+.prose .highlight .k,
+.prose .highlight .kc,
+.prose .highlight .kd,
+.prose .highlight .kn,
+.prose .highlight .kp,
+.prose .highlight .kr,
+.prose .highlight .kt { color: #c4a7ff; }
+.prose .highlight .nb,
+.prose .highlight .bp,
+.prose .highlight .nv,
+.prose .highlight .vc,
+.prose .highlight .vg,
+.prose .highlight .vi { color: #87c9f7; }
+.prose .highlight .na,
+.prose .highlight .nc,
+.prose .highlight .nf,
+.prose .highlight .nt { color: #79d8d0; }
+html[data-theme] .prose .highlight .s,
+html[data-theme] .prose .highlight .s1,
+html[data-theme] .prose .highlight .s2,
+html[data-theme] .prose .highlight .sa,
+html[data-theme] .prose .highlight .sb,
+html[data-theme] .prose .highlight .sc,
+html[data-theme] .prose .highlight .sd,
+html[data-theme] .prose .highlight .se,
+html[data-theme] .prose .highlight .sh,
+html[data-theme] .prose .highlight .si,
+html[data-theme] .prose .highlight .sr,
+html[data-theme] .prose .highlight .ss { color: #b8df91; }
+.prose .highlight .m,
+.prose .highlight .mb,
+.prose .highlight .mf,
+.prose .highlight .mh,
+.prose .highlight .mi,
+.prose .highlight .mo,
+.prose .highlight .il { color: #f4bd85; }
+.prose .highlight .o,
+.prose .highlight .ow { color: #f2a6bd; }
+.prose .highlight .gp { color: #a8b9ff; font-weight: 600; }
+.prose .highlight .go { color: #d0d8e4; }
+.prose .highlight .ge { font-style: italic; }
+.prose .highlight .gs { font-weight: 700; }
+.prose .highlight .err,
+.prose .highlight .gr { color: #ff9b9b; }
+.prose .highlight .gi { color: #b8df91; }

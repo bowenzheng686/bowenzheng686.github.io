@@ -2,6 +2,7 @@
 layout: default
 title: 'KVM 虚拟化 · 命令创建虚拟机'
 subject_page: true
+syntax_highlight: true
 ---
 
 [← 返回 KVM 目录]({{ '/subjects/KVM/' | relative_url }})
@@ -22,13 +23,13 @@ subject_page: true
 
 qemu：linux内核支持的专用kvm管理工具 qemu-kvm 结合虚拟化软件qemv管理kvm虚拟机的集成工具集
 
-````bash
+````text
     qemu-img 虚拟磁盘的管理工具
 ````
 
 libvirt：通用的虚拟化技术管理工具
 
-````bash
+````text
     virt-install 虚拟机专用创建工具
     virsh 操作虚拟环境的一个命令行管理工具，支持远程管理操作
     virt-manager 管理虚拟机的图形化的桌面用户接口
@@ -40,7 +41,7 @@ libvirt：通用的虚拟化技术管理工具
 
 安装完毕kvm之后，会形成一个专用的目录结构
 
-````bash
+````console
 [root@kvm-host ~]# ls /etc/libvirt/
 hooks libxl-sanlock.conf qemu-sanlock.conf
 libvirt-admin.conf lxc.conf secrets
@@ -58,7 +59,7 @@ libxl-lockd.conf qemu-lockd.conf virt-login-shell.conf
 
 **virt-install命令解读**
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --help
 usage: virt-install --name NAME --memory MB STORAGE INSTALL [options]
 从指定安装源创建新虚拟机。
@@ -267,14 +268,14 @@ qemu-img create -f 磁盘格式 容量
 
 命令格式：qemu-img create -f 磁盘格式 磁盘名称 磁盘大小
 
-````bash
+````console
 [root@kvm-host ~]# qemu-img create -f raw /opt/CentOS-7-x86_64.raw 10G
 Formatting '/opt/CentOS-7-x86_64.raw', fmt=raw size=10737418240
 ````
 
 **执行效果：**
 
-````bash
+````console
 [root@kvm-host ~]# ls -lh /opt/
 总用量 1.0M
 -rw-r--r-- 1 root root 10G 3月 24 22:59 CentOS-7-x86_64.raw
@@ -284,7 +285,7 @@ Formatting '/opt/CentOS-7-x86_64.raw', fmt=raw size=10737418240
 
 使用virt-install命令，基于我们提供的系统镜像和虚拟磁盘来创建一个虚拟机，另外在创建虚拟机之前，提前打开vnc客户端，在创建虚拟机的时候，通过vnc来连接虚拟机，对其进行配置和查看进度。
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --virt-type kvm --name CentOS-7-x86_64 --memory
 1024 --cdrom=/data/images/CentOS-7-x86_64-Minimal-2009.iso --disk=/opt/CentOS-7-
 x86_64.raw --network network=default --graphics vnc,listen=0.0.0.0 --
@@ -355,7 +356,7 @@ vnc中虚拟机是不会重启的，需要在宿主机系统中，使用命令�
 
 命令格式：virsh start 虚拟机名称
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
 注意：
@@ -386,7 +387,7 @@ vnc中虚拟机是不会重启的，需要在宿主机系统中，使用命令�
 
 **宿主机检查网络**
 
-````bash
+````console
 [root@kvm-host ~]# ifconfig
 ...
 virbr0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
@@ -411,7 +412,7 @@ vnet0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 **宿主机检查进程**
 
-````bash
+````console
 [root@kvm-host ~]# ps aux | grep CentOS
 qemu 2607 14.3 2.8 2844772 462116 ? Sl 13:35 0:27
 /usr/libexec/qemu-kvm -name guest=CentOS-7-x86_64,debug-threads=on -S -object
@@ -435,7 +436,7 @@ timestamp=on
 
 **虚拟机配置**
 
-````bash
+````console
 [root@kvm-host ~]# tree /etc/libvirt/qemu
 /etc/libvirt/qemu
 ├── autostart
@@ -456,7 +457,7 @@ timestamp=on
 
 **虚拟机配置文件**
 
-````bash
+````console
 [root@kvm-host ~]# cat /etc/libvirt/qemu/CentOS-7-x86_64.xml
 <!--
 WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
@@ -597,7 +598,7 @@ cpu信息
 
 **网络配置文件**
 
-````bash
+````console
 [root@kvm-host ~]# cat /etc/libvirt/qemu/networks/default.xml
 <!--
 WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
@@ -625,7 +626,7 @@ or other application using the libvirt API.
 
 **命令解析**
 
-````bash
+````text
 virsh list 列出所有活动的虚拟机
 virsh list --all 列出所有活动和不活的的虚拟机
 virsh list --transient 列出所有临时的虚拟机
@@ -636,7 +637,7 @@ virsh list --persistent 列出所有永久的虚拟机
 
 **查看所有运行中的虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list
  Id 名称 状态
 ------------------------------
@@ -676,7 +677,7 @@ virsh list --persistent 列出所有永久的虚拟机
 
 **拷贝文件**
 
-````bash
+````console
 [root@kvm-host ~]# cd /etc/libvirt/qemu
 [root@kvm-host qemu]# cp CentOS-7-x86_64.xml CentOS-7-x86_64-1.xml
 [root@kvm-host qemu]# ls
@@ -685,7 +686,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 
 **修改配置文件**
 
-````bash
+````console
 [root@kvm-host qemu]# vim CentOS-7-x86_64-1.xml
     ...
   9 <name>CentOS-7-x86_64-1</name>
@@ -699,7 +700,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 
 因为一个运行中的vm是占用硬件磁盘的，所以会导致资源冲突
 
-````bash
+````console
 [root@kvm-host qemu]# virsh create /etc/libvirt/qemu/CentOS-7-x86_64-1.xml
 错误： 从 /etc/libvirt/qemu/CentOS-7-x86_64-1.xml 创建域失败
 错误： 内部错误：连接监控的过程中进程退出: 2025-03-25T05:46:06.860047Z qemu-kvm: -device
@@ -710,7 +711,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 为了避免资源冲突，我们将另外一个虚拟机关闭
 
-````bash
+````console
 [root@kvm-host qemu]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 [root@kvm-host qemu]# virsh list
@@ -720,7 +721,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 创建新的虚拟机,而且虚拟机处于运行状态
 
-````bash
+````console
 [root@kvm-host qemu]# virsh create /etc/libvirt/qemu/CentOS-7-x86_64-1.xml
 从 CentOS-7-x86_64-1 创建的域 '/etc/libvirt/qemu/CentOS-7-x86_64-1.xml'
 [root@kvm-host qemu]# virsh list --all
@@ -736,13 +737,13 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 **配置文件**
 
-````bash
+````console
 [root@kvm-host qemu]# cp CentOS-7-x86_64.xml CentOS-7-x86_64-2.xml
 ````
 
 **编辑虚拟机配置**
 
-````bash
+````console
 [root@kvm-host qemu]# vim CentOS-7-x86_64-2.xml
 ...
 <domain type='kvm'>
@@ -753,7 +754,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 关闭虚拟机,刚才临时创建的虚拟机，找不到记录了
 
-````bash
+````console
 [root@kvm-host qemu]# virsh shutdown CentOS-7-x86_64-1
 域 'CentOS-7-x86_64-1' 正在关闭
 [root@kvm-host qemu]# virsh list --all
@@ -764,7 +765,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 **注册虚拟机**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh define /etc/libvirt/qemu/CentOS-7-x86_64-2.xml
 从 CentOS-7-x86_64-2 定义的域 '/etc/libvirt/qemu/CentOS-7-x86_64-2.xml'
 查看效果
@@ -777,7 +778,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 **开启虚拟机**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh start CentOS-7-x86_64-2
 域 'CentOS-7-x86_64-2' 已启动
 确认效果
@@ -800,7 +801,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 **启动虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 --------------------------------
@@ -814,7 +815,7 @@ Is another process using the image [/opt/CentOS-7-x86_64.raw]?
 
 **查看运行的地址**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list
  Id 名称 状态
 ------------------------------
@@ -848,7 +849,7 @@ reboot
 
 重启主机后，确认效果
 
-````bash
+````console
 [root@kvm-host ~]# virsh list
  Id 名称 状态
 ------------------------------
@@ -859,7 +860,7 @@ reboot
 
 **命令帮助：**
 
-````bash
+````text
     virsh console --help
 命令格式：
     virsh console 虚拟机名称
@@ -867,7 +868,7 @@ reboot
 
 **使用console登录虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh console CentOS-7-x86_64
 连接到域 'CentOS-7-x86_64'
 转义字符是 ^] (Ctrl + ]) # 此处按Enter进入到登录界面
@@ -883,7 +884,7 @@ s0:c0.c1023
 
 **按 ctrl+] 组合键退出virsh console**
 
-````bash
+````console
 [root@localhost ~]# # 按 ctrl+] 组合键退出
 [root@kvm-host ~]#
 ````
@@ -900,7 +901,7 @@ s0:c0.c1023
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 --------------------------------
@@ -911,14 +912,14 @@ s0:c0.c1023
 
 **挂起虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh suspend CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已挂起
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 ----------------------------------
@@ -939,14 +940,14 @@ s0:c0.c1023
 
 **恢复虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh resume CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已恢复
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 --------------------------------
@@ -967,7 +968,7 @@ s0:c0.c1023
 
 **方法**
 
-````bash
+````text
 virsh shutdown 虚拟机名称
 注意：
     shutdown方法依赖于acpid服务，Acpid是一个用户空间的服务进程，它充当linux内核与应用程序之
@@ -978,7 +979,7 @@ virsh shutdown 虚拟机名称
 
 对于ubuntu来说，它会自动安装相关软件并运行该服务对于centos来说，它需要手工安装并启动
 
-````bash
+````console
 [root@kvm-host ~]# yum install acpid -y
 [root@kvm-host ~]# systemctl start acpid
 [root@kvm-host ~]# systemctl enable acpid
@@ -986,14 +987,14 @@ virsh shutdown 虚拟机名称
 
 **关闭虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
 域 'CentOS-7-x86_64' 正在关闭
 ````
 
 稍等5秒钟后，才会生效
 
-````bash
+````console
 [root@kvm-host ~]# virsh list
  Id 名称 状态
 -------------------
@@ -1024,7 +1025,7 @@ virsh shutdown 虚拟机名称
 
 **已关闭的虚拟机无法再次被关闭**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 --------------------------------
@@ -1037,7 +1038,7 @@ virsh shutdown 虚拟机名称
 
 **准备运行的虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64-1
 域 'CentOS-7-x86_64-1' 已启动
 [root@kvm-host ~]# virsh list
@@ -1048,7 +1049,7 @@ virsh shutdown 虚拟机名称
 
 **强制关闭运行中的虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh destroy CentOS-7-x86_64-1
 域 'CentOS-7-x86_64-1' 已销毁
 [root@kvm-host ~]# virsh list --all
@@ -1066,7 +1067,7 @@ virsh shutdown 虚拟机名称
 
 **删除虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 --------------------------------
@@ -1079,7 +1080,7 @@ domain 'CentOS-7-x86_64-2' 已被解除定义
 
 **检查效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --all
  Id 名称 状态
 --------------------------------
@@ -1113,14 +1114,14 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 
 **检查配置文件目录效果**
 
-````bash
+````console
 [root@kvm-host ~]# ls /etc/libvirt/qemu
 autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 ````
 
 **设置开机自启动**
 
-````bash
+````console
 [root@kvm-host ~]# virsh autostart CentOS-7-x86_64
 域 'CentOS-7-x86_64' 标记为自动启动
 ````
@@ -1129,7 +1130,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 
 **方法1：**
 
-````bash
+````console
 [root@kvm-host ~]# tree /etc/libvirt/qemu
 /etc/libvirt/qemu
 ├── autostart # 多了一个autostart目录
@@ -1150,7 +1151,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 
 **重启主机后确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# reboot
 Remote side unexpectedly closed network connection
 ─────────────────────────────────────────────────────────────────────────────────
@@ -1171,14 +1172,14 @@ Last login: Tue Mar 25 20:23:42 2025 from 192.0.2.1
 
 **取消开机自启动**
 
-````bash
+````console
 [root@kvm-host ~]# virsh autostart --disable CentOS-7-x86_64
 域 'CentOS-7-x86_64' 未标记为自动启动
 ````
 
 **确认目录效果**
 
-````bash
+````console
 [root@kvm-host ~]# tree /etc/libvirt/qemu
 /etc/libvirt/qemu
 ├── autostart
@@ -1193,7 +1194,7 @@ Last login: Tue Mar 25 20:23:42 2025 from 192.0.2.1
 
 **确认状态**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list --no-autostart --all
  Id 名称 状态
 --------------------------------
@@ -1225,7 +1226,7 @@ Last login: Tue Mar 25 20:23:42 2025 from 192.0.2.1
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host ~]# cd /etc/libvirt/qemu
 [root@kvm-host qemu]# ls
 autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
@@ -1233,7 +1234,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 
 **备份文件**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh dumpxml CentOS-7-x86_64 > CentOS-backup.xml
 [root@kvm-host qemu]# ls
 autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
@@ -1242,7 +1243,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
 
 备份文件如果想在本机使用的话，需要vim修改一下主机名和uuid
 
-````bash
+````console
 [root@kvm-host qemu]# vim CentOS-backup.xml
 <domain type='kvm' id='1'>
   <name>CentOS-7-x86_64-bak</name>
@@ -1253,14 +1254,14 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
 
 **创建虚拟机**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh define CentOS-backup.xml
 从 CentOS-7-x86_64-bak 定义的域 'CentOS-backup.xml'
 ````
 
 **查看效果**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh list --all
  Id 名称 状态
 ----------------------------------
@@ -1275,7 +1276,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
 
 为了避免资源抢占，这里将所有的虚拟机关闭
 
-````bash
+````console
 [root@kvm-host qemu]# virsh list
  Id 名称 状态
 ------------------------------
@@ -1286,7 +1287,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
 
 **编辑虚拟机**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh edit CentOS-7-x86_64-bak
 域'CentOS-7-x86_64-bak' XML 配置已被编辑。
 原内容：
@@ -1301,7 +1302,7 @@ autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host qemu]# virsh start CentOS-7-x86_64-bak
 域 'CentOS-7-x86_64-bak' 已启动
 [root@kvm-host ~]# virsh domdisplay CentOS-7-x86_64-bak
@@ -1323,14 +1324,14 @@ vnc://localhost:2988
 
 **查看virsh默认支持的虚拟机操作系统**
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --osinfo list | wc -l
 848
 ````
 
 **查看支持的win系列的操作系统**
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --osinfo list |grep win
 win98
 win95
@@ -1368,14 +1369,14 @@ winxp
 
 **确认支持的系统版本**
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --osinfo list |grep centos7
 centos7, centos7.0
 ````
 
 **创建虚拟机**
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name
 centos7 --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
 2009.iso --disk path=/opt/CentOS-7-x86_64.qcow2,size=10,format=qcow2,bus=virtio -
@@ -1384,7 +1385,7 @@ centos7 --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
 
 **确认效果**
 
-````bash
+````console
 [root@kvm-host ~]# virsh list
  Id 名称 状态
 ----------------------------------
@@ -1396,7 +1397,7 @@ centos7 --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
 
 注意：使用桥接方式创建vm，需要提前保证是存在桥接网卡的，否则下面的命令无法执行
 
-````bash
+````console
 [root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name
 centos7-bridge --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
 2009.iso --disk path=/opt/CentOS-7-x86_64.qcow2,size=10,format=qcow2,bus=virtio -
@@ -1408,7 +1409,7 @@ noautoconsole
 
 **打开virt-manager**
 
-````bash
+````console
 [root@kvm-host ~]# virt-manager
 ````
 
