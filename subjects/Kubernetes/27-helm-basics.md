@@ -255,8 +255,7 @@ $ curl -fsSL -o get_helm.sh
 https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 $ chmod 700 get_helm.sh
 $ ./get_helm.sh
-Yes, you can curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-
-helm-3 | bash if you want to live on the edge.
+Yes, you can curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash if you want to live on the edge.
 ```
 
 **Helm 下载链接**
@@ -987,8 +986,7 @@ mysql
 
 范例：添加aliyun和azure仓库
 ```bash
-[root@master1 ~]#helm repo add aliyun http://kubernetes.oss-cn-
-hangzhou.aliyuncs.com/charts
+[root@master1 ~]#helm repo add aliyun http://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 "aliyun" has been added to your repositories
 [root@master1 ~]#helm repo list
 NAME    URL

@@ -814,10 +814,8 @@ Calico 也可以使用原始清单manifests作为操作器的替代方案进行�
 
 参考资料：
 ```text
-https://docs.projectcalico.org/getting-started/kubernetes/self-managed-
-onprem/onpremises
-https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-
-onprem/onpremises
+https://docs.projectcalico.org/getting-started/kubernetes/self-managed-onprem/onpremises
+https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
 ```
 
 ![原 PDF 第 102 页插图](assets/Kubernetes网络插件/img-422018976170874d.png)
@@ -896,10 +894,8 @@ valid_lft forever preferred_lft forever
 
 **查看安装方法**
 ```text
-https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-
-onprem/onpremises
-https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-
-onprem/onpremises#install-calico-with-kubernetes-api-datastore-50-nodes-or-less
+https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
+https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises#install-calico-with-kubernetes-api-datastore-50-nodes-or-less
 ```
 
 ![原 PDF 第 104 页插图](assets/Kubernetes网络插件/img-8c4e03c4ee37d932.png)
@@ -924,19 +920,16 @@ CALICO_VERSION=v3.29.1
 https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/calico.
 yaml
 #50节点以上
-https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/calico-
-typha.yaml
+https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/calico-typha.yaml
 
 [root@master1 ~]#wget -O calico-${CALICO_VERSION=}.yaml
 https://mirror.ghproxy.com/https://raw.githubusercontent.com/projectcalico/calic
 o/${CALICO_VERSION=}/manifests/calico.yaml
 #正常下载
 [root@master1 ~]#curl
-https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION=}/manife
-sts/calico.yaml -Lo calico-${CALICO_VERSION=}.yaml
+https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION=}/manifests/calico.yaml -Lo calico-${CALICO_VERSION=}.yaml
 [root@master1 ~]#curl
-https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION=}/manife
-sts/calico.yaml -O
+https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION=}/manifests/calico.yaml -O
 
 #可以直接使用原文件，如果修改可以先备份原文件(可选)
 [root@master1 ~]#cp calico.yaml calico.yaml.bak
@@ -2792,8 +2785,7 @@ metadata:
 ...
 #结果显示：可以通过 calicoctl 来操作kubectl操作的资源了，只不过显示的格式稍微有一点点的区别
 
-#参考资料：https://docs.projectcalico.org/getting-
-started/clis/calicoctl/configure/kdd
+#参考资料：https://docs.projectcalico.org/getting-started/clis/calicoctl/configure/kdd
 
 #还原kubeconfig
 [root@master1 ~]#mv /tmp/config .kube/

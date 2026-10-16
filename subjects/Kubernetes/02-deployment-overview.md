@@ -50,8 +50,7 @@ Kubernetes 部署方式有很多,建议使用CNCF认证的安装方法进行安�
 
 ![原 PDF 第 45 页插图](assets/Kubernetes架构和部署/img-bc5d4cdb64151936.png)
 ```text
-https://docs.google.com/spreadsheets/d/1uF9BoDzzisHSQemXHIKegMhuythuq_GL3N1mlUUK
-2h0/edit#gid=0
+https://docs.google.com/spreadsheets/d/1uF9BoDzzisHSQemXHIKegMhuythuq_GL3N1mlUUK2h0/edit#gid=0
 ```
 
 ![原 PDF 第 45 页插图](assets/Kubernetes架构和部署/img-ac7e16ec7c2f8e7e.png)

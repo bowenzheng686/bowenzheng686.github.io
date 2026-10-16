@@ -158,13 +158,11 @@ schedulerName: default-scheduler
 **参数解析参考资料**
 ```text
 #预选函数：
-https://github.com/kubernetes/kubernetes/blob/release-
-1.17/pkg/scheduler/algorithm/predicates/predicates.go
+https://github.com/kubernetes/kubernetes/blob/release-1.17/pkg/scheduler/algorithm/predicates/predicates.go
 https://github.com/kubernetes/kubernetes/tree/master/pkg/scheduler/algorithm/pre
 dicates
 #优选函数:
-https://github.com/kubernetes/kubernetes/blob/release-
-1.17/pkg/scheduler/algorithm/priorities/priorities.go
+https://github.com/kubernetes/kubernetes/blob/release-1.17/pkg/scheduler/algorithm/priorities/priorities.go
 https://github.com/kubernetes/kubernetes/tree/master/pkg/scheduler/algorithm/pri
 orities
 ```
@@ -359,8 +357,7 @@ pods.spec.affinity
 
 ### 2.1.2 nodeName和 nodeSelector
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-
-nodes/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes/
 ```
 
 nodeName和nodeSelector 将 Pod 分配给指定节点。
@@ -477,8 +474,7 @@ pod-nodeselector   1/1     Running   0          61s
 
 ### 2.1.3 节点亲和性 node affinity
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes-
-using-node-affinity/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
 ```
 
 ![原 PDF 第 14 页插图](assets/kubernetes调度机制/img-375fc773fbb0d9da.png)
@@ -1591,8 +1587,7 @@ node3.bowen.org     <none>           <none>
 
 范例: Nacos 高可用集群基于反亲和性部署Pod
 ```yaml
-#https://github.com/nacos-group/nacos-k8s/blob/master/deploy/nacos/nacos-quick-
-start.yaml
+#https://github.com/nacos-group/nacos-k8s/blob/master/deploy/nacos/nacos-quick-start.yaml
 
 ---
 apiVersion: v1
@@ -1724,8 +1719,7 @@ app: nacos
 
 ### 2.3.1 污点Taint和容忍tolerations介绍
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/taint-and-
-toleration/
+https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/
 ```
 
 生产中可能希望让新的pod基于node节点的属性,创建在某些节点或不能创建在某些节点之上。
@@ -2418,8 +2412,7 @@ kubectl delete node <node_name>
 
 ### 2.4.1 Pod 拓扑分布约束说明
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/topology-spread-
-constraints/
+https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/topology-spread-constraints/
 ```
 
 拓扑分布约束可以控制Pod的调度实现平均分布的程度。在定义pod亲和性和反亲和时，有一个 topologyKey的属性，但是默认情况下，pod的亲和性调度，仅仅针对单一的拓扑场景，也就是说，要么所有的pod都在这里，要么所有的pod都不要在这里，这样会导致应用过于集中，反而导致物理资源的浪费。如果希望在进行正常pod亲和性调度的时候，能够自动识别多个不同的调度节点，然后均匀的分散到多个节点中，从而实现资源的有效利用。通过拓扑调度来实现的功能。
@@ -2679,8 +2672,7 @@ conventions.md#types-kinds
 ```text
 metadata  <ObjectMeta>
 Standard object's metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 
 preemptionPolicy  <string>
 enum: Never, PreemptLowerPriority
@@ -2786,8 +2778,7 @@ priorityClassName: high
 
 ## 2.6 节点压力驱逐 Node-pressure Eviction
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/node-pressure-
-eviction/
+https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/node-pressure-eviction/
 ```
 
 ![原 PDF 第 59 页插图](assets/kubernetes调度机制/img-c6a4cf34c5835c24.png)
@@ -2961,14 +2952,12 @@ eviction thresholds (e.g. memory.available<1Gi) that if met would trigger a pod
 eviction. (default
 imagefs.available<15%,memory.available<100Mi,nodefs.available<10%,nodefs.inodesF
 ree<5%) (DEPRECATED: This parameter should be set via the config file specified
-by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-
-cluster/kubelet-config-file/ for more information.)
+by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
 --eviction-max-pod-grace-period int32                      Maximum allowed
 grace period (in seconds) to use when terminating pods in response to a soft
 eviction threshold being met.  If negative, defer to pod specified value.
 (DEPRECATED: This parameter should be set via the config file specified by the
-Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-
-cluster/kubelet-config-file/ for more information.)
+Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
 --eviction-minimum-reclaim mapStringString                 A set of
 minimum reclaims (e.g. imagefs.available=2Gi) that describes the minimum amount
 of resource the kubelet will reclaim when performing a pod eviction if that
@@ -2986,14 +2975,12 @@ information.)
 eviction thresholds (e.g. memory.available<1.5Gi) that if met over a
 corresponding grace period would trigger a pod eviction. (DEPRECATED: This
 parameter should be set via the config file specified by the Kubelet's --config
-flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-
-file/ for more information.)
+flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
 --eviction-soft-grace-period mapStringString               A set of
 eviction grace periods (e.g. memory.available=1m30s) that correspond to how long
 a soft eviction threshold must hold before triggering a pod eviction.
 (DEPRECATED: This parameter should be set via the config file specified by the
-Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-
-cluster/kubelet-config-file/ for more information.)
+Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
 --maximum-dead-containers int32                            Maximum number
 of old instances of containers to retain globally.  Each container takes up some
 disk space. To disable, set to a negative number. (default -1) (DEPRECATED: Use

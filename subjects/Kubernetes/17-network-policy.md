@@ -269,8 +269,7 @@ conventions.md#types-kinds
 ```text
 metadata <Object>
 Standard object's metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 
 spec <Object>
 Specification of the desired behavior for this NetworkPolicy.

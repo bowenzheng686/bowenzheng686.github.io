@@ -17,8 +17,7 @@ syntax_highlight: true
 ## 1.1 StatefulSet 机制
 ```text
 https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/
-https://kubernetes.io/zh-cn/docs/tasks/run-application/run-single-instance-
-stateful-application/
+https://kubernetes.io/zh-cn/docs/tasks/run-application/run-single-instance-stateful-application/
 ```
 
 ### 1.1.1 应用状态说明
@@ -1110,8 +1109,7 @@ myapp-1.statefulset-headless.default.svc.cluster.local
 
 注意: MySQL5.7.39失败,其它版本MySQL5.7.36，44 都成功
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/run-application/run-replicated-stateful-
-application/
+https://kubernetes.io/zh-cn/docs/tasks/run-application/run-replicated-stateful-application/
 ```
 
 ![原 PDF 第 25 页插图](assets/kubernetes有状态服务管理/img-87f970e9fd0db0a9.png)
@@ -2541,8 +2539,7 @@ annotations:
 prometheus.io/scrape: "true"
 prometheus.io/port: "9114"
 prometheus.io/path: "/metrics"
-# Grafana dashboard: https://github.com/prometheus-
-community/elasticsearch_exporter/blob/master/examples/grafana/dashboard.json
+# Grafana dashboard: https://github.com/prometheus-community/elasticsearch_exporter/blob/master/examples/grafana/dashboard.json
 spec:
 containers:
 - name: elasticsearch

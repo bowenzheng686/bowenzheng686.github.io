@@ -16,8 +16,7 @@ syntax_highlight: true
 
 ## 1.1 Kubernetes 网络机制
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/compute-storage-
-net/network-plugins/
+https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/
 https://github.com/containernetworking/cni
 ```
 
@@ -670,8 +669,7 @@ Flannel(毛巾)是Kubernetes的一种兼容CNI的API的开源的网络插件,基
 http://coreos.com/flannel/
 https://github.com/flannel-io/flannel
 https://github.com/flannel-io/flannel#deploying-flannel-manually
-https://docs.openshift.com/container-
-platform/3.4/architecture/additional_concepts/flannel.html
+https://docs.openshift.com/container-platform/3.4/architecture/additional_concepts/flannel.html
 ```
 
 ## 2.2 Flannel 原理
@@ -752,8 +750,7 @@ Pod之间的通信被用VXLAN的UDP协议封装后,向目标Pod所在的主机84
 
 注意:官网图中docker0是错误的,应该为cni0。
 ```text
-https://docs.openshift.com/container-
-platform/3.4/architecture/additional_concepts/flannel.html
+https://docs.openshift.com/container-platform/3.4/architecture/additional_concepts/flannel.html
 ```
 
 ![原 PDF 第 26 页插图](assets/Kubernetes网络插件/img-244677e1437a2a95.png)
@@ -1460,10 +1457,8 @@ podCIDRs:
 
 范例: 创建flannel的yaml文件
 ```yaml
-[root@master1 ~]#wget https://github.com/flannel-
-io/flannel/releases/latest/download/kube-flannel.yml
-[root@master1 ~]#wget https://raw.githubusercontent.com/flannel-
-io/flannel/master/Documentation/kube-flannel.yml
+[root@master1 ~]#wget https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+[root@master1 ~]#wget https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
 [root@master1 ~]#cat kube-flannel.yml
 ```
@@ -1696,8 +1691,7 @@ path: /run/xtables.lock
 type: FileOrCreate
 ```
 ```yaml
-[root@master1 ~]#kubectl apply -f https://raw.githubusercontent.com/flannel-
-io/flannel/master/Documentation/kube-flannel.yml
+[root@master1 ~]#kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
 #自动生成configmap
 [root@master1 ~]#kubectl get cm -n kube-flannel
@@ -2316,10 +2310,8 @@ flannel 默认会在每个节点上创建cni0的网桥,并将该节点上的每�
 ```yaml
 #要接入到虚拟网络的功能，在部署flannel的时候，有一个配置文件，在这个配置文件中的configmap中就
 定义了虚拟网络的接入功能。
-[root@master1 ~]#wget https://github.com/flannel-
-io/flannel/releases/latest/download/kube-flannel.yml
-[root@master1 ~]#wget https://raw.githubusercontent.com/flannel-
-io/flannel/master/Documentation/kube-flannel.yml
+[root@master1 ~]#wget https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+[root@master1 ~]#wget https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
 [root@master1 ~]#grep ^kind kube-flannel.yml
 kind: Namespace

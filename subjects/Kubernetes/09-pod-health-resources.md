@@ -14,8 +14,7 @@ syntax_highlight: true
 
 ## 3.3 Pod 的健康状态监测
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-probes/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 ```
 
 ### 3.3.1 健康状态检测三种探针
@@ -42,10 +41,8 @@ Pod 通过探针要制实现Pod 的健康性监控,当一旦检测出Pod故障�
 
 针对运行中的容器，kubelet 可以选择是否执行以下三种探针，以及如何针对探测结果作出反应。
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#types-of-
-probe
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-probes/
+https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#types-of-probe
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 ```
 
 Pod 支持的监测探针类型如下：
@@ -125,8 +122,7 @@ timeoutSeconds: 15
 
 ##### 3.3.1.2.2 配置探针
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-probes/#configure-probes
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
 ```
 
 ![原 PDF 第 117 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-5d9a5d4e3eb4defe.png)
@@ -212,8 +208,7 @@ resources:
 
 #### 3.3.3.1 Exec 方式案例
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-probes/#define-a-liveness-command
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command
 ```
 
 exec 其实就是尝试通过在容器内部来执行一个命令，看看能不能执行成功，如果成功，那么说明该对象是正常的，否则就是失败的。
@@ -743,8 +738,7 @@ endpoints/redis-svc   10.244.3.102:6379   69s
 
 #### 3.3.3.2 Tcpsocket 方式案例
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-probes/#tcp-probes
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#tcp-probes
 ```
 
 使用此配置， kubelet 将尝试在指定端口上打开容器的套接字。如果可以建立连接，容器被认为是健康的，如果不能就认为是失败的，实际上就是检查端口。对于 TCP 探测而言，kubelet 在节点上（不是在 Pod 里面）发起探测连接， 这意味着你不能在 host参数上配置服务名称，因为 kubelet 不能解析服务名称。
@@ -935,8 +929,7 @@ HTTP 探测通过对容器内容开放的web服务，进行http方法的请求�
 
 HTTP Probes 允许针对 httpGet 配置额外的字段：
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-probes/#http-probes
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#http-probes
 ```
 
 
@@ -1351,10 +1344,8 @@ httpget , ServerIP: 192.168.105.57!
 
 Kubernetes是分布式的容器管理平台，所有资源都有Node节点提供，而Node节点上运行着很多Pod业务有很多，在一个项目中，有的业务占用的资源比重大，有的小，想要高效的利用Node资源，必须进行资源限制，那么Pod的资源限制应该如何处理？kubernetes 可以支持在容器级及namespace级分别实现资源限制。Kubernetes 已经对Pod做了相应的资源配额设置，这些资源主要体现在：CPU和内存、存储，因为存储在k8s中有专门的资源对象来进行管控，所以当前的pod资源限制，主要指的计算资源，即CPU和内存。为了方便与k8s的其他单独的资源对象区分开来，一般将CPU和内存其称为计算资源。
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-cpu-
-resource/
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-memory-
-resource/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-cpu-resource/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-memory-resource/
 ```
 
 如果运行的Pod使用的资源超过宿主机的最大可用资源,会导致OOM和Pod驱逐到其它宿主机。
@@ -1443,8 +1434,7 @@ error: Metrics API not available
 
 #建议安装metrics-server,可以通过dashboard查看更多的信息,此步可选
 #官方链接:https://github.com/kubernetes-sigs/metrics-server
-[root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-
-server/releases/latest/download/components.yaml
+[root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 #默认文件需要修改才能工作,因为默认需要内部证书验证和镜像地址k8s.gcr.io所以修改
 [root@master1 ~]#vim components.yaml
@@ -1783,14 +1773,10 @@ cpu: 500m
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/policy/limit-range/
 https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/cpu-
-default-namespace/
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/cpu-
-constraint-namespace/
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-
-resources/memory-default-namespace/
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-
-resources/memory-constraint-namespace/
+https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/
+https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/
+https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/
+https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/
 ```
 
 范例：
@@ -2479,8 +2465,7 @@ vm.max_map_count = 6666666
 
 ## 3.6 Pod 服务质量 QoS
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/quality-service-
-pod/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/quality-service-pod/
 ```
 
 ### 3.6.1 服务质量分类

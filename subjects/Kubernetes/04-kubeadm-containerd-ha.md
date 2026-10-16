@@ -19,10 +19,8 @@ syntax_highlight: true
 **官方说明**
 ```text
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/
-https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-
-kubeadm/
-https://kubernetes.io/zh-cn/docs/setup/production-
-environment/tools/kubeadm/create-cluster-kubeadm/
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
 ```
 
 部署环境：
@@ -590,8 +588,7 @@ podUID=5dfc305b-d641-4d2c-8199-7655b7a1ba32
 ```bash
 #下载链接：https://github.com/containernetworking/plugins/releases
 [root@node2 ~]#wget
-https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-
-plugins-linux-amd64-v1.1.1.tgz
+https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
 
 #覆盖原有的文件
 [root@node2 ~]#tar xf cni-plugins-linux-amd64-v1.1.1.tgz  -C /opt/cni/bin/
@@ -932,8 +929,7 @@ Kubernetes系统上Pod网络的实现依赖于第三方插件进行，这类插�
 NAME               STATUS     ROLES           AGE   VERSION
 master1.bowen.org   NotReady   control-plane   17m   v1.25.0
 
-[root@master1 ~]#kubectl apply -f https://raw.githubusercontent.com/flannel-
-io/flannel/master/Documentation/kube-flannel.yml
+[root@master1 ~]#kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
 #稍等一会儿,可以看到下面状态
 [root@master1 ~]#kubectl get nodes
@@ -1099,8 +1095,7 @@ node4.bowen.org   <none>           <none>
 
 ### 3.5.13 扩展 Kubernetes 集群为多主模式
 ```text
-https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-
-availability/#manual-certs
+https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-availability/#manual-certs
 ```
 
 在 master2 和 master3 重复上面的 4.2-4.5 步后,再执行下面操作加入集群。
@@ -1245,8 +1240,7 @@ nerdctl 官方发布包包含两个安装版本:
 
 #在新主机使用nerdctl/代替docker
 [root@ubuntu2004 ~]#wget
-https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-full-
-0.22.2-linux-amd64.tar.gz
+https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-full-0.22.2-linux-amd64.tar.gz
 
 #查看文件内容
 [root@ubuntu2004 ~]#tar tf nerdctl-full-0.22.2-linux-amd64.tar.gz
@@ -1434,16 +1428,13 @@ seconds ago    Up        0.0.0.0:80->80/tcp    nginx
 
 #加速下载
 [root@master1 ~]#wget
-https://mirror.ghproxy.com/https://github.com/containerd/nerdctl/releases/downlo
-ad/v1.7.6/nerdctl-1.7.6-linux-amd64.tar.gz
+https://mirror.ghproxy.com/https://github.com/containerd/nerdctl/releases/download/v1.7.6/nerdctl-1.7.6-linux-amd64.tar.gz
 
 #直接下载
 [root@node2 ~]#wget
-https://github.com/containerd/nerdctl/releases/download/v1.7.6/nerdctl-1.7.6-
-linux-amd64.tar.gz
+https://github.com/containerd/nerdctl/releases/download/v1.7.6/nerdctl-1.7.6-linux-amd64.tar.gz
 [root@node2 ~]#wget
-https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-0.22.2-
-linux-amd64.tar.gz
+https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-0.22.2-linux-amd64.tar.gz
 
 #查看文件内容
 [root@node2 ~]#tar tf nerdctl-0.22.2-linux-amd64.tar.gz
@@ -1523,8 +1514,7 @@ bridge     dummy  flannel   host-local   loopback  portmap  sbr  tap     vlan
 
 #下载新版的cni插件
 [root@node2 ~]#wget
-https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-
-plugins-linux-amd64-v1.1.1.tgz
+https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
 
 [root@node2 ~]#tar xf cni-plugins-linux-amd64-v1.1.1.tgz  -C /opt/cni/bin/
 
@@ -1566,8 +1556,7 @@ buildkitd（服务端），目前支持runc和containerd作为镜像构建环境
 软件包下载地址：https://github.com/moby/buildkit/releases
 ```ini
 [root@master1 ~]# wget
-https://github.com/moby/buildkit/releases/download/v0.13.2/buildkit-
-v0.13.2.linux-amd64.tar.gz
+https://github.com/moby/buildkit/releases/download/v0.13.2/buildkit-v0.13.2.linux-amd64.tar.gz
 [root@master ~]# tar -zxvf buildkit-v0.13.2.linux-amd64.tar.gz
 bin/
 bin/buildctl

@@ -343,8 +343,7 @@ iptables或ipvs会根据情况挑选一个合适的endpoint地址。
 
 对于Kubernetes 可以实现内部服务的自由通信,也可以将平台内部的服务发布到外部环境。Service主要有四种类型，实现不同的网络通信功能。
 ```text
-https://kubernetes.io/docs/concepts/services-networking/service/#publishing-
-services-service-types
+https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
 ```
 
 ![原 PDF 第 13 页插图](assets/Kubernetes服务发现和名称解析/img-c97694d15d29c9e6.png)
@@ -382,8 +381,7 @@ ExternalName
 ### 1.2.4 ExternalIP
 ```text
 https://kubernetes.io/docs/concepts/services-networking/service/#external-ips
-https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/#external-
-ips
+https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/#external-ips
 ```
 
 从外部访问 Kubernetes的Pod,除了使用 NodePort 和  LoadBalancer 的Service 类型,也可以使用ExternalIP 实现。如果有外部 IP 能够路由到一个或多个集群节点上，则 Kubernetes 可以通过 externalIPs 将Service公开出去。当网络流量进入集群时，如果externalIPs 作为目的 IP 地址和端口都与该 Service 匹配， Kubernetes所配置的规则和路由会确保流量被路由到该 Service 的端点之一。Service可通过使用节点上配置的辅助IP地址接入集群外部客户端流量。流量入口仅能是配置有该IP地址的节点，其它节点无效，因而此时在节点间无负载均衡的效果。
@@ -1472,8 +1470,7 @@ BGP模式和二层网络模式下的负载均衡ECMP路由和负载均衡IP地�
 
 **安装说明**
 ```text
-https://openelb.github.io/docs/getting-started/installation/install-openelb-on-
-kubernetes/
+https://openelb.github.io/docs/getting-started/installation/install-openelb-on-kubernetes/
 ```
 
 范例: 部署和使用 OpenELB
@@ -1851,8 +1848,7 @@ kubectl apply -f - -n kube-system
 METALLB_VERSION='v0.14.9'
 METALLB_VERSION='v0.14.4'
 kubectl apply -f
-https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/config/mani
-fests/metallb-native.yaml
+https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/config/manifests/metallb-native.yaml
 ```
 
 创建地址池
@@ -1893,12 +1889,10 @@ interfaces:
 ```yaml
 #下载最新版
 [root@master1 ~]#wget
-https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-
-native.yaml
+https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-native.yaml
 #加速
 [root@master1 ~]#wget
-https://mirror.ghproxy.com/https://raw.githubusercontent.com/metallb/metallb/mai
-n/config/manifests/metallb-native.yaml
+https://mirror.ghproxy.com/https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-native.yaml
 
 #指定版本
 [root@master1 ~]#METALLB_VERSION='v0.15.2'
@@ -1906,8 +1900,7 @@ n/config/manifests/metallb-native.yaml
 [root@master1 ~]#METALLB_VERSION='v0.14.8'
 [root@master1 ~]#METALLB_VERSION='v0.14.4'
 [root@master1 ~]#kubectl apply -f
-https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/config/mani
-fests/metallb-native.yaml
+https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/config/manifests/metallb-native.yaml
 namespace/metallb-system created
 customresourcedefinition.apiextensions.k8s.io/bfdprofiles.metallb.io created
 customresourcedefinition.apiextensions.k8s.io/bgpadvertisements.metallb.io

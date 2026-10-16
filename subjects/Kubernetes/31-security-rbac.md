@@ -938,8 +938,7 @@ name: system:masters
 
 ### 3.3.1 创建 Role
 ```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-
-create-role
+https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-create-role
 ```
 
 **属性解析**
@@ -1619,8 +1618,7 @@ cluster级别的实践主要涉及到clusterRole和ClusterRoleBinding之间的�
 
 ### 3.4.1 创建 clusterrole
 ```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-
-create-clusterrole
+https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-create-clusterrole
 ```
 
 说明
@@ -2760,8 +2758,7 @@ https://github.com/kubernetes/dashboard/releases
 https://mirror.ghproxy.com/https://raw.githubusercontent.com/kubernetes/dashboar
 d/${VERSION}/aio/deploy/recommended.yaml
 [root@master1 ~]#wget
-https://raw.githubusercontent.com/kubernetes/dashboard/${VERSION}/aio/deploy/rec
-ommended.yaml
+https://raw.githubusercontent.com/kubernetes/dashboard/${VERSION}/aio/deploy/recommended.yaml
 
 [root@master1 ~]#vim recommended.yaml
 .......
@@ -2810,8 +2807,7 @@ error: Metrics API not available
 
 #建议安装metrics-server,可以通过dashboard查看更多的信息,此步可选
 #官方链接:https://github.com/kubernetes-sigs/metrics-server
-[root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-
-server/releases/latest/download/components.yaml
+[root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 #默认文件需要修改才能工作,因为默认需要内部证书验证和镜像地址k8s.gcr.io所以修改,此步可选
 [root@master1 ~]#vim components.yaml
@@ -4202,8 +4198,7 @@ Error from server (Forbidden): serviceaccounts is forbidden: User
 
 ### 3.6.4 用户名和密码验证
 ```text
-https://github.com/kubernetes/dashboard/blob/master/docs/user/access-
-control/README.md#basic
+https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/README.md#basic
 https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 ```
 
@@ -4470,8 +4465,7 @@ pathType: Prefix
 
 #### 3.7.2.2 范例：支持Storage Class 持久化安装kuboard
 ```yaml
-#https://kuboard.cn/install/v3/install-in-k8s.html#%E6%96%B9%E6%B3%95%E4%BA%8C-
-%E4%BD%BF%E7%94%A8-storageclass-%E6%8F%90%E4%BE%9B%E6%8C%81%E4%B9%85%E5%8C%96
+#https://kuboard.cn/install/v3/install-in-k8s.html#%E6%96%B9%E6%B3%95%E4%BA%8C-%E4%BD%BF%E7%94%A8-storageclass-%E6%8F%90%E4%BE%9B%E6%8C%81%E4%B9%85%E5%8C%96
 
 #环境准备，提前准备一个名称为sc-nfs的storageClass
 [root@master1 ~]#kubectl get sc

@@ -147,8 +147,7 @@ StatefulSet
 **节点控制器和Worker节点**
 ```text
 https://www.waytoeasylearn.com/learn/kube-controller-manager/
-https://kubernetes.io/docs/reference/command-line-tools-reference/kube-
-controller-manager/
+https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
 ```
 
 ![原 PDF 第 7 页插图](assets/Kubernetes工作负载/img-0937a4bf2b5ce361.png)
@@ -351,8 +350,7 @@ app=nginx,version=v1.20.0
 
 ### 2.2.1 标签选择器说明
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-
-objects/labels/#label-selectors
+https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/#label-selectors
 ```
 
 Label附加到Kubernetes集群中的各种资源对象上，目的是对这些资源对象可以进行后续的分组管理。

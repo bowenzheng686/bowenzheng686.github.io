@@ -785,8 +785,7 @@ NAME         STATUS                     ROLES    AGE   VERSION
 
 ### 3.6.3 高可用分布式集群部署说明
 ```text
-https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-
-planning_and_overall_intro.md
+https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-planning_and_overall_intro.md
 ```
 
 高可用集群所需节点配置如下：
@@ -1737,8 +1736,7 @@ apt  -y install apt-transport-https ca-certificates curl software-properties-
 common
 curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key
 add -
-add-apt-repository "deb [arch=amd64] https://mirrors.aliyun.com/docker-
-ce/linux/ubuntu $(lsb_release -cs) stable"
+add-apt-repository "deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
 apt update
 
 ${COLOR}"Docker有以下版本:"${END}
@@ -2060,8 +2058,7 @@ crt-base /etc/ssl/private
 # For more information, see ciphers(1SSL). This list is from:
 #  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
 # An alternative list with additional directives can be obtained from
-#  https://mozilla.github.io/server-side-tls/ssl-config-generator/?
-server=haproxy
+#  https://mozilla.github.io/server-side-tls/ssl-config-generator/?server=haproxy
 ssl-default-bind-ciphers
 ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AE
 S:!aNULL:!MD5:!DSS
@@ -2236,8 +2233,7 @@ done
 
 **项目链接**
 ```text
-https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-
-planning_and_overall_intro.md
+https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-planning_and_overall_intro.md
 ```
 
 ![原 PDF 第 191 页插图](assets/Kubernetes架构和部署/img-b1d2cb385da488ac.png)
@@ -2702,8 +2698,7 @@ kube-proxy kube-scheduler /root/kubernetes1.17.2/
 #下载升级的版本文件
 [root@master1 ~]#mkdir kubernetes1.17.6
 [root@master1 ~]#cd kubernetes1.17.6
-[root@master1 kubernetes1.17.6]#wget https://dl.k8s.io/v1.17.6/kubernetes-
-server-linux-amd64.tar.gz
+[root@master1 kubernetes1.17.6]#wget https://dl.k8s.io/v1.17.6/kubernetes-server-linux-amd64.tar.gz
 
 [root@master1 kubernetes1.17.6]#tar xvf kubernetes-server-linux-amd64.tar.gz
 [root@master1 kubernetes1.17.6]#cd kubernetes/server/bin
@@ -2771,8 +2766,7 @@ roles:
 
 参考资料:
 ```text
-https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#init-
-workflow
+https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#init-workflow
 ```
 
 基本流程

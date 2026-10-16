@@ -257,8 +257,7 @@ conventions.md#types-kinds
 ```text
 metadata <Object>
 Standard object's metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 
 spec <Object>
 ```
@@ -282,8 +281,7 @@ password: "123456"
 
 #监听
 [root@master1 ~]#kubectl proxy
-[root@master1 ~]#curl http://localhost:8001/apis/auth.democrd.io/v1alpha1/users?
-watch=true
+[root@master1 ~]#curl http://localhost:8001/apis/auth.democrd.io/v1alpha1/users?watch=true
 #应用资源清单文件后可以显示下面内容
 
 {"type":"ADDED","object":
@@ -430,8 +428,7 @@ Operator 链接：
 ```text
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html
-https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-
-elasticsearch.html
+https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html
 
 #1)Install custom resource definitions:
 

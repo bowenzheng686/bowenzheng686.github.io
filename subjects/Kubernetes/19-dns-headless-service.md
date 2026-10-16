@@ -166,8 +166,7 @@ Client Pod 查询自身的/etc/resolv.conf 文件中指向的DNS服务器地址,
 注意: 使用Kubeadm方式安装的Kubernetes集群默认已经安装CoreDNS无需再安装。
 ```yaml
 [root@master1 ~]#wget -O coredns.yaml
-https://raw.githubusercontent.com/coredns/deployment/master/kubernetes/coredns.y
-aml.sed
+https://raw.githubusercontent.com/coredns/deployment/master/kubernetes/coredns.yaml.sed
 
 #注意:文件中的大写字母的内容需要修改
 [root@master1 ~]#cat coredns.yaml

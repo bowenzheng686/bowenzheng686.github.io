@@ -16,8 +16,7 @@ syntax_highlight: true
 ```text
 https://kubernetes.github.io/ingress-nginx/
 https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress/
-https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress-
-controllers/
+https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress-controllers/
 ```
 
 ## 1.1 Ingress 工作原理
@@ -189,8 +188,7 @@ Traefik的设计目标是成为一个现代化的云原生应用反向代理和�
 
 **各种 Ingress Controller 比较**
 ```text
-https://docs.google.com/spreadsheets/d/1DnsHtdHbxjvHmxvlu7VhzWcWgLAn_Mc5L1WlhLDA
-__k/edit?spm=a2c6h.12873639.article-detail.4.1eff3d8dO53Ifj#gid=0
+https://docs.google.com/spreadsheets/d/1DnsHtdHbxjvHmxvlu7VhzWcWgLAn_Mc5L1WlhLDA__k/edit?spm=a2c6h.12873639.article-detail.4.1eff3d8dO53Ifj#gid=0
 ```
 
 ![原 PDF 第 7 页插图](assets/Kubernetes流量调度Ingress_Password_Removed1/img-3eae83c312d1141a.png)
@@ -263,26 +261,20 @@ https://github.com/kubernetes/ingress-nginx/
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v${VERSION}/deploy/static/provider/cloud/deploy.yaml
 
-[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
 
-[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
+[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
 
-[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
-nginx/controller-v1.7.0/deploy/static/provider/cloud/deploy.yaml
+[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.7.0/deploy/static/provider/cloud/deploy.yaml
 
 #旧版
-[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
+[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
 
 #旧版
-[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
-nginx/controller-v1.3.1/deploy/static/provider/cloud/deploy.yaml
+[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.1/deploy/static/provider/cloud/deploy.yaml
 
 #旧版
-[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
-nginx/controller-v1.0.3/deploy/static/provider/baremetal/deploy.yaml
+[root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.3/deploy/static/provider/baremetal/deploy.yaml
 
 #查看资源
 [root@master1 ~]#grep '^kind' deploy.yaml
@@ -1710,8 +1702,7 @@ v:NotBefore: Jun 15 03:18:44 2021 GMT; NotAfter: Jun 12 03:18:44 2031 GMT
 
 **官方配置参考**
 ```text
-https://kubernetes.github.io/ingress-nginx/user-guide/nginx-
-configuration/annotations/
+https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
 ```
 
 **配置文件解析**
@@ -1757,8 +1748,7 @@ ingressClassName  <string>        # ingress类名称，用于指定适配的控�
 
 ![原 PDF 第 38 页插图](assets/Kubernetes流量调度Ingress_Password_Removed1/img-5ca9f2734e295495.png)
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/services-
-networking/ingress/#%E7%A4%BA%E4%BE%8B
+https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress/#%E7%A4%BA%E4%BE%8B
 ```
 
 示例

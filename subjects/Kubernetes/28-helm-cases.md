@@ -422,8 +422,7 @@ mysql -h mysql.default.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
 WARNING: There are "resources" sections in the chart not set. Using"resourcesPreset" is not recommended for production. For production installations, please set the following values according to your workload needs:- primary.resources- secondary.resources
 
 ```text
-+info https://kubernetes.io/docs/concepts/configuration/manage-resources-
-containers/
++info https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 ```
 
 ⚠ SECURITY WARNING: Original containers have been substituted. This Helm chart

@@ -51,8 +51,7 @@ kubectl scale deployments/kubernetes-bootcamp --replicas=4
 
 垂直扩缩：调整分配给容器的 CPU 和内存资源。
 ```yaml
-#https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/resize-
-container-resources/#create-pod-with-resource-requests-and-limits
+#https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/resize-container-resources/#create-pod-with-resource-requests-and-limits
 
 apiVersion: v1
 kind: Pod
@@ -90,14 +89,11 @@ Cluster-Autoscale
 ```text
 #支持的云提供商：
 #阿里云：
-https://github.com/kubernetes/autoscaler/blob/master/cluster-
-autoscaler/cloudprovider/alicloud/README.md
+https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
 #AWS：
-https://github.com/kubernetes/autoscaler/blob/master/cluster-
-autoscaler/cloudprovider/aws/README.md
+https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 #Azure：
-https://github.com/kubernetes/autoscaler/blob/master/cluster-
-autoscaler/cloudprovider/azure/README.md
+https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
 ```
 
 Vertical Pod Autoscaler VPA
@@ -108,21 +104,17 @@ Vertical Pod AutoScaler 容器垂直伸缩，动态调整单个Pod的最大资�
 https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
 
 #需要自行安装
-https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-
-autoscaler/docs/installation.md
+https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/installation.md
 
 #安装方法
 kubectl apply -f
-https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-
-1.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
+https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
 kubectl apply -f
-https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-
-1.0/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
 
 #实现Vertical Pod Autoscaler示例:
 
-#https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-
-autoscaler/examples/hamster.yaml
+#https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/examples/hamster.yaml
 
 ---
 apiVersion: "autoscaling.k8s.io/v1"
@@ -259,10 +251,8 @@ containers:
 ## 1.2 HPA工作机制
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/
-https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/workload-
-resources/horizontal-pod-autoscaler-v1/
-https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/workload-
-resources/horizontal-pod-autoscaler-v2/
+https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v1/
+https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/
 ```
 
 ### 1.2.1 HPA 介绍
@@ -314,8 +304,7 @@ Kubernetes 将水平 Pod 自动扩缩实现为一个间歇运行的控制回路�
 
 ### 1.2.4 HPA 扩缩容算法
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-
-autoscale/#algorithm-details
+https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details
 ```
 
 Pod 水平自动扩缩控制器根据当前指标和期望指标来计算扩缩比例。
@@ -641,13 +630,11 @@ kind <string>Kind is a string value representing the REST resource this object r
 
 ```text
 requests to. Cannot be updated. In CamelCase. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#types-kinds
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
 
 metadata <Object>
 metadata is the standard object metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 ```
 
 
@@ -722,8 +709,7 @@ RESOURCE: spec <Object>
 
 DESCRIPTION:
 behaviour of autoscaler. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#spec-and-status.
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
 
 specification of a horizontal pod autoscaler.
 
@@ -763,8 +749,7 @@ Kubernetes API Aggregation
 
 Kubernetes 集群管理员需要确保下述条件，以保证 HPA 控制器能够访问这些 API：
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-
-autoscale/#support-for-metrics-apis
+https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis
 ```
 
 启用了 API 聚合层
@@ -773,14 +758,12 @@ autoscale/#support-for-metrics-apis
 
 对于Kubernetes 内置的资源指标，将使用 metrics.k8s.io API， 一般由 metrics-server将节点和Pod使用CPU和内存两种指标数据暴露出来给HPA和VPA使用。 它可以作为集群插件启动。
 ```text
-https://APISERVER:PORT/apis/metrics.k8s.io/v1beta1/namespaces/default/po
-ds/mypod
+https://APISERVER:PORT/apis/metrics.k8s.io/v1beta1/namespaces/default/pods/mypod
 ```
 
 对于自定义指标，将使用 custom.metrics.k8s.io API。 它由其他度量指标方案厂商的适配器（Adapter） API 服务器暴露出来给HPA和VPA使用。 检查你的指标管道以查看是否有可用的 Kubernetes 指标适配器。
 ```text
-https://APISERVER:PORT/apis/custom.metrics.k8s.io/v1beta1/namespaces/def
-ault/pods/mypod
+https://APISERVER:PORT/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/mypod
 ```
 
 对于外部指标，将使用 external.metrics.k8s.io API。 也可能由上面的自定义指标适配器提供。HorizontalPodAutoscaler 将其配置为从聚合 API （metrics.k8s.io、custom.metrics.k8s.io 或external.metrics.k8s.io）获取指标。
@@ -898,8 +881,7 @@ error: Metrics API not available
 
 #先安装Metric-server
 #官方链接:https://github.com/kubernetes-sigs/metrics-server
-[root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-
-server/releases/latest/download/components.yaml
+[root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 #默认文件需要修改才能工作,因为默认配置需要内部证书验证和镜像地址k8s.gcr.io所以修改
 [root@master1 ~]#vim components.yaml
@@ -984,8 +966,7 @@ Running   0              118s
 
 ### 2.3.1 范例：官方案例 HPA-v1
 ```yaml
-https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale-
-walkthrough/
+https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
 
 #准备工作负载资源
 [root@master1 srv]#cat php-apache.yaml

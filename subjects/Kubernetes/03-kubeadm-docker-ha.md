@@ -23,10 +23,8 @@ syntax_highlight: true
 参考文档：
 ```text
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/
-https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-
-kubeadm/
-https://kubernetes.io/zh-cn/docs/setup/production-
-environment/tools/kubeadm/create-cluster-kubeadm/
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
 https://github.com/kubernetes/kubeadm/blob/master/docs/design/design_v1.10.md
 ```
 
@@ -88,8 +86,7 @@ IP主机名角色
 
 ### 3.4.2 初始环境准备
 ```text
-https://kubernetes.io/zh-cn/docs/setup/production-
-environment/tools/kubeadm/install-kubeadm/
+https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 ```
 
 硬件准备环境: 每个主机至少2G以上内存,CPU2核以上操作系统: 最小化安装支持Kubernetes的Linux系统唯一的主机名，MAC地址以及product_uuid和主机名解析保证各个节点网络配置正确,并且保证通信正常禁用 swap禁用 SELinux放行Kubernetes使用到的相关端口或禁用firewalld/iptables配置正确的时区和时间同步内核参数优化所有节点实现基于 ssh key 验证(可选)。
@@ -135,8 +132,7 @@ addresses: [180.76.76.76, 223.6.6.6]
 
 **端口和协议**
 ```text
-https://kubernetes.io/zh-cn/docs/reference/networking/ports-and-
-protocols/#control-plane
+https://kubernetes.io/zh-cn/docs/reference/networking/ports-and-protocols/#control-plane
 ```
 
 当你在一个有严格网络边界的环境里运行 Kubernetes，例如拥有物理网络防火墙或者拥有公有云中虚拟网络的自有数据中心， 了解 Kubernetes 组件使用了哪些端口和协议是非常有用的。
@@ -410,8 +406,7 @@ cat >  /etc/yum.repos.d/docker.repo  <<EOF
 name=docker
 gpgcheck=0
 #baseurl=https://mirrors.aliyun.com/docker-ce/linux/centos/7/x86_64/stable/
-baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-
-ce/linux/centos/7/x86_64/stable/
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/7/x86_64/stable/
 EOF
 else
 cat >  /etc/yum.repos.d/docker.repo  <<EOF
@@ -419,8 +414,7 @@ cat >  /etc/yum.repos.d/docker.repo  <<EOF
 name=docker
 gpgcheck=0
 #baseurl=https://mirrors.aliyun.com/docker-ce/linux/centos/8/x86_64/stable/
-baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-
-ce/linux/centos/8/x86_64/stable/
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/8/x86_64/stable/
 EOF
 fi
 yum clean all
@@ -439,8 +433,7 @@ apt update || { color "更新包索引失败" 1 ; exit 1; }
 apt  -y install apt-transport-https ca-certificates curl software-
 properties-common || \
 { color "安装相关包失败" 1 ; exit 2;  }
-curl -fsSL https://mirrors.tuna.tsinghua.edu.cn/docker-
-ce/linux/ubuntu/gpg | sudo apt-key add -
+curl -fsSL https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64]
 https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu $(lsb_release -cs)
 stable"
@@ -726,8 +719,7 @@ crt-base /etc/ssl/private
 # For more information, see ciphers(1SSL). This list is from:
 #  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
 # An alternative list with additional directives can be obtained from
-#  https://mozilla.github.io/server-side-tls/ssl-config-generator/?
-server=haproxy
+#  https://mozilla.github.io/server-side-tls/ssl-config-generator/?server=haproxy
 ssl-default-bind-ciphers
 ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AE
 S:!aNULL:!MD5:!DSS
@@ -929,8 +921,7 @@ cat >  /etc/yum.repos.d/docker.repo  <<EOF
 name=docker
 gpgcheck=0
 #baseurl=https://mirrors.aliyun.com/docker-ce/linux/centos/7/x86_64/stable/
-baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-
-ce/linux/centos/7/x86_64/stable/
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/7/x86_64/stable/
 EOF
 
 else
@@ -939,8 +930,7 @@ cat >  /etc/yum.repos.d/docker.repo  <<EOF
 name=docker
 gpgcheck=0
 #baseurl=https://mirrors.aliyun.com/docker-ce/linux/centos/8/x86_64/stable/
-baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-
-ce/linux/centos/8/x86_64/stable/
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/8/x86_64/stable/
 EOF
 fi
 yum clean all
@@ -959,8 +949,7 @@ apt update || { color "更新包索引失败" 1 ; exit 1; }
 apt  -y install apt-transport-https ca-certificates curl software-
 properties-common || \
 { color "安装相关包失败" 1 ; exit 2;  }
-curl -fsSL https://mirrors.tuna.tsinghua.edu.cn/docker-
-ce/linux/ubuntu/gpg | sudo apt-key add -
+curl -fsSL https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64]
 https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu $(lsb_release -cs)
 stable"
@@ -1049,8 +1038,7 @@ cri-dockerd项目提供了预制的二制格式的程序包，用户按需下载
 范例：下载Linux通用二进制文件并创建service和socket文件
 ```bash
 #下载Linux通用版本
-[root@ubuntu2404 ~]#wgert https://github.com/Mirantis/cri-
-dockerd/releases/download/v0.3.18/cri-dockerd-0.3.18.amd64.tgz
+[root@ubuntu2404 ~]#wgert https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.18/cri-dockerd-0.3.18.amd64.tgz
 
 [root@ubuntu2404 ~]#tar tf cri-dockerd-0.4.0.amd64.tgz
 cri-dockerd/
@@ -1062,12 +1050,10 @@ cri-dockerd/cri-dockerd
 #准备service和socket文件
 #https://github.com/Mirantis/cri-dockerd/tree/master/packaging/systemd
 [root@ubuntu2404 ~]#wget -O /lib/systemd/system/cri-docker.service
-https://raw.githubusercontent.com/Mirantis/cri-
-dockerd/refs/heads/master/packaging/systemd/cri-docker.service
+https://raw.githubusercontent.com/Mirantis/cri-dockerd/refs/heads/master/packaging/systemd/cri-docker.service
 
 [root@ubuntu2404 ~]#wget -O /lib/systemd/system/cri-docker.socket
-https://raw.githubusercontent.com/Mirantis/cri-
-dockerd/refs/heads/master/packaging/systemd/cri-docker.socket
+https://raw.githubusercontent.com/Mirantis/cri-dockerd/refs/heads/master/packaging/systemd/cri-docker.socket
 
 [root@ubuntu2404 ~]#systemctl daemon-reload && systemctl enable --now  cri-
 docker.service
@@ -1076,8 +1062,7 @@ docker.service
 范例：下载系统对应的包文件并安装cri-dockerd
 ```bash
 #选择合适的版本
-[root@ubuntu2004 ~]#curl -LO https://github.com/Mirantis/cri-
-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
+[root@ubuntu2004 ~]#curl -LO https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
 
 [root@ubuntu2004 ~]#dpkg -i cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
 [root@ubuntu2204 ~]#dpkg -i cri-dockerd_0.3.14.3-0.ubuntu-jammy_amd64.deb
@@ -1144,9 +1129,7 @@ ailed" err="rpc error: code = Unknown desc = failed pulling image
 
 通过国内镜像站点阿里云安装的参考链接：
 ```text
-https://kubernetes.io/zh-cn/docs/setup/production-
-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-
-kubectl
+https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
 https://developer.aliyun.com/mirror/kubernetes
 https://mirrors.tuna.tsinghua.edu.cn/help/kubernetes/
 ```
@@ -2332,16 +2315,13 @@ node3.bowen.org     NotReady   <none>    88m   v1.17.2
 #官方下载链接地址：https://github.com/flannel-io/flannel/，下载和部署网络组件 flannel,
 可能需要科学上网才能下载
 #新版
-[root@master1 ~]#wget https://github.com/flannel-
-io/flannel/releases/latest/download/kube-flannel.yml
+[root@master1 ~]#wget https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 #如果下载失败，可以使用代理https://mirror.ghproxy.com下载
-[root@master1 ~]#wget https://mirror.ghproxy.com/https://github.com/flannel-
-io/flannel/releases/latest/download/kube-flannel.yml
+[root@master1 ~]#wget https://mirror.ghproxy.com/https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 
 #旧版
 [root@master1 ~]#wget
-https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-
-flannel.yml
+https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
 #参考前面初始化的命令中 --pod-network-cidr 10.244.0.0/16 选项指定的网段地址修改文件，可使
 用默认文件不做修改（可选）

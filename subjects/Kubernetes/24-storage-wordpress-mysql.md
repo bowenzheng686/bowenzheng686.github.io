@@ -30,8 +30,7 @@ syntax_highlight: true
 
 示例
 ```text
-https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/mysql-wordpress-
-persistent-volume/
+https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/
 ```
 
 ## 3.1  准备基于NFS的 StorageClass

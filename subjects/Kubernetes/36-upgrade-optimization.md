@@ -32,8 +32,7 @@ kubernetes 集群后期会更新和证书的有效期等原因，可能在某个
 
 ## 4.1 升级流程说明
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/kubeadm/kubeadm-
-upgrade/
+https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
 ```
 
 本页介绍如何将 kubeadm 创建的 Kubernetes 集群从 1.33.x 版本 升级到 1.34.x 版本以及从 1.34.x 升级到 1.34.y（其中 y > x ）。略过次版本号的升级是 不被支持的。更多详情请访问版本偏差策略。升级 Kubernetes 集群是一个复杂的过程，需要谨慎操作，以确保集群的稳定性和数据的安全性。
@@ -312,8 +311,7 @@ Kustomize Version: v5.7.1
 #### 4.2.1.3  在升级的 master 安装指定新版本 kubeadm kubelet  kubectl
 ```bash
 #查看kubernetes可升级的版本列表
-[root@master1 ~]#url -fsSL https://mirrors.aliyun.com/kubernetes-
-new/core/stable/v1.34/deb/Release.key |
+[root@master1 ~]#url -fsSL https://mirrors.aliyun.com/kubernetes-new/core/stable/v1.34/deb/Release.key |
 gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 [root@master1 ~]#echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-
@@ -535,8 +533,7 @@ v1.22.1   36c4ebbc9d97   6 months ago    104MB
 注意: 在反向代理上应该先将要更新的节点下线再升级。
 ```bash
 #查看kubernetes可升级的版本列表
-[root@master2 ~]#curl -fsSL https://mirrors.aliyun.com/kubernetes-
-new/core/stable/v1.34/deb/Release.key |
+[root@master2 ~]#curl -fsSL https://mirrors.aliyun.com/kubernetes-new/core/stable/v1.34/deb/Release.key |
 gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 [root@master2 ~]#echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-
@@ -640,8 +637,7 @@ daemonsets --force
 
 **在node节点将 kubeadm、kubelet 升级**
 ```bash
-[root@node1 ~]#curl -fsSL https://mirrors.aliyun.com/kubernetes-
-new/core/stable/v1.34/deb/Release.key |
+[root@node1 ~]#curl -fsSL https://mirrors.aliyun.com/kubernetes-new/core/stable/v1.34/deb/Release.key |
 gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 [root@node1 ~]#echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-

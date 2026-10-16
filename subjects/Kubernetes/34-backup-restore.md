@@ -16,10 +16,7 @@ syntax_highlight: true
 
 ## 2.1 Kubernetes 集群的容灾架构与方案
 ```text
-https://help.aliyun.com/zh/ack/distributed-cloud-container-platform-for-
-kubernetes/use-cases/disaster-recovery-architecture-and-scheme-based-on-
-kubernetes-container-cluster?spm=a2c4g.11186623.help-menu-
-85222.d_3_2_0.d67169eejnjqVX
+https://help.aliyun.com/zh/ack/distributed-cloud-container-platform-for-kubernetes/use-cases/disaster-recovery-architecture-and-scheme-based-on-kubernetes-container-cluster?spm=a2c4g.11186623.help-menu-85222.d_3_2_0.d67169eejnjqVX
 ```
 
 在进行系统架构设计时，必须考虑到信息系统和基础设施可能遇到的各种潜在威胁，例如：硬件故障、软件系统崩溃、人为操作失误、安全攻击、自然灾害等。为了确保Kubernetes集群系统能够在各种异常故障场景下快速恢复并保持业务连续性，必须为系统设计一套完善的容灾方案。
@@ -345,8 +342,7 @@ rsync -av /backup/data /mnt/data
 
 1. 安装 Velero：下载并安装 Velero CLI。
 ```bash
-wget https://github.com/vmware-
-tanzu/velero/releases/download/v1.10.0/velero-v1.10.0-linux-amd64.tar.gz
+wget https://github.com/vmware-tanzu/velero/releases/download/v1.10.0/velero-v1.10.0-linux-amd64.tar.gz
 tar -xvf velero-v1.10.0-linux-amd64.tar.gz
 sudo mv velero-v1.10.0-linux-amd64/velero /usr/local/bin/
 ```
@@ -879,8 +875,7 @@ Go OS/Arch: linux/amd64
 
 #代理下载
 [root@master1 ~]#curl -L
-https://mirror.ghproxy.com/${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-
-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+https://mirror.ghproxy.com/${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
 
 [root@master1 ~]#curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-
 amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
@@ -1466,10 +1461,8 @@ bowen-v2
 ```text
 https://etcd.io/docs/v3.4/op-guide/recovery/
 https://etcd.io/docs/v3.5/op-guide/recovery/
-https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-
-etcd/#replacing-a-failed-etcd-member
-https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-
-etcd/#backing-up-an-etcd-cluster
+https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#replacing-a-failed-etcd-member
+https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster
 ```
 
 ETCD 集群本身就具有高可用性,只有当ETCD集群节点出现超过半数以上的节点宕机才需要进行ETCD的还原。ETCD 数据备份和还原可以通过如下方式实现。
@@ -2162,11 +2155,9 @@ Velero支持很多种存储插件，可查看：https://velero.io/docs/main/supp
 范例: 二进制部署单机单磁盘
 ```bash
 #下载
-[root@ubuntu2204 ~]#wget https://dl.min.io/server/minio/release/linux-
-amd64/minio
+[root@ubuntu2204 ~]#wget https://dl.min.io/server/minio/release/linux-amd64/minio
 #国内镜像下载
-[root@ubuntu2204 ~]#wget https://dl.minio.org.cn/server/minio/release/linux-
-amd64/minio
+[root@ubuntu2204 ~]#wget https://dl.minio.org.cn/server/minio/release/linux-amd64/minio
 [root@ubuntu2204 ~]#install minio  /usr/local/bin/
 
 #准备数据目录,建议此目录为LVM
@@ -2631,8 +2622,7 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 
 方法2：通过 helm 安装
 ```bash
-[root@master1 ~]# helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-
-charts
+[root@master1 ~]# helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
 [root@master1 ~]# helm repo update
 
 [root@master1 ~]# cat values.yaml

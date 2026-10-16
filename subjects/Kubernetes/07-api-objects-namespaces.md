@@ -1702,13 +1702,11 @@ conventions.md#types-kinds
 ```bash
 metadata  <ObjectMeta>
 Standard object metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 
 spec  <HorizontalPodAutoscalerSpec>
 spec defines the behaviour of autoscaler. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#spec-and-status.
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
 
 status    <HorizontalPodAutoscalerStatus>
 status is the current information about the autoscaler.
@@ -1740,8 +1738,7 @@ conventions.md#types-kinds
 ```text
 metadata  <ObjectMeta>
 metadata is the standard object metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 ```
 
 
@@ -1793,8 +1790,7 @@ kubectl get TYPE/NAME -o yaml  > /path/export-resourcelist.yaml
 
 ### 1.3.3 将 Docker Compose 文件转换为 Kubernetes 资源
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/translate-compose-
-kubernetes/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/translate-compose-kubernetes/
 ```
 
 Kompose 是一个转换工具，可将 compose （即 Docker Compose）所组装的所有内容转换成容器编排器（Kubernetes 或 OpenShift）可识别的形式。

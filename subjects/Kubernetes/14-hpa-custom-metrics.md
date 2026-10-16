@@ -101,8 +101,7 @@ Custom Metrics API和External Metrics API 要由专用的第三方的API Server�
 #### 3.2.2.1 方法1: YAML文件部署
 ```text
 https://github.com/kubernetes-sigs/prometheus-adapter/tree/master/deploy
-https://github.com/kubernetes-sigs/prometheus-
-adapter/tree/master/deploy/manifests
+https://github.com/kubernetes-sigs/prometheus-adapter/tree/master/deploy/manifests
 ```
 
 ![原 PDF 第 44 页插图](assets/Kubernetes的HPA动态扩缩容/img-1907988d158137df.png)
@@ -303,8 +302,7 @@ second | jq
 ![原 PDF 第 48 页插图](assets/Kubernetes的HPA动态扩缩容/img-441812f8df6cf01f.png)
 ```bash
 #可能需要配置科学上网
-$ helm repo add prometheus-community https://prometheus-
-community.github.io/helm-charts
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 $ helm repo update
 $ helm install my-release prometheus-community/prometheus-adapter
 ```
@@ -341,8 +339,7 @@ v1
 [root@master1 ~]#bash set_http_proxy.sh start
 HTTP 代理配置完成!                                         [  OK  ]
 
-[root@master1 ~]#helm repo add prometheus-community https://prometheus-
-community.github.io/helm-charts
+[root@master1 ~]#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 "prometheus-community" has been added to your repositories
 [root@master1 ~]#helm repo update
 Hang tight while we grab the latest from your chart repositories...
@@ -461,10 +458,8 @@ node3.bowen.org     94m          4%       1113Mi          60%
 ### 3.2.3 Prometheus Adapter 规则配置说明
 ```text
 https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md
-https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config-
-walkthrough.md
-https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/sample-
-config.yaml
+https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config-walkthrough.md
+https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/sample-config.yaml
 ```
 
 Prometheus Adapter通过一组“发现（discovery）”规则（rules）来确定要公开哪些指标，以及如何公开这些指标。每条规则都是独立执行的（因此要确保规则彼此互斥），它通常包含需要由Adpater在API 公开指标时所需采取的多个步骤。
@@ -516,8 +511,7 @@ kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1
 
 部署示例应用metrcis app，它附带有“http_requests_total”指标。
 ```text
-kubectl apply -f https://raw.githubusercontent.com/iKubernetes/k8s-
-prom/master/prometheus-adpater/example-metrics/metrics-example-app.yaml
+kubectl apply -f https://raw.githubusercontent.com/iKubernetes/k8s-prom/master/prometheus-adpater/example-metrics/metrics-example-app.yaml
 ```
 
 待Metrics App的Pod就绪后，等待Prometheus Server的几个指标抓取周期，即可尝试获取由规则生成自定义指标http_requests_per_second。
@@ -784,8 +778,7 @@ kube_node_status_condition
 
 范例：使用 Helm 安装 Prometheus 与 kube-state-metrics
 ```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-
-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
 helm install \
@@ -874,8 +867,7 @@ serviceAnnotations:
 
 prometheus.io/probe: pushgateway
 
-[root@master1 ~]#helm repo add prometheus-community https://prometheus-
-community.github.io/helm-charts
+[root@master1 ~]#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
 [root@master1 ~]#helm install prometheus prometheus-community/prometheus --
 namespace monitoring --values prometheus-kube-state-metrics-values.yaml --create-
@@ -1098,8 +1090,7 @@ serviceAnnotations:
 prometheus.io/probe: pushgateway
 
 #添加仓库
-[root@master1 ~]#helm repo add prometheus-community https://prometheus-
-community.github.io/helm-charts
+[root@master1 ~]#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
 #部署prometheus和kube-state-metrics
 [root@master1 ~]#helm install prometheus prometheus-community/prometheus --
@@ -1441,8 +1432,7 @@ containerLabel: container
 window: 3m
 
 #需要科学上网
-[root@master1 ~]#helm repo add prometheus-community https://prometheus-
-community.github.io/helm-charts
+[root@master1 ~]#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 [root@master1 ~]#helm repo update
 [root@master1 ~]#helm install my-release prometheus-community/prometheus-adapter
 [root@master1 ~]#helm install prometheus-adapter prometheus-community/prometheus-

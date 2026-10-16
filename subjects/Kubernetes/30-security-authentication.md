@@ -1296,8 +1296,7 @@ API group \"\" in the namespace \"default\"",
 ```
 ```bash
 [root@ubuntu2204 ~]#TOKEN="BOOTSTRAP_TOKEN";curl -k -H "Authorization:
-Bearer $TOKEN"  https://kubeapi.bowen.org:6443/api/v1/namespaces/kube-
-system/pods/
+Bearer $TOKEN"  https://kubeapi.bowen.org:6443/api/v1/namespaces/kube-system/pods/
 "kind": "PodList",
 "apiVersion": "v1",
 "metadata": {
@@ -1549,8 +1548,7 @@ users:
 ```yaml
 #在集群外节点安装kubectl工具
 #方法1
-[root@ubuntu2204 ~]#curl -s  https://mirrors.aliyun.com/kubernetes/apt/doc/apt-
-key.gpg | apt-key add -
+[root@ubuntu2204 ~]#curl -s  https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
 [root@ubuntu2204 ~]#cat << EOF > /etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF

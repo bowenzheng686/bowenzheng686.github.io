@@ -1434,8 +1434,7 @@ Kubernetes v1.16推出临时容器, Kubernetes v1.25稳定可用, 就是在原�
 
 **开启EphemeralContainers特性**
 ```text
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/feature-
-gates/
+https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/feature-gates/
 ```
 
 ![原 PDF 第 77 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1f025ee3f293395d.png)
@@ -1464,8 +1463,7 @@ be set. Optional: Default to false.
 
 #### 3.1.9.2 使用临时容器
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/debug/debug-application/debug-running-
-pod/#ephemeral-container
+https://kubernetes.io/zh-cn/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container
 ```
 
 **kubectl debug 命令用法**
@@ -2114,12 +2112,9 @@ Kubernetes 集群通过pod实现了大量业务应用容器的统一管理。
 
 #### 3.2.2.2 Pod 生命周期
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-
-lifecycle/#container-probes
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-pod-
-initialization/
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-
-lifecycle-event/
+https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-pod-initialization/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
 https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/
 ```
 
@@ -2203,8 +2198,7 @@ Startup probe :  启动探针Liveiness probe: 判断当前pod是否处于存活�
 
 ##### 3.2.2.2.3  关闭 Pod 流程
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-
-termination
+https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination
 ```
 
 ![原 PDF 第 95 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-233e3f92ae049e58.jpeg)
@@ -2294,10 +2288,7 @@ DESCRIPTION: Optional duration in seconds the pod needs to terminate gracefully 
 
 示例：
 ```yaml
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
-liveness-readiness-startup-
-probes/#%E6%8E%A2%E9%92%88%E5%B1%82%E9%9D%A2%E7%9A%84-
-terminationgraceperiodseconds
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#%E6%8E%A2%E9%92%88%E5%B1%82%E9%9D%A2%E7%9A%84-terminationgraceperiodseconds
 
 spec:
 terminationGracePeriodSeconds: 3600  # Pod 级别设置
@@ -2323,8 +2314,7 @@ terminationGracePeriodSeconds: 60
 
 ##### 3.2.2.2.4 两种钩子PostStart和PreStop
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-
-lifecycle-event/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
 ```
 
 根据上面Pod的启动流程，当容器中的进程启动前或者容器中的进程终止之前都会有一些额外的动作执行，这是由kubelet所设置的，在这里，我们称之为 pod hook。
@@ -2716,8 +2706,7 @@ cat log.txt
 
 ##### 3.2.2.3.2 Pod  phase 阶段 （相位）
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-
-phase
+https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
 ```
 
 ![原 PDF 第 106 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1a4d9972e0fd3dac.png)
@@ -2835,8 +2824,7 @@ FIELD:    type <string>
 
 DESCRIPTION:
 Type is the type of the condition. More info:
-https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-
-conditions
+https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-conditions
 
 [root@master1 ~]#kubectl get pod pod-test -o yaml |grep -A 15 conditions
 conditions:
@@ -2860,8 +2848,7 @@ status: "True"
 
 ##### 3.2.2.3.5  Pod 重启策略
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#restart-
-policy
+https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy
 ```
 
 注意：同一个 Pod 内所有容器只能使用统一的重启策略。

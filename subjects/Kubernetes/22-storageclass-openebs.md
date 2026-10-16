@@ -1131,8 +1131,7 @@ nfs-client-provisioner
 
 nfs-client-provisioner 是一个自动配置卷程序，它使用现有的和已配置的 NFS 服务器来支持通过PVC动态配置 PV。nfs-client-provisioner 目前已经不提供更新，nfs-client-provisioner 的 Github 仓库当前已经迁移到 NFS-Subdir-External-Provisioner的仓库。
 ```text
-https://github.com/kubernetes-retired/external-storage/tree/master/nfs-
-client
+https://github.com/kubernetes-retired/external-storage/tree/master/nfs-client
 https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner
 ```
 
@@ -1171,8 +1170,7 @@ NFS 服务器中
 
 NFS Ganesha server and external provisioner
 ```text
-https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-
-provisioner
+https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
 ```
 
 nfs-ganesha-server-and-external-provisioner 是 Kubernetes 1.14+ 的树外动态配置程序。您可以使用它快速轻松地部署几乎可以在任何地方使用的共享存储。
@@ -1182,10 +1180,8 @@ nfs-ganesha-server-and-external-provisioner 是 Kubernetes 1.14+ 的树外动态
 **部署相关文件**
 ```text
 https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
-https://github.com/kubernetes-sigs/nfs-subdir-external-
-provisioner/tree/master/deploy
-https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner?tab=readme-ov-
-file#manually
+https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/tree/master/deploy
+https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner?tab=readme-ov-file#manually
 ```
 
 ![原 PDF 第 81 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-996e1d748cb5e0ab.png)
@@ -1770,8 +1766,7 @@ claimName: mysql-pv-claim
 #### 1.6.3.3 案例：通过 Helm 部署 nfs-subdir-external-provisioner
 ```text
 https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
-https://github.com/kubernetes-sigs/nfs-subdir-external-
-provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
+https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
 ```
 
 ##### 1.6.3.3.1 准备 NFS 服务器
@@ -1835,14 +1830,12 @@ $ ./get_helm.sh
 
 运行以下命令来启用 helm 仓库：
 ```bash
-$ helm repo add nfs-subdir-external-provisioner https://kubernetes-
-sigs.github.io/nfs-subdir-external-provisioner
+$ helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
 ```
 
 使用以下 helm 命令部署配置程序：
 ```text
-https://github.com/kubernetes-sigs/nfs-subdir-external-
-provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
+https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
 ```
 
 范例: 创建 SC
@@ -2007,8 +2000,7 @@ https://github.com/kubernetes-csi/csi-driver-nfs
 ##### 1.6.3.4.1 准备 NFS 服务
 ```bash
 #方法1:部署至kubernetes
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/nfs-
-provisioner/README.md
+https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/nfs-provisioner/README.md
 
 #方法2:手动部署在集群外
 [root@master1 ~]#apt update && apt -y install nfs-server
@@ -2043,8 +2035,7 @@ _squash,all_squash)
 
 ##### 1.6.3.4.2 Install NFS CSI driver  on a kubernetes cluster
 ```text
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-
-driver-v4.6.0.md
+https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.6.0.md
 ```
 
 Install with kubectl 可能需要科学上网下载相关镜像。
@@ -2145,14 +2136,12 @@ controller
 
 ###### 1.6.3.4.2.2 方法2. remote install
 ```text
-curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
-nfs/v4.6.0/deploy/install-driver.sh | bash -s v4.6.0 --
+curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.6.0/deploy/install-driver.sh | bash -s v4.6.0 --
 ```
 
 范例:
 ```bash
-[root@master1 ~]#curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-
-driver-nfs/v4.6.0/deploy/install-driver.sh | bash -s v4.6.0 --
+[root@master1 ~]#curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.6.0/deploy/install-driver.sh | bash -s v4.6.0 --
 
 #新创建资源类型
 [root@master1 ~]#kubectl api-resources  |grep storage.k8s.io
@@ -2190,17 +2179,14 @@ replicaset.apps/csi-nfs-controller-57bb8fd754   1         1         0       76s
 
 ##### 1.6.3.4.3  创建 Storage Class
 ```text
-https://github.com/kubernetes-csi/csi-driver-
-nfs/blob/master/deploy/example/README.md
+https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/README.md
 ```
 
 Create a storage class
 
 change server , share with your existing NFS server address and share name
 ```yaml
-#https://github.com/kubernetes-csi/csi-driver-
-nfs/blob/master/deploy/example/README.md#storage-class-usage-dynamic-
-provisioning
+#https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/README.md#storage-class-usage-dynamic-provisioning
 
 [root@master1 csi-driver-nfs]#cat storageclass-csi-nfs.yaml
 ---
@@ -2231,8 +2217,7 @@ sc-nfs (default)   nfs.csi.k8s.io   Delete          Immediate           false
 
 ##### 1.6.3.4.4  PVC  (Dynamic Provisioning)
 ```yaml
-wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
-nfs/master/deploy/example/pvc-nfs-csi-dynamic.yaml
+wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/pvc-nfs-csi-dynamic.yaml
 
 cat storage-pvc-nfs-csi-dynamic.yaml
 ---
@@ -2257,8 +2242,7 @@ kubectl create -f pvc-nfs-csi-dynamic.yaml
 Follow the following command to create PersistentVolume and PersistentVolumeClaim statically.
 ```yaml
 # create PV
-wget  https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
-nfs/master/deploy/example/pv-nfs-csi.yaml
+wget  https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/pv-nfs-csi.yaml
 
 cat storage-pv-nfs-csi.yaml
 ---
@@ -2289,8 +2273,7 @@ share: /data/sc-nfs
 kubectl create -f storage-pv-nfs-csi.yaml
 
 # create PVC
-wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
-nfs/master/deploy/example/pvc-nfs-csi-static.yaml
+wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/pvc-nfs-csi-static.yaml
 
 cat storage-pvc-nfs-csi-static.yaml
 ---
@@ -2312,8 +2295,7 @@ kubectl create -f  storage-pvc-nfs-csi-static.yaml
 
 ##### 1.6.3.4.6  Create a deployment
 ```yaml
-wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
-nfs/master/deploy/example/deployment.yaml
+wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/deployment.yaml
 
 cat storage-deployment.yaml
 ---
@@ -2368,14 +2350,12 @@ kubectl create -f deployment.yaml
 
 ##### 1.6.3.4.7 clean up NFS CSI driver
 ```text
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-
-driver-v4.9.0.md
+https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.9.0.md
 ```
 
 Option#1. remote uninstall
 ```text
-curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
-nfs/v4.9.0/deploy/uninstall-driver.sh | bash -s v4.9.0 --
+curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/v4.9.0/deploy/uninstall-driver.sh | bash -s v4.9.0 --
 ```
 
 Option#2. local uninstall
@@ -2388,10 +2368,8 @@ git checkout v4.9.0
 
 ### 1.6.4 改变默认存储类
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/change-default-storage-
-class/
-https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/#default-
-storageclass
+https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/change-default-storage-class/
+https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/#default-storageclass
 ```
 
 #### 1.6.4.1 为什么要改变默认存储类？

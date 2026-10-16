@@ -1608,8 +1608,7 @@ No resources found in demo namespace.
 ### 3.2.7 上传到 Harbor
 ```bash
 #准备包文件
-[root@master1 ~]#helm repo add prometheus-community https://prometheus-
-community.github.io/helm-charts
+[root@master1 ~]#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
 [root@master1 ~]#helm repo  list
 NAME                    URL

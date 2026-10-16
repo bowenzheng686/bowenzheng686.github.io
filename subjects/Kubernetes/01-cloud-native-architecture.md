@@ -165,8 +165,7 @@ CNCF 组织由以下部分组成：
 
 **CNCF 官方定义云原生**
 ```text
-https://github.com/cncf/toc/blob/main/DEFINITION.md#%E4%B8%AD%E6%96%87%E7%89%88%
-E6%9C%AC
+https://github.com/cncf/toc/blob/main/DEFINITION.md#%E4%B8%AD%E6%96%87%E7%89%88%E6%9C%AC
 ```
 
 云原生技术有利于各组织在公有云、私有云和混合云等新型动态环境中，构建和运行可弹性扩展的应用。
@@ -406,8 +405,7 @@ github：https://github.com/kubernetes/kubernetes
 **Kubernetes 特性**
 ```text
 https://kubernetes.io/zh-cn/
-https://kubernetes.io/zh-cn/docs/concepts/overview/#why-you-need-kubernetes-and-
-what-can-it-do
+https://kubernetes.io/zh-cn/docs/concepts/overview/#why-you-need-kubernetes-and-what-can-it-do
 ```
 
 **自动化上线和回滚**
@@ -520,8 +518,7 @@ Kubernetes将所有worker工作节点的资源集结在一起形成一台逻辑�
 #### 2.3.1.1 kube-apiserver
 ```text
 https://github.com/kubernets/kube-apiserver
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-
-apiserver/
+https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-apiserver/
 ```
 
 ![原 PDF 第 21 页插图](assets/Kubernetes架构和部署/img-b1b9caf344f6b2dc.png)
@@ -537,8 +534,7 @@ Kubernetes API Server 是整个集群的访问入口，负责验证和配置 Pod
 #### 2.3.1.2 kube-controller-manager
 ```text
 https://github.com/kubernetes/kube-controller-manager
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-
-controller-manager/
+https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-controller-manager/
 ```
 
 Controller Manager 是集群内部的管理控制中心，负责 Node、Pod 副本、服务端点（Endpoint）、命名空间（Namespace）、服务账号（ServiceAccount）和资源定额（ResourceQuota）等对象的管理。当 Node 异常宕机时，它会发现故障并执行自动修复，尽可能让集群保持预期的工作状态。
@@ -548,8 +544,7 @@ Controller Manager 是集群内部的管理控制中心，负责 Node、Pod 副�
 #### 2.3.1.3 kube-scheduler
 ```text
 https://github.com/kubernetes/kube-scheduler
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-
-scheduler/
+https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-scheduler/
 ```
 
 kube-scheduler 调度器负责根据当前集群状态，为 Pod 选择最合适的运行节点。对应的程序是 `kube-scheduler`；它可比作公交系统的调度室，负责向相应的 Worker 节点分配工作。
@@ -957,8 +952,7 @@ unix:///var/run/crio/crio.sock             #基于cri-o
 
 **官方说明**
 ```text
-https://kubernetes.io/zh-cn/docs/setup/production-environment/container-
-runtimes/
+https://kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes/
 ```
 
 ![原 PDF 第 38 页插图](assets/Kubernetes架构和部署/img-dccbe9ca53c289e4.png)

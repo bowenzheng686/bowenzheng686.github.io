@@ -202,8 +202,7 @@ cephFS represents a Ceph FS mount on the host that shares a pod's lifetime
 
 cinder   <Object>
 cinder represents a cinder volume attached and mounted on kubelets host
-machine. More info: https://examples.Kubernetes.io/mysql-cinder-
-pd/README.md
+machine. More info: https://examples.Kubernetes.io/mysql-cinder-pd/README.md
 
 configMap    <Object>
 configMap represents a configMap that should populate this volume
@@ -292,8 +291,7 @@ info: https://kubernetes.io/docs/concepts/storage/volumes#nfs
 persistentVolumeClaim    <Object>
 persistentVolumeClaimVolumeSource represents a reference to a
 PersistentVolumeClaim in the same namespace. More info:
-https://kubernetes.io/docs/concepts/storage/persistent-
-volumes#persistentvolumeclaims
+https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims
 
 photonPersistentDisk <Object>
 photonPersistentDisk represents a PhotonController persistent disk attached
@@ -708,8 +706,7 @@ emptyDir: {}
 
 范例: 具有日志代理功能的边车容器
 ```text
-https://kubernetes.io/docs/concepts/cluster-administration/logging/#sidecar-
-container-with-a-logging-agent
+https://kubernetes.io/docs/concepts/cluster-administration/logging/#sidecar-container-with-a-logging-agent
 ```
 
 ![原 PDF 第 18 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-93aaa428ec8223af.png)
@@ -996,8 +993,7 @@ Background saving started
 
 范例: 实现 NFS 服务
 ```yaml
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/nfs-
-provisioner/README.md
+https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/nfs-provisioner/README.md
 
 [root@master1 ~]#cat storage-nfs-server.yaml
 ---
@@ -1500,8 +1496,7 @@ Persistent Volume 跟 Volume类似，区别就是：
 
 PV 是集群级别的资源，负责将存储空间引入到集群中，通常由管理员定义PV 就是Kubernetes集群中的网络存储，不属于Namespace、Node、Pod等资源，但可以被它们访问PV 属于Kubernetes 整个集群,即可以被所有集群的Pod访问PV是独立的网络存储资源对象，有自己的生命周期PV 支持很多种volume类型,PV对象可以有很多常见的类型：本地磁盘、NFS、分布式文件系统...
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#persistent-
-volumes
+https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#persistent-volumes
 ```
 
 ![原 PDF 第 33 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-59ebafd08452edbb.png)
@@ -1556,8 +1551,7 @@ VolumeMode → LabelSelector → StorageClassName → AccessMode → Size
 ```text
 #PV 作为存储资源，主要包括存储能力、访问模式、存储类型、回收策略等关键信息,注意:PV的名称不支持
 大写
-#https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-
-volumes/#persistent-volumes
+#https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#persistent-volumes
 kubectl explain pv.spec
 capacity      #定义pv使用多大空间资源，仅限于空间大小的设定
 accessModes   #访问模式,支持单路读写，多路读写，多路只读，单Pod读写，可同时支持多种
@@ -1598,8 +1592,7 @@ server: 172.17.0.2
 ```text
 #PVC属性信息,与所有空间都能使用的PV不一样，PVC是属于名称空间级别的资源对象，即只有特定的资源才
 能使用
-#https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-
-volumes/#persistentvolumeclaims
+#https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 #定义PVC
 kubectl  explain pvc.spec
 accessModes             #访问模式   *
@@ -1674,8 +1667,7 @@ kubectl patch persistentvolume <pv-name> -p '{"spec":{"claimRef": null}}'
 
 AccessModes 是用来对 PV 进行访问模式的设置，用于描述用户应用对存储资源的访问权限，访问权限包括：
 ```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#access-
-modes
+https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#access-modes
 ```
 
 类型解析
@@ -2098,8 +2090,7 @@ pv-nfs-3   1Gi        RWO            Retain           Available
 
 案例: 运行一个单实例有状态应用MySQL
 ```yaml
-https://kubernetes.io/zh-cn/docs/tasks/run-application/run-single-instance-
-stateful-application/
+https://kubernetes.io/zh-cn/docs/tasks/run-application/run-single-instance-stateful-application/
 
 #准备NFS共享存储，此目录必须提前创建
 [root@master1 ~]#mkdir -p /nfsdata/mysql

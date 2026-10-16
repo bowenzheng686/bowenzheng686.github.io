@@ -78,8 +78,7 @@ downwardAPI 为运行在pod中的应用容器提供了一种反向引用。让�
 ### 2.2.1 ConfigMap 说明
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/configuration/configmap/
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-pod-
-configmap/
+https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-pod-configmap/
 ```
 
 Kubernetes提供了对pod中容器应用的集中配置管理组件：ConfigMap。通过ConfigMap来实现向pod中的容器中注入配置信息的机制。可以把configmap理解为Linux系统中的/etc目录，专门用来存储配置文件的目录。Kubernetes借助于ConfigMap对象实现了将配置信息从容器镜像中解耦，从而增强了工作负载的可移樟性、使其配置更易于更改和管理并避免了将配置数据硬编码到Pod配置清单中。
@@ -1871,8 +1870,7 @@ type: kubernetes.io/service-account-token
 
 **官方说明**
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-
-kubectl/
+https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-kubectl/
 ```
 
 格式
@@ -1942,8 +1940,7 @@ kubectl create secret tls my-secret-tls --cert=certs/bowen.org.cert --
 key=certs/bowen.org.key
 
 #创建docker-registry类型
-#参考示例：https://Kubernetesmeetup.github.io/docs/tasks/configure-pod-
-container/pull-image-private-registry/
+#参考示例：https://Kubernetesmeetup.github.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 #基于私有仓库的用户名和密码
 kubectl create secret docker-registry my-secret-docker-registry --docker-
 server=harbor.bowen.org --docker-username=admin --docker-password=123456 --
@@ -2000,8 +1997,7 @@ conventions.md#types-kinds
 ```text
 metadata <Object>
 Standard object's metadata. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#metadata
+https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 ```
 
 
@@ -2039,8 +2035,7 @@ Pod引用Secret的方式：pods.spec.imagePullSecrets
 
 **官方说明**
 ```text
-https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-
-config-file/
+https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-config-file/
 ```
 
 generic 主要用于实现用户名和密码的加密保存。
@@ -3973,8 +3968,7 @@ startTime: "2022-04-17T15:38:19Z"
 范例：挂载secret,configMap和downwardAPI到容器内的同一个目录
 ```yaml
 #Example configuration with a secret, a downwardAPI, and a configMap
-#https://kubernetes.io/docs/concepts/storage/projected-volumes/#example-
-configuration-secret-downwardapi-configmap
+#https://kubernetes.io/docs/concepts/storage/projected-volumes/#example-configuration-secret-downwardapi-configmap
 
 [root@master1 ~]#cat  storage-projected-demo.yaml
 apiVersion: v1
@@ -4059,8 +4053,7 @@ bowen
 
 范例：Example configuration: secrets with a non-default permission mode set
 ```yaml
-#https://kubernetes.io/docs/concepts/storage/projected-volumes/#example-
-configuration-secrets-nondefault-permission-mode
+#https://kubernetes.io/docs/concepts/storage/projected-volumes/#example-configuration-secrets-nondefault-permission-mode
 
 apiVersion: v1
 kind: Pod
@@ -4093,8 +4086,7 @@ mode: 511
 
 范例：serviceAccountToken projected volumes
 ```yaml
-#https://kubernetes.io/docs/concepts/storage/projected-
-volumes/#serviceaccounttoken
+#https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken
 
 apiVersion: v1
 kind: Pod
@@ -4123,8 +4115,7 @@ path: token
 
 范例：
 ```yaml
-#https://livebook.manning.com/book/kubernetes-in-action-second-edition/chapter-
-9/v-13/371
+#https://livebook.manning.com/book/kubernetes-in-action-second-edition/chapter-9/v-13/371
 
 apiVersion: v1
 kind: Pod
