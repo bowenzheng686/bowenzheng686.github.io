@@ -749,9 +749,7 @@ Pod之间的通信被用VXLAN的UDP协议封装后,向目标Pod所在的主机84
 官网Flannel 的网络通信
 
 注意:官网图中docker0是错误的,应该为cni0。
-```text
-https://docs.openshift.com/container-platform/3.4/architecture/additional_concepts/flannel.html
-```
+<https://docs.openshift.com/container-platform/3.4/architecture/additional_concepts/flannel.html>
 
 ![原 PDF 第 26 页插图](assets/Kubernetes网络插件/img-244677e1437a2a95.png)
 

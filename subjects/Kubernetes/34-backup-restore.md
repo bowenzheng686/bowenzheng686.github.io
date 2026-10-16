@@ -15,9 +15,7 @@ syntax_highlight: true
 # 2 Kubernetes 备份和还原
 
 ## 2.1 Kubernetes 集群的容灾架构与方案
-```text
-https://help.aliyun.com/zh/ack/distributed-cloud-container-platform-for-kubernetes/use-cases/disaster-recovery-architecture-and-scheme-based-on-kubernetes-container-cluster?spm=a2c4g.11186623.help-menu-85222.d_3_2_0.d67169eejnjqVX
-```
+<https://help.aliyun.com/zh/ack/distributed-cloud-container-platform-for-kubernetes/use-cases/disaster-recovery-architecture-and-scheme-based-on-kubernetes-container-cluster?spm=a2c4g.11186623.help-menu-85222.d_3_2_0.d67169eejnjqVX>
 
 在进行系统架构设计时，必须考虑到信息系统和基础设施可能遇到的各种潜在威胁，例如：硬件故障、软件系统崩溃、人为操作失误、安全攻击、自然灾害等。为了确保Kubernetes集群系统能够在各种异常故障场景下快速恢复并保持业务连续性，必须为系统设计一套完善的容灾方案。
 

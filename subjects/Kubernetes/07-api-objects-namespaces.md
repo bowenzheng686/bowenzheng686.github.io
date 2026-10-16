@@ -1789,9 +1789,7 @@ kubectl get TYPE/NAME -o yaml  > /path/export-resourcelist.yaml
 ```
 
 ### 1.3.3 将 Docker Compose 文件转换为 Kubernetes 资源
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/translate-compose-kubernetes/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/translate-compose-kubernetes/>
 
 Kompose 是一个转换工具，可将 compose （即 Docker Compose）所组装的所有内容转换成容器编排器（Kubernetes 或 OpenShift）可识别的形式。
 

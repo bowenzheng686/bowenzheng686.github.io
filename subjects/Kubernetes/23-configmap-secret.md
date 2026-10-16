@@ -1869,9 +1869,7 @@ type: kubernetes.io/service-account-token
 ![原 PDF 第 147 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-5df5d5a2132df688.png)
 
 **官方说明**
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-kubectl/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-kubectl/>
 
 格式
 ```text
@@ -2034,9 +2032,7 @@ Pod引用Secret的方式：pods.spec.imagePullSecrets
 ### 2.3.5 Generic 案例
 
 **官方说明**
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-config-file/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-config-file/>
 
 generic 主要用于实现用户名和密码的加密保存。
 

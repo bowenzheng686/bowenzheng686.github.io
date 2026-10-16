@@ -775,9 +775,7 @@ rotateCertificates: true
 但是如果已经过期,需要手动解决此证书的过期问题。也可以删除此节点,重新加入节点,但此方式不建议。
 
 ### 3.3.1 Kubelet 证书说明
-```text
-https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubelet-client-cert
-```
+<https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubelet-client-cert>
 
 默认情况下，kubeadm 使用 /etc/kubernetes/kubelet.conf 中指定的/var/lib/kubelet/pki/kubelet-client-current.pem 符号链接来配置 kubelet 自动轮换客户端证书。如果此轮换过程失败，你可能会在 kube-apiserver 日志中看到诸如 x509: certificate has expired or is not yet valid 之类的错误。要解决此问题，你必须执行以下步骤：
 

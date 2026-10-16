@@ -1094,9 +1094,7 @@ node4.bowen.org   <none>           <none>
 ```
 
 ### 3.5.13 扩展 Kubernetes 集群为多主模式
-```text
-https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-availability/#manual-certs
-```
+<https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-availability/#manual-certs>
 
 在 master2 和 master3 重复上面的 4.2-4.5 步后,再执行下面操作加入集群。
 ```bash

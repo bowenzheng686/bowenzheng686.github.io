@@ -1169,9 +1169,7 @@ NFS 服务器中
 ```
 
 NFS Ganesha server and external provisioner
-```text
-https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
-```
+<https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner>
 
 nfs-ganesha-server-and-external-provisioner 是 Kubernetes 1.14+ 的树外动态配置程序。您可以使用它快速轻松地部署几乎可以在任何地方使用的共享存储。
 
@@ -1834,9 +1832,7 @@ $ helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.i
 ```
 
 使用以下 helm 命令部署配置程序：
-```text
-https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
-```
+<https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md>
 
 范例: 创建 SC
 ```bash
@@ -2034,9 +2030,7 @@ _squash,all_squash)
 ```
 
 ##### 1.6.3.4.2 Install NFS CSI driver  on a kubernetes cluster
-```text
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.6.0.md
-```
+<https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.6.0.md>
 
 Install with kubectl 可能需要科学上网下载相关镜像。
 
@@ -2178,9 +2172,7 @@ replicaset.apps/csi-nfs-controller-57bb8fd754   1         1         0       76s
 ```
 
 ##### 1.6.3.4.3  创建 Storage Class
-```text
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/README.md
-```
+<https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/README.md>
 
 Create a storage class
 
@@ -2349,9 +2341,7 @@ kubectl create -f deployment.yaml
 ```
 
 ##### 1.6.3.4.7 clean up NFS CSI driver
-```text
-https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.9.0.md
-```
+<https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.9.0.md>
 
 Option#1. remote uninstall
 ```text

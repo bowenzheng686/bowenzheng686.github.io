@@ -342,9 +342,7 @@ iptables或ipvs会根据情况挑选一个合适的endpoint地址。
 ### 1.2.3 Service 类型
 
 对于Kubernetes 可以实现内部服务的自由通信,也可以将平台内部的服务发布到外部环境。Service主要有四种类型，实现不同的网络通信功能。
-```text
-https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-```
+<https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types>
 
 ![原 PDF 第 13 页插图](assets/Kubernetes服务发现和名称解析/img-c97694d15d29c9e6.png)
 
@@ -1469,9 +1467,7 @@ BGP模式和二层网络模式下的负载均衡ECMP路由和负载均衡IP地�
 ##### 1.3.4.3.2 OpenELB 实现
 
 **安装说明**
-```text
-https://openelb.github.io/docs/getting-started/installation/install-openelb-on-kubernetes/
-```
+<https://openelb.github.io/docs/getting-started/installation/install-openelb-on-kubernetes/>
 
 范例: 部署和使用 OpenELB
 ```yaml

@@ -31,9 +31,7 @@ kubernetes 集群后期会更新和证书的有效期等原因，可能在某个
 生产环境应该业务相对空闲时,逐个节点离线升级后再上线,而非全部升级。
 
 ## 4.1 升级流程说明
-```text
-https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/>
 
 本页介绍如何将 kubeadm 创建的 Kubernetes 集群从 1.33.x 版本 升级到 1.34.x 版本以及从 1.34.x 升级到 1.34.y（其中 y > x ）。略过次版本号的升级是 不被支持的。更多详情请访问版本偏差策略。升级 Kubernetes 集群是一个复杂的过程，需要谨慎操作，以确保集群的稳定性和数据的安全性。
 

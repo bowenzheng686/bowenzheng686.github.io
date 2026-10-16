@@ -164,9 +164,7 @@ CNCF 组织由以下部分组成：
 2018年：CNCF 把服务网格(Service Mesh)和声明式API给加入到云原生的概念中。
 
 **CNCF 官方定义云原生**
-```text
-https://github.com/cncf/toc/blob/main/DEFINITION.md#%E4%B8%AD%E6%96%87%E7%89%88%E6%9C%AC
-```
+<https://github.com/cncf/toc/blob/main/DEFINITION.md#%E4%B8%AD%E6%96%87%E7%89%88%E6%9C%AC>
 
 云原生技术有利于各组织在公有云、私有云和混合云等新型动态环境中，构建和运行可弹性扩展的应用。
 
@@ -951,9 +949,7 @@ unix:///var/run/crio/crio.sock             #基于cri-o
 2022年5月3日，Kubernetes v1.24正式发布，此版本提供了很多重要功能。该版本涉及46项增强功能：其中14项已升级为稳定版，15项进入beta阶段，13项则刚刚进入alpha阶段。此外，另有2项功能被弃用、2项功能被删除。v1.24 之前的 Kubernetes 版本包括与 Docker Engine 的直接集成，使用名为dockershim 的组件。  值得注意的是v1.24 的 Kubernetes 正式移除对Dockershim的支持，即默认不再支持 docker
 
 **官方说明**
-```text
-https://kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes/
-```
+<https://kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes/>
 
 ![原 PDF 第 38 页插图](assets/Kubernetes架构和部署/img-dccbe9ca53c289e4.png)
 

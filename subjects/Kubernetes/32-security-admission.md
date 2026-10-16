@@ -17,9 +17,7 @@ syntax_highlight: true
 ## 4.1 准入机制说明
 
 ### 4.1.1 准入机制介绍
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/admission-controllers/
-```
+<https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/admission-controllers/>
 
 准入控制(Admission Control)，实际上是一个准入控制器(Admission Controller)插件列表，发送到APIServer的请求都需要经过这个列表中的每个准入控制器插件的检查，如果某一个控制器插件准入失败，就准入失败。只有所有准处成功才能成或,即与关系。它主要涉及到pod和容器对特定用户和特定权限之间的关联关系。kubernetes支持的准入控制器有数十种，分别应用于不同的场景功能。一般情况下，kubernetes的不同版本的默认准入控制器相差不大。但是其他的功能场景的准入控制器相差还是比较大的，尤其是最近些年版本中所支持的准入控制器。
 

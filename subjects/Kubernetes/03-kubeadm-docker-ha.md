@@ -85,9 +85,7 @@ IP主机名角色
 在所有Master和Node节点都安装kubeadm 、kubelet、kubectl(集群管理工具,在node节点可不安装)在第一个 master 节点运行 kubeadm init 初始化命令 ,并验证 master 节点状态在第一个 master 节点安装配置CNI规范的网络插件flannel,calico等在其它master节点运行kubeadm join 命令加入到控制平面集群中实现高可用(测试环境可选)在所有 node 节点使用 kubeadm join 命令加入集群 , 并验证 node 节点状态创建 pod 并启动容器测试访问 ，并测试网络通信。
 
 ### 3.4.2 初始环境准备
-```text
-https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
-```
+<https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/>
 
 硬件准备环境: 每个主机至少2G以上内存,CPU2核以上操作系统: 最小化安装支持Kubernetes的Linux系统唯一的主机名，MAC地址以及product_uuid和主机名解析保证各个节点网络配置正确,并且保证通信正常禁用 swap禁用 SELinux放行Kubernetes使用到的相关端口或禁用firewalld/iptables配置正确的时区和时间同步内核参数优化所有节点实现基于 ssh key 验证(可选)。
 ```bash
@@ -131,9 +129,7 @@ addresses: [180.76.76.76, 223.6.6.6]
 ```
 
 **端口和协议**
-```text
-https://kubernetes.io/zh-cn/docs/reference/networking/ports-and-protocols/#control-plane
-```
+<https://kubernetes.io/zh-cn/docs/reference/networking/ports-and-protocols/#control-plane>
 
 当你在一个有严格网络边界的环境里运行 Kubernetes，例如拥有物理网络防火墙或者拥有公有云中虚拟网络的自有数据中心， 了解 Kubernetes 组件使用了哪些端口和协议是非常有用的。
 

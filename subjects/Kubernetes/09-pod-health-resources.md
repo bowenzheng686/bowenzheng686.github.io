@@ -13,9 +13,7 @@ syntax_highlight: true
 # 09 Pod 健康、资源、安全与设计模式
 
 ## 3.3 Pod 的健康状态监测
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/>
 
 ### 3.3.1 健康状态检测三种探针
 
@@ -121,9 +119,7 @@ timeoutSeconds: 15
 ```
 
 ##### 3.3.1.2.2 配置探针
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes>
 
 ![原 PDF 第 117 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-5d9a5d4e3eb4defe.png)
 
@@ -207,9 +203,7 @@ resources:
 ### 3.3.3 探针案例
 
 #### 3.3.3.1 Exec 方式案例
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command>
 
 exec 其实就是尝试通过在容器内部来执行一个命令，看看能不能执行成功，如果成功，那么说明该对象是正常的，否则就是失败的。
 
@@ -737,9 +731,7 @@ endpoints/redis-svc   10.244.3.102:6379   69s
 ```
 
 #### 3.3.3.2 Tcpsocket 方式案例
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#tcp-probes
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#tcp-probes>
 
 使用此配置， kubelet 将尝试在指定端口上打开容器的套接字。如果可以建立连接，容器被认为是健康的，如果不能就认为是失败的，实际上就是检查端口。对于 TCP 探测而言，kubelet 在节点上（不是在 Pod 里面）发起探测连接， 这意味着你不能在 host参数上配置服务名称，因为 kubelet 不能解析服务名称。
 
@@ -928,9 +920,7 @@ failed: dial tcp 10.244.2.115:8080: connect: connection refused
 HTTP 探测通过对容器内容开放的web服务，进行http方法的请求探测，如果探测成功(状态码为2XX和3XX)，那么表示http服务是正常的，否则就是失败的。
 
 HTTP Probes 允许针对 httpGet 配置额外的字段：
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#http-probes
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#http-probes>
 
 
 host：连接使用的主机名，默认是 Pod 的 IP。也可以在 HTTP 头中设置 “Host” 来代替。一般不配置此项 scheme ：用于设置连接主机的方式（HTTP 还是 HTTPS）。默认是 "HTTP"。一般不配置此项 path：访问 HTTP 服务的路径。默认值为 "/"。一般会配置此项 port：访问容器的端口号或者端口名。如果数字必须在 1～65535 之间。一般会配置此项 httpHeaders：请求中自定义的 HTTP 头。HTTP 头字段允许重复。一般不配置此项
@@ -2464,9 +2454,7 @@ vm.max_map_count = 6666666
 ```
 
 ## 3.6 Pod 服务质量 QoS
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/quality-service-pod/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/quality-service-pod/>
 
 ### 3.6.1 服务质量分类
 

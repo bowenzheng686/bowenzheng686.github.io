@@ -705,9 +705,7 @@ emptyDir: {}
 ```
 
 范例: 具有日志代理功能的边车容器
-```text
-https://kubernetes.io/docs/concepts/cluster-administration/logging/#sidecar-container-with-a-logging-agent
-```
+<https://kubernetes.io/docs/concepts/cluster-administration/logging/#sidecar-container-with-a-logging-agent>
 
 ![原 PDF 第 18 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-93aaa428ec8223af.png)
 
@@ -1495,9 +1493,7 @@ PV Persistent Volume
 Persistent Volume 跟 Volume类似，区别就是：
 
 PV 是集群级别的资源，负责将存储空间引入到集群中，通常由管理员定义PV 就是Kubernetes集群中的网络存储，不属于Namespace、Node、Pod等资源，但可以被它们访问PV 属于Kubernetes 整个集群,即可以被所有集群的Pod访问PV是独立的网络存储资源对象，有自己的生命周期PV 支持很多种volume类型,PV对象可以有很多常见的类型：本地磁盘、NFS、分布式文件系统...
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#persistent-volumes
-```
+<https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#persistent-volumes>
 
 ![原 PDF 第 33 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-59ebafd08452edbb.png)
 
@@ -1666,9 +1662,7 @@ kubectl patch persistentvolume <pv-name> -p '{"spec":{"claimRef": null}}'
 ##### 1.5.2.2.2 AccessMode 访问模式
 
 AccessModes 是用来对 PV 进行访问模式的设置，用于描述用户应用对存储资源的访问权限，访问权限包括：
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#access-modes
-```
+<https://kubernetes.io/zh-cn/docs/concepts/storage/persistent-volumes/#access-modes>
 
 类型解析
 

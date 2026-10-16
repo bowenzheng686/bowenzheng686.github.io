@@ -349,9 +349,7 @@ app=nginx,version=v1.20.0
 ## 2.2 标签选择器 Label Selector
 
 ### 2.2.1 标签选择器说明
-```text
-https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/#label-selectors
-```
+<https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/#label-selectors>
 
 Label附加到Kubernetes集群中的各种资源对象上，目的是对这些资源对象可以进行后续的分组管理。
 

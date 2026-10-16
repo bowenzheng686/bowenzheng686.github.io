@@ -937,9 +937,7 @@ name: system:masters
 ## 3.3 Role 和 RoleBinding 组合实现
 
 ### 3.3.1 创建 Role
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-create-role
-```
+<https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-create-role>
 
 **属性解析**
 ```bash
@@ -1617,9 +1615,7 @@ namespace: jenkins
 cluster级别的实践主要涉及到clusterRole和ClusterRoleBinding之间的操作，即可以操作集群内所有namespace空间的资源。
 
 ### 3.4.1 创建 clusterrole
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-create-clusterrole
-```
+<https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-create-clusterrole>
 
 说明
 ```yaml

@@ -303,9 +303,7 @@ Kubernetes 将水平 Pod 自动扩缩实现为一个间歇运行的控制回路�
 要实现HPA, 必须安装metric-server或其它类似服务, 以及在Pod中定义Requests参数。
 
 ### 1.2.4 HPA 扩缩容算法
-```text
-https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details
-```
+<https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details>
 
 Pod 水平自动扩缩控制器根据当前指标和期望指标来计算扩缩比例。
 
@@ -748,9 +746,7 @@ Kubernetes API Aggregation
 在 Kubernetes 1.7 版本引入了API Aggregation Layer，集成在API Server 中, 允许第三方应用程序通过将自己注册到kube-apiserver上，仍然通过 API Server 的 HTTP URL 对新的 API 进行访问和操作，用于将扩展 API 的访问请求转发到用户服务的功能。当你访问 apis/metrics.k8s.io/v1beta1 的时候，实际上访问到的是一个叫作 kube-aggregator 的代理。而 kube-apiserver，正是这个代理的一个后端；而 Metrics Server，则是另一个后端 。通过这种方式，我们就可以很方便地扩展 Kubernetes 的 API 了。
 
 Kubernetes 集群管理员需要确保下述条件，以保证 HPA 控制器能够访问这些 API：
-```text
-https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis
-```
+<https://kubernetes.io/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis>
 
 启用了 API 聚合层
 

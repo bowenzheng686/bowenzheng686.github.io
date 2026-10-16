@@ -1433,9 +1433,7 @@ Kubernetes v1.16推出临时容器, Kubernetes v1.25稳定可用, 就是在原�
 当由于容器崩溃或容器镜像不包含调试工具而导致 kubectl exec 无用时， 临时容器对于交互式故障排查很有用。尤其是，Distroless 镜像允许用户部署最小的容器镜像，从而减少攻击面并减少故障和漏洞的暴露。 由于 distroless 镜像不包含 Shell 或任何的调试工具，因此很难单独使用 kubectl exec 命令进行故障排查。使用临时容器时，启用 进程名字空间共享 很有帮助，可以查看其他容器中的进程。
 
 **开启EphemeralContainers特性**
-```text
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/feature-gates/
-```
+<https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/feature-gates/>
 
 ![原 PDF 第 77 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1f025ee3f293395d.png)
 
@@ -1462,9 +1460,7 @@ be set. Optional: Default to false.
 ```
 
 #### 3.1.9.2 使用临时容器
-```text
-https://kubernetes.io/zh-cn/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container
-```
+<https://kubernetes.io/zh-cn/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container>
 
 **kubectl debug 命令用法**
 ```bash
@@ -2197,9 +2193,7 @@ Startup probe :  启动探针Liveiness probe: 判断当前pod是否处于存活�
 7. 接收用户请求
 
 ##### 3.2.2.2.3  关闭 Pod 流程
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination
-```
+<https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination>
 
 ![原 PDF 第 95 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-233e3f92ae049e58.jpeg)
 
@@ -2313,9 +2307,7 @@ terminationGracePeriodSeconds: 60
 ```
 
 ##### 3.2.2.2.4 两种钩子PostStart和PreStop
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/>
 
 根据上面Pod的启动流程，当容器中的进程启动前或者容器中的进程终止之前都会有一些额外的动作执行，这是由kubelet所设置的，在这里，我们称之为 pod hook。
 
@@ -2705,9 +2697,7 @@ cat log.txt
 业务运行过程中不可避免会出现意外，这个时候有三种策略对Pod进行管理：   OnFailure，Never和Always（默认）。
 
 ##### 3.2.2.3.2 Pod  phase 阶段 （相位）
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
-```
+<https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase>
 
 ![原 PDF 第 106 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1a4d9972e0fd3dac.png)
 
@@ -2847,9 +2837,7 @@ status: "True"
 ```
 
 ##### 3.2.2.3.5  Pod 重启策略
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy
-```
+<https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy>
 
 注意：同一个 Pod 内所有容器只能使用统一的重启策略。
 

@@ -356,9 +356,7 @@ pods.spec.affinity
 注意：调度策略仅在调度时候有用，一旦调度成功后，后续如果节点状态即使无法满足调度要求，也不会影响正常运行的pod。
 
 ### 2.1.2 nodeName和 nodeSelector
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes/>
 
 nodeName和nodeSelector 将 Pod 分配给指定节点。
 
@@ -473,9 +471,7 @@ pod-nodeselector   1/1     Running   0          61s
 ```
 
 ### 2.1.3 节点亲和性 node affinity
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
-```
+<https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/>
 
 ![原 PDF 第 14 页插图](assets/kubernetes调度机制/img-375fc773fbb0d9da.png)
 
@@ -1718,9 +1714,7 @@ app: nacos
 ## 2.3 节点污点和Pod容忍
 
 ### 2.3.1 污点Taint和容忍tolerations介绍
-```text
-https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/
-```
+<https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/>
 
 生产中可能希望让新的pod基于node节点的属性,创建在某些节点或不能创建在某些节点之上。
 
@@ -2411,9 +2405,7 @@ kubectl delete node <node_name>
 ## 2.4 拓扑调度
 
 ### 2.4.1 Pod 拓扑分布约束说明
-```text
-https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/topology-spread-constraints/
-```
+<https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/topology-spread-constraints/>
 
 拓扑分布约束可以控制Pod的调度实现平均分布的程度。在定义pod亲和性和反亲和时，有一个 topologyKey的属性，但是默认情况下，pod的亲和性调度，仅仅针对单一的拓扑场景，也就是说，要么所有的pod都在这里，要么所有的pod都不要在这里，这样会导致应用过于集中，反而导致物理资源的浪费。如果希望在进行正常pod亲和性调度的时候，能够自动识别多个不同的调度节点，然后均匀的分散到多个节点中，从而实现资源的有效利用。通过拓扑调度来实现的功能。
 
@@ -2777,9 +2769,7 @@ priorityClassName: high
 ```
 
 ## 2.6 节点压力驱逐 Node-pressure Eviction
-```text
-https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/node-pressure-eviction/
-```
+<https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/node-pressure-eviction/>
 
 ![原 PDF 第 59 页插图](assets/kubernetes调度机制/img-c6a4cf34c5835c24.png)
 

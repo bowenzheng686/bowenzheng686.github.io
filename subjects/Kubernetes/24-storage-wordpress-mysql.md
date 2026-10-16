@@ -29,9 +29,7 @@ syntax_highlight: true
 对于wordpress 来说，没有本质的区别nginx的更新，依赖configmap和secret的内容。
 
 示例
-```text
-https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/
-```
+<https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/>
 
 ## 3.1  准备基于NFS的 StorageClass
 ```bash

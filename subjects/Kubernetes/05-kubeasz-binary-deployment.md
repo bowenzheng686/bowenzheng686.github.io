@@ -784,9 +784,7 @@ NAME         STATUS                     ROLES    AGE   VERSION
 ```
 
 ### 3.6.3 高可用分布式集群部署说明
-```text
-https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-planning_and_overall_intro.md
-```
+<https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-planning_and_overall_intro.md>
 
 高可用集群所需节点配置如下：
 
@@ -2232,9 +2230,7 @@ done
 #### 3.6.5.5  clone项目
 
 **项目链接**
-```text
-https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-planning_and_overall_intro.md
-```
+<https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-planning_and_overall_intro.md>
 
 ![原 PDF 第 191 页插图](assets/Kubernetes架构和部署/img-b1d2cb385da488ac.png)
 
@@ -2765,9 +2761,7 @@ roles:
 ### 3.7.1 基本流程
 
 参考资料:
-```text
-https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#init-workflow
-```
+<https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#init-workflow>
 
 基本流程
 
