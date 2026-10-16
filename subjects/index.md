@@ -10,4 +10,5 @@ subject_index: true
 <ul>
   <li><a href="{{ '/subjects/Linux/' | relative_url }}">Linux 系统（18 个章节）</a></li>
   <li><a href="{{ '/subjects/KVM/' | relative_url }}">KVM 虚拟化（8 个章节）</a></li>
+  <li><a href="{{ '/subjects/Kubernetes/' | relative_url }}">Kubernetes 学习笔记（36 个章节）</a></li>
 </ul>
