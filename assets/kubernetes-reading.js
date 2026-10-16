@@ -4,7 +4,7 @@
 
   function compactCopyButtons(article) {
     article.querySelectorAll("pre.has-copy-button").forEach(function (pre) {
-      var button = pre.querySelector(":scope > button.code-copy");
+      var button = pre.querySelector("button.code-copy");
       if (!button || pre.parentElement.classList.contains("k8-code-shell")) return;
       var shell = doc.createElement("div");
       shell.className = "k8-code-shell";
@@ -115,6 +115,8 @@
     var article = doc.getElementById("post-content");
     if (!article) return;
     compactCopyButtons(article);
+    window.requestAnimationFrame(function () { compactCopyButtons(article); });
+    window.addEventListener("load", function () { compactCopyButtons(article); }, { once: true });
     linkifyBareUrls(article);
     setupImages(article);
   }

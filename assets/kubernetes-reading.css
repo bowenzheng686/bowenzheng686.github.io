@@ -4,6 +4,7 @@
   isolation: isolate;
   margin: 32px 0 26px;
 }
+.prose pre.has-copy-button { padding-top: 19px; }
 .prose .k8-code-shell pre,
 .prose .k8-code-shell pre.has-copy-button {
   margin: 0;
