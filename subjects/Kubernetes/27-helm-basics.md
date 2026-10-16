@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Helm 基础、部署与命令'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -44,7 +45,6 @@ yum, dnf, ...apt-get, ...
 例如: 部署的环境都分为开发、预生产、生产环境，在开发这套环境部署完了，后面再部署到预生产和生产环境，还需要重新复制出两套配置文件，并手动修改才能完成。
 
 #### 1.1.1.4 Kubernetes 的软件管理器 Helm 介绍
-
 ```text
 Helm is a tool for managing Charts. Charts are packages of pre-configured
 Kubernetes resources.
@@ -54,25 +54,25 @@ Kubernetes也提供了类似于包管理机制 Helm。Helm （船舵，掌舵 �
 
 Helm 是CNCF在2020年已经毕业的项目。
 
-```text
-https://www.cncf.io/projects/helm/
-```
+
+- <https://www.cncf.io/projects/helm/>
+
 
 ![原 PDF 第 3 页插图](assets/Kubernetes包管理器Helm/img-64371f4e038b260f.png)
 
 **Helm 官网**
 
-```text
-https://helm.sh/
-https://github.com/helm/helm
-```
+
+- <https://helm.sh/>
+- <https://github.com/helm/helm>
+
 
 **Helm 文档**
 
-```text
-https://helm.sh/zh/docs/
-https://helm.sh/zh/docs/intro/quickstart/
-```
+
+- <https://helm.sh/zh/docs/>
+- <https://helm.sh/zh/docs/intro/quickstart/>
+
 
 ![原 PDF 第 4 页插图](assets/Kubernetes包管理器Helm/img-a6939e3c3632a041.png)
 
@@ -182,9 +182,9 @@ Chart 仓库：
 
 Chart 官方仓库Hub:
 
-```text
-https://artifacthub.io/
-```
+
+- <https://artifacthub.io/>
+
 
 ![原 PDF 第 7 页插图](assets/Kubernetes包管理器Helm/img-3ad8fb417f735143.png)
 
@@ -222,35 +222,24 @@ https://artifacthub.io/
 
 ### 1.2.1 官方说明
 
-```text
-https://helm.sh/docs/intro/install/
-```
+
+- <https://helm.sh/docs/intro/install/>
+
 
 **安装方法**
-
 ```text
 From the Binary Releases
 Every release of Helm provides binary releases for a variety of OSes. These
 binary versions can be manually downloaded and installed.
-```
 
-```text
 Download your desired version
 ```
 
-```text
-Unpack it (tar -zxvf helm-v3.0.0-linux-amd64.tar.gz)
-Find the helm binary in the unpacked directory, and move it to its desired
-destination (mv linux-amd64/helm /usr/local/bin/helm)
-From there, you should be able to run the client and add the stable repo: helm
-help.
-```
 
-```text
-Note: Helm automated tests are performed for Linux AMD64 only during CircleCi
-builds and releases. Testing of other OSes are the responsibility of the
-community requesting Helm for the OS in question.
-```
+Unpack it (tar -zxvf helm-v3.0.0-linux-amd64.tar.gz) Find the helm binary in the unpacked directory, and move it to its desired destination (mv linux-amd64/helm /usr/local/bin/helm) From there, you should be able to run the client and add the stable repo: helm help.
+
+
+Note: Helm automated tests are performed for Linux AMD64 only during CircleCi builds and releases. Testing of other OSes are the responsibility of the community requesting Helm for the OS in question.
 
 ```text
 From Script
@@ -258,12 +247,10 @@ Helm now has an installer script that will automatically grab the latest version
 of Helm and install it locally.
 ```
 
-```text
-You can fetch that script, and then execute it locally. It's well documented so
-that you can read through it and understand what it is doing before you run it.
-```
 
-```text
+You can fetch that script, and then execute it locally. It's well documented so that you can read through it and understand what it is doing before you run it.
+
+```bash
 $ curl -fsSL -o get_helm.sh
 https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 $ chmod 700 get_helm.sh
@@ -274,17 +261,16 @@ helm-3 | bash if you want to live on the edge.
 
 **Helm 下载链接**
 
-```text
-https://github.com/helm/helm/releases
-```
+
+- <https://github.com/helm/helm/releases>
+
 
 ![原 PDF 第 10 页插图](assets/Kubernetes包管理器Helm/img-07cd736cce081408.png)
 
 ![原 PDF 第 11 页插图](assets/Kubernetes包管理器Helm/img-37e646cc24d4a8e3.png)
 
 ### 1.2.2 范例：二进制安装 Helm
-
-```text
+```bash
 #在kubernetes的管理节点部署
 [root@master1 ~]#wget https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz
 [root@master1 ~]#tar xf helm-v3.12.0-linux-amd64.tar.gz -C /usr/local/
@@ -293,17 +279,13 @@ helm  LICENSE  README.md
 [root@master1 ~]#ln -s /usr/local/linux-amd64/helm  /usr/local/bin/
 [root@master1 ~]#ldd /usr/local/bin/helm
 不是动态可执行文件
-```
 
-```text
 ##helm-v3版本显示效果如下
 [root@master1 ~]#helm  version
 version.BuildInfo{Version:"v3.12.0",
 GitCommit:"c9f554d75773799f72ceef38c51210f1842a1dea", GitTreeState:"clean",
 GoVersion:"go1.20.3"}
-```
 
-```text
 #helm-v2版本显示效果如下
 [root@master1 ~]#helm  version
 Client:
@@ -314,22 +296,17 @@ Server:
 &version.Version{SemVer:"v2.9.1",GitCommit:"c9f554d75773799f72ceef38c51210f1842a
 1dea"，GitTreeS
 tate: "clean"}
-```
 
-```text
 #Helm命令补会,重新登录生效
 #方法1
 [root@master1 ~]#echo 'source <(helm completion bash)' >> .bashrc && exit
 #方法2
-```
 
-```text
 [root@master1 ~]#helm completion bash > /etc/bash_completion.d/helm  && exit
 ```
 
 ### 1.2.3 范例：官方脚本安装
-
-```text
+```bash
 [root@master1 ~]#curl -fsSL -o get_helm.sh
 https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 [root@master1 ~]#chmod +x get_helm.sh
@@ -338,9 +315,7 @@ Downloading https://get.helm.sh/helm-v3.12.2-linux-amd64.tar.gz
 Verifying checksum... Done.
 Preparing to install helm into /usr/local/bin
 helm installed into /usr/local/bin/helm
-```
 
-```text
 [root@master1 ~]#helm version
 version.BuildInfo{Version:"v3.12.2",
 GitCommit:"1e210a2c8cc5117d1055bfaa5d40f51bbc2e345e", GitTreeState:"clean",
@@ -349,10 +324,10 @@ GoVersion:"go1.20.5"}
 
 ## 1.3 Helm 命令用法
 
-```text
-https://v3.helm.sh/zh/docs/helm/
-https://docs.helm.sh/docs/helm/helm/
-```
+
+- <https://v3.helm.sh/zh/docs/helm/>
+- <https://docs.helm.sh/docs/helm/helm/>
+
 
 ### 1.3.1 Helm 命令用法说明
 
@@ -366,35 +341,18 @@ https://docs.helm.sh/docs/helm/helm/
 
 Helm常见子命令：
 
-```text
-version #查看helm客户端版本
-repo   #添加、列出、移除、更新和索引chart仓库，相当于apt/yum仓库,可用子命令:add、index、
-list、remove、update
-search #根据关键字搜索chart包
-show:  #查看chart包的基本信息和详细信息，可用子命令:all、chart、readme、values
-pull  #从远程仓库中拉取chart包并解压到本地，通过选项 --untar 解压,默认不解压
-create #创建一个chart包并指定chart包名字
-install #通过chart包安装一个release实例
-create #创建chart目录
-list  #列出release实例名
-upgrade #更新一个release实例
-rollback #从之前版本回滚release实例，也可指定要回滚的版本号
-uninstall #卸载一个release实例
-history  #获取release历史，用法:helm history release实例名
-package  # 将chart目录打包成chart存档文件.tgz中
-get  #下载一个release,可用子命令:all、hooks、manifest、notes、values
-status #显示release实例的状态，显示已命名版本的状态
-```
+
+version #查看helm客户端版本 repo   #添加、列出、移除、更新和索引chart仓库，相当于apt/yum仓库,可用子命令:add、index、list、remove、update search #根据关键字搜索chart包 show:  #查看chart包的基本信息和详细信息，可用子命令:all、chart、readme、values pull  #从远程仓库中拉取chart包并解压到本地，通过选项 --untar 解压,默认不解压 create #创建一个chart包并指定chart包名字 install #通过chart包安装一个release实例 create #创建chart目录 list  #列出release实例名 upgrade #更新一个release实例 rollback #从之前版本回滚release实例，也可指定要回滚的版本号 uninstall #卸载一个release实例 history  #获取release历史，用法:helm history release实例名 package  # 将chart目录打包成chart存档文件.tgz中 get  #下载一个release,可用子命令:all、hooks、manifest、notes、values status #显示release实例的状态，显示已命名版本的状态
+
 
 **Helm 常见命令用法**
-
-```text
+```bash
 #仓库管理
 helm repo list   #列出已添加的仓库
 helm repo add [REPO_NAME] [URL] #添加远程仓库并命名,如下示例
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo add myharbor https://harbor.wangxiaochun.com/chartrepo/myweb --username
+helm repo add myharbor https://harbor.bowen.com/chartrepo/myweb --username
 admin --password 123456
 helm repo remove [REPO1 [REPO2 ...]]   #删除仓库
 helm repo update                #更新仓库,相当于apt update
@@ -402,33 +360,23 @@ helm search hub  [KEYWORD]      #从artifacthub网站搜索,无需配置本地�
 search
 helm search repo [KEYWORD]      #本地仓库搜索,需要配置本地仓库才能搜索,相当于apt search
 helm search repo [KEYWORD]   --versions #显示所有版本
-```
 
-```text
 #chart管理
 helm show chart [CHART]         #查看chart包的信息,类似于apt info
 helm show values [CHART]        #查看chart包的values.yaml文件内容
-```
 
-```text
 #拉取chart到本地
 helm pull repo/chartname        #下载charts的压缩包文件到当前目录下，表现为tgz文件,默认
 最新版本，相当于wget
 helm pull chart_URL             #直接下载，默认为.tgz文件
 helm pull myrepo/myapp --version 1.2.3 --untar  #直接下载指定版本的chart包并解压缩
-```
 
-```text
 #创建chart目录结构
 helm create NAME
-```
 
-```text
 #检查语法
 helm lint [PATH]  #默认检查当前目录
-```
 
-```text
 #安装
 helm install [NAME] [CHART] [--version <string> ]     #安装指定版本的chart
 helm install [CHART] --generate-name               #自动生成  RELEASE_NAME
@@ -438,14 +386,10 @@ helm install -f values.yaml  RELEASE_NAME CHART.....                    #引用�
 实现定制配置
 helm install --debug --dry-run RELEASE_NAME CHART                       #调试并不
 执行,可以查看到执行的渲染结果
-```
 
-```text
 #删除
 helm uninstall RELEASE_NAME                               #卸载RELEASE
-```
 
-```text
 #查看
 helm list        #列出安装的release
 helm status RELEASE_NAME                                  #查看RELEASE状态
@@ -454,13 +398,9 @@ helm get values RELEASE_NAME -n NAMESPACE > values.yaml   #查看RELEASE的生�
 以导出方便以后使用
 helm get manifest RELEASE_NAME -n NAMESPACE               #查看RELEASE的生成的资源清
 单文件
-```
 
-```text
 #升级和回滚
-```
 
-```text
 helm upgrade RELEASE_NAME CHART   --set key=newvalue     #通过指定新的key/value值实
 现release 更新
 helm upgrade RELEASE_NAME CHART -f mychart/values.yaml   #通过更新values.yaml 文件
@@ -468,33 +408,20 @@ helm upgrade RELEASE_NAME CHART -f mychart/values.yaml   #通过更新values.yam
 helm rollback RELEASE_NAME [REVISION]    #release 回滚到指定版本，如果不指定版本，默认
 回滚至上一个版本,而且只能回滚一个版本
 helm history RELEASE_NAME                #查看Release的版本历史
-```
 
-```text
 #打包
 helm package mychart/ #将指定目录的chart打包为.tgz到当前目录下
 ```
 
 **helm install 说明**
-
 ```text
 #helm install  --help
 Usage:  helm install [NAME] [CHART] [flags]
 ```
 
-```text
-#安装的CHART有六种形式
-1. By chart reference: helm install mymaria example/mariadb  #在线安装,先通过helm
-repo add添加仓库，才能在线安装
-2. By path to a packaged chart: helm install myweb ./nginx-1.2.3.tgz  #离线安装
-3. By path to an unpacked chart directory: helm install myweb ./nginx #离线安装
-4. By absolute URL: helm install myweb https://example.com/charts/nginx-
-1.2.3.tgz #在线安装
-5. By chart reference and repo url: helm install --repo
-https://example.com/charts/ myweb nginx #在线安装
-6. By OCI registries: helm install myweb --version 1.2.3
-oci://example.com/charts/nginx #在线安装。
-```
+
+#安装的CHART有六种形式 1. By chart reference: helm install mymaria example/mariadb  #在线安装,先通过helm repo add添加仓库，才能在线安装 2. By path to a packaged chart: helm install myweb ./nginx-1.2.3.tgz  #离线安装 3. By path to an unpacked chart directory: helm install myweb ./nginx #离线安装 4. By absolute URL: helm install myweb https://example.com/charts/nginx-1.2.3.tgz #在线安装 5. By chart reference and repo url: helm install --repo https://example.com/charts/ myweb nginx #在线安装 6. By OCI registries: helm install myweb --version 1.2.3 oci://example.com/charts/nginx #在线安装。
+
 
 Helm相关环境变量：
 
@@ -557,12 +484,9 @@ macOS$HOME/Library/Caches/helm$HOME/Library/Preferences/helm$HOME/Library/helm
 Windows%TEMP%\helm%APPDATA%\helm%APPDATA%\helm
 
 范例: Helm 配置和缓存文件
-
-```text
+```yaml
 [root@master1 ~]#helm repo add  bitnami https://charts.bitnami.com/bitnami
-```
 
-```text
 helm repo list
 #添加一个 Chart 仓库时，生成的仓库配置会存放在用户主目录下的
 ~/.config/helm/repositories.yaml 文件中。这个文件包含了所有添加的 Chart 仓库的信息，包括
@@ -572,13 +496,9 @@ helm repo list
 └── helm
 ├── repositories.lock
 └── repositories.yaml
-```
 
-```text
 1 directory, 2 files
-```
 
-```text
 #目录中创建一个对应的缓存文件，用于存储该仓库的索引数据。这个缓存文件会以 {repo-name}-
 index.yaml 命名，例如 my-repo-index.yaml。
 [root@master1 ~]#tree .cache/
@@ -588,22 +508,16 @@ index.yaml 命名，例如 my-repo-index.yaml。
 │       ├── bitnami-charts.txt
 │       └── bitnami-index.yaml
 └── motd.legal-displayed
-```
 
-```text
 2 directories, 3 files
 [root@master1 ~]#tree .cache/helm/
 .cache/helm/
 └── repository
 ├── bitnami-charts.txt
 └── bitnami-index.yaml
-```
 
-```text
 1 directory, 2 files
-```
 
-```text
 [root@master1 ~]#cat .config/helm/repositories.yaml
 apiVersion: ""
 generated: "0001-01-01T00:00:00Z"
@@ -620,29 +534,20 @@ username: ""
 ```
 
 范例：查看帮助
-
-```text
+```bash
 #查看helm命令用法
 [root@master1 ~]#helm
 The Kubernetes package manager
-```
 
-```text
 Common actions for Helm:
-```
 
-```text
 - helm search:    search for charts
 - helm pull:      download a chart to your local directory to view
 - helm install:   upload the chart to Kubernetes
 - helm list:      list releases of charts
-```
 
-```text
 Environment variables:
-```
 
-```text
 | Name                               | Description
 |
 |------------------------------------|-------------------------------------------
@@ -683,9 +588,7 @@ file.                                                    |
 using a comma-separated list.                             |
 | $HELM_KUBEASUSER                   | set the Username to impersonate for the
 operation.                                                |
-```
 
-```text
 | $HELM_KUBECONTEXT                  | set the name of the kubeconfig context.
 |
 | $HELM_KUBETOKEN                    | set the Bearer KubeToken used for
@@ -696,27 +599,19 @@ certificate validation should be skipped (insecure)       |
 Kubernetes API server certificate                        |
 | $HELM_BURST_LIMIT                  | set the default burst limit in the case
 the server contains many CRDs (default 100, -1 to disable)|
-```
 
-```text
 Helm stores cache, configuration, and data based on the following configuration
 order:
-```
 
-```text
 - If a HELM_*_HOME environment variable is set, it will be used
 - Otherwise, on systems supporting the XDG base directory specification, the XDG
 variables will be used
 - When no other location is set a default location will be used based on the
 operating system
-```
 
-```text
 By default, the default directories depend on the Operating System. The defaults
 are listed below:
-```
 
-```text
 | Operating System | Cache Path                | Configuration Path             |
 Data Path               |
 |------------------|---------------------------|--------------------------------
@@ -727,14 +622,10 @@ Data Path               |
 | $HOME/Library/helm      |
 | Windows          | %TEMP%\helm               | %APPDATA%\helm                 |
 %APPDATA%\helm          |
-```
 
-```text
 Usage:
 helm [command]
-```
 
-```text
 Available Commands:
 completion  generate autocompletion scripts for the specified shell
 create      create a new chart with the given name
@@ -756,9 +647,7 @@ repo        add, list, remove, update, and index chart repositories
 rollback    roll back a release to a previous revision
 search      search for a keyword in charts
 show        show information of a chart
-```
 
-```text
 status      display the status of the named release
 template    locally render templates
 test        run tests for a release
@@ -768,307 +657,128 @@ verify      verify that a chart at the given path has been signed and is valid
 version     print the client version information
 ```
 
-```text
-Flags:
---burst-limit int                 client-side default throttling limit
-(default 100)
---debug                           enable verbose output
--h, --help                            help for helm
---kube-apiserver string           the address and the port for the
-Kubernetes API server
---kube-as-group stringArray       group to impersonate for the operation,
-this flag can be repeated to specify multiple groups.
---kube-as-user string             username to impersonate for the
-operation
---kube-ca-file string             the certificate authority file for the
-Kubernetes API server connection
---kube-context string             name of the kubeconfig context to use
---kube-insecure-skip-tls-verify   if true, the Kubernetes API server's
-certificate will not be checked for validity. This will make your HTTPS
-connections insecure
---kube-tls-server-name string     server name to use for Kubernetes API
-server certificate validation. If it is not provided, the hostname used to
-contact the server is used
---kube-token string               bearer token used for authentication
---kubeconfig string               path to the kubeconfig file
--n, --namespace string                namespace scope for this request
---registry-config string          path to the registry config file
-(default "/root/.config/helm/registry/config.json")
---repository-cache string         path to the file containing cached
-repository indexes (default "/root/.cache/helm/repository")
---repository-config string        path to the file containing repository
-names and URLs (default "/root/.config/helm/repositories.yaml")
-```
 
-```text
+Flags:--burst-limit int                 client-side default throttling limit(default 100)--debug                           enable verbose output-h, --help                            help for helm--kube-apiserver string           the address and the port for the Kubernetes API server--kube-as-group stringArray       group to impersonate for the operation, this flag can be repeated to specify multiple groups.--kube-as-user string             username to impersonate for the operation--kube-ca-file string             the certificate authority file for the Kubernetes API server connection--kube-context string             name of the kubeconfig context to use--kube-insecure-skip-tls-verify   if true, the Kubernetes API server's certificate will not be checked for validity. This will make your HTTPS connections insecure--kube-tls-server-name string     server name to use for Kubernetes API server certificate validation. If it is not provided, the hostname used to contact the server is used--kube-token string               bearer token used for authentication--kubeconfig string               path to the kubeconfig file-n, --namespace string                namespace scope for this request--registry-config string          path to the registry config file(default "/root/.config/helm/registry/config.json")--repository-cache string         path to the file containing cached repository indexes (default "/root/.cache/helm/repository")--repository-config string        path to the file containing repository names and URLs (default "/root/.config/helm/repositories.yaml")
+
+```bash
 Use "helm [command] --help" for more information about a command.
-```
 
-```text
 #查看子命令用法
 [root@master1 ~]#helm search --help
 ```
 
-```text
-Search provides the ability to search for Helm charts in the various places
-they can be stored including the Artifact Hub and repositories you have added.
-Use search subcommands to search different locations for charts.
-```
+
+Search provides the ability to search for Helm charts in the various places they can be stored including the Artifact Hub and repositories you have added. Use search subcommands to search different locations for charts.
 
 ```text
 Usage:
 helm search [command]
-```
 
-```text
 Available Commands:
 hub         search for charts in the Artifact Hub or your own hub instance
 repo        search repositories for a keyword in charts
-```
 
-```text
 Flags:
 -h, --help   help for search
 ```
 
-```text
-Global Flags:
---burst-limit int                 client-side default throttling limit
-(default 100)
---debug                           enable verbose output
---kube-apiserver string           the address and the port for the
-Kubernetes API server
---kube-as-group stringArray       group to impersonate for the operation,
-this flag can be repeated to specify multiple groups.
---kube-as-user string             username to impersonate for the
-operation
---kube-ca-file string             the certificate authority file for the
-Kubernetes API server connection
---kube-context string             name of the kubeconfig context to use
---kube-insecure-skip-tls-verify   if true, the Kubernetes API server's
-certificate will not be checked for validity. This will make your HTTPS
-connections insecure
---kube-tls-server-name string     server name to use for Kubernetes API
-server certificate validation. If it is not provided, the hostname used to
-contact the server is used
---kube-token string               bearer token used for authentication
---kubeconfig string               path to the kubeconfig file
--n, --namespace string                namespace scope for this request
---registry-config string          path to the registry config file
-(default "/root/.config/helm/registry/config.json")
---repository-cache string         path to the file containing cached
-repository indexes (default "/root/.cache/helm/repository")
---repository-config string        path to the file containing repository
-names and URLs (default "/root/.config/helm/repositories.yaml")
-```
+
+Global Flags:--burst-limit int                 client-side default throttling limit(default 100)--debug                           enable verbose output--kube-apiserver string           the address and the port for the Kubernetes API server--kube-as-group stringArray       group to impersonate for the operation, this flag can be repeated to specify multiple groups.--kube-as-user string             username to impersonate for the operation--kube-ca-file string             the certificate authority file for the Kubernetes API server connection--kube-context string             name of the kubeconfig context to use--kube-insecure-skip-tls-verify   if true, the Kubernetes API server's certificate will not be checked for validity. This will make your HTTPS connections insecure--kube-tls-server-name string     server name to use for Kubernetes API server certificate validation. If it is not provided, the hostname used to contact the server is used--kube-token string               bearer token used for authentication--kubeconfig string               path to the kubeconfig file-n, --namespace string                namespace scope for this request--registry-config string          path to the registry config file(default "/root/.config/helm/registry/config.json")--repository-cache string         path to the file containing cached repository indexes (default "/root/.cache/helm/repository")--repository-config string        path to the file containing repository names and URLs (default "/root/.config/helm/repositories.yaml")
 
 ```text
 Use "helm search [command] --help" for more information about a command.
 ```
 
 范例:  helm install 帮助
-
-```text
+```bash
 [root@master1 ~]#helm install --help
-```
 
-```text
 This command installs a chart archive.
-```
 
-```text
 The install argument must be a chart reference, a path to a packaged chart,
 a path to an unpacked chart directory or a URL.
 ```
 
-```text
-To override values in a chart, use either the '--values' flag and pass in a file
-or use the '--set' flag and pass configuration from the command line, to force
-a string value use '--set-string'. You can use '--set-file' to set individual
-values from a file when the value itself is too long for the command line
-or is dynamically generated. You can also use '--set-json' to set json values
-(scalars/objects/arrays) from the command line.
-```
 
-```text
+To override values in a chart, use either the '--values' flag and pass in a file or use the '--set' flag and pass configuration from the command line, to force a string value use '--set-string'. You can use '--set-file' to set individual values from a file when the value itself is too long for the command line or is dynamically generated. You can also use '--set-json' to set json values(scalars/objects/arrays) from the command line.
+
+```bash
 $ helm install -f myvalues.yaml myredis ./redis
-```
 
-```text
 or
-```
 
-```text
 $ helm install --set name=prod myredis ./redis
-```
 
-```text
 or
-```
 
-```text
 $ helm install --set-string long_int=1234567890 myredis ./redis
-```
 
-```text
 or
-```
 
-```text
 $ helm install --set-file my_script=dothings.sh myredis ./redis
-```
 
-```text
 or
-```
 
-```text
 $ helm install --set-json 'master.sidecars=
 [{"name":"sidecar","image":"myImage","imagePullPolicy":"Always","ports":
 [{"name":"portname","containerPort":1234}]}]' myredis ./redis
 ```
 
-```text
-You can specify the '--values'/'-f' flag multiple times. The priority will be
-given to the
-last (right-most) file specified. For example, if both myvalues.yaml and
-override.yaml
-contained a key called 'Test', the value set in override.yaml would take
-precedence:
-```
 
-```text
+You can specify the '--values'/'-f' flag multiple times. The priority will be given to the last (right-most) file specified. For example, if both myvalues.yaml and override.yaml contained a key called 'Test', the value set in override.yaml would take precedence:
+
+```bash
 $ helm install -f myvalues.yaml -f override.yaml  myredis ./redis
 ```
 
-```text
-You can specify the '--set' flag multiple times. The priority will be given to
-the
-last (right-most) set specified. For example, if both 'bar' and 'newbar' values
-are
-set for a key called 'foo', the 'newbar' value would take precedence:
-```
 
-```text
+You can specify the '--set' flag multiple times. The priority will be given to the last (right-most) set specified. For example, if both 'bar' and 'newbar' values are set for a key called 'foo', the 'newbar' value would take precedence:
+
+```bash
 $ helm install --set foo=bar --set foo=newbar  myredis ./redis
-```
 
-```text
 Similarly, in the following example 'foo' is set to '["four"]':
-```
 
-```text
 $ helm install --set-json='foo=["one", "two", "three"]' --set-json='foo=
 ["four"]' myredis ./redis
-```
 
-```text
 And in the following example, 'foo' is set to '{"key1":"value1","key2":"bar"}':
-```
 
-```text
 $ helm install --set-json='foo={"key1":"value1","key2":"value2"}' --set-
 json='foo.key2="bar"' myredis ./redis
-```
 
-```text
 To check the generated manifests of a release without installing the chart,
 the '--debug' and '--dry-run' flags can be combined.
-```
 
-```text
 If --verify is set, the chart MUST have a provenance file, and the provenance
 file MUST pass all verification steps.
-```
 
-```text
 There are six different ways you can express the chart you want to install:
 ```
 
-```text
-1. By chart reference: helm install mymaria example/mariadb
-2. By path to a packaged chart: helm install myweb ./nginx-1.2.3.tgz
-3. By path to an unpacked chart directory: helm install myweb ./nginx
-4. By absolute URL: helm install myweb https://example.com/charts/nginx-
-1.2.3.tgz
-5. By chart reference and repo url: helm install --repo
-https://example.com/charts/ myweb nginx
-6. By OCI registries: helm install myweb --version 1.2.3
-oci://example.com/charts/nginx
-```
+
+1. By chart reference: helm install mymaria example/mariadb 2. By path to a packaged chart: helm install myweb ./nginx-1.2.3.tgz 3. By path to an unpacked chart directory: helm install myweb ./nginx 4. By absolute URL: helm install myweb https://example.com/charts/nginx-1.2.3.tgz 5. By chart reference and repo url: helm install --repo https://example.com/charts/ myweb nginx 6. By OCI registries: helm install myweb --version 1.2.3 oci://example.com/charts/nginx
 
 ```text
 CHART REFERENCES
-```
 
-```text
 A chart reference is a convenient way of referencing a chart in a chart
 repository.
 ```
 
-```text
-When you use a chart reference with a repo prefix ('example/mariadb'), Helm will
-look in the local
-configuration for a chart repository named 'example', and will then look for a
-chart in that repository whose name is 'mariadb'. It will install the latest
-stable version of that chart
-until you specify '--devel' flag to also include development version (alpha,
-beta, and release candidate releases), or
-supply a version number with the '--version' flag.
-```
+
+When you use a chart reference with a repo prefix ('example/mariadb'), Helm will look in the local configuration for a chart repository named 'example', and will then look for a chart in that repository whose name is 'mariadb'. It will install the latest stable version of that chart until you specify '--devel' flag to also include development version (alpha, beta, and release candidate releases), or supply a version number with the '--version' flag.
 
 ```text
 To see the list of chart repositories, use 'helm repo list'. To search for
 charts in a repository, use 'helm search'.
-```
 
-```text
 Usage:
 helm install [NAME] [CHART] [flags]
 ```
 
-```text
-Flags:
---atomic                                     if set, the installation
-process deletes the installation on failure. The --wait flag will be set
-automatically if --atomic is used
---ca-file string                             verify certificates of HTTPS-
-enabled servers using this CA bundle
---cert-file string                           identify HTTPS client using
-this SSL certificate file
---create-namespace                           create the release namespace
-if not present
---dependency-update                          update dependencies if they
-are missing before installing the chart
---description string                         add a custom description
---devel                                      use development versions,
-too. Equivalent to version '>0.0.0-0'. If --version is set, this is ignored
---disable-openapi-validation                 if set, the installation
-process will not validate rendered templates against the Kubernetes OpenAPI
-Schema
---dry-run                                    simulate an install
---enable-dns                                 enable DNS lookups when
-rendering templates
---force                                      force resource updates
-through a replacement strategy
--g, --generate-name                              generate the name (and omit
-the NAME parameter)
--h, --help                                       help for install
---insecure-skip-tls-verify                   skip tls certificate checks
-for the chart download
---key-file string                            identify HTTPS client using
-this SSL key file
---keyring string                             location of public keys used
-for verification (default "/root/.gnupg/pubring.gpg")
---name-template string                       specify template used to name
-the release
---no-hooks                                   prevent hooks from running
-during install
--o, --output format                              prints the output in the
-specified format. Allowed values: table, json, yaml (default table)
---pass-credentials                           pass credentials to all
-domains
-```
+
+Flags:--atomic                                     if set, the installation process deletes the installation on failure. The --wait flag will be set automatically if --atomic is used--ca-file string                             verify certificates of HTTPS-enabled servers using this CA bundle--cert-file string                           identify HTTPS client using this SSL certificate file--create-namespace                           create the release namespace if not present--dependency-update                          update dependencies if they are missing before installing the chart--description string                         add a custom description--devel                                      use development versions, too. Equivalent to version '>0.0.0-0'. If --version is set, this is ignored--disable-openapi-validation                 if set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema--dry-run                                    simulate an install--enable-dns                                 enable DNS lookups when rendering templates--force                                      force resource updates through a replacement strategy-g, --generate-name                              generate the name (and omit the NAME parameter)-h, --help                                       help for install--insecure-skip-tls-verify                   skip tls certificate checks for the chart download--key-file string                            identify HTTPS client using this SSL key file--keyring string                             location of public keys used for verification (default "/root/.gnupg/pubring.gpg")--name-template string                       specify template used to name the release--no-hooks                                   prevent hooks from running during install-o, --output format                              prints the output in the specified format. Allowed values: table, json, yaml (default table)--pass-credentials                           pass credentials to all domains
 
 ```text
 --password string                            chart repository password
@@ -1121,57 +831,25 @@ will wait until all Jobs have been completed before marking the release as
 successful. It will wait for as long as --timeout
 ```
 
-```text
-Global Flags:
---burst-limit int                 client-side default throttling limit
-(default 100)
---debug                           enable verbose output
---kube-apiserver string           the address and the port for the
-Kubernetes API server
---kube-as-group stringArray       group to impersonate for the operation,
-this flag can be repeated to specify multiple groups.
-```
 
-```text
---kube-as-user string             username to impersonate for the
-operation
---kube-ca-file string             the certificate authority file for the
-Kubernetes API server connection
---kube-context string             name of the kubeconfig context to use
---kube-insecure-skip-tls-verify   if true, the Kubernetes API server's
-certificate will not be checked for validity. This will make your HTTPS
-connections insecure
---kube-tls-server-name string     server name to use for Kubernetes API
-server certificate validation. If it is not provided, the hostname used to
-contact the server is used
---kube-token string               bearer token used for authentication
---kubeconfig string               path to the kubeconfig file
--n, --namespace string                namespace scope for this request
---registry-config string          path to the registry config file
-(default "/root/.config/helm/registry/config.json")
---repository-cache string         path to the file containing cached
-repository indexes (default "/root/.cache/helm/repository")
---repository-config string        path to the file containing repository
-names and URLs (default "/root/.config/helm/repositories.yaml")
-```
+Global Flags:--burst-limit int                 client-side default throttling limit(default 100)--debug                           enable verbose output--kube-apiserver string           the address and the port for the Kubernetes API server--kube-as-group stringArray       group to impersonate for the operation, this flag can be repeated to specify multiple groups.
+
+
+--kube-as-user string             username to impersonate for the operation--kube-ca-file string             the certificate authority file for the Kubernetes API server connection--kube-context string             name of the kubeconfig context to use--kube-insecure-skip-tls-verify   if true, the Kubernetes API server's certificate will not be checked for validity. This will make your HTTPS connections insecure--kube-tls-server-name string     server name to use for Kubernetes API server certificate validation. If it is not provided, the hostname used to contact the server is used--kube-token string               bearer token used for authentication--kubeconfig string               path to the kubeconfig file-n, --namespace string                namespace scope for this request--registry-config string          path to the registry config file(default "/root/.config/helm/registry/config.json")--repository-cache string         path to the file containing cached repository indexes (default "/root/.cache/helm/repository")--repository-config string        path to the file containing repository names and URLs (default "/root/.config/helm/repositories.yaml")
+
 
 ### 1.3.2 Helm 命令范例
 
 范例：添加仓库并下载MySQL chart
-
-```text
+```bash
 #默认没有仓库
 [root@master1 ~]#helm repo list
 Error: no repositories to show
-```
 
-```text
 #默认没有通过Helm安装的release
 [root@master1 ~]#helm list
 NAME    NAMESPACE   REVISION    UPDATED STATUS  CHART   APP VERSION
-```
 
-```text
 #从官方仓库搜索MySQL
 [root@master1 ~]#helm search hub  mysql
 URL                                                 CHART VERSION   APP VERSION
@@ -1194,55 +872,35 @@ https://artifacthub.io/packages/helm/kubesphere...  1.0.2           5.7.33
 High Availability MySQL Cluster, Open Source.
 https://artifacthub.io/packages/helm/mysql/mysql    2.1.3           8.0.26
 deploy mysql standalone or group-replication He...
-```
 
-```text
 #添加仓库
-```
 
-```text
 [root@master1 ~]#helm repo add bitnami https://charts.bitnami.com/bitnami
 "bitnami" has been added to your repositories
-```
 
-```text
 #添加第二个仓库
 [root@master1 ~]#helm repo add ingress-nginx
 https://kubernetes.github.io/ingress-nginx
 "ingress-nginx" has been added to your repositories
-```
 
-```text
 #查看本地配置的仓库
 [root@master1 ~]#helm repo list
 NAME            URL
 bitnami         https://charts.bitnami.com/bitnami
 ingress-nginx   https://kubernetes.github.io/ingress-nginx
-```
 
-```text
 #查看配置的仓库，但没有安装的release
 [root@master1 ~]#helm list
 NAME    NAMESPACE   REVISION    UPDATED STATUS  CHART   APP VERSION
-```
 
-```text
 [root@master1 ~]#helm search repo mysql
 NAME                    CHART VERSION   APP VERSION DESCRIPTION
 ```
 
-```text
-bitnami/mysql           9.10.1          8.0.33      MySQL is a fast, reliable,
-scalable, and easy t...
-bitnami/phpmyadmin      11.1.2          5.2.1       phpMyAdmin is a free
-software tool written in P...
-bitnami/mariadb         12.2.4          10.11.3     MariaDB is an open source,
-community-developed ...
-bitnami/mariadb-galera  8.2.4           10.11.3     MariaDB Galera is a multi-
-primary database clus...
-```
 
-```text
+bitnami/mysql           9.10.1          8.0.33      MySQL is a fast, reliable, scalable, and easy t... bitnami/phpmyadmin      11.1.2          5.2.1       phpMyAdmin is a free software tool written in P... bitnami/mariadb         12.2.4          10.11.3     MariaDB is an open source, community-developed ... bitnami/mariadb-galera  8.2.4           10.11.3     MariaDB Galera is a multi-primary database clus...
+
+```bash
 #新版路径支持OCI
 [root@master1 ~]#helm pull oci://registry-1.docker.io/bitnamicharts/mysql
 Pulled: registry-1.docker.io/bitnamicharts/mysql:9.10.1
@@ -1251,22 +909,16 @@ Digest: sha256:9649992e623df7d016a6a822ea034cf7b798ef9f9a5afc8e2ac3e6c9fea98a4c
 [root@master1 ~]#source set_http_proxy.sh start
 [root@master1 ~]#ll -h mysql-14.0.3.tgz
 -rw-r--r-- 1 root root 68K Aug 18 16:50 mysql-14.0.3.tgz
-```
 
-```text
 #旧版路径
 [root@master1 ~]#cd /tmp
 [root@master1 tmp]#helm pull bitnami/mysql
-```
 
-```text
 #比较是相同的
 [root@master1 ~]#ll mysql-9.10.1.tgz /tmp/mysql-9.10.1.tgz
 -rw-r--r-- 1 root root 44000  5月 28 21:35 mysql-9.10.1.tgz
 -rw-r--r-- 1 root root 44000  5月 28 21:34 /tmp/mysql-9.10.1.tgz
-```
 
-```text
 [root@master1 ~]#ls mysql
 Chart.lock  charts  Chart.yaml  README.md  templates  values.schema.json
 values.yaml
@@ -1276,9 +928,7 @@ mysql
 ├── charts
 │   └── common
 │       ├── Chart.yaml
-```
 
-```text
 │       ├── README.md
 │       ├── templates
 │       │   ├── _affinities.tpl
@@ -1331,42 +981,27 @@ mysql
 │   └── servicemonitor.yaml
 ├── values.schema.json
 └── values.yaml
-```
 
-```text
 7 directories, 49 files
 ```
 
 范例：添加aliyun和azure仓库
-
-```text
+```bash
 [root@master1 ~]#helm repo add aliyun http://kubernetes.oss-cn-
 hangzhou.aliyuncs.com/charts
 "aliyun" has been added to your repositories
 [root@master1 ~]#helm repo list
 NAME    URL
 aliyun  http://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
-```
 
-```text
 [root@master1 ~]#helm search repo mysql
 NAME                            CHART VERSION   APP VERSION DESCRIPTION
 ```
 
-```text
-aliyun/mysql                    0.3.5                       Fast, reliable,
-scalable, and easy to use open-...
-aliyun/percona                  0.3.0                       free, fully
-compatible, enhanced, open source d...
-aliyun/percona-xtradb-cluster   0.0.2           5.7.19      free, fully
-compatible, enhanced, open source d...
-aliyun/gcloud-sqlproxy          0.2.3                       Google Cloud SQL
-Proxy
-aliyun/mariadb                  2.1.6           10.1.31     Fast, reliable,
-scalable, and easy to use open-...
-```
 
-```text
+aliyun/mysql                    0.3.5                       Fast, reliable, scalable, and easy to use open-... aliyun/percona                  0.3.0                       free, fully compatible, enhanced, open source d... aliyun/percona-xtradb-cluster   0.0.2           5.7.19      free, fully compatible, enhanced, open source d... aliyun/gcloud-sqlproxy          0.2.3                       Google Cloud SQL Proxy aliyun/mariadb                  2.1.6           10.1.31     Fast, reliable, scalable, and easy to use open-...
+
+```bash
 [root@master1 ~]#helm repo add azure http://mirror.azure.cn/kubernetes/charts/
 "azure" has been added to your repositories
 [root@master1 ~]#helm repo list
@@ -1377,43 +1012,15 @@ azure   http://mirror.azure.cn/kubernetes/charts/
 NAME                            CHART VERSION   APP VERSION DESCRIPTION
 ```
 
-```text
-aliyun/mysql                    0.3.5                       Fast, reliable,
-scalable, and easy to use open-...
-azure/mysql                     1.6.9           5.7.30      DEPRECATED - Fast,
-reliable, scalable, and easy...
-azure/mysqldump                 2.6.2           2.4.1       DEPRECATED! - A Helm
-chart to help backup MySQL...
-azure/prometheus-mysql-exporter 0.7.1           v0.11.0     DEPRECATED A Helm
-chart for prometheus mysql ex...
-aliyun/percona                  0.3.0                       free, fully
-compatible, enhanced, open source d...
-aliyun/percona-xtradb-cluster   0.0.2           5.7.19      free, fully
-compatible, enhanced, open source d...
-azure/percona                   1.2.3           5.7.26      DEPRECATED - free,
-fully compatible, enhanced, ...
-azure/percona-xtradb-cluster    1.0.8           5.7.19      DEPRECATED - free,
-fully compatible, enhanced, ...
-azure/phpmyadmin                4.3.5           5.0.1       DEPRECATED
-phpMyAdmin is an mysql administratio...
-aliyun/gcloud-sqlproxy          0.2.3                       Google Cloud SQL
-Proxy
-aliyun/mariadb                  2.1.6           10.1.31     Fast, reliable,
-scalable, and easy to use open-...
-azure/gcloud-sqlproxy           0.6.1           1.11        DEPRECATED Google
-Cloud SQL Proxy
-azure/mariadb                   7.3.14          10.3.22     DEPRECATED Fast,
-reliable, scalable, and easy t...
-```
 
-```text
+aliyun/mysql                    0.3.5                       Fast, reliable, scalable, and easy to use open-... azure/mysql                     1.6.9           5.7.30      DEPRECATED - Fast, reliable, scalable, and easy... azure/mysqldump                 2.6.2           2.4.1       DEPRECATED! - A Helm chart to help backup MySQL... azure/prometheus-mysql-exporter 0.7.1           v0.11.0     DEPRECATED A Helm chart for prometheus mysql ex... aliyun/percona                  0.3.0                       free, fully compatible, enhanced, open source d... aliyun/percona-xtradb-cluster   0.0.2           5.7.19      free, fully compatible, enhanced, open source d... azure/percona                   1.2.3           5.7.26      DEPRECATED - free, fully compatible, enhanced, ... azure/percona-xtradb-cluster    1.0.8           5.7.19      DEPRECATED - free, fully compatible, enhanced, ... azure/phpmyadmin                4.3.5           5.0.1       DEPRECATED phpMyAdmin is an mysql administratio... aliyun/gcloud-sqlproxy          0.2.3                       Google Cloud SQL Proxy aliyun/mariadb                  2.1.6           10.1.31     Fast, reliable, scalable, and easy to use open-... azure/gcloud-sqlproxy           0.6.1           1.11        DEPRECATED Google Cloud SQL Proxy azure/mariadb                   7.3.14          10.3.22     DEPRECATED Fast, reliable, scalable, and easy t...
+
+```bash
 #删除仓库
 [root@master1 ~]#helm repo remove  aliyun azure
 "aliyun" has been removed from your repositories
 "azure" has been removed from your repositories
-```
 
-```text
 [root@master1 ~]#helm repo list
 Error: no repositories to show
 ```

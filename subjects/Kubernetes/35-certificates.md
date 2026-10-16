@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 证书续期与故障处理'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -19,9 +20,9 @@ Kubernetes 集群中，各个组件间通信需要以安全加密的方式通信
 
 ### 3.1.1 Kubernetes 证书分类
 
-```text
-https://kubernetes.io/zh-cn/docs/setup/best-practices/certificates/
-```
+
+- <https://kubernetes.io/zh-cn/docs/setup/best-practices/certificates/>
+
 
 ![原 PDF 第 95 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-3748bd8e852f89be.png)
 
@@ -118,12 +119,9 @@ front-proxy-ca
 确保代理通信的安全性基于kubeadm安装的有效期默认10年。
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#openssl x509 -in /etc/kubernetes/pki/ca.crt -text -noout  |head
-```
 
-```text
 Certificate:
 Data:
 Version: 3 (0x2)
@@ -134,9 +132,7 @@ Validity
 Not Before: May 22 01:27:53 2025 GMT
 Not After : Apr  4 01:32:53 2225 GMT
 Subject: CN = kubernetes
-```
 
-```text
 [root@master1 ~]#openssl x509 -in /etc/kubernetes/pki/front-proxy-ca.crt -text -
 noout |head
 Certificate:
@@ -156,9 +152,7 @@ Data:
 Version: 3 (0x2)
 Serial Number: 9189548314639296484 (0x7f87d580fc5d67e4)
 Signature Algorithm: sha256WithRSAEncryption
-```
 
-```text
 Issuer: CN = etcd-ca
 Validity
 Not Before: Dec 19 01:00:54 2024 GMT
@@ -167,42 +161,39 @@ Subject: CN = etcd-ca
 ```
 
 范例: 每个Kubelet 也是一个API Server 对外提供服务,同时也提供自已的 CA
-
-```text
+```bash
 [root@node1 ~]#openssl x509 -in /var/lib/kubelet/pki/kubelet.crt -text |head
 Certificate:
 Data:
 Version: 3 (0x2)
 Serial Number: 2 (0x2)
 Signature Algorithm: sha256WithRSAEncryption
-Issuer: CN = node1.wang.org-ca@1678165168
+Issuer: CN = node1.bowen.org-ca@1678165168
 Validity
 Not Before: Mar  7 03:59:28 2023 GMT
 Not After : Mar  6 03:59:28 2024 GMT
-Subject: CN = node1.wang.org@1678165168
-```
+Subject: CN = node1.bowen.org@1678165168
 
-```text
 #10250/tcp是 Kubelet 的主要 API 端口，用于与 Kubernetes API Server 进行通信，接收 Pod
 规范并汇报节点和 Pod 的状态等信息，同时也是获取节点资源等操作的接口。
 [root@node1 ~]#openssl s_client  -connect 127.0.0.1:10250
 CONNECTED(00000003)
 Can't use SSL_get_servername
-depth=1 CN = node1.wang.org-ca@1734571091
+depth=1 CN = node1.bowen.org-ca@1734571091
 verify error:num=19:self-signed certificate in certificate chain
 verify return:1
-depth=1 CN = node1.wang.org-ca@1734571091
+depth=1 CN = node1.bowen.org-ca@1734571091
 verify return:1
-depth=0 CN = node1.wang.org@1734571091
+depth=0 CN = node1.bowen.org@1734571091
 verify return:1
 ---
 Certificate chain
-0 s:CN = node1.wang.org@1734571091
-i:CN = node1.wang.org-ca@1734571091
+0 s:CN = node1.bowen.org@1734571091
+i:CN = node1.bowen.org-ca@1734571091
 a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
 v:NotBefore: Dec 19 00:18:11 2024 GMT; NotAfter: Dec 19 00:18:11 2025 GMT
-1 s:CN = node1.wang.org-ca@1734571091
-i:CN = node1.wang.org-ca@1734571091
+1 s:CN = node1.bowen.org-ca@1734571091
+i:CN = node1.bowen.org-ca@1734571091
 a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
 v:NotBefore: Dec 19 00:18:11 2024 GMT; NotAfter: Dec 19 00:18:11 2025 GMT
 ---
@@ -219,9 +210,7 @@ yTqCa8y06cO7ORZsdWrwZm24CWoMwQruj0sCm9b2PZxOxWGeQIXGyhZPVofs+ebs
 dmMMc62pyokgpY2NigJIESzFdFEMSv+YAi9LcHoswHfPLNI1rDot4+t7o4u14QOj
 +qUX3A2VAgMBAAGjcTBvMA4GA1UdDwEB/wQEAwIFoDATBgNVHSUEDDAKBggrBgEF
 BQcDATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFI/biWIEexJnO3ZrzmKoJ81o
-```
 
-```text
 6MO6MBkGA1UdEQQSMBCCDm5vZGUxLndhbmcub3JnMA0GCSqGSIb3DQEBCwUAA4IB
 AQBxkH8v4Zoegac7BCmzf4QIHw7qD1In8LlTmVK4zI2m5sh4abCjM/jryZisfgr9
 VWOX4j3oGw/2L5sO7ZVxwyR7DEFnieiHFIwMg7T16hRhoCfpjg3yVMAZ6ST/TGgr
@@ -230,8 +219,8 @@ l8t80zp2sVnNKc+RNRudU3DTqsPelStKOC6QDiafCTP389fPN7SyXnctu2OegFyQ
 GCzv7fct2y1QhXwmjgiA8wbg7MNwUmewdxtu/TDPa8hFOxa7WciDO+bQwfNoeDr6
 nDvy9ibKnPSakTaoWc8G0NaJ
 -----END CERTIFICATE-----
-subject=CN = node1.wang.org@1734571091
-issuer=CN = node1.wang.org-ca@1734571091
+subject=CN = node1.bowen.org@1734571091
+issuer=CN = node1.bowen.org-ca@1734571091
 ---
 Acceptable client certificate CA names
 CN = kubernetes
@@ -279,9 +268,7 @@ TLS session ticket:
 0040 - 60 0d fc f9 b4 42 38 d0-96 3f 0f 55 19 00 b5 50   `....B8..?.U...P
 0050 - 89 02 2a 1c 89 a1 f1 10-d8 64 71 2c 77 77 04 6d   ..*......dq,ww.m
 0060 - ef 3e 91 1d ae b4 77 29-dd                        .>....w).
-```
 
-```text
 Start Time: 1747899000
 Timeout   : 7200 (sec)
 Verify return code: 19 (self-signed certificate in certificate chain)
@@ -384,7 +371,6 @@ scheduler
 scheduler.yaml 清单中
 
 下面是前表中所列文件的完整路径。
-
 ```text
 /etc/kubernetes/admin.conf
 /etc/kubernetes/super-admin.conf
@@ -416,7 +402,6 @@ kubeadm 在 kubeconfig 文件中生成两个单独的管理员证书。
 ### 3.1.8 查看默认证书的有效期
 
 证书默认有效期
-
 ```text
 /etc/kubernetes/pki/ca.crt                       #10年有效期
 /etc/kubernetes/pki/apiserver.crt                #1年有效期
@@ -431,12 +416,9 @@ kubeadm 在 kubeconfig 文件中生成两个单独的管理员证书。
 ```
 
 **查看证书有效期**
-
 ```text
 kubeadm certs check-expiration
-```
 
-```text
 #该命令显示 /etc/kubernetes/pki 文件夹中的客户端证书以及 kubeadm（admin.conf、
 controller-manager.conf 和 scheduler.conf） 使用的 KUBECONFIG 文件中嵌入的客户端证书的
 到期时间/剩余时间。
@@ -446,13 +428,10 @@ controller-manager.conf 和 scheduler.conf） 使用的 KUBECONFIG 文件中嵌�
 ```
 
 范例: 查看证书有效期
-
-```text
+```bash
 [root@k8s-master pki]#pwd
 /etc/kubernetes/pki
-```
 
-```text
 [root@k8s-master pki]#ls -1
 apiserver.crt
 apiserver-etcd-client.crt
@@ -478,30 +457,22 @@ peer.crt
 peer.key
 server.crt
 server.key
-```
 
-```text
 [root@k8s-master pki]#ls *.crt
 apiserver.crt  apiserver-etcd-client.crt  apiserver-kubelet-client.crt  ca.crt
 front-proxy-ca.crt  front-proxy-client.crt
-```
 
-```text
 #查看证书有效期
 [root@k8s-master pki]#openssl x509 -in  /etc/kubernetes/pki/ca.crt  -noout -
 dates
 notBefore=May 21 03:04:20 2022 GMT
 notAfter=May 18 03:04:20 2032 GMT
-```
 
-```text
 [root@k8s-master pki]#openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -
 dates
 notBefore=May 21 03:04:20 2022 GMT
 notAfter=May 21 03:04:20 2023 GMT
-```
 
-```text
 [root@k8s-master pki]#openssl x509 -in  /etc/kubernetes/pki/etcd/ca.crt  -noout -
 dates
 notBefore=May 21 03:04:20 2022 GMT
@@ -510,25 +481,19 @@ notAfter=May 18 03:04:20 2032 GMT
 noout -dates
 notBefore=May 21 03:04:20 2022 GMT
 notAfter=May 21 03:04:20 2023 GMT
-```
 
-```text
 #查看master节点的kubelet证书过期时间
 [root@master1 ~]#openssl x509 -in /var/lib/kubelet/pki/kubelet-client-current.pem
 -noout -dates
 notBefore=May 21 03:04:20 2022 GMT
 notAfter=May 21 03:04:20 2023 GMT
-```
 
-```text
 #查看所有证书有效期
 [root@k8s-master ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the cluster...
 [check-expiration] FYI: You can look at this config file with 'kubectl -n kube-
 system get cm kubeadm-config -o yaml'
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 May 21, 2023 03:04 UTC   363d
@@ -551,9 +516,7 @@ front-proxy-client         May 21, 2023 03:04 UTC   363d            front-proxy-
 ca          no
 scheduler.conf             May 21, 2023 03:04 UTC   363d
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      May 18, 2032 03:04 UTC   9y              no
@@ -565,13 +528,12 @@ front-proxy-ca          May 18, 2032 03:04 UTC   9y              no
 
 官方文档:
 
-```text
-https://kubernetes.io/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/
-```
+
+- <https://kubernetes.io/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/>
+
 
 如果过期会出现下面提示
-
-```text
+```bash
 [root@k8s-master ~]#date -s '1 year';kubectl get nodes
 2023年 05月 22日 星期一 11:26:27 CST
 Unable to connect to the server: x509: certificate has expired or is not yet
@@ -579,42 +541,32 @@ valid: current time 2023-05-22T11:26:27+08:00 is after 2023-05-21T03:04:20Z
 ```
 
 **更新证书有效期命令**
-
-```text
+```bash
 #查看证书有效期
 kubeadm certs check-expiration
-```
 
-```text
 #更新/etc/kubernetes/pki下面的相关证书文件,并更新对应
 /etc/kubernetes/admin.conf,controller-manager.conf,scheduler.conf的kubeconfig文件
 kubeadm certs renew all        #签发所有文件的证书
 kubeadm certs renew admin.conf #只签发指定文件的证书
 #注意: 如果运行了一个多节点高可用集群，这个命令需要在所有控制面板节点上执行。
-```
 
-```text
 #上面不会签发Kubelet证书，一般也无需手工续期，因为此证书文件具有自动续期功能，在到期前30-120天
 会自动触发续期机制
-```
 
-```text
 #此命令可以自动更新/etc/kubernetes/kubelet.conf
 kubeadm init --kubernetes-version=v1.22.2  phase kubeconfig all
 ```
 
 范例:
-
-```text
+```bash
 #查看证书有效期,发现即将过期
 [root@master1 ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the "kubeadm-config" ConfigMap in
 namespace "kube-system"...
 [check-expiration] Use 'kubeadm init phase upload-config --config your-
 config.yaml' to re-upload it.
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 Dec 19, 2025 01:05 UTC   203d            ca
@@ -637,22 +589,16 @@ front-proxy-client         Dec 19, 2025 01:05 UTC   203d            front-proxy-
 ca          no
 scheduler.conf             Dec 19, 2025 01:05 UTC   203d            ca
 no
-```
 
-```text
 super-admin.conf           Dec 19, 2025 01:05 UTC   203d            ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Dec 17, 2034 01:05 UTC   9y              no
 etcd-ca                 Dec 17, 2034 01:05 UTC   9y              no
 front-proxy-ca          Dec 17, 2034 01:05 UTC   9y              no
-```
 
-```text
 [root@master1 ~]#ls -l /etc/kubernetes/
 total 44
 -rw------- 1 root root 5656 Dec 19 09:06 admin.conf
@@ -662,9 +608,7 @@ drwxrwxr-x 2 root root 4096 Dec 19 09:06 manifests
 drwxr-xr-x 3 root root 4096 Dec 19 09:06 pki
 -rw------- 1 root root 5626 Dec 19 09:06 scheduler.conf
 -rw------- 1 root root 5680 Dec 19 09:06 super-admin.conf
-```
 
-```text
 [root@master1 ~]#ls -l /etc/kubernetes/pki/
 total 60
 -rw-r--r-- 1 root root 1322 Dec 19 09:06 apiserver.crt
@@ -692,23 +636,17 @@ total 32
 -rw------- 1 root root 1679 Dec 19 09:06 peer.key
 -rw-r--r-- 1 root root 1220 Dec 19 09:06 server.crt
 -rw------- 1 root root 1675 Dec 19 09:06 server.key
-```
 
-```text
 [root@master1 ~]#ls -l  .kube/config
 -rw------- 1 root root 5656 Dec 19 09:06 .kube/config
-```
 
-```text
 #证书续期
 [root@master1 ~]#kubeadm certs renew all
 [renew] Reading configuration from the "kubeadm-config" ConfigMap in namespace
 "kube-system"...
 [renew] Use 'kubeadm init phase upload-config --config your-config.yaml' to re-
 upload it.
-```
 
-```text
 certificate embedded in the kubeconfig file for the admin to use and for kubeadm
 itself renewed
 certificate for serving the Kubernetes API renewed
@@ -725,35 +663,28 @@ renewed
 certificate embedded in the kubeconfig file for the super-admin renewed
 ```
 
-```text
-Done renewing certificates. You must restart the kube-apiserver, kube-
-controller-manager, kube-scheduler and etcd, so that they can use the new
-certificates.
-```
 
-```text
+Done renewing certificates. You must restart the kube-apiserver, kube-controller-manager, kube-scheduler and etcd, so that they can use the new certificates.
+
+```bash
 #在所有master节点上执行重启相关Pod
 [root@master1 ~]#kubectl delete pod -n kube-system -l 'component in (etcd,kube-
 apiserver,kube-controller-manager,kube-scheduler)'
 [root@master1 ~]#kubectl get pod -n kube-system  -l 'component in (etcd,kube-
 apiserver,kube-controller-manager,kube-scheduler)'
 NAME                                       READY   STATUS    RESTARTS      AGE
-etcd-master1.wang.org                      1/1     Running   1 (94m ago)   18s
-kube-apiserver-master1.wang.org            1/1     Running   1 (94m ago)   18s
-kube-controller-manager-master1.wang.org   1/1     Running   1 (94m ago)   18s
-kube-scheduler-master1.wang.org            1/1     Running   1 (94m ago)   18s
-```
+etcd-master1.bowen.org                      1/1     Running   1 (94m ago)   18s
+kube-apiserver-master1.bowen.org            1/1     Running   1 (94m ago)   18s
+kube-controller-manager-master1.bowen.org   1/1     Running   1 (94m ago)   18s
+kube-scheduler-master1.bowen.org            1/1     Running   1 (94m ago)   18s
 
-```text
 #确认证书更新成功
 [root@master1 ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the "kubeadm-config" ConfigMap in
 namespace "kube-system"...
 [check-expiration] Use 'kubeadm init phase upload-config --config your-
 config.yaml' to re-upload it.
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 May 29, 2026 01:44 UTC   364d            ca
@@ -774,24 +705,18 @@ etcd-server                May 29, 2026 01:44 UTC   364d            etcd-ca
 no
 front-proxy-client         May 29, 2026 01:44 UTC   364d            front-proxy-
 ca          no
-```
 
-```text
 scheduler.conf             May 29, 2026 01:44 UTC   364d            ca
 no
 super-admin.conf           May 29, 2026 01:44 UTC   364d            ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Dec 17, 2034 01:05 UTC   9y              no
 etcd-ca                 Dec 17, 2034 01:05 UTC   9y              no
 front-proxy-ca          Dec 17, 2034 01:05 UTC   9y              no
-```
 
-```text
 [root@master1 ~]#ls -l /etc/kubernetes/
 total 44
 -rw------- 1 root root 5660 May 29 09:44 admin.conf
@@ -818,9 +743,7 @@ drwxr-xr-x 2 root root 4096 Dec 19 09:06 etcd
 -rw------- 1 root root 1679 May 29 09:44 front-proxy-client.key
 -rw------- 1 root root 1675 Dec 19 09:06 sa.key
 -rw------- 1 root root  451 Dec 19 09:06 sa.pub
-```
 
-```text
 [root@master1 ~]#ls -l /etc/kubernetes/pki/etcd
 total 32
 -rw-r--r-- 1 root root 1094 Dec 19 09:06 ca.crt
@@ -831,14 +754,10 @@ total 32
 -rw------- 1 root root 1679 May 29 09:44 peer.key
 -rw-r--r-- 1 root root 1220 May 29 09:44 server.crt
 -rw------- 1 root root 1679 May 29 09:44 server.key
-```
 
-```text
 [root@master1 ~]#ls -l  .kube/config
 -rw------- 1 root root 5656 Dec 19 09:06 .kube/config
-```
 
-```text
 #还需要手动更新授权文件
 [root@master1 ~]#cp /etc/kubernetes/admin.conf  .kube/config
 ```
@@ -848,8 +767,7 @@ total 32
 上面不会签发Kubelet证书，一般也无需手工续期，因为此证书文件具有自动续期功能，在到期前30-120天会自动触发续期机制。对集群的证书到期时间进行监控，只要确保Kubelet证书大于30天即可，如果小于30天，说明自动续期机制出现问题，需要检查为什么自动续期失败，再手工续期。
 
 范例：基于kubeadm安装默认会自动对Kubelet证书续期
-
-```text
+```bash
 [root@node2 ~]#grep rotateCertificates /var/lib/kubelet/config.yaml
 rotateCertificates: true
 ```
@@ -857,7 +775,6 @@ rotateCertificates: true
 但是如果已经过期,需要手动解决此证书的过期问题。也可以删除此节点,重新加入节点,但此方式不建议。
 
 ### 3.3.1 Kubelet 证书说明
-
 ```text
 https://kubernetes.io/zh-cn/docs/setup/production-
 environment/tools/kubeadm/troubleshooting-kubeadm/#kubelet-client-cert
@@ -868,11 +785,10 @@ environment/tools/kubeadm/troubleshooting-kubeadm/#kubelet-client-cert
 1. 从故障节点备份和删除 /etc/kubernetes/kubelet.conf 和 /var/lib/kubelet/pki/kubelet-client* 。
 
 2. 在集群中具有 /etc/kubernetes/pki/ca.key 的、正常工作的控制平面节点上 执行 kubeadm kubeconfig user --org system:nodes --client-name system:node:$NODE >kubelet.conf 。 $NODE 必须设置为集群中现有故障节点的名称。 手动修改生成的kubelet.conf 以调整集群名称和服务器端点， 或传递 kubeconfig user --config （请参阅为其他用户生成 kubeconfig 文件）。 如果你的集群没有 ca.key ，你必须在外部对 kubelet.conf中的嵌入式证书进行签名。
-
-```text
+```bash
 [root@master1 ~]#kubeadm config print init-defaults > kubeadm-init.yaml
 [root@master1 ~]#kubeadm kubeconfig user --org system:nodes --client-name
-system:node:master1.wang.org --config kubeadm-init.yaml
+system:node:master1.bowen.org --config kubeadm-init.yaml
 ```
 
 3. 将得到的 kubelet.conf 文件复制到故障节点上，作为 /etc/kubernetes/kubelet.conf 。
@@ -880,7 +796,6 @@ system:node:master1.wang.org --config kubeadm-init.yaml
 4. 在故障节点上重启 kubelet（systemctl restart kubelet ），等待/var/lib/kubelet/pki/kubelet-client-current.pem 重新创建。
 
 5. 手动编辑 kubelet.conf 指向轮换的 kubelet 客户端证书，方法是将 client-certificate-data和 client-key-data 替换为：
-
 ```text
 client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
@@ -891,128 +806,117 @@ client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
 7. 确保节点状况变为 Ready
 
 ### 3.3.2 范例：证书已经过期的情况，使用下面方法解决
-
-```text
+```bash
 #如果证书过期,出现下面提示错误
 [root@master1 ~]#kubectl get nodes
 E0416 08:54:51.411777   38932 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": x509:
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": x509:
 certificate has expired or is not yet valid: current time 2024-04-
 16T08:54:51+08:00 is after 2024-03-06T04:30:12Z
 E0416 08:54:51.415062   38932 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": x509:
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": x509:
 certificate has expired or is not yet valid: current time 2024-04-
 16T08:54:51+08:00 is after 2024-03-06T04:30:12Z
 E0416 08:54:51.418866   38932 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": x509:
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": x509:
 certificate has expired or is not yet valid: current time 2024-04-
 16T08:54:51+08:00 is after 2024-03-06T04:30:12Z
 E0416 08:54:51.422846   38932 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": x509:
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": x509:
 certificate has expired or is not yet valid: current time 2024-04-
 16T08:54:51+08:00 is after 2024-03-06T04:30:12Z
 E0416 08:54:51.426610   38932 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": x509:
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": x509:
 certificate has expired or is not yet valid: current time 2024-04-
 16T08:54:51+08:00 is after 2024-03-06T04:30:12Z
 Unable to connect to the server: x509: certificate has expired or is not yet
 valid: current time 2024-04-16T08:54:51+08:00 is after 2024-03-06T04:30:12Z
-```
 
-```text
 #或者重启后出现下面提示
 [root@master1 ~]#kubectl get nodes
 E0326 10:25:24.884044   42286 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0326 10:25:24.884842   42286 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0326 10:25:24.887876   42286 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0326 10:25:24.889820   42286 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0326 10:25:24.891463   42286 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
-The connection to the server kubeapi.wang.org:6443 was refused - did you specify
+The connection to the server kubeapi.bowen.org:6443 was refused - did you specify
 the right host or port?
-```
 
-```text
 #发现API Server 端口没有打开
 [root@master1 ~]#ss -ntl|grep 6443
-```
 
-```text
 #查看相关容器
 [root@master1 ~]#docker ps -a
 CONTAINER ID   IMAGE                                               COMMAND
 CREATED             STATUS                      PORTS     NAMES
-```
 
-```text
 5a6851984c46   63d3239c3c15                                        "kube-
 apiserver --ad…"   38 seconds ago      Exited (1) 17 seconds ago
-k8s_kube-apiserver_kube-apiserver-master1.wang.org_kube-
+k8s_kube-apiserver_kube-apiserver-master1.bowen.org_kube-
 system_fda209139dbd4aedcf2e79c2333d7121_390
 7fed7b7ee287   fce326961ae2                                        "etcd --
 advertise-cl…"   3 minutes ago       Up 3 minutes
-k8s_etcd_etcd-master1.wang.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_18
+k8s_etcd_etcd-master1.bowen.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_18
 ce8a65e3ed2c   db8f409d9a5d                                        "kube-
 scheduler --au…"   3 minutes ago       Up 3 minutes
-k8s_kube-scheduler_kube-scheduler-master1.wang.org_kube-
+k8s_kube-scheduler_kube-scheduler-master1.bowen.org_kube-
 system_c7993324932f5b798845ba77ed5138b2_18
 a562c4266b8e   240e201d5b0d                                        "kube-
 controller-man…"   3 minutes ago       Up 3 minutes
-k8s_kube-controller-manager_kube-controller-manager-master1.wang.org_kube-
+k8s_kube-controller-manager_kube-controller-manager-master1.bowen.org_kube-
 system_759c9b699af95705ce07bf1fd74c154a_18
 6d8ce649e9b8   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 3 minutes ago       Up 3 minutes
-k8s_POD_kube-scheduler-master1.wang.org_kube-
+k8s_POD_kube-scheduler-master1.bowen.org_kube-
 system_c7993324932f5b798845ba77ed5138b2_18
 ba2c51fbdb01   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 3 minutes ago       Up 3 minutes
-k8s_POD_kube-controller-manager-master1.wang.org_kube-
+k8s_POD_kube-controller-manager-master1.bowen.org_kube-
 system_759c9b699af95705ce07bf1fd74c154a_18
 c64496b10ee8   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 3 minutes ago       Up 3 minutes
-k8s_POD_kube-apiserver-master1.wang.org_kube-
+k8s_POD_kube-apiserver-master1.bowen.org_kube-
 system_fda209139dbd4aedcf2e79c2333d7121_18
 56de8805f5c6   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 3 minutes ago       Up 3 minutes
-k8s_POD_etcd-master1.wang.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_18
+k8s_POD_etcd-master1.bowen.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_18
 7fdbed942736   fce326961ae2                                        "etcd --
 advertise-cl…"   About an hour ago   Exited (0) 3 minutes ago
-k8s_etcd_etcd-master1.wang.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_17
+k8s_etcd_etcd-master1.bowen.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_17
 8781ac78dc2e   240e201d5b0d                                        "kube-
 controller-man…"   About an hour ago   Exited (2) 3 minutes ago
-k8s_kube-controller-manager_kube-controller-manager-master1.wang.org_kube-
+k8s_kube-controller-manager_kube-controller-manager-master1.bowen.org_kube-
 system_759c9b699af95705ce07bf1fd74c154a_17
 99ef3a5c1288   db8f409d9a5d                                        "kube-
 scheduler --au…"   About an hour ago   Exited (0) 3 minutes ago
-k8s_kube-scheduler_kube-scheduler-master1.wang.org_kube-
+k8s_kube-scheduler_kube-scheduler-master1.bowen.org_kube-
 system_c7993324932f5b798845ba77ed5138b2_17
 14376c3bba3c   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 About an hour ago   Exited (0) 3 minutes ago
-k8s_POD_kube-scheduler-master1.wang.org_kube-
+k8s_POD_kube-scheduler-master1.bowen.org_kube-
 system_c7993324932f5b798845ba77ed5138b2_17
 05d0ec4b6f3b   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 About an hour ago   Exited (0) 3 minutes ago
-k8s_POD_kube-controller-manager-master1.wang.org_kube-
+k8s_POD_kube-controller-manager-master1.bowen.org_kube-
 system_759c9b699af95705ce07bf1fd74c154a_17
 8c2895e929ff   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 About an hour ago   Exited (0) 3 minutes ago
-k8s_POD_etcd-master1.wang.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_17
+k8s_POD_etcd-master1.bowen.org_kube-system_cbdab6d9873f587f7bc39afad444ef28_17
 142e18a16d7a   7b7f3acab868
 "/opt/bin/flanneld -…"   4 weeks ago         Exited (255) 2 weeks ago
 k8s_kube-flannel_kube-flannel-ds-7z42x_kube-flannel_6d40601c-6c87-4f3b-9edb-
 db7d6af637f5_13
-```
 
-```text
 c7e8486a716b   7b7f3acab868                                        "cp -f
 /etc/kube-fla…"   4 weeks ago         Exited (0) 4 weeks ago
 k8s_install-cni_kube-flannel-ds-7z42x_kube-flannel_6d40601c-6c87-4f3b-9edb-
@@ -1032,12 +936,12 @@ k8s_install-cni-plugin_kube-flannel-ds-7z42x_kube-flannel_6d40601c-6c87-4f3b-
 4 weeks ago         Exited (255) 2 weeks ago
 k8s_POD_kube-flannel-ds-7z42x_kube-flannel_6d40601c-6c87-4f3b-9edb-
 db7d6af637f5_12
-```
 
-```text
 #查看kube-apiserver的容器日志,可以看到证书过期
+```
+```bash
 [root@master1 ~]#docker logs k8s_kube-apiserver_kube-apiserver-
-master1.wang.org_kube-system_fda209139dbd4aedcf2e79c2333d7121_390
+master1.bowen.org_kube-system_fda209139dbd4aedcf2e79c2333d7121_390
 I0326 01:50:21.890581       1 server.go:555] external host was not specified,
 using 10.0.0.200
 I0326 01:50:21.891531       1 server.go:163] Version: v1.26.2
@@ -1068,18 +972,12 @@ x509: certificate has expired or is not yet valid: current time 2024-03-
 26T01:50:22Z is after 2024-03-06T04:30:12Z"
 W0326 01:50:23.087709       1 logging.go:59] [core] [Channel #4 SubChannel #6]
 grpc: addrConn.createTransport failed to connect to {
-```
 
-```text
 #确认证书有效期已过期
 [root@master1 ~]#date
-```
 
-```text
 Tue Apr 16 09:06:18 AM CST 2024
-```
 
-```text
 #检查证书有效期
 [root@master1 ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the cluster...
@@ -1087,9 +985,7 @@ Tue Apr 16 09:06:18 AM CST 2024
 system get cm kubeadm-config -o yaml'
 [check-expiration] Error reading configuration from the Cluster. Falling back to
 default configuration
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 Mar 06, 2024 04:30 UTC   <invalid>       ca
@@ -1112,17 +1008,13 @@ front-proxy-client         Mar 06, 2024 04:30 UTC   <invalid>       front-proxy-
 ca          no
 scheduler.conf             Mar 06, 2024 04:30 UTC   <invalid>       ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Mar 04, 2033 04:30 UTC   8y              no
 etcd-ca                 Mar 04, 2033 04:30 UTC   8y              no
 front-proxy-ca          Mar 04, 2033 04:30 UTC   8y              no
-```
 
-```text
 #查看证书文件的生成时间
 [root@master1 ~]#ll /etc/kubernetes/pki
 total 68
@@ -1142,21 +1034,15 @@ drwxr-xr-x 2 root root 4096 Mar  4  2023 etcd/
 -rw-r--r-- 1 root root 1119 Mar  4  2023 front-proxy-client.crt
 -rw------- 1 root root 1679 Mar  4  2023 front-proxy-client.key
 -rw------- 1 root root 1679 Mar  4  2023 sa.key
-```
 
-```text
 -rw------- 1 root root  451 Mar  4  2023 sa.pub
-```
 
-```text
 #在所有master节点上执行下面操作更新证书有效期
 [root@master1 ~]#kubeadm certs renew all
 [renew] Reading configuration from the cluster...
 [renew] FYI: You can look at this config file with 'kubectl -n kube-system get
 cm kubeadm-config -o yaml'
-```
 
-```text
 certificate embedded in the kubeconfig file for the admin to use and for kubeadm
 itself renewed
 certificate for serving the Kubernetes API renewed
@@ -1172,22 +1058,16 @@ certificate embedded in the kubeconfig file for the scheduler manager to use
 renewed
 ```
 
-```text
-#提示重启kube-apiserver, kube-controller-manager, kube-scheduler and etcd
-Done renewing certificates. You must restart the kube-apiserver, kube-
-controller-manager, kube-scheduler and etcd, so that they can use the new
-certificates.
-```
 
-```text
+#提示重启kube-apiserver, kube-controller-manager, kube-scheduler and etcd Done renewing certificates. You must restart the kube-apiserver, kube-controller-manager, kube-scheduler and etcd, so that they can use the new certificates.
+
+```bash
 #确认证书有效期更新
 [root@master1 ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the cluster...
 [check-expiration] FYI: You can look at this config file with 'kubectl -n kube-
 system get cm kubeadm-config -o yaml'
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 Mar 26, 2025 01:55 UTC   364d            ca
@@ -1210,17 +1090,13 @@ front-proxy-client         Mar 26, 2025 01:55 UTC   364d            front-proxy-
 ca          no
 scheduler.conf             Mar 26, 2025 01:55 UTC   364d            ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Mar 04, 2033 04:30 UTC   8y              no
 etcd-ca                 Mar 04, 2033 04:30 UTC   8y              no
 front-proxy-ca          Mar 04, 2033 04:30 UTC   8y              no
-```
 
-```text
 #自动更新证书文件内容和时间
 [root@master1 ~]#ll /etc/kubernetes/pki/
 总计 68
@@ -1241,78 +1117,60 @@ drwxr-xr-x 2 root root 4096  3月  7  2023 etcd/
 -rw------- 1 root root 1679  3月 26 09:55 front-proxy-client.key
 -rw------- 1 root root 1679  3月  7  2023 sa.key
 -rw------- 1 root root  451  3月  7  2023 sa.pub
-```
 
-```text
 #发现只有kubelet.conf文件没有更新
 [root@master1 ~]#ll /etc/kubernetes/*.conf
 -rw-r--r-- 1 root root 1322  3月 26 09:55 /etc/kubernetes/admin.conf
 -rw-r--r-- 1 root root 1322  3月 26 09:55 /etc/kubernetes/controller-manager.conf
 -rw------- 1 root root 2004  3月  7  2023 /etc/kubernetes/kubelet.conf
 -rw-r--r-- 1 root root 1322  3月 26 09:55 /etc/kubernetes/scheduler.conf
-```
 
-```text
 #kubeconfig文件也自动更新
 [root@master1 ~]#ll /etc/kubernetes/admin.conf
 -rw------- 1 root root 5644  3月 26 09:55 /etc/kubernetes/admin.conf
-```
 
-```text
 #所有Master节点上的kubeconfig文件也需要更新
 [root@k8s-master ~]#ll  /etc/kubernetes/admin.conf $HOME/.kube/config
 -rw------- 1 root root 5644  3月 26 09:55 /etc/kubernetes/admin.conf
 -rw------- 1 root root 5644  3月  7  2023 /root/.kube/config
-```
 
-```text
 #更新和覆盖kubeconfig文件
 [root@master1 ~]#cp  /etc/kubernetes/admin.conf $HOME/.kube/config
-```
 
-```text
 #确认
 [root@master1 ~]#ll !*
 ll /etc/kubernetes/admin.conf $HOME/.kube/config
 -rw------- 1 root root 5644  3月 26 09:55 /etc/kubernetes/admin.conf
 -rw------- 1 root root 5644  3月 26 09:55 /root/.kube/config
-```
 
-```text
 #在所有master节点上执行仍然失败
 [root@master1 ~]#kubectl delete pod -n kube-system -l 'component in (etcd,kube-
 apiserver,kube-controller-manager,kube-scheduler)'
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n kube-system | awk '/^(kube-apiserver|kube-
 controller-manager|kube-scheduler|etcd)/{print $1}'|xargs kubectl -n kube-system
 delete pod --force --grace-period=0
-```
 
-```text
 #因为Kubelet 客户端证书轮换失败导致仍然失败
 [root@master1 ~]#kubectl get nodes
 E0416 09:14:25.408132    2404 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0416 09:14:25.408934    2404 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0416 09:14:25.410427    2404 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0416 09:14:25.413151    2404 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
 E0416 09:14:25.415127    2404 memcache.go:238] couldn't get current server API
-group list: Get "https://kubeapi.wang.org:6443/api?timeout=32s": dial tcp
+group list: Get "https://kubeapi.bowen.org:6443/api?timeout=32s": dial tcp
 10.0.0.200:6443: connect: connection refused
-The connection to the server kubeapi.wang.org:6443 was refused - did you specify
+The connection to the server kubeapi.bowen.org:6443 was refused - did you specify
 the right host or port?
-```
 
-```text
 #查看服务无法启动
 [root@master1 ~]#systemctl status kubelet.service
 ● kubelet.service - kubelet: The Kubernetes Node Agent
@@ -1329,29 +1187,21 @@ Main PID: 2211 (code=exited, status=1/FAILURE)
 CPU: 55ms
 ```
 
-```text
-3月 31 10:13:26 master1.wang.org systemd[1]: kubelet.service: Main process
-exited, code=exited, status=1/FAILURE
-3月 31 10:13:26 master1.wang.org systemd[1]: kubelet.service: Failed with result
-'exit-code'.
-```
 
-```text
+3月 31 10:13:26 master1.bowen.org systemd[1]: kubelet.service: Main process exited, code=exited, status=1/FAILURE 3月 31 10:13:26 master1.bowen.org systemd[1]: kubelet.service: Failed with result'exit-code'.
+
+```yaml
 #查看日志，提示证书过期
 [root@master1 ~]#journalctl -u kubelet.service |grep  expired
-3月 31 10:01:29 master1.wang.org kubelet[2024]: E0331 10:01:29.662259    2024
+3月 31 10:01:29 master1.bowen.org kubelet[2024]: E0331 10:01:29.662259    2024
 bootstrap.go:265] part of the existing bootstrap client certificate in
 /etc/kubernetes/kubelet.conf is expired: 2024-03-03 15:36:25 +0000 UTC
-```
 
-```text
 [root@master1 ~]#cat /etc/kubernetes/kubelet.conf
 apiVersion: v1
 clusters:
 - cluster:
-```
 
-```text
 certificate-authority-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJek1ETXdOREUxTXpZ
@@ -1372,24 +1222,22 @@ cFBFT1hFTE4zc0hJVGYwMDhFN3RoOFA4RFFRYTlCSC8ycFR3SQpFTzNvL1MxZysyMDZVdW91WDBzNDd2
 WnRycW5uKzZaVHZ5amR6THYveXRGcnc2RHNXbWt4cjkxcHdYVVVsU2FzClhGbnovMkJLa0JHS1kvRzRw
 bG5xTEFRcFhwT28yYmdIb0FvR2oydzZQcGd6aWR6S1JGTkpUK0xwbUVVUTQ4SksKQ1pVPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
 cluster: kubernetes
-user: system:node:master1.wang.org
-name: system:node:master1.wang.org@kubernetes
-current-context: system:node:master1.wang.org@kubernetes
+user: system:node:master1.bowen.org
+name: system:node:master1.bowen.org@kubernetes
+current-context: system:node:master1.bowen.org@kubernetes
 kind: Config
 preferences: {}
 users:
-- name: system:node:master1.wang.org
+- name: system:node:master1.bowen.org
 user:
 client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
-```
 
-```text
 #查看证书没有更新
 [root@master1 ~]#ll /var/lib/kubelet/pki/
 总计 20
@@ -1400,9 +1248,7 @@ lrwxrwxrwx 1 root root   59  3月  4  2023 kubelet-client-current.pem ->
 /var/lib/kubelet/pki/kubelet-client-2023-03-04-23-36-26.pem
 -rw-r--r-- 1 root root 2307  3月  4  2023 kubelet.crt
 -rw------- 1 root root 1675  3月  4  2023 kubelet.key
-```
 
-```text
 #文件中保存证书和key
 [root@master1 ~]#cat /var/lib/kubelet/pki/kubelet-client-current.pem
 -----BEGIN CERTIFICATE-----
@@ -1414,9 +1260,7 @@ X3zg87xNUnTG7SkhK1Avm5bXpzqHHCRVp5hjNrsipLYBtj7fVaD4Vr4BcFWpT99l
 OwNIcFV4wmEqcmUpyEUWW2uj5tNDYE576KBl2p5xdVcdvh3AWxNqoffOn/v9yCKX
 cXr4Dg+cnSyiIf/4bo3Ww04Khbzy657dLs7Tidngp5tAWcAbBTFuFwTz8tcRcut6
 LKKsXv+dWARMCGdxW9bdqLk3ArLvOC8H5rtAO/d8kHlPtjyWHbhnUrHHlGNDJh7y
-```
 
-```text
 fbBGf7BCEtWPJ7kOeeC1UBUpQi3/YRai/dY6At8UmSMOdeiozxrgUpRXozVvrTnt
 u3G/cVc5dNrI9HpmJcsCAwEAAaNWMFQwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQM
 MAoGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUjy6wDRMtFLfe
@@ -1430,9 +1274,7 @@ kLAclbXx3i+QxCh2ve1qUMQKtlzq76+IQLnJoxzWrY66tY2Agke6qOH4R59bvFY=
 -----BEGIN RSA PRIVATE KEY-----
 <REDACTED_PRIVATE_KEY>
 -----END RSA PRIVATE KEY-----
-```
 
-```text
 [root@master1 ~]#openssl x509 -in /var/lib/kubelet/pki/kubelet-client-current.pem
 -noout -text
 Certificate:
@@ -1444,37 +1286,31 @@ Issuer: CN = kubernetes
 Validity
 Not Before: Mar  7 04:30:12 2023 GMT
 Not After : Mar  6 04:30:13 2024 GMT
-Subject: O = system:nodes, CN = system:node:master1.wang.org
-```
+Subject: O = system:nodes, CN = system:node:master1.bowen.org
 
-```text
 [root@master1 ~]#openssl x509 -in /var/lib/kubelet/pki/kubelet-client-current.pem
 -noout -dates
 notBefore=Mar  7 04:30:12 2023 GMT
 notAfter=Mar  6 04:30:13 2024 GMT
-```
 
-```text
 #更新kubelet的客户端证书
-```
 
-```text
 #方法1：
 #生成初始化文件
+```
+```bash
 [root@master1 ~]#cp /etc/kubernetes/kubelet.conf{,.bak}
 #基于上面文件对应节点的生成证书信息
 #方法1
 [root@master1 ~]#kubeadm kubeconfig user --org system:nodes --client-name
-system:node:master1.wang.org > /etc/kubernetes/kubelet.conf
-```
+system:node:master1.bowen.org > /etc/kubernetes/kubelet.conf
 
-```text
 #方法2：
 [root@master1 ~]#kubeadm kubeconfig user --org system:nodes --client-name
-system:node:master1.wang.org | tail -n 3 >> /etc/kubernetes/kubelet.conf
+system:node:master1.bowen.org | tail -n 3 >> /etc/kubernetes/kubelet.conf
 [root@master1 ~]#vim /etc/kubernetes/kubelet.conf
 users:
-- name: system:node:master1.wang.org
+- name: system:node:master1.bowen.org
 user: 将下面两行注释或删除
 #client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 #client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
@@ -1482,26 +1318,22 @@ client-certificate-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURLekNDQWhPZ0F3SUJBZ0l.....
 client-key-data:
 LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBcVJFZ0p......
-```
 
-```text
 #可选，会自动重启
 [root@master1 ~]#systemctl restart kubelet.service
-```
 
-```text
 #在所有节点重复上面过程，修改kubelet.conf文件
 #方法1
 [root@master1 ~]#kubeadm kubeconfig user --org system:nodes --client-name
-system:node:nodeX.wang.org > nodeX.conf
+system:node:nodeX.bowen.org > nodeX.conf
 #方法2
 [root@master1 ~]#kubeadm kubeconfig user --org system:nodes --client-name
-system:node:nodeX.wang.org |tail -n 3 >> nodeX.conf
+system:node:nodeX.bowen.org |tail -n 3 >> nodeX.conf
 [root@master1 ~]#scp nodeX.conf nodeX:
 [root@nodeX ~]#cat nodeX.conf >>  /etc/kubernetes/kubelet.conf
 [root@nodeX ~]#vim /etc/kubernetes/kubelet.conf
 users:
-- name: system:node:master1.wang.org
+- name: system:node:master1.bowen.org
 user: 将下面两行注释或删除
 #client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 #client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
@@ -1509,21 +1341,15 @@ client-certificate-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURLekNDQWhPZ0F3SUJBZ0l.....
 client-key-data:
 LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBcVJFZ0p......
-```
 
-```text
 [root@nodeX ~]#systemctl restart kubelet.service
-```
 
-```text
 #方法2: 直接修改kubelet.conf文件
 #复制admin.conf最后两行
 [root@master1 ~]#cp /etc/kubernetes/kubelet.conf{,.bak}
 [root@master1 ~]#tail -n2 /etc/kubernetes/admin.conf  >>
 /etc/kubernetes/kubelet.conf
-```
 
-```text
 client-certificate-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lJWVQyZ1AzSkgyMmd3
 RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TXpB
@@ -1574,39 +1400,31 @@ bFAwWTduQkYyOEd4RGJKbk5TNEkxClhpNmJBb0dCQU9GMzh3aGE2Ui9xQVJoWnQ4R0x0clZsL1ZiWXlG
 UW10UGRZcW1KR29lY3RxMEFXR3hMQlM4ZWsKbFRkOURGK2JCemp0M1FhdUU2ZkhGbUk0Y256NmxjVnZ3
 OTY4SnB6MWdqTC9Rc2lzaE5ZdDg1UFlEeFg3MmxtZwpoa3ZpNzVxaEFMNXZ1d3hpYzZGdG4wTktUVkFm
 RU1BTlY0Y1ZOWll3MGllZ21QZUhsZncxCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
-```
 
-```text
 #修改kubelet.conf文件，将上面操作增加的两行替换此文件的最后两行
+```
+```bash
 [root@master1 ~]#vim /etc/kubernetes/kubelet.conf
 #删除下面两行
 client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
-```
 
-```text
 [root@master1 ~]#systemctl restart kubelet.service
-```
 
-```text
 #确认只有当前节点正常,其它节点仍然异常
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS     ROLES           AGE    VERSION
-master1.wang.org   Ready      control-plane   392d   v1.26.2
-node1.wang.org     NotReady   <none>          392d   v1.26.2
-node2.wang.org     NotReady   <none>          392d   v1.26.2
-node3.wang.org     NotReady   <none>          392d   v1.26.2
-```
+master1.bowen.org   Ready      control-plane   392d   v1.26.2
+node1.bowen.org     NotReady   <none>          392d   v1.26.2
+node2.bowen.org     NotReady   <none>          392d   v1.26.2
+node3.bowen.org     NotReady   <none>          392d   v1.26.2
 
-```text
 #在所有节点修改kubelet.conf文件
 [root@master1 ~]#rsync -a /etc/kubernetes/kubelet.conf
-node{1..3}.wang.org:/etc/kubernetes/kubelet.conf
+node{1..3}.bowen.org:/etc/kubernetes/kubelet.conf
 #所有节点重启服务,可选
 [root@node1 ~]#systemctl restart kubelet.service
-```
 
-```text
 #方法3:
 #重新创建软链接
 [root@master1 ~]#rm -f /var/lib/kubelet/pki/kubelet-client-current.pem
@@ -1627,18 +1445,14 @@ cHRZWE4wWlhKek1S.....
 S0QwQ2p6QnVZakYKZ1dOcmFtUC93dDFIa3Z1UTUzdjM5Q3JpcXpmd1ZpZHlFbW9mVEhaWFJvbytMbHF5
 VkE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg== |base64 -d  >
 /var/lib/kubelet/pki/kubelet-client-current.pem
-```
 
-```text
 [root@master1 ~]#echo
 LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBNWZnM21pVnh4bExu
 QVU2NkhyUERua0NjZmZES0VxT3BraUNBbGtvM3MxZzFOdkdQ
 .....
 MGllZ21QZUhsZncxCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg== | base64 -d >>
 /var/lib/kubelet/pki/kubelet-client-current.pem
-```
 
-```text
 #确定文件更新
 [root@master1 ~]#cat /var/lib/kubelet/pki/kubelet-client-current.pem
 -----BEGIN CERTIFICATE-----
@@ -1654,9 +1468,7 @@ Yvgu4oQct0i1Fcdnn0yiwKwhiGFzlOTUrUv/z1fY9a1urZQ0fs5UchnbGIqTEmMZ
 eLQe5QIDAQABo1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUH
 AwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQYBw71g89xRG+mdl4X756AouGI
 LTANBgkqhkiG9w0BAQsFAAOCAQEAIn/uJmkApBv6RbpyTE8YQvkzJi9vp0UMk+nW
-```
 
-```text
 ZE/vW90dOoB/ejt2z0NuEm+btlzfKSbSU/Q4s89yco3ztFRncCDfQLpgVgs2jxzD
 JvQX0mLarwGkOdpOz6xl1gHz5LohQBg/qXnDm8en43Hx3Q7BETIvlXwkDUY/kHXk
 JIU7Igm6cDsB1aCbY9m6deQieattgFAbQPDrZBeLb3vgHZkn4uy3/zY60WiwS9Iq
@@ -1666,9 +1478,7 @@ gWNramP/wt1HkvuQ53v39CriqzfwVidyEmofTHZXRoo+LlqyVA==
 -----BEGIN RSA PRIVATE KEY-----
 <REDACTED_PRIVATE_KEY>
 -----END RSA PRIVATE KEY-----
-```
 
-```text
 #确认证书文件更新
 [root@master1 ~]#ll /var/lib/kubelet/pki
 total 24
@@ -1680,39 +1490,29 @@ lrwxrwxrwx 1 root root   59 Apr 16 09:35 kubelet-client-current.pem ->
 /var/lib/kubelet/pki/kubelet-client-2024-04-16-09-28-28.pem
 -rw-r--r-- 1 root root 2307 Mar  7  2023 kubelet.crt
 -rw------- 1 root root 1675 Mar  7  2023 kubelet.key
-```
 
-```text
 #在所有节点同步证书信息
 [root@master1 ~]#rsync -a /var/lib/kubelet/pki/*.pem
-node{1..3}.wang.org:/var/lib/kubelet/pki/
-```
+node{1..3}.bowen.org:/var/lib/kubelet/pki/
 
-```text
 #所有节点重启服务,可选
 [root@node1 ~]#systemctl restart kubelet.service
-```
 
-```text
 #最后确认所有节点正常
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS   ROLES           AGE    VERSION
-master1.wang.org   Ready    control-plane   392d   v1.26.2
-node1.wang.org     Ready    <none>          392d   v1.26.2
-```
+master1.bowen.org   Ready    control-plane   392d   v1.26.2
+node1.bowen.org     Ready    <none>          392d   v1.26.2
 
-```text
-node2.wang.org     Ready    <none>          392d   v1.26.2
-node3.wang.org     Ready    <none>          392d   v1.26.2
-```
+node2.bowen.org     Ready    <none>          392d   v1.26.2
+node3.bowen.org     Ready    <none>          392d   v1.26.2
 
-```text
 #测试创建Pod
-[root@master1 ~]#kubectl create  deployment myapp --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1  --replicas=3
 ```
+```bash
+[root@master1 ~]#kubectl create  deployment myapp --image=registry.cn-
+beijing.aliyuncs.com/bowen/pod-test:v0.1  --replicas=3
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-7bbdff8fc8-b74fx   1/1     Running   0          17m
@@ -1721,17 +1521,14 @@ myapp-7bbdff8fc8-tdgqn   1/1     Running   0          17m
 ```
 
 ## 3.4 Kubernetes 证书终极解决方案"永久有效"
-
-```text
+```bash
 #检查证书当前有效期
 [root@master1 ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the "kubeadm-config" ConfigMap in
 namespace "kube-system"...
 [check-expiration] Use 'kubeadm init phase upload-config --config your-
 config.yaml' to re-upload it.
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 Dec 19, 2025 01:05 UTC   211d            ca
@@ -1756,33 +1553,23 @@ scheduler.conf             Dec 19, 2025 01:05 UTC   211d            ca
 no
 super-admin.conf           Dec 19, 2025 01:05 UTC   211d            ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Dec 17, 2034 01:05 UTC   9y              no
 etcd-ca                 Dec 17, 2034 01:05 UTC   9y              no
 front-proxy-ca          Dec 17, 2034 01:05 UTC   9y              no
-```
 
-```text
 [root@master1 ~]#apt update && apt -y  install git
-```
 
-```text
 #查看当前版本
-```
 
-```text
 [root@master1 ~]#kubeadm version
 kubeadm version: &version.Info{Major:"1", Minor:"32", GitVersion:"v1.32.0",
 GitCommit:"70d3cc986aa8221cd1dfb1121852688902d3bf53", GitTreeState:"clean",
 BuildDate:"2024-12-11T18:04:20Z", GoVersion:"go1.23.3", Compiler:"gc",
 Platform:"linux/amd64"}
-```
 
-```text
 #下载指定版本的源码
 #方法1：全部下载,此方式下载慢,不推存
 [root@master1 ~]#git clone   https://githubfast.com/kubernetes/kubernetes.git
@@ -1795,18 +1582,14 @@ Platform:"linux/amd64"}
 [root@master1 kubernetes]#git branch
 master
 * release-1.32
-```
 
-```text
 #方法2: 只下载指定版本的分支,此方式下载更,推存使用
 [root@master1 ~]#git clone --depth 1  --branch v1.32.0
 https://github.com/kubernetes/kubernetes.git
 Cloning into 'kubernetes'...
 fatal: unable to access 'https://github.com/kubernetes/kubernetes.git/': Failed
 to connect to github.com port 443 after 21059 ms: Connection refused
-```
 
-```text
 #如果下载失败，可以用如下代理重新下载
 [root@master1 ~]#git clone --depth 1  --branch v1.32.0
 https://githubfast.com/kubernetes/kubernetes.git
@@ -1821,61 +1604,38 @@ Resolving deltas: 100% (7422/7422), done.
 Note: switching to '70d3cc986aa8221cd1dfb1121852688902d3bf53'.
 ```
 
-```text
-You are in 'detached HEAD' state. You can look around, make experimental
-changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by switching back to a branch.
-```
 
-```text
+You are in 'detached HEAD' state. You can look around, make experimental changes and commit them, and you can discard any commits you make in this state without impacting any branches by switching back to a branch.
+
+```bash
 If you want to create a new branch to retain commits you create, you may
 do so (now or later) by using -c with the switch command. Example:
-```
 
-```text
 git switch -c <new-branch-name>
-```
 
-```text
 Or undo this operation with:
-```
 
-```text
 git switch -
-```
 
-```text
 Turn off this advice by setting config variable advice.detachedHead to false
-```
 
-```text
 Updating files: 100% (26242/26242), done.
-```
 
-```text
 #查看大小
-```
 
-```text
 [root@master1 ~]#du -sh kubernetes/
 353M    kubernetes/
-```
 
-```text
 [root@master1 ~]#cd kubernetes/
 [root@master1 kubernetes]#git log
 commit 70d3cc986aa8221cd1dfb1121852688902d3bf53 (grafted, HEAD, tag: v1.32.0)
 Author: Kubernetes Release Robot <k8s-release-robot@users.noreply.github.com>
 Date:   Wed Dec 11 17:59:15 2024 +0000
-```
 
-```text
 Release commit for Kubernetes v1.32.0
 [root@master1 kubernetes]#git branch
 * (no branch)
-```
 
-```text
 #修改源码中的证书有效期
 #1)修改ca证书到200年,注意：1.32版本以前版本才需要修改此文件,1.32版本以后无需修改此文件
 [root@master1 kubernetes]#vim staging/src/k8s.io/client-go/util/cert/cert.go
@@ -1887,9 +1647,7 @@ NotAfter:              now.Add(duration365d * 200).UTC(),  #修改为此行
 KeyUsage:              x509.KeyUsageKeyEncipherment |
 x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 ......
-```
 
-```text
 #2)修改指定服务器的证书的有效期,1.32版本以后只需修改此文件
 #把24*365 换成 24*365*100
 [root@master1 ~]#cd kubernetes/
@@ -1898,9 +1656,7 @@ x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 // CertificateValidity defines the validity for all the signed certificates
 generated by kubeadm
 CertificateValidity = time.Hour * 24 * 365 * 100 #1.30版之前修改此行
-```
 
-```text
 #1.32版之后
 // CertificateValidityPeriod defines the validity period for all the signed
 certificates generated by kubeadm
@@ -1912,55 +1668,37 @@ signed CA certificates generated by kubeadm
 // CACertificateValidityPeriod = time.Hour * 24 * 365 * 10 #原代码,修改为如下
 CACertificateValidityPeriod = time.Hour * 24 * 365 * 200 #修改此行,指定CA的证书
 的有效期200年
-```
 
-```text
 #编译一两分钟
 [root@master1 kubernetes]#apt update && apt -y  install make
 [root@master1 kubernetes]#make all WHAT=cmd/kubeadm GOFLAGS=-v
-```
 
-```text
 #编译完成以后，获取对应的kubeadm二进制包。
 [root@master1 kubernetes]#ls -l _output/bin/kubeadm
 -rwxr-xr-x 1 root root 70942872 May 20 18:06 _output/bin/kubeadm
-```
 
-```text
 [root@master1 kubernetes]#_output/bin/kubeadm version
-```
 
-```text
 kubeadm version: &version.Info{Major:"1", Minor:"32+", GitVersion:"v1.32.0-
 dirty", GitCommit:"70d3cc986aa8221cd1dfb1121852688902d3bf53",
 GitTreeState:"dirty", BuildDate:"2025-05-20T10:03:36Z", GoVersion:"go1.23.3",
 Compiler:"gc", Platform:"linux/amd64"}
-```
 
-```text
 #查看当前版本的kubeadm路径
 [root@master1 kubernetes]#which kubeadm
 /usr/bin/kubeadm
-```
 
-```text
 [root@master1 kubernetes]#ls -l /usr/bin/kubeadm
 -rwxr-xr-x 1 root root 70942872 Dec 12 02:37 /usr/bin/kubeadm
-```
 
-```text
 #在所有节点上覆盖当前版本的kubeadm命令
 [root@master1 kubernetes]#cp -b _output/bin/kubeadm /usr/bin/kubeadm
-[root@master1 kubernetes]#scp /usr/bin/kubeadm nodeX.wang.org:/usr/bin/kubeadm
-```
+[root@master1 kubernetes]#scp /usr/bin/kubeadm nodeX.bowen.org:/usr/bin/kubeadm
 
-```text
 [root@master1 kubernetes]#ls /usr/bin/kubeadm* -l
 -rwxr-xr-x 1 root root 70942872 May 20 18:09 /usr/bin/kubeadm
 -rwxr-xr-x 1 root root 70942872 Dec 12 02:37 /usr/bin/kubeadm~
-```
 
-```text
 #更新CA和服务的证书,注意:只能重新安装k8s集群才能更新有效期生效,只执行kubeadm certs renew
 all是不生效的
 #如果已经安装好的Kubernetes集群,需要先删除Kubernetes集群再重新创建和初始化Kubernetes集群
@@ -1975,22 +1713,20 @@ all是不生效的
 4) 退出本程序
 请选择编号(1-4): 3
 #所有其它节点重新退出并加入集群
+```
+```bash
 [root@nodeX ~]#bash install/install_kubernetes_docker.sh
 1) 初始化新的Kubernetes集群
 2) 加入已有的Kubernetes集群
 3) 退出Kubernetes集群
 4) 退出本程序
 请选择编号(1-4): 3
-```
 
-```text
 #如果没有安装Kubernetes集群,利用新版本的kubeadm 创建集群
 #方法1:手动执行命令
 [root@master1 ~]#kubeadm init .....
 [root@nodeX ~]#kubeadm join .....
-```
 
-```text
 #方法2:基于脚本创建k8s
 [root@master1 ~]#bash install/install_kubernetes_docker.sh
 1) 初始化新的Kubernetes集群
@@ -2002,24 +1738,18 @@ all是不生效的
 [root@nodeX ~]#bash install/install_kubernetes_docker.sh
 1) 初始化新的Kubernetes集群
 2) 加入已有的Kubernetes集群
-```
 
-```text
 3) 退出Kubernetes集群
 4) 退出本程序
 请选择编号(1-4): 2
-```
 
-```text
 #验证和检查证书有效期已经永久
 [root@master1 ~]#kubeadm certs check-expiration
 [check-expiration] Reading configuration from the "kubeadm-config" ConfigMap in
 namespace "kube-system"...
 [check-expiration] Use 'kubeadm init phase upload-config --config your-
 config.yaml' to re-upload it.
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 Apr 26, 2125 10:20 UTC   99y             ca
@@ -2044,22 +1774,16 @@ scheduler.conf             Apr 26, 2125 10:20 UTC   99y             ca
 no
 super-admin.conf           Apr 26, 2125 10:20 UTC   99y             ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Apr 02, 2225 10:20 UTC   199y            no
 etcd-ca                 Apr 02, 2225 10:20 UTC   199y            no
 front-proxy-ca          Apr 02, 2225 10:20 UTC   199y            no
-```
 
-```text
 #手动更新授权文件
 [root@master1 ~]#cp /etc/kubernetes/admin.conf  .kube/config
-```
 
-```text
 #检查证书
 [root@master1 ~]#ll /etc/kubernetes/pki/
 [root@master1 ~]#openssl x509 -in /etc/kubernetes/pki/apiserver.crt -dates -

@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Kubeasz 二进制部署与集群初始化'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -30,9 +31,9 @@ kubeasz 通过cncf一致性测试
 
 github链接：
 
-```text
-https://github.com/easzlab/kubeasz
-```
+
+- <https://github.com/easzlab/kubeasz>
+
 
 ![原 PDF 第 150 页插图](assets/Kubernetes架构和部署/img-a5c557c54baf2e3b.png)
 
@@ -42,9 +43,9 @@ https://github.com/easzlab/kubeasz
 
 **单机快速体验k8s集群的测试环境--AllinOne部署**
 
-```text
-https://github.com/easzlab/kubeasz/blob/master/docs/setup/quickStart.md
-```
+
+- <https://github.com/easzlab/kubeasz/blob/master/docs/setup/quickStart.md>
+
 
 **基础系统配置**
 
@@ -53,8 +54,7 @@ https://github.com/easzlab/kubeasz/blob/master/docs/setup/quickStart.md
 注意: 确保在干净的系统上开始安装，不能使用曾经装过kubeadm或其他k8s发行版的环境。
 
 #### 3.6.2.2 案例: 部署ALL IN ONE
-
-```text
+```bash
 #下载工具脚本ezdown
 [root@ubuntu2204 ~]#export release=3.6.3
 [root@ubuntu2204 ~]#wget
@@ -64,16 +64,12 @@ https://github.com/easzlab/kubeasz/releases/download/${release}/ezdown
 https://mirror.ghproxy.com/https://github.com/easzlab/kubeasz/releases/download/
 ${release}/ezdown
 [root@ubuntu2204 ~]#chmod +x ./ezdown
-```
 
-```text
 [root@ubuntu2204 ~]#wc -l ./ezdown
 767 ./ezdown
 [root@ubuntu2204 ~]#file ./ezdown
 ./ezdown: Bourne-Again shell script, ASCII text executable
-```
 
-```text
 [root@ubuntu2204 ~]#head -20 ./ezdown
 #!/bin/bash
 #--------------------------------------------------
@@ -89,18 +85,14 @@ set -o nounset
 set -o errexit
 set -o pipefail
 #set -o xtrace
-```
 
-```text
 # default settings, can be overridden by cmd line options, see usage
 DOCKER_VER=24.0.7
 KUBEASZ_VER=3.6.3
 K8S_BIN_VER=v1.29.0
 # https://github.com/easzlab/dockerfile-kubeasz-ext-bin
 EXT_BIN_VER=1.9.0
-```
 
-```text
 #查看脚本功能
 [root@ubuntu2204 ~]#./ezdown
 Usage: ezdown [options] [args]
@@ -116,9 +108,7 @@ option:
 -k <ver>   set kubeasz-k8s-bin version, default "v1.29.0"
 -m <str>   set docker registry mirrors, default "CN"(used in Mainland,China)
 -z <ver>   set kubeasz version, default "3.6.3"
-```
 
-```text
 #下载kubeasz代码、二进制、默认容器镜像
 [root@ubuntu2204 ~]#./ezdown -D
 ......
@@ -131,29 +121,21 @@ e3e5579ddd43: Pushed
 sha256:3ec9d4ec5512356b5e77b13fddac2e9016e7aba17dd295ae23c94b2b901813de size:
 527
 2024-04-10 22:34:27 INFO Action successed: download_all
-```
 
-```text
 #查看下载的目录
-```
 
-```text
 [root@ubuntu2204 ~]#ls /etc/kubeasz/
 ansible.cfg  bin  clusters  docs  down  example  ezctl  ezdown  manifests  pics
 playbooks  README.md  roles  tools
 [root@ubuntu2204 ~]#du -sh /etc/kubeasz/
 2.5G    /etc/kubeasz/
-```
 
-```text
 [root@ubuntu2204 ~]#docker ps
 CONTAINER ID   IMAGE        COMMAND                   CREATED              STATUS
 PORTS     NAMES
 31d758c141dd   registry:2   "/entrypoint.sh /etc…"   About a minute ago   Up
 About a minute             local_registry
-```
 
-```text
 [root@ubuntu2204 ~]#docker images
 REPOSITORY                                           TAG       IMAGE ID
 CREATED         SIZE
@@ -199,15 +181,13 @@ easzlab.io.local:5000/kubernetesui/dashboard         v2.7.0    07655ddf2eeb   19
 months ago   246MB
 kubernetesui/metrics-scraper                         v1.0.8    115053965e86   22
 months ago   43.8MB
-```
 
-```text
 easzlab.io.local:5000/kubernetesui/metrics-scraper   v1.0.8    115053965e86   22
 months ago   43.8MB
-```
 
-```text
 #容器化运行 kubeasz
+```
+```bash
 [root@ubuntu2204 ~]#./ezdown -S
 2024-04-10 22:36:44 INFO Action begin: start_kubeasz_docker
 Loaded image: easzlab/kubeasz:3.6.3
@@ -217,9 +197,7 @@ Loaded image: easzlab/kubeasz:3.6.3
 # 10.0.0.100:22 SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.1
 7784c92c88c4c05dc94930dfc5ac32ed644861efdcc9a4f5d481ca8f2dc4a6e0
 2024-04-10 22:36:45 INFO Action successed: start_kubeasz_docker
-```
 
-```text
 #查看到启动的容器kubeasz
 [root@ubuntu2204 ~]#docker ps
 CONTAINER ID   IMAGE                   COMMAND                   CREATED
@@ -228,9 +206,7 @@ STATUS              PORTS     NAMES
 ago   Up About a minute             kubeasz
 31d758c141dd   registry:2              "/entrypoint.sh /etc…"   4 minutes ago
 Up 4 minutes                  local_registry
-```
 
-```text
 #使用默认配置基于Ansible安装 aio 集群
 [root@ubuntu2204 ~]#docker exec -it kubeasz ezctl start-aio
 2024-04-10 22:38:18 INFO get local host ipadd: 10.0.0.100
@@ -259,16 +235,12 @@ TASK [cluster-addon : 准备 dashboard的部署文件]
 changed: [localhost] => (item=kubernetes-dashboard.yaml)
 changed: [localhost] => (item=admin-user-sa-rbac.yaml)
 changed: [localhost] => (item=read-user-sa-rbac.yaml)
-```
 
-```text
 TASK [cluster-addon : 创建 dashboard部署]
 ********************************************************************************
 **************************
 changed: [localhost]
-```
 
-```text
 PLAY RECAP
 ********************************************************************************
 *********************************************************
@@ -276,22 +248,16 @@ PLAY RECAP
 skipped=204  rescued=0    ignored=0
 localhost                  : ok=43   changed=40   unreachable=0    failed=0
 skipped=50   rescued=0    ignored=0
-```
 
-```text
 #验证安装
 [root@ubuntu2204 ~]#tail -4 .bashrc
 alias dk='docker exec -it kubeasz'  # generated by kubeasz
 export PATH=/opt/kube/bin:$PATH  # generated by kubeasz:custom PATH
 source <(crictl completion bash) # generated by kubeasz
 source <(kubectl completion bash) # generated by kubeasz
-```
 
-```text
 [root@ubuntu2204 ~]#source ~/.bashrc
-```
 
-```text
 #docker查看容器
 [root@ubuntu2204 ~]#docker ps
 CONTAINER ID   IMAGE                   COMMAND                   CREATED
@@ -300,9 +266,7 @@ STATUS          PORTS     NAMES
 Up 9 minutes              kubeasz
 31d758c141dd   registry:2              "/entrypoint.sh /etc…"   12 minutes ago
 Up 12 minutes             local_registry
-```
 
-```text
 #使用crictl工具查看容器，对比docker不同
 [root@ubuntu2204 ~]#crictl ps
 CONTAINER           IMAGE               CREATED             STATE
@@ -329,27 +293,20 @@ b7df5c26de460       b32f991981530       5 minutes ago       Running
 calico-kube-controllers     0                   4c616e1208d19       calico-kube-
 controllers-5994f46b69-7fjmj
 ```
-
-```text
+```bash
 [root@ubuntu2204 ~]#kubectl version
 Client Version: v1.29.0
 Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 Server Version: v1.29.0
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl get nodes
 NAME         STATUS   ROLES    AGE   VERSION
 10.0.0.100   Ready    master   18m   v1.29.0
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl top nodes
 NAME         CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
 10.0.0.100   62m          3%     1006Mi          61%
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl get pod -A
 NAMESPACE     NAME                                         READY   STATUS
 RESTARTS   AGE
@@ -367,9 +324,7 @@ kube-system   metrics-server-dfb478476-qzn8x               1/1     Running   0
 18m
 kube-system   node-local-dns-sb266                         1/1     Running   0
 18m
-```
 
-```text
 #查看容器
 [root@ubuntu2204 ~]#crictl ps
 CONTAINER           IMAGE               CREATED             STATE
@@ -386,9 +341,7 @@ dns-8qpkb
 93f07f9af3470       b32f991981530       2 hours ago         Running
 calico-kube-controllers     2                   3abea9af2f1db       calico-kube-
 controllers-5994f46b69-7fjmj
-```
 
-```text
 [root@ubuntu2204 ~]#ctr c  list
 CONTAINER    IMAGE    RUNTIME
 [root@ubuntu2204 ~]#ctr -n k8s.io c  list
@@ -403,9 +356,7 @@ io.containerd.runc.v2
 3abea9af2f1db4fedf49d1694da94eada4cc2b19378aaf04ad626a0a6f70faff
 easzlab.io.local:5000/easzlab/pause:3.9
 io.containerd.runc.v2
-```
 
-```text
 3de77e39509cd9cd6b3f4601218dd36e2a5fbc8006038316ce46cdd7353fb423
 easzlab.io.local:5000/easzlab/pause:3.9
 io.containerd.runc.v2
@@ -463,22 +414,18 @@ io.containerd.runc.v2
 ca1e0f37167ddab419db76428b93e1fefaa4555a836f902eeca7303cf3c37821
 easzlab.io.local:5000/easzlab/pause:3.9
 io.containerd.runc.v2
-```
 
-```text
 #验证创建资源
-[root@ubuntu2204 ~]#kubectl create deployment myapp --image wangxiaochun/pod-
-test:v0.1 --replicas 2
 ```
+```bash
+[root@ubuntu2204 ~]#kubectl create deployment myapp --image bowen/pod-
+test:v0.1 --replicas 2
 
-```text
 [root@ubuntu2204 ~]#kubectl get pod
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-6f9c7b4668-nkz89   1/1     Running   0          4m43s
 myapp-6f9c7b4668-qpt2d   1/1     Running   0          4m43s
-```
 
-```text
 #如果有故障，可以清理集群后重新创建。
 #在宿主机上，按照如下步骤清理
 #清理集群
@@ -489,9 +436,7 @@ myapp-6f9c7b4668-qpt2d   1/1     Running   0          4m43s
 10.0.0.100-kubelet.kubeconfig   hosts   kube-proxy.kubeconfig  yml/  backup/
 kube-controller-manager.kubeconfig  kube-scheduler.kubeconfig
 [root@ubuntu2204 ~]#rm -rf /etc/kubeasz/clusters/default
-```
 
-```text
 #重启节点，以确保清理残留的虚拟网卡、路由等信息
 [root@ubuntu2204 ~]#reboot
 #重建集群
@@ -502,9 +447,9 @@ kube-controller-manager.kubeconfig  kube-scheduler.kubeconfig
 
 ##### 3.6.2.3.1 管理 Master 节点说明
 
-```text
-https://github.com/easzlab/kubeasz/blob/master/docs/op/op-master.md
-```
+
+- <https://github.com/easzlab/kubeasz/blob/master/docs/op/op-master.md>
+
 
 **1.增加 kube_master 节点**
 
@@ -523,37 +468,27 @@ https://github.com/easzlab/kubeasz/blob/master/docs/op/op-master.md
 操作步骤
 
 执行如下 (假设待增加节点为 192.168.1.11, 集群名称test-k8s)：
-
-```text
+```bash
 # ssh 免密码登录
 $ ssh-copy-id 192.168.1.11
-```
 
-```text
 # 新增节点
 $ ezctl add-master test-k8s 192.168.1.11
-```
 
-```text
 # 同理，重复上面步骤再新增节点并自定义nodename
 $ ezctl add-master test-k8s 192.168.1.12 k8s_nodename=master-03
 ```
 
 验证
-
-```text
+```bash
 # 在新节点master 服务状态
 $ systemctl status kube-apiserver
 $ systemctl status kube-controller-manager
 $ systemctl status kube-scheduler
-```
 
-```text
 # 查看新master的服务日志
 $ journalctl -u kube-apiserver -f
-```
 
-```text
 # 查看集群节点，可以看到新 master节点 Ready, 并且禁止了POD 调度功能
 $ kubectl get node
 NAME           STATUS                     ROLES     AGE       VERSION
@@ -572,34 +507,24 @@ master节点
 检测是否可以删除迁移节点 pod删除 master 相关服务及文件删除 node 相关服务及文件从集群删除 node 节点从 ansible hosts 移除节点在 ansible 控制端更新 kubeconfig更新 node 节点 haproxy 配置。
 
 **操作步骤**
-
-```text
+```bash
 $ ezctl del-master test-k8s 192.168.1.11  # 假设待删除节点 192.168.1.11
 ```
 
 ##### 3.6.2.3.2 案例：添加和删除Master节点
-
-```text
+```bash
 root@ubuntu2204 ~]#kubectl get nodes
 NAME         STATUS   ROLES    AGE   VERSION
 10.0.0.100   Ready    master   22h   v1.29.0
-```
 
-```text
 [root@ubuntu2204 ~]#ssh-copy 10.0.0.101
-```
 
-```text
 #查看cluster名称
-```
 
-```text
 [root@ubuntu2204 ~]#docker exec -it kubeasz ezctl list
 2024-04-11 20:41:21 INFO list of managed clusters:
 ==> cluster 1:  default (current)
-```
 
-```text
 #加入新的集群节点并定义节点名称
 [root@ubuntu2204 ~]#dk  ezctl  add-master default 10.0.0.101
 k8s_nodename=master-01
@@ -608,31 +533,23 @@ k8s_nodename=master-01
 2024-04-11 20:44:25 INFO add 10.0.0.101 into 'kube_master' group
 2024-04-11 20:44:25 INFO start to add a master node:10.0.0.101 into
 cluster:default
-```
 
-```text
 PLAY [10.0.0.101]
 ********************************************************************************
 **************************************************
-```
 
-```text
 TASK [Gathering Facts]
 ********************************************************************************
 *********************************************
 ok: [10.0.0.101]
 ......
 2024-04-11 20:46:44 INFO reconfigure and restart 'ex-lb' service
-```
 
-```text
 PLAY [ex_lb]
 ********************************************************************************
 *******************************************************
 skipping: no hosts matched
-```
 
-```text
 PLAY RECAP
 ********************************************************************************
 *********************************************************
@@ -641,9 +558,7 @@ PLAY RECAP
 NAME         STATUS                     ROLES    AGE   VERSION
 10.0.0.100   Ready                      master   22h   v1.29.0
 master-01    Ready,SchedulingDisabled   master   36s   v1.29.0
-```
 
-```text
 #自动修改hosts文件
 [root@ubuntu2204 ~]#cat /etc/hosts
 ......
@@ -651,23 +566,17 @@ master-01    Ready,SchedulingDisabled   master   36s   v1.29.0
 ### BEGIN KUBEASZ MANAGED BLOCK
 10.0.0.101    master-01 # generated by kubeasz
 ### END KUBEASZ MANAGED BLOCK
-```
 
-```text
 #删除master节点
 [root@ubuntu2204 ~]#docker exec -it kubeasz ezctl  del-master default 10.0.0.101
 10.0.0.101 k8s_nodename=master-01
 2024-04-11 21:09:14 WARN start to delete the master:10.0.0.101 from
 cluster:default
-```
 
-```text
 PLAY [localhost]
 ********************************************************************************
 ***************************************************
-```
 
-```text
 TASK [Gathering Facts]
 ********************************************************************************
 *********************************************
@@ -680,24 +589,16 @@ PLAY RECAP
 skipped=6    rescued=0    ignored=0
 localhost                  : ok=1    changed=0    unreachable=0    failed=0
 skipped=0    rescued=0    ignored=0
-```
 
-```text
 2024-04-11 21:10:40 INFO reconfigure and restart 'ex-lb' service
-```
 
-```text
 PLAY [ex_lb]
 ********************************************************************************
 *******************************************************
 skipping: no hosts matched
-```
 
-```text
 PLAY RECAP *
-```
 
-```text
 #验证
 [root@ubuntu2204 ~]#kubectl get nodes
 NAME         STATUS   ROLES    AGE   VERSION
@@ -708,9 +609,9 @@ NAME         STATUS   ROLES    AGE   VERSION
 
 ##### 3.6.2.4.1 管理 Worker节点说明
 
-```text
-https://github.com/easzlab/kubeasz/blob/master/docs/op/op-node.md
-```
+
+- <https://github.com/easzlab/kubeasz/blob/master/docs/op/op-node.md>
+
 
 **1.增加 kube_node 节点**
 
@@ -725,41 +626,29 @@ https://github.com/easzlab/kubeasz/blob/master/docs/op/op-node.md
 5. 安装并配置网络插件相关组件。
 
 执行如下 (假设待增加节点为 192.168.1.11，k8s集群名为 test-k8s)：
-
-```text
+```bash
 # ssh 免密码登录
 $ ssh-copy-id 192.168.1.11
-```
 
-```text
 # 新增节点
 $ ezctl add-node test-k8s 192.168.1.11
-```
 
-```text
 # 同理，重复上面步骤再新增节点并自定义nodename
 $ ezctl add-node test-k8s 192.168.1.12 k8s_nodename=worker-03
-```
 
-```text
 # 验证新节点状态
 $ kubectl get node
-```
 
-```text
 # 验证新节点的网络插件calico 或flannel 的Pod 状态
 $ kubectl get pod -n kube-system
-```
 
-```text
 # 验证新建pod能否调度到新节点，略
 ```
 
 2.增加非标准ssh端口节点
 
 假设待添加节点192.168.2.1，ssh 端口 10022；然后执行。
-
-```text
+```bash
 $ ssh-copy-id -p 10022 192.168.2.1
 $ ezctl add-node test-k8s 192.168.2.1 ansible_ssh_port=10022
 ```
@@ -773,35 +662,27 @@ $ ezctl add-node test-k8s 192.168.2.1 ansible_ssh_port=10022
 检测是否可以删除迁移节点上的 pod删除 node 相关服务及文件从集群删除 node。
 
 **操作步骤**
-
-```text
+```bash
 $ ezctl del-node test-k8s 192.168.1.11 # 假设待删除节点为 192.168.1.11
 ```
 
 ##### 3.6.2.4.2 案例：添加和删除 Worker 节点
 
 范例：
-
-```text
+```bash
 #查看集群名称
 [root@ubuntu2204 ~]#docker exec  kubeasz ezctl  list
 2024-04-11 21:12:21 INFO list of managed clusters:
 ==> cluster 1:  default (current)
-```
 
-```text
 #查看当前节点
 [root@ubuntu2204 ~]#kubectl get nodes
 NAME         STATUS                     ROLES    AGE   VERSION
 10.0.0.100   Ready                      master   22h   v1.29.0
-```
 
-```text
 #实现到新加节点的ssh-key验证
 [root@ubuntu2204 ~]#ssh-copy-id  10.0.0.102
-```
 
-```text
 #新增节点并自定义nodename
 [root@ubuntu2204 ~]#dk ezctl  add-node default 10.0.0.102 k8s_nodename=node-01
 [root@ubuntu2204 ~]#docker exec -it kubeasz ezctl  add-node default 10.0.0.102
@@ -809,15 +690,11 @@ k8s_nodename=node-01
 2024-04-11 20:57:51 INFO add 10.0.0.102 into 'kube_node' group
 2024-04-11 20:57:51 INFO start to add a work node:10.0.0.102 into
 cluster:default
-```
 
-```text
 PLAY [10.0.0.102]
 ********************************************************************************
 **************************************************
-```
 
-```text
 TASK [Gathering Facts]
 ********************************************************************************
 *********************************************
@@ -827,32 +704,24 @@ TASK [calico : 准备 calicoctl配置文件]
 ********************************************************************************
 *****************************
 changed: [10.0.0.102]
-```
 
-```text
 TASK [calico : 轮询等待calico-node 运行]
 ********************************************************************************
 ***************************
 changed: [10.0.0.102]
-```
 
-```text
 PLAY RECAP
 ********************************************************************************
 *********************************************************
 10.0.0.102                 : ok=88   changed=81   unreachable=0    failed=0
 skipped=166  rescued=0    ignored=0
-```
 
-```text
 #验证
 [root@ubuntu2204 ~]#kubectl get nodes
 NAME         STATUS                     ROLES    AGE   VERSION
 10.0.0.100   Ready                      master   22h   v1.29.0
 node-01      Ready                      node     45s   v1.29.0
-```
 
-```text
 #自动修改hosts文件
 [root@ubuntu2204 ~]#cat /etc/hosts
 ......
@@ -860,14 +729,10 @@ node-01      Ready                      node     45s   v1.29.0
 ### BEGIN KUBEASZ MANAGED BLOCK
 10.0.0.102    node-01 # generated by kubeasz
 ### END KUBEASZ MANAGED BLOCK
-```
 
-```text
-[root@ubuntu2204 ~]#kubectl create deployment myapp --image wangxiaochun/pod-
+[root@ubuntu2204 ~]#kubectl create deployment myapp --image bowen/pod-
 test:v0.1 --replicas 2
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE     IP
 NODE         NOMINATED NODE   READINESS GATES
@@ -875,23 +740,17 @@ myapp-6f9c7b4668-6wd6t   1/1     Running   0          2m38s   172.20.137.78
 10.0.0.100   <none>           <none>
 myapp-6f9c7b4668-shpq8   1/1     Running   0          2m38s   172.20.137.77
 node-01      <none>           <none>
-```
 
-```text
 #删除节点
 [root@ubuntu2204 ~]#docker exec -it kubeasz ezctl  del-node default 10.0.0.102
 10.0.0.102 k8s_nodename=node-01
 2024-04-11 21:06:30 WARN start to delete the node:10.0.0.102 from
 cluster:default
-```
 
-```text
 PLAY [localhost]
 ********************************************************************************
 ***************************************************
-```
 
-```text
 TASK [Gathering Facts]
 ********************************************************************************
 *********************************************
@@ -901,31 +760,23 @@ TASK [run kubectl delete node node-01]
 ********************************************************************************
 *****************************
 changed: [localhost]
-```
 
-```text
 TASK [remove the node's entry in hosts]
 ********************************************************************************
 ****************************
 changed: [localhost]
-```
 
-```text
 TASK [remove the node's entry in hosts]
 ********************************************************************************
 ****************************
 changed: [localhost]
-```
 
-```text
 PLAY RECAP
 ********************************************************************************
 *********************************************************
 localhost                  : ok=12   changed=7    unreachable=0    failed=0
 skipped=2    rescued=0    ignored=0
-```
 
-```text
 #确认删除
 [root@ubuntu2204 ~]#kubectl get nodes
 NAME         STATUS                     ROLES    AGE   VERSION
@@ -933,7 +784,6 @@ NAME         STATUS                     ROLES    AGE   VERSION
 ```
 
 ### 3.6.3 高可用分布式集群部署说明
-
 ```text
 https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-
 planning_and_overall_intro.md
@@ -994,42 +844,31 @@ node-03
 注意1：确保各节点时区设置一致、时间同步。 如果你的环境没有提供NTP 时间同步，推荐集成安装chrony注意2：确保在干净的系统上开始安装，不要使用曾经装过kubeadm或其他k8s发行版的环境注意3：建议操作系统升级到新的稳定内核，请结合阅读内核升级文档注意4：在公有云上创建多主集群，请结合阅读在公有云上部署 kubeasz。
 
 范例：安装完成后，每个worker节点都有LB的配置如下
-
-```text
+```nginx
 [root@ubuntu2404 ~]#ps aux|grep kube-lb
 root        4727  0.0  0.0   3180  1152 ?        Ss   11:58   0:00 nginx: master
 process /etc/kube-lb/sbin/kube-lb -c /etc/kube-lb/conf/kube-lb.conf -p
 /etc/kube-lb
 root       53603  0.0  0.1   9640  2304 pts/0    S+   14:43   0:00 grep --
 color=auto kube-lb
-```
 
-```text
 [root@ubuntu2404 ~]#cat /etc/kube-lb/conf/kube-lb.conf
 user root;
 worker_processes 1;
-```
 
-```text
 error_log  /etc/kube-lb/logs/error.log warn;
-```
 
-```text
 events {
 worker_connections  3000;
 }
-```
 
-```text
 stream {
 upstream backend {
 server 10.0.0.201:6443    max_fails=2 fail_timeout=3s;
 server 10.0.0.202:6443    max_fails=2 fail_timeout=3s;
 server 10.0.0.203:6443    max_fails=2 fail_timeout=3s;
 }
-```
 
-```text
 server {
 listen 127.0.0.1:6443;
 proxy_connect_timeout 1s;
@@ -1057,7 +896,6 @@ proxy_pass backend;
 3.准备ssh免密登陆
 
 配置从部署节点能够ssh免密登陆所有节点，并且设置python软连接。
-
 ```text
 #$IP为所有节点地址包括自身，按照提示输入yes 和root密码
 ssh-copy-id $IP
@@ -1068,15 +906,13 @@ ssh-copy-id $IP
 4.1 下载项目源码、二进制及离线镜像
 
 下载工具脚本ezdown，举例使用kubeasz版本3.5.0。
-
-```text
+```bash
 export release=3.5.0
 wget https://github.com/easzlab/kubeasz/releases/download/${release}/ezdown
 chmod +x ./ezdown
 ```
 
 下载kubeasz代码、二进制、默认容器镜像（更多关于ezdown的参数，运行./ezdown 查看）。
-
 ```text
 # 国内环境
 ./ezdown -D
@@ -1085,7 +921,6 @@ chmod +x ./ezdown
 ```
 
 【可选】下载额外容器镜像（cilium,flannel,prometheus等）。
-
 ```text
 # 按需下载
 ./ezdown -X flannel
@@ -1094,7 +929,6 @@ chmod +x ./ezdown
 ```
 
 【可选】下载离线系统包 (适用于无法使用yum/apt仓库情形)。
-
 ```text
 ./ezdown -P
 ```
@@ -1102,13 +936,10 @@ chmod +x ./ezdown
 上述脚本运行成功后，所有文件（kubeasz代码、二进制、离线镜像）均已整理好放入目录/etc/kubeasz。
 
 **4.2 创建集群配置实例**
-
 ```text
 # 容器化运行kubeasz
 ./ezdown -S
-```
 
-```text
 # 创建新集群 k8s-01
 docker exec -it kubeasz ezctl new k8s-01
 2021-01-19 10:48:23 DEBUG generate custom cluster files in
@@ -1124,18 +955,13 @@ docker exec -it kubeasz ezctl new k8s-01
 然后根据提示配置'/etc/kubeasz/clusters/k8s-01/hosts' 和 '/etc/kubeasz/clusters/k8s-01/config.yml'：根据前面节点规划修改hosts 文件和其他集群层面的主要配置选项；其他集群组件等配置项可以在config.yml 文件中修改。
 
 4.3 开始安装 如果你对集群安装流程不熟悉，请阅读项目首页 安装步骤 讲解后分步安装，并对 每步都进行验证
-
 ```text
 #建议使用alias命令，查看~/.bashrc 文件应该包含：alias dk='docker exec -it kubeasz'
 source ~/.bashrc
-```
 
-```text
 # 一键安装，等价于执行docker exec -it kubeasz ezctl setup k8s-01 all
 dk ezctl setup k8s-01 all
-```
 
-```text
 # 或者分步安装，具体使用 dk ezctl help setup 查看分步安装帮助信息
 # dk ezctl setup k8s-01 01
 # dk ezctl setup k8s-01 02
@@ -1152,23 +978,22 @@ dk ezctl setup k8s-01 all
 
 IP主机名角色
 
-10.0.0.101 master1.wang.org K8s 集群主节点 1，K8s 集群 etcd 节点 1，建议内存 2G 以上，用于部署服务器
+10.0.0.101 master1.bowen.org K8s 集群主节点 1，K8s 集群 etcd 节点 1，建议内存 2G 以上，用于部署服务器
 
-10.0.0.102 master2.wang.org K8s 集群主节点 2，K8s 集群etcd节点 2，建议内存2G以上
+10.0.0.102 master2.bowen.org K8s 集群主节点 2，K8s 集群etcd节点 2，建议内存2G以上
 
-10.0.0.103 master3.wang.org K8s 集群主节点 3，K8s 集群etcd节点 3，建议内存2G以上
+10.0.0.103 master3.bowen.org K8s 集群主节点 3，K8s 集群etcd节点 3，建议内存2G以上
 
-10.0.0.104 node1.wang.org K8s 集群工作节点 1
+10.0.0.104 node1.bowen.org K8s 集群工作节点 1
 
-10.0.0.105 node2.wang.org K8s 集群工作节点 2
+10.0.0.105 node2.bowen.org K8s 集群工作节点 2
 
-10.0.0.106 node3.wang.org K8s 集群工作节点 3
+10.0.0.106 node3.bowen.org K8s 集群工作节点 3
 
 #### 3.6.4.2 案例:
 
 ##### 3.6.4.2.1 实现从部署主机到其它主机的基于ssh-key验证
-
-```text
+```bash
 #准备主机,并实现从部署主机到其它主机的基于ssh-key验证
 [root@ubuntu2204 ~]#hostname -I
 10.0.0.101
@@ -1184,8 +1009,7 @@ IP主机名角色
 ##### 3.6.4.2.2 下载工具脚本ezdown
 
 注意：Kubeasz-3.6.3部署kubernetes-v1.29.0有bug，无法实现跨主机的Pod通信，Kubeasz-3.6.2无此问题。
-
-```text
+```bash
 #下载工具脚本ezdown
 [root@ubuntu2404 ~]#export release=3.6.7 #kubernetes-v1.33.1  2025-08-01 成功
 [root@ubuntu2404 ~]#export release=3.6.6 #kubernetes-v1.32.3  2025-05-26 成功
@@ -1196,27 +1020,19 @@ IP主机名角色
 [root@ubuntu2204 ~]#export release=3.6.2 #kubernetes-v1.29.0  成功
 [root@ubuntu2204 ~]#wget
 https://github.com/easzlab/kubeasz/releases/download/${release}/ezdown
-```
 
-```text
 #下载如果失败，使用代理下载
 [root@ubuntu2204 ~]#wget
 https://githubfast.com/easzlab/kubeasz/releases/download/${release}/ezdown
 [root@ubuntu2204 ~]#wget
 https://mirror.ghproxy.com/https://github.com/easzlab/kubeasz/releases/download/
 ${release}/ezdown
-```
 
-```text
 #添加权限
 [root@ubuntu2204 ~]#chmod +x ./ezdown
-```
 
-```text
 #查看用法
-```
 
-```text
 [root@ubuntu2204 ~]#./ezdown
 Usage: ezdown [options] [args]
 option:
@@ -1234,14 +1050,11 @@ option:
 ```
 
 ##### 3.6.4.2.3 下载kubeasz代码、二进制、默认容器镜像
-
-```text
+```bash
 #下载kubeasz代码、二进制、默认下载容器镜像到/etc/kubeasz目录并同时安装Docker，（更多关于
 ezdown的参数，运行./ezdown 查看）
 [root@ubuntu2204 ~]#./ezdown -D
-```
 
-```text
 #3.6.7版本下面问题已经解决
 #上面脚本执行，第一次失败，因为官方镜像从国内无法访问，需要修改docker配置
 [root@ubuntu2204 ~]#vim /etc/docker/daemon.json
@@ -1261,39 +1074,27 @@ ezdown的参数，运行./ezdown 查看）
 },
 "data-root": "/var/lib/docker"
 }
-```
 
-```text
 [root@ubuntu2204 ~]#systemctl restart docker.service
-```
 
-```text
 #再次执行上面脚本
 [root@ubuntu2204 ~]#./ezdown -D
-```
 
-```text
 #查看下载的文件
 [root@ubuntu2204 ~]#du -sh /etc/kubeasz/
 2.5G    /etc/kubeasz/
 [root@ubuntu2204 ~]#ls /etc/kubeasz/
 ansible.cfg  bin  docs  down  example  ezctl  ezdown  manifests  pics  playbooks
 README.md  roles  tools
-```
 
-```text
 #查看下载启动的镜像和容器
 [root@ubuntu2204 ~]#docker ps
-```
 
-```text
 CONTAINER ID   IMAGE        COMMAND                  CREATED         STATUS
 PORTS     NAMES
 9c0e0421aebb   registry:2   "/entrypoint.sh /etc…"   4 minutes ago   Up 4
 minutes             local_registry
-```
 
-```text
 [root@ubuntu2204 ~]#docker images
 REPOSITORY                                           TAG       IMAGE ID
 CREATED         SIZE
@@ -1344,13 +1145,10 @@ months ago   43.8MB
 ```
 
 ##### 3.6.4.2.4 准备集群所需的配置环境信息
-
-```text
+```bash
 #容器化运行kubeasz，用于安装k8s集群工具
 [root@ubuntu2204 ~]#./ezdown -S
-```
 
-```text
 [root@ubuntu2204 ~]#docker ps
 CONTAINER ID   IMAGE                   COMMAND                  CREATED
 STATUS          PORTS     NAMES
@@ -1358,16 +1156,12 @@ d6630358ee76   easzlab/kubeasz:3.6.3   "tail -f /dev/null"      15 seconds ago
 Up 15 seconds             kubeasz
 9c0e0421aebb   registry:2              "/entrypoint.sh /etc…"   7 minutes ago
 Up 7 minutes              local_registry
-```
 
-```text
 #自动生成别名
 [root@ubuntu2204 ~]#tail -n1 .bashrc
 alias dk='docker exec -it kubeasz'  # generated by kubeasz
 [root@ubuntu2204 ~]#. .bashrc
-```
 
-```text
 [root@ubuntu2404 ~]#docker exec -it kubeasz  ezctl
 Usage: ezctl COMMAND [args]
 ---------------------------------------------------------------------------------
@@ -1388,9 +1182,7 @@ backup      <cluster>            to backup the cluster state (etcd snapshot)
 restore     <cluster>            to restore the cluster state from backups
 start-aio                    to quickly setup an all-in-one cluster with
 default settings
-```
 
-```text
 Cluster ops:
 add-etcd    <cluster>  <ip>      to add a etcd-node to the etcd cluster
 add-master  <cluster>  <ip>      to add a master node to the k8s cluster
@@ -1399,21 +1191,15 @@ del-etcd    <cluster>  <ip>      to delete a etcd-node from the etcd cluster
 del-master  <cluster>  <ip>      to delete a master node from the k8s
 cluster
 del-node    <cluster>  <ip>      to delete a work node from the k8s cluster
-```
 
-```text
 Extra operation:
 kca-renew   <cluster>            to force renew CA certs and all the other
 certs (with caution)
 kcfg-adm    <cluster>  <args>    to manage client kubeconfig of the k8s
 cluster
-```
 
-```text
 Use "ezctl help <command>" for more information about a given command.
-```
 
-```text
 #创建集群的初始的配置信息,指定集群名称k8s-mycluster-01
 [root@ubuntu2204 ~]#dk ezctl new k8s-mycluster-01
 [root@ubuntu2204 ~]#docker exec -it kubeasz ezctl new k8s-mycluster-01
@@ -1425,31 +1211,23 @@ Use "ezctl help <command>" for more information about a given command.
 mycluster-01/hosts'
 2024-04-11 09:50:35 INFO next steps 2: to config '/etc/kubeasz/clusters/k8s-
 mycluster-01/config.yml'
-```
 
-```text
 #生成集群相关配置文件
 [root@ubuntu2204 ~]#tree /etc/kubeasz/clusters/
 /etc/kubeasz/clusters/
 └── k8s-mycluster-01
 ├── config.yml
 └── hosts
-```
 
-```text
 1 directory, 2 files
-```
 
-```text
 #按规划修改配置
 [root@ubuntu2204 ~]#vim /etc/kubeasz/clusters/k8s-mycluster-01/hosts
 [etcd]
 10.0.0.101
 10.0.0.102
 10.0.0.103
-```
 
-```text
 # master node(s), set unique 'k8s_nodename' for each node
 # CAUTION: 'k8s_nodename' must consist of lower case alphanumeric characters, '-'
 or '.',
@@ -1458,9 +1236,7 @@ or '.',
 10.0.0.101 k8s_nodename='master-01'         #修改此处三行
 10.0.0.102 k8s_nodename='master-02'
 10.0.0.103 k8s_nodename='master-03'
-```
 
-```text
 # work node(s), set unique 'k8s_nodename' for each node
 # CAUTION: 'k8s_nodename' must consist of lower case alphanumeric characters, '-'
 or '.',
@@ -1473,44 +1249,32 @@ or '.',
 # --------- Main Variables ---------------
 # Secure port for apiservers
 SECURE_PORT="6443"
-```
 
-```text
 # Cluster container-runtime supported: docker, containerd
 # if k8s version >= 1.24, docker is not supported
 CONTAINER_RUNTIME="containerd"    #k8s version >= 1.24不支持docker,默认使用
 containerd
-```
 
-```text
 # Network plugins supported: calico, flannel, kube-router, cilium, kube-ovn
 CLUSTER_NETWORK="calico"        #默认使用calico
-```
 
-```text
 # Service proxy mode of kube-proxy: 'iptables' or 'ipvs'
 PROXY_MODE="ipvs"
-```
 
-```text
 # K8S Service CIDR, not overlap with node(host) networking
 SERVICE_CIDR="10.96.0.0/12"   #根据需要修改Service网络配置，默认为10.68.0.0/16，修改此
 处,不要和节点网络冲突
-```
 
-```text
 # Cluster CIDR (Pod CIDR), not overlap with node(host) networking
 CLUSTER_CIDR="10.244.0.0/16"  #根据需要修改Pod网络配置,默认为172.20.0.0/16 ，修改此处,
 不要和节点网络冲突
 ......
-```
 
-```text
 #修改K8S_VER等,比如:k8s版本,证书有效期,内部Harbor,需要签发证书的IP,节点最大Pod数等(可选)
-[root@ubuntu2204 ~]#vim /etc/kubeasz/clusters/k8s-mycluster-01/config.yml
 ```
+```bash
+[root@ubuntu2204 ~]#vim /etc/kubeasz/clusters/k8s-mycluster-01/config.yml
 
-```text
 #默认不做修改
 [root@ubuntu2204 ~]#head -n 20 /etc/kubeasz/clusters/k8s-mycluster-01/config.yml
 ############################
@@ -1518,15 +1282,11 @@ CLUSTER_CIDR="10.244.0.0/16"  #根据需要修改Pod网络配置,默认为172.20
 ############################
 # 可选离线安装系统软件包 (offline|online)
 INSTALL_SOURCE: "online"
-```
 
-```text
 # 可选进行系统安全加固 github.com/dev-sec/ansible-collection-hardening
 # (deprecated) 未更新上游项目，未验证最新k8s集群安装，不建议启用
 OS_HARDEN: false
-```
 
-```text
 ############################
 # role:deploy
 ############################
@@ -1534,14 +1294,10 @@ OS_HARDEN: false
 # default: certs issued by the ca will expire in 50 years
 CA_EXPIRY: "876000h"
 CERT_EXPIRY: "438000h"
-```
 
-```text
 # force to recreate CA and other certs, not suggested to set 'true'
 .......
-```
 
-```text
 #查看ansible的playbook
 [root@ubuntu2204 ~]#ls /etc/kubeasz/playbooks/
 01.prepare.yml      05.kube-node.yml      11.harbor.yml     31.deletcd.yml
@@ -1555,18 +1311,13 @@ CERT_EXPIRY: "438000h"
 ```
 
 ##### 3.6.4.2.5 创建集群
-
-```text
+```bash
 #建议使用alias命令，查看~/.bashrc 文件
 [root@ubuntu2204 ~]#tail -n1  ~/.bashrc
 alias dk='docker exec -it kubeasz'  # generated by kubeasz
-```
 
-```text
 [root@ubuntu2204 ~]#source ~/.bashrc
-```
 
-```text
 #查看帮助
 [root@ubuntu2204 ~]#dk ezctl help setup
 Usage: ezctl setup <cluster> <step>
@@ -1584,20 +1335,14 @@ settings
 from outside
 11  harbor             to install a new harbor server or to integrate with
 an existed one
-```
 
-```text
 examples: ./ezctl setup test-k8s 01  (or ./ezctl setup test-k8s prepare)
 ./ezctl setup test-k8s 02  (or ./ezctl setup test-k8s etcd)
 ./ezctl setup test-k8s all
 ./ezctl setup test-k8s 04 -t restart_master
-```
 
-```text
 #创建集群
-```
 
-```text
 #方法1:一键安装，等价于执行docker exec -it kubeasz ezctl setup k8s-mycluster-01 all
 #all 相当于01 02 ...... 07
 [root@ubuntu2204 ~]#dk ezctl setup k8s-mycluster-01  all
@@ -1607,15 +1352,11 @@ TASK [cluster-addon : 准备 dashboard的部署文件]
 changed: [localhost] => (item=kubernetes-dashboard.yaml)
 changed: [localhost] => (item=admin-user-sa-rbac.yaml)
 changed: [localhost] => (item=read-user-sa-rbac.yaml)
-```
 
-```text
 TASK [cluster-addon : 创建 dashboard部署]
 ****************************************************************************
 changed: [localhost]
-```
 
-```text
 PLAY RECAP
 ********************************************************************************
 ***************************
@@ -1625,9 +1366,7 @@ skipped=163  rescued=0    ignored=0
 skipped=134  rescued=0    ignored=0
 10.0.0.103                 : ok=105  changed=97   unreachable=0    failed=0
 skipped=134  rescued=0    ignored=0
-```
 
-```text
 10.0.0.104                 : ok=79   changed=73   unreachable=0    failed=0
 skipped=136  rescued=0    ignored=0
 10.0.0.105                 : ok=79   changed=74   unreachable=0    failed=0
@@ -1636,9 +1375,7 @@ skipped=136  rescued=0    ignored=0
 skipped=136  rescued=0    ignored=0
 localhost                  : ok=41   changed=31   unreachable=0    failed=0
 skipped=52   rescued=0    ignored=0
-```
 
-```text
 #方法2:分步安装，具体使用 dk ezctl help setup 查看分步安装帮助信息
 [root@ubuntu2204 ~]#dk ezctl setup k8s-mycluster-01 01
 [root@ubuntu2204 ~]#dk ezctl setup k8s-mycluster-01 02
@@ -1646,16 +1383,12 @@ skipped=52   rescued=0    ignored=0
 [root@ubuntu2204 ~]#dk ezctl setup k8s-mycluster-01 04
 ......
 [root@ubuntu2204 ~]#dk ezctl setup k8s-mycluster-01 07
-```
 
-```text
 #自动修改hosts文件
 [root@ubuntu2204 ~]#cat /etc/hosts
 127.0.0.1 localhost
 127.0.1.1 ubuntu2204
-```
 
-```text
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
 fe00::0 ip6-localnet
@@ -1671,9 +1404,7 @@ ff02::2 ip6-allrouters
 10.0.0.105    worker-02 # generated by kubeasz
 10.0.0.106    worker-03 # generated by kubeasz
 ### END KUBEASZ MANAGED BLOCK
-```
 
-```text
 #生效配置
 [root@ubuntu2204 ~]#tail -n 4 .bashrc
 alias dk='docker exec -it kubeasz'  # generated by kubeasz
@@ -1686,15 +1417,12 @@ source <(kubectl completion bash) # generated by kubeasz
 ```
 
 ##### 3.6.4.2.6 验证集群
-
-```text
+```bash
 #如果是独立的部署节点，还需要执行下面
 [root@ubuntu2404 ~]#scp -r  .kube/config  master节点IP:/root/.kube/
 #否则Master节点无法管理集群，提示下面错误
 [root@master-01 ~]#kubectl get pod
-```
 
-```text
 E0526 12:08:47.866364    8839 memcache.go:265] "Unhandled Error" err="couldn't
 get current server API group list: Get \"http://localhost:8080/api?timeout=32s\":
 dial tcp 127.0.0.1:8080: connect: connection refused"
@@ -1712,9 +1440,7 @@ get current server API group list: Get \"http://localhost:8080/api?timeout=32s\"
 dial tcp 127.0.0.1:8080: connect: connection refused"
 The connection to the server localhost:8080 was refused - did you specify the
 right host or port?
-```
 
-```text
 #在Master节点上执行验证集群
 [root@ubuntu2204 ~]#kubectl get nodes
 NAME        STATUS                     ROLES    AGE     VERSION
@@ -1724,17 +1450,13 @@ master-03   Ready,SchedulingDisabled   master   3m9s    v1.29.0
 worker-01   Ready                      node     2m17s   v1.29.0
 worker-02   Ready                      node     2m17s   v1.29.0
 worker-03   Ready                      node     2m17s   v1.29.0
-```
 
-```text
 #验证
 [root@ubuntu2204 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 [root@ubuntu2204 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.26.0 --replicas 3
-```
+beijing.aliyuncs.com/bowen/nginx:1.26.0 --replicas 3
 
-```text
 #注意: 当前calico插件基于eBPF实现service网络,所以没有安装kube-proxy相关附件
 [root@ubuntu2204 ~]#kubectl get pod -A
 NAMESPACE     NAME                                         READY   STATUS
@@ -1757,9 +1479,7 @@ kube-system   calico-node-g78b5                            1/1     Running   1
 (24m ago)   25m
 kube-system   calico-node-twx6t                            1/1     Running   2
 (24m ago)   25m
-```
 
-```text
 kube-system   calico-node-xbt4b                            1/1     Running   1
 (24m ago)   25m
 kube-system   coredns-6db9bd4cd7-t5b4v                     1/1     Running   0
@@ -1785,49 +1505,36 @@ kube-system   node-local-dns-wv8mx                         1/1     Running   0
 ```
 
 ###### 3.6.4.2.7 每个Node节点基于Nginx实现反向代理至Master节点
-
-```text
+```nginx
 [root@ubuntu2404 ~]#ls  /etc/kube-lb/
 conf  logs  sbin
 [root@ubuntu2404 ~]#/etc/kube-lb/sbin/kube-lb -v
 nginx version: nginx/1.24.0
-```
 
-```text
 [root@ubuntu2404 ~]#cat /etc/kube-lb/conf/kube-lb.conf
 user root;
 worker_processes 1;
-```
 
-```text
 error_log  /etc/kube-lb/logs/error.log warn;
-```
 
-```text
 events {
 worker_connections  3000;
 }
-```
 
-```text
 stream {
 upstream backend {
 server 10.0.0.201:6443    max_fails=2 fail_timeout=3s;
 server 10.0.0.202:6443    max_fails=2 fail_timeout=3s;
 server 10.0.0.203:6443    max_fails=2 fail_timeout=3s;
 }
-```
 
-```text
 server {
 listen 127.0.0.1:6443;
 proxy_connect_timeout 1s;
 proxy_pass backend;
 }
 }
-```
 
-```text
 [root@ubuntu2404 ~]#ss -ntlp|grep kube-lb
 LISTEN 0      511        127.0.0.1:6443       0.0.0.0:*    users:(("kube-
 lb",pid=3526,fd=5),("kube-lb",pid=3524,fd=5))
@@ -1841,29 +1548,29 @@ lb",pid=3526,fd=5),("kube-lb",pid=3524,fd=5))
 
 IP主机名角色
 
-10.0.0.101 master1.wang.org K8s 集群主节点 1，建议内存2G以上
+10.0.0.101 master1.bowen.org K8s 集群主节点 1，建议内存2G以上
 
-10.0.0.102 master2.wang.org K8s 集群主节点 2，建议内存2G以上
+10.0.0.102 master2.bowen.org K8s 集群主节点 2，建议内存2G以上
 
-10.0.0.103 master3.wang.org K8s 集群主节点 3，建议内存2G以上
+10.0.0.103 master3.bowen.org K8s 集群主节点 3，建议内存2G以上
 
-10.0.0.104 kube-etcd1.wang.org K8s 集群etcd节点 1
+10.0.0.104 kube-etcd1.bowen.org K8s 集群etcd节点 1
 
-10.0.0.105 kube-etcd2.wang.org K8s 集群etcd节点 2
+10.0.0.105 kube-etcd2.bowen.org K8s 集群etcd节点 2
 
-10.0.0.106 kube-etcd3.wang.org K8s 集群etcd节点 3
+10.0.0.106 kube-etcd3.bowen.org K8s 集群etcd节点 3
 
-10.0.0.107 node1.wang.org K8s 集群工作节点 1
+10.0.0.107 node1.bowen.org K8s 集群工作节点 1
 
-10.0.0.108 node2.wang.org K8s 集群工作节点 2
+10.0.0.108 node2.bowen.org K8s 集群工作节点 2
 
-10.0.0.109 node3.wang.org K8s 集群工作节点 3
+10.0.0.109 node3.bowen.org K8s 集群工作节点 3
 
-10.0.0.110 harbor.wang.org容器镜像仓库
+10.0.0.110 harbor.bowen.org容器镜像仓库
 
-10.0.0.111 ha1.wang.org K8s 主节点访问入口 1(高可用及负载均衡)
+10.0.0.111 ha1.bowen.org K8s 主节点访问入口 1(高可用及负载均衡)
 
-10.0.0.112 ha2.wang.org K8s 主节点访问入口2(高可用及负载均衡)
+10.0.0.112 ha2.bowen.org K8s 主节点访问入口2(高可用及负载均衡)
 
 10.0.0.100无VIP，在ha1和ha2主机实现
 
@@ -1882,96 +1589,71 @@ VMware workstation: Version 15 Pro VMnet 8 网段: 10.0.0.0/24 VMnet 8 网关: 1
 ##### 3.6.5.2.2 主机名解析
 
 在每个主机设置集群的 IP 和主机名解析：
-
 ```text
 ~# vim /etc/hosts
-10.0.0.101 master1 master1.wang.org
-10.0.0.102 master2 master2.wang.org
-```
+10.0.0.101 master1 master1.bowen.org
+10.0.0.102 master2 master2.bowen.org
 
-```text
-10.0.0.103 master3 master3.wang.org
-```
+10.0.0.103 master3 master3.bowen.org
 
-```text
-10.0.0.104 kube-etcd1 kube-etcd1.wang.org
-10.0.0.105 kube-etcd2 kube-etcd2.wang.org
-10.0.0.106 kube-etcd3 kube-etcd3.wang.org
-```
+10.0.0.104 kube-etcd1 kube-etcd1.bowen.org
+10.0.0.105 kube-etcd2 kube-etcd2.bowen.org
+10.0.0.106 kube-etcd3 kube-etcd3.bowen.org
 
-```text
-10.0.0.107 node1 node1.wang.org
-10.0.0.108 node2 node2.wang.org
-10.0.0.109 node3 node3.wang.org
-```
+10.0.0.107 node1 node1.bowen.org
+10.0.0.108 node2 node2.bowen.org
+10.0.0.109 node3 node3.bowen.org
 
-```text
-10.0.0.110 harbor harbor.wang.org
-10.0.0.111 ha1 ha1.wang.org
-10.0.0.112 ha2 ha2.wang.org
+10.0.0.110 harbor harbor.bowen.org
+10.0.0.111 ha1 ha1.bowen.org
+10.0.0.112 ha2 ha2.bowen.org
 ```
 
 在 VMware 的宿主机，也就是自己的物理主机 windows 上添加 hosts 解析：
-
 ```text
 #c:\windows\system32\drivers\etc\hosts
-10.0.0.101 master1 master1.wang.org
-10.0.0.102 master2 master2.wang.org
-10.0.0.103 master3 master3.wang.org
-```
+10.0.0.101 master1 master1.bowen.org
+10.0.0.102 master2 master2.bowen.org
+10.0.0.103 master3 master3.bowen.org
 
-```text
-10.0.0.104 kube-etcd1 kube-etcd1.wang.org
-10.0.0.105 kube-etcd2 kube-etcd2.wang.org
-10.0.0.106 kube-etcd3 kube-etcd3.wang.org
-```
+10.0.0.104 kube-etcd1 kube-etcd1.bowen.org
+10.0.0.105 kube-etcd2 kube-etcd2.bowen.org
+10.0.0.106 kube-etcd3 kube-etcd3.bowen.org
 
-```text
-10.0.0.107 node1 node1.wang.org
-10.0.0.108 node2 node2.wang.org
-10.0.0.109 node3 node3.wang.org
-```
+10.0.0.107 node1 node1.bowen.org
+10.0.0.108 node2 node2.bowen.org
+10.0.0.109 node3 node3.bowen.org
 
-```text
-10.0.0.110 harbor harbor.wang.org
-10.0.0.111 ha1 ha1.wang.org
-10.0.0.112 ha2 ha2.wang.org
+10.0.0.110 harbor harbor.bowen.org
+10.0.0.111 ha1 ha1.bowen.org
+10.0.0.112 ha2 ha2.bowen.org
 ```
 
 ##### 3.6.5.2.3 主机时间同步
 
 在集群的所有节点实现同步时间
-
-```text
+```bash
 [root@master1 ~]#timedatectl set-timezone Asia/Shanghai
 [root@master1 ~]#apt install  chrony -y
 [root@master1 ~]#vim /etc/chrony/chrony.conf
 #加下面一行
 pool ntp.aliyun.com        iburst maxsources 2
-```
 
-```text
 pool ntp.ubuntu.com        iburst maxsources 4
 pool 0.ubuntu.pool.ntp.org iburst maxsources 1
 pool 1.ubuntu.pool.ntp.org iburst maxsources 1
 pool 2.ubuntu.pool.ntp.org iburst maxsources 2
-```
 
-```text
 [root@master1 ~]#systemctl enable chrony
 [root@master1 ~]#systemctl restart chrony
-```
 
-```text
 [root@master1 ~]#chronyc    sources
 210 Number of sources = 9
 MS Name/IP address         Stratum Poll Reach LastRx Last sample
 ===============================================================================
 ^* 203.107.6.88                  2   6    37    27   -734us[ -353us] +/-   15ms
 ^- chilipepper.canonical.com     2   6    37    22  +4195us[+4195us] +/-  241ms
-```
 
-```text
 ^? pugot.canonical.com           2   6   103    83    +35ms[  +36ms] +/-  236ms
 ^? chilipepper.canonical.com     0   6     0     -     +0ns[   +0ns] +/-    0ns
 ^- alphyn.canonical.com          2   6   130    89    +31ms[  +32ms] +/-  207ms
@@ -1984,7 +1666,6 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 ##### 3.6.5.2.4 SELinux（可选项）
 
 如果是CentOS 系列，还需要关闭 SELinux：
-
 ```text
 ~# setenforce 0
 ~# sed -i 's#^\(SELINUX=\).*#\1disabled#' /etc/sysconfig/selinux
@@ -1993,13 +1674,11 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 ##### 3.6.5.2.5 关闭防火墙
 
 **CentOS系列**
-
 ```text
 ~# systemctl stop firewalld
 ```
 
 Ubuntu：
-
 ```text
 ~# systemctl stop firewalld
 ~# ufw disable
@@ -2008,7 +1687,6 @@ Ubuntu：
 ##### 3.6.5.2.6 禁用 Swap 设备
 
 **在集群的 Master 和各 node 执行**
-
 ```text
 ~# swapoff -a
 ~# sed -i  '/swap/s/^/#/' /etc/fstab
@@ -2023,8 +1701,7 @@ Ubuntu：
 ##### 3.6.5.3.1 部署基于https 的harbor
 
 ###### 3.6.5.3.1.1 安装docker-compose
-
-```text
+```bash
 [root@harbor ~]#ls -l
 total 598520
 -rw-r--r-- 1 root root  17586312 Apr 21 10:42 docker-compose-Linux-x86_64
@@ -2032,48 +1709,29 @@ total 598520
 v1.7.6.tgz.0
 -rw-r--r-- 1 root root 2265 May  5 14:00
 install_offline_docker_compose_for_ubuntu1804.sh
-```
 
-```text
 [root@harbor ~]#cat install_offline_docker_compose_for_ubuntu1804.sh
 #!/bin/bash
 #
-```
 
-```text
-#********************************************************************
-#Author:            wangxiaochun
-#QQ:                29308620
-#Date:              2020-02-04
 #FileName:          install_offline_docker_compose_for_ubuntu1804.sh
-#URL:               http://www.wangxiaochun.com
 #Description:       The test script
-#Copyright (C):     2020 All rights reserved
-#********************************************************************
-```
 
-```text
 COLOR="echo -e \\033[1;31m"
 END="\033[m"
 DOCKER_VERSION="5:19.03.5~3-0~ubuntu-bionic"
 COMPOSE_VERSION=1.25.5
 COMPOSE_FILE=docker-compose-Linux-x86_64
-```
 
-```text
 check () {
 [ -f "$COMPOSE_FILE" ] || { ${COLOR}"Docker安装失败,$COMPOSE_FILE 不存
 在"${END};exit; }
 }
-```
 
-```text
 install_docker(){
 ${COLOR}"开始安装 Docker....."${END}
 sleep 1
-```
 
-```text
 apt update
 apt  -y install apt-transport-https ca-certificates curl software-properties-
 common
@@ -2082,22 +1740,16 @@ add -
 add-apt-repository "deb [arch=amd64] https://mirrors.aliyun.com/docker-
 ce/linux/ubuntu $(lsb_release -cs) stable"
 apt update
-```
 
-```text
 ${COLOR}"Docker有以下版本:"${END}
 sleep 2
 apt-cache madison docker-ce
 ${COLOR}"5秒后即将安装: docker-"${DOCKER_VERSION}" 版本....."${END}
 ${COLOR}"如果想安装其它Docker版本，请按ctrl+c键退出，修改版本再执行"${END}
 sleep 5
-```
 
-```text
 apt -y  install docker-ce=${DOCKER_VERSION} docker-ce-cli=${DOCKER_VERSION}
-```
 
-```text
 mkdir -p /etc/docker
 tee /etc/docker/daemon.json <<-'EOF'
 {
@@ -2109,45 +1761,29 @@ systemctl restart docker
 docker version && ${COLOR}"Docker 安装完成"${END} ||  ${COLOR}"Docker 安装失
 败"${END}
 }
-```
 
-```text
 install_docker_compose(){
 ${COLOR}"开始安装 Docker compose....."${END}
 sleep 1
-```
 
-```text
 #curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-
 compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 cp $COMPOSE_FILE /usr/bin/docker-compose
 chmod +x /usr/bin/docker-compose
-```
 
-```text
 docker-compose --version &&  ${COLOR}"Docker Compose 安装完成"${END} ||
 ${COLOR}"Docker compose 安装失败"${END}
 }
-```
 
-```text
 check
-```
 
-```text
 dpkg -s docker-ce &> /dev/null && ${COLOR}"Docker已安装"${END} || install_docker
-```
 
-```text
 docker-compose --version &> /dev/null && ${COLOR}"Docker Compose已安装"${END} ||
 install_docker_compose
-```
 
-```text
 [root@harbor ~]#bash install_offline_docker_compose_for_ubuntu1804.sh
-```
 
-```text
 [root@harbor ~]#docker version
 Client: Docker Engine - Community
 Version:           19.03.5
@@ -2157,9 +1793,7 @@ Git commit:        633a0ea838
 Built:             Wed Nov 13 07:29:52 2019
 OS/Arch:           linux/amd64
 Experimental:      false
-```
 
-```text
 Server: Docker Engine - Community
 Engine:
 Version:          19.03.5
@@ -2186,47 +1820,36 @@ OpenSSL version: OpenSSL 1.1.0l  10 Sep 2019
 ```
 
 ###### 3.6.5.3.1.2 修改harbor的配置文件和生成证书文件
-
-```text
+```bash
 [root@harbor ~]#tar xvf harbor-offline-installer-v1.7.6.tgz -C /usr/local/src
-```
 
-```text
 root@k8s-harbor1:/usr/local/src/harbor# pwd
 /usr/local/src/harbor
 root@k8s-harbor1:/usr/local/src/harbor# mkdir certs/
 # openssl genrsa -out /usr/local/src/harbor/certs/harbor.key #生成私有key
 # openssl req -x509 -new -nodes -key /usr/local/src/harbor/certs/harbor.key -
 subj
-"/CN=harbor.wang.org" -days 7120 -out /usr/local/src/harbor/certs/harbor.crt #签
+"/CN=harbor.bowen.org" -days 7120 -out /usr/local/src/harbor/certs/harbor.crt #签
 证
-```
 
-```text
 [root@harbor ~]#openssl genrsa -out /usr/local/src/harbor/certs/harbor.key
 [root@harbor ~]#openssl req -x509 -new -nodes -key
-/usr/local/src/harbor/certs/harbor.key -subj "/CN=harbor.wang.org" -days 7120 -
+/usr/local/src/harbor/certs/harbor.key -subj "/CN=harbor.bowen.org" -days 7120 -
 out /usr/local/src/harbor/certs/harbor.crt
-```
 
-```text
 [root@harbor ~]#ll /usr/local/src/harbor/certs/harbor.*
 -rw-r--r-- 1 root root 1135 May 21 21:17 /usr/local/src/harbor/certs/harbor.crt
 -rw------- 1 root root 1679 May 21 21:16 /usr/local/src/harbor/certs/harbor.key
-```
 
-```text
 [root@harbor ~]#openssl x509 -in /usr/local/src/harbor/certs/harbor.crt -noout -
 subject -issuer -dates
-subject=CN = harbor.wang.org
-issuer=CN = harbor.wang.org
+subject=CN = harbor.bowen.org
+issuer=CN = harbor.bowen.org
 notBefore=May 21 13:17:51 2020 GMT
 notAfter=Nov 18 13:17:51 2039 GMT
-```
 
-```text
 [root@harbor ~]#vim /usr/local/src/harbor/harbor.cfg
-hostname = harbor.wang.org
+hostname = harbor.bowen.org
 ui_url_protocol = https
 ssl_cert = /usr/local/src/harbor/certs/harbor.crt
 ssl_cert_key = /usr/local/src/harbor/certs/harbor.key
@@ -2234,49 +1857,38 @@ harbor_admin_password = REPLACE_WITH_STRONG_PASSWORD
 ```
 
 ###### 3.6.5.3.1.3 安装harbor,并配置harbor服务
-
-```text
+```ini
 [root@harbor ~]#apt install python -y
 [root@harbor ~]#/usr/local/src/harbor/install.sh
-```
 
-```text
 [root@harbor ~]#cat > /lib/systemd/system/harbor.service <<EOF
 [Unit]
 Description=Harbor
 After=docker.service systemd-networkd.service systemd-resolved.service
 Requires=docker.service
 Documentation=http://github.com/vmware/harbor
-```
 
-```text
 [Service]
 Type=simple
 Restart=on-failure
 RestartSec=5
 ExecStart=/usr/bin/docker-compose -f  /usr/local/src/harbor/docker-compose.yml
 up
-```
 
-```text
 ExecStop=/usr/bin/docker-compose -f /usr/local/src/harbor/docker-compose.yml
 down
-```
 
-```text
 [Install]
 WantedBy=multi-user.target
 EOF
-```
 
-```text
 [root@harbor ~]#systemctl daemon-reload
 [root@harbor ~]#systemctl enable  harbor
 ```
 
 ###### 3.6.5.3.1.4 测试访问harbor
 
-可以用浏览器访问：https://harbor.wang.org
+可以用浏览器访问：https://harbor.bowen.org
 
 ![原 PDF 第 183 页插图](assets/Kubernetes架构和部署/img-404899e3ca9ffba9.png)
 
@@ -2291,44 +1903,36 @@ EOF
 ###### 3.6.5.3.1.5 测试利用harbor上传和下载镜像
 
 **配置证书和docker**
-
-```text
+```bash
 #方法1
 [root@harbor ~]#vim /lib/systemd/system/docker.service
 #修改下面行
 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
---insecure-registry harbor.wang.org
-```
+--insecure-registry harbor.bowen.org
 
-```text
 [root@harbor ~]#systemctl daemon-reload
 [root@harbor ~]#systemctl restart docker
-```
 
-```text
 #方法2
-[root@harbor ~]#mkdir /etc/docker/certs.d/harbor.wang.org -p
-[root@harbor ~]#scp harbor.wang.org:/usr/local/src/harbor/certs/harbor.crt
-/etc/docker/certs.d/harbor.wang.org
+[root@harbor ~]#mkdir /etc/docker/certs.d/harbor.bowen.org -p
+[root@harbor ~]#scp harbor.bowen.org:/usr/local/src/harbor/certs/harbor.crt
+/etc/docker/certs.d/harbor.bowen.org
 ```
 
 **登录harbor并测试push镜像到harbor**
-
-```text
-[root@harbor ~]#docker login harbor.wang.org
+```bash
+[root@harbor ~]#docker login harbor.bowen.org
 Username: admin
 Password:
 WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
 Configure a credential helper to remove this warning. See
 https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-```
 
-```text
 Login Succeeded
 [root@harbor ~]#docker pull alpine
-[root@harbor ~]#docker tag alpine  harbor.wang.org/kubernetes/alpine
-[root@harbor ~]#docker push harbor.wang.org/kubernetes/alpine
-The push refers to repository [harbor.wang.org/kubernetes/alpine]
+[root@harbor ~]#docker tag alpine  harbor.bowen.org/kubernetes/alpine
+[root@harbor ~]#docker push harbor.bowen.org/kubernetes/alpine
+The push refers to repository [harbor.bowen.org/kubernetes/alpine]
 3e207b409db3: Pushed
 latest: digest:
 sha256:39eda93d15866957feaee28f8fc5adb545276a64147445c64992ef69804dbf01 size:
@@ -2342,27 +1946,18 @@ sha256:39eda93d15866957feaee28f8fc5adb545276a64147445c64992ef69804dbf01 size:
 ##### 3.6.5.3.2 实现高可用的反向代理(haproxy+keepalived)
 
 ###### 3.6.5.3.2.1 实现 keepalived
-
-```text
+```bash
 [root@ha1 ~]#apt -y install keepalived
-```
 
-```text
 #keepalived配置
 [root@ha1 ~]#cp  /usr/share/doc/keepalived/samples/keepalived.conf.vrrp
 /etc/keepalived/keepalived.conf
-```
 
-```text
 [root@ha1 ~]#vim /etc/keepalived/keepalived.conf
-```
 
-```text
 [root@ha1 ~]#cat /etc/keepalived/keepalived.conf
 ! Configuration File for keepalived
-```
 
-```text
 global_defs {
 notification_email {
 acassen
@@ -2370,11 +1965,9 @@ acassen
 notification_email_from Alexandre.Cassen@firewall.loc
 smtp_server 192.168.200.1
 smtp_connect_timeout 30
-router_id ha1.wang.org  #指定router_id,#在ha2上为ha2.wang.org
+router_id ha1.bowen.org  #指定router_id,#在ha2上为ha2.bowen.org
 }
-```
 
-```text
 vrrp_instance VI_1 {
 state MASTER            #在ha2上为BACKUP
 interface eth0
@@ -2391,15 +1984,11 @@ virtual_ipaddress {
 10.0.0.100/24 dev eth0  label eth0:1  #指定VIP
 }
 }
-```
 
-```text
 [root@ha1 ~]#hostname -I
 10.0.0.111
 [root@ha1 ~]#systemctl enable --now keepalived.service
-```
 
-```text
 #验证keepalived服务是否正常
 [root@ha1 ~]#hostname -I
 10.0.0.111 10.0.0.100
@@ -2410,9 +1999,7 @@ link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 inet 127.0.0.1/8 scope host lo
 valid_lft forever preferred_lft forever
 inet6 ::1/128 scope host
-```
 
-```text
 valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP
 group default qlen 1000
@@ -2438,46 +2025,22 @@ CGroup: /system.slice/keepalived.service
 └─27862 /usr/sbin/keepalived
 ```
 
-```text
-Apr 21 11:04:56 ha1.wang.org Keepalived[27860]: Starting VRRP child process,
-pid=27862
-Apr 21 11:04:56 ha1.wang.org Keepalived_vrrp[27862]: Registering Kernel netlink
-reflector
-Apr 21 11:04:56 ha1.wang.org Keepalived_vrrp[27862]: Registering Kernel netlink
-command channel
-Apr 21 11:04:56 ha1.wang.org Keepalived_vrrp[27862]: Registering gratuitous ARP
-shared channel
-Apr 21 11:04:56 ha1.wang.org Keepalived_vrrp[27862]: Opening file
-'/etc/keepalived/keepalived.conf'.
-Apr 21 11:04:57 ha1.wang.org Keepalived_vrrp[27862]: Using LinkWatch kernel
-netlink reflector...
-Apr 21 11:04:58 ha1.wang.org Keepalived_vrrp[27862]: VRRP_Instance(VI_1)
-Transition to MASTER STATE
-Apr 21 11:04:59 ha1.wang.org Keepalived_vrrp[27862]: VRRP_Instance(VI_1)
-Entering MASTER STATE
-Apr 21 11:04:59 ha1.wang.org Keepalived_vrrp[27862]: Remote SMTP server
-[192.168.200.1]:25 connected.
-Apr 21 11:05:20 ha1.wang.org Keepalived_vrrp[27862]: Error reading data from
-remote SMTP server [192.168.200.1]:25.
-```
+
+Apr 21 11:04:56 ha1.bowen.org Keepalived[27860]: Starting VRRP child process, pid=27862 Apr 21 11:04:56 ha1.bowen.org Keepalived_vrrp[27862]: Registering Kernel netlink reflector Apr 21 11:04:56 ha1.bowen.org Keepalived_vrrp[27862]: Registering Kernel netlink command channel Apr 21 11:04:56 ha1.bowen.org Keepalived_vrrp[27862]: Registering gratuitous ARP shared channel Apr 21 11:04:56 ha1.bowen.org Keepalived_vrrp[27862]: Opening file'/etc/keepalived/keepalived.conf'. Apr 21 11:04:57 ha1.bowen.org Keepalived_vrrp[27862]: Using LinkWatch kernel netlink reflector... Apr 21 11:04:58 ha1.bowen.org Keepalived_vrrp[27862]: VRRP_Instance(VI_1) Transition to MASTER STATE Apr 21 11:04:59 ha1.bowen.org Keepalived_vrrp[27862]: VRRP_Instance(VI_1) Entering MASTER STATE Apr 21 11:04:59 ha1.bowen.org Keepalived_vrrp[27862]: Remote SMTP server[192.168.200.1]:25 connected. Apr 21 11:05:20 ha1.bowen.org Keepalived_vrrp[27862]: Error reading data from remote SMTP server [192.168.200.1]:25.
+
 
 ###### 3.6.5.3.2.2 实现 haproxy
-
-```text
+```bash
 #在两台主机ha1和ha2都执行下面操作
 [root@ha1 ~]#vim /etc/sysctl.conf
 net.ipv4.ip_nonlocal_bind = 1
 [root@ha1 ~]#sysctl -p
-```
 
-```text
 #安装配置haproxy
 [root@ha1 ~]#apt -y install haproxy
 [root@ha1 ~]#vim /etc/haproxy/haproxy.cfg
 [root@ha1 ~]#cat /etc/haproxy/haproxy.cfg
-```
 
-```text
 global
 log /dev/log    local0
 log /dev/log    local1 notice
@@ -2488,15 +2051,11 @@ stats timeout 30s
 user haproxy
 group haproxy
 daemon
-```
 
-```text
 # Default SSL material locations
 ca-base /etc/ssl/certs
 crt-base /etc/ssl/private
-```
 
-```text
 # Default ciphers to use on SSL-enabled listening sockets.
 # For more information, see ciphers(1SSL). This list is from:
 #  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
@@ -2507,9 +2066,7 @@ ssl-default-bind-ciphers
 ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AE
 S:!aNULL:!MD5:!DSS
 ssl-default-bind-options no-sslv3
-```
 
-```text
 defaults
 log global
 mode    http
@@ -2525,9 +2082,7 @@ errorfile 500 /etc/haproxy/errors/500.http
 errorfile 502 /etc/haproxy/errors/502.http
 errorfile 503 /etc/haproxy/errors/503.http
 errorfile 504 /etc/haproxy/errors/504.http
-```
 
-```text
 ##########添加以下内容######################
 listen stats
 mode http
@@ -2536,18 +2091,14 @@ stats enable
 log global
 stats uri /status
 stats auth admin:123456
-```
 
-```text
 listen  kubernetes-api-6443
 bind 10.0.0.100:6443
 mode tcp
 server master1 10.0.0.101:6443 check inter 3s fall 3 rise 3
 server master2 10.0.0.102:6443 check inter 3s fall 3 rise 3
 server master3 10.0.0.103:6443 check inter 3s fall 3 rise 3
-```
 
-```text
 [root@ha1 ~]#
 [root@ha1 ~]#systemctl enable --now haproxy
 Synchronizing state of haproxy.service with SysV service script with
@@ -2567,47 +2118,34 @@ CGroup: /system.slice/haproxy.service
 /run/haproxy.pid
 └─2225 /usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -p
 /run/haproxy.pid
-```
 
-```text
-Apr 21 20:23:21 ha1.wang.org systemd[1]: Starting HAProxy Load Balancer...
-Apr 21 20:23:22 ha1.wang.org systemd[1]: Started HAProxy Load Balancer.
-```
+Apr 21 20:23:21 ha1.bowen.org systemd[1]: Starting HAProxy Load Balancer...
+Apr 21 20:23:22 ha1.bowen.org systemd[1]: Started HAProxy Load Balancer.
 
-```text
 [root@ha1 ~]#ss -ntl |grep 10.0.0.100
 LISTEN   0         128              10.0.0.100:6443             0.0.0.0:*
 ```
 
-浏览器访问：http://ha1.wang.org:9999/status ，使用admin/123456 登录后可以看到下面界面
+浏览器访问：http://ha1.bowen.org:9999/status ，使用admin/123456 登录后可以看到下面界面
 
 ![原 PDF 第 189 页插图](assets/Kubernetes架构和部署/img-a7222499c49a9999.png)
 
 #### 3.6.5.4 安装ansible环境
 
 ##### 3.6.5.4.1 准备基础ssh的key验证和软链接
-
-```text
+```bash
 #在所有主机上安装python2.7并配置
 [root@master1 ~]#apt  -y install python2.7
 [root@master1 ~]#ln -s /usr/bin/python2.7 /usr/bin/python
-```
 
-```text
 #在master1上实安装ansible并实现基于key验证
 [root@master1 ~]#apt install sshpass -y
-```
 
-```text
 #生成密钥对
 [root@master1 ~]#ssh-keygen
-```
 
-```text
 #分发公钥脚本
-```
 
-```text
 [root@master1 ~]#cat push_ssh_key.sh
 #!/bin/bash
 #目标主机列表
@@ -2633,15 +2171,12 @@ else
 echo "${node} 秘钥copy失败"
 fi
 done
-```
 
-```text
 [root@master1 ~]#bash push_ssh_key.sh
 ```
 
 ##### 3.6.5.4.2 安装ansible并配置
-
-```text
+```bash
 #在master1上实安装ansible并实现基于key验证
 [root@master1 ~]#apt install ansible  -y
 [root@master1 ~]#vim /etc/ansible/hosts
@@ -2655,9 +2190,7 @@ done
 10.0.0.107
 10.0.0.108
 10.0.0.109
-```
 
-```text
 #测试ansible
 [root@master1 ~]#ansible all -m ping
 10.0.0.101 | SUCCESS => {
@@ -2670,9 +2203,7 @@ done
 }
 10.0.0.104 | SUCCESS => {
 "changed": false,
-```
 
-```text
 "ping": "pong"
 }
 10.0.0.102 | SUCCESS => {
@@ -2704,7 +2235,6 @@ done
 #### 3.6.5.5  clone项目
 
 **项目链接**
-
 ```text
 https://github.com/easzlab/kubeasz/blob/master/docs/setup/00-
 planning_and_overall_intro.md
@@ -2713,13 +2243,10 @@ planning_and_overall_intro.md
 ![原 PDF 第 191 页插图](assets/Kubernetes架构和部署/img-b1d2cb385da488ac.png)
 
 在master1上下载项目文件，注意：master1上事先不要安装docker。
-
-```text
+```bash
 [root@master1 ~]#export release=3.6.4
 [root@master1 ~]#export release=2.2.0
-```
 
-```text
 [root@master1 ~]#curl -C- -fLO --retry 3
 https://github.com/easzlab/kubeasz/releases/download/${release}/easzup
 [root@master1 ~]#ll easzup
@@ -2728,9 +2255,7 @@ https://github.com/easzlab/kubeasz/releases/download/${release}/easzup
 easzup: Bourne-Again shell script, ASCII text executable
 [root@master1 ~]#chmod +x ./easzup
 [root@master1 ~]#./easzup -D
-```
 
-```text
 #查看下载的文件
 [root@master1 ~]#ls /etc/ansible/
 01.prepare.yml     04.kube-master.yml    11.harbor.yml   90.setup.yml
@@ -2741,9 +2266,7 @@ example    roles
 dockerfiles  manifests  tools
 03.docker.yml      07.cluster-addon.yml  24.restore.yml  99.clean.yml  docs
 pics
-```
 
-```text
 [root@master1 ~]#tree /etc/ansible/down/
 /etc/ansible/down/
 ├── calico_v3.4.4.tar
@@ -2778,28 +2301,21 @@ pics
 │?? └── keepalived_xenial.tar.gz
 ├── pause_3.1.tar
 └── traefik_v1.7.20.tar
-```
 
-```text
 1 directory, 31 files
 ```
 
 #### 3.6.5.6 准备主机清单hosts文件
-
-```text
+```bash
 #复制hosts模板文件
 [root@master1 ~]#cd /etc/ansible/
-```
 
-```text
 #集群部署模式：allinone, multi-master
 [root@master1 ansible]#ls example/
 hosts.allinone  hosts.multi-node
 [root@master1 ansible]#cp example/hosts.multi-node hosts
 [root@master1 ansible]# cat hosts
-```
 
-```text
 [root@master1 ansible]#cat hosts
 # 'etcd' cluster should have odd member(s) (1,3,5,...)
 # variable 'NODE_NAME' is the distinct name of a member in 'etcd' cluster
@@ -2807,23 +2323,17 @@ hosts.allinone  hosts.multi-node
 10.0.0.104 NODE_NAME=etcd1
 10.0.0.105 NODE_NAME=etcd2
 10.0.0.106 NODE_NAME=etcd3
-```
 
-```text
 # master node(s),先加两个，后期再增加第三个节点
 [kube-master]
 10.0.0.101
 10.0.0.102
-```
 
-```text
 # work node(s),先加两个，后期再增加第三个节点
 [kube-node]
 10.0.0.107
 10.0.0.108
-```
 
-```text
 # [optional] harbor server, a private docker registry
 # 'NEW_INSTALL': 'yes' to install a harbor server; 'no' to integrate with existed
 one
@@ -2833,78 +2343,50 @@ and harbor-key.pem in directory 'down'
 #无需配置，自已实现
 #10.0.0.8 HARBOR_DOMAIN="harbor.yourdomain.com" NEW_INSTALL=no
 SELF_SIGNED_CERT=yes
-```
 
-```text
 # [optional] loadbalance for accessing k8s from outside
 [ex-lb]
 10.0.0.111 LB_ROLE=master EX_APISERVER_VIP=10.0.0.100 EX_APISERVER_PORT=6443
 10.0.0.112 LB_ROLE=backup EX_APISERVER_VIP=10.0.0.100 EX_APISERVER_PORT=6443
-```
 
-```text
 # [optional] ntp server for the cluster
 [chrony]
 #10.0.0.1
-```
 
-```text
 [all:vars]
 # --------- Main Variables ---------------
 # Cluster container-runtime supported: docker, containerd
 CONTAINER_RUNTIME="docker"
-```
 
-```text
 # Network plugins supported: calico, flannel, kube-router, cilium, kube-ovn
 CLUSTER_NETWORK="flannel"
-```
 
-```text
 # Service proxy mode of kube-proxy: 'iptables' or 'ipvs'
-```
 
-```text
 PROXY_MODE="ipvs"
-```
 
-```text
 # K8S Service CIDR, not overlap with node(host) networking
 SERVICE_CIDR="192.168.0.0/16"
-```
 
-```text
 # Cluster CIDR (Pod CIDR), not overlap with node(host) networking
 CLUSTER_CIDR="172.16.0.0/16"
-```
 
-```text
 # NodePort Range
 NODE_PORT_RANGE="20000-60000"
-```
 
-```text
 # Cluster DNS Domain
 CLUSTER_DNS_DOMAIN="cluster.local."
-```
 
-```text
 # -------- Additional Variables (don't change the default value right now) ---
 # Binaries Directory
 bin_dir="/usr/bin"
-```
 
-```text
 # CA and other components cert/key Directory
 ca_dir="/etc/kubernetes/ssl"
-```
 
-```text
 # Deploy Directory (kubeasz workspace)
 base_dir="/etc/ansible"
-```
 
-```text
 #测试hosts文件
 [root@master1 ansible]#ansible all -m ping
 10.0.0.112 | SUCCESS => {
@@ -2938,9 +2420,7 @@ base_dir="/etc/ansible"
 10.0.0.108 | SUCCESS => {
 "changed": false,
 "ping": "pong"
-```
 
-```text
 }
 10.0.0.106 | SUCCESS => {
 "changed": false,
@@ -2949,8 +2429,7 @@ base_dir="/etc/ansible"
 ```
 
 #### 3.6.5.7 部署过程
-
-```text
+```bash
 [root@master1 ~]#apt install python-pip -y
 [root@master1 ~]#cd /etc/ansible
 [root@master1 ansible]#ls
@@ -2962,47 +2441,31 @@ example    README.md
 dockerfiles  hosts      roles
 03.docker.yml      07.cluster-addon.yml  24.restore.yml  99.clean.yml  docs
 manifests  tools
-```
 
-```text
 [root@master1 ansible]#vim 01.prepare.yml
 #注释下面两行
 #  - ex-lb
 #  - chrony
-```
 
-```text
 #环境初始化
 [root@master1 ansible]#ansible-playbook  01.prepare.yml
 # ansible-playbook 01.prepare.yml
-```
 
-```text
 #部署etcd
 [root@master1 ansible]#ansible-playbook 02.etcd.yml
-```
 
-```text
 #在master和node节点上部署docker
 [root@master1 ansible]#ansible-playbook 03.docker.yml
-```
 
-```text
 #部署k8s master
 [root@master1 ansible]#ansible-playbook 04.kube-master.yml
-```
 
-```text
 #部署node
 [root@master1 ansible]#ansible-playbook 05.kube-node.yml
-```
 
-```text
 #部署网络
 [root@master1 ansible]#ansible-playbook 06.network.yml
-```
 
-```text
 #部署插件，如DNS
 [root@master1 ansible]#ansible-playbook 07.cluster-addon.yml
 ```
@@ -3010,8 +2473,7 @@ manifests  tools
 #### 3.6.5.8 验证上面部署是否成功
 
 ##### 3.6.5.8.1 验证etcd是否正常
-
-```text
+```bash
 [root@kube-etcd1 ~]#etcdctl member list
 5ff79fd73b006fb8, started, etcd2, https://10.0.0.105:2380,
 https://10.0.0.105:2379, false
@@ -3019,17 +2481,13 @@ c2c2f0c1e34e347f, started, etcd3, https://10.0.0.106:2380,
 https://10.0.0.106:2379, false
 e3cda42988593cf7, started, etcd1, https://10.0.0.104:2380,
 https://10.0.0.104:2379, false
-```
 
-```text
 [root@kube-etcd1 ~]#export NODE_IPS="10.0.0.104 10.0.0.105 10.0.0.106"
 [root@kube-etcd1 ~]#for ip in ${NODE_IPS}; do etcdctl --
 endpoints=https://${ip}:2379 --cacert=/etc/kubernetes/ssl/ca.pem --
 cert=/etc/etcd/ssl/etcd.pem --key=/etc/etcd/ssl/etcd-key.pem endpoint health;
 done
-```
 
-```text
 https://10.0.0.104:2379 is healthy: successfully committed proposal: took =
 15.494401ms
 https://10.0.0.105:2379 is healthy: successfully committed proposal: took =
@@ -3039,8 +2497,7 @@ https://10.0.0.106:2379 is healthy: successfully committed proposal: took =
 ```
 
 ##### 3.6.5.8.2 验证node节点
-
-```text
+```bash
 [root@master1 ~]#kubectl get node
 NAME         STATUS                     ROLES    AGE     VERSION
 10.0.0.101   Ready,SchedulingDisabled   master   7m22s   v1.17.2
@@ -3050,8 +2507,7 @@ NAME         STATUS                     ROLES    AGE     VERSION
 ```
 
 ##### 3.6.5.8.3 验证k8s是否能创建pod
-
-```text
+```bash
 [root@master1 ~]#kubectl  run test1 --image=alpine --replicas=4 sleep 360000
 [root@master1 ~]#kubectl  get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP           NODE
@@ -3064,9 +2520,7 @@ test1-67bc775467-r76z5   1/1     Running   0          67s   172.16.3.3
 10.0.0.108   <none>           <none>
 test1-67bc775467-sw5kg   1/1     Running   0          67s   172.16.2.3
 10.0.0.107   <none>           <none>
-```
 
-```text
 #进入Pod测试pod间网络
 [root@master1 ~]#kubectl exec -it test1-67bc775467-jxjch sh
 / # hostname -i
@@ -3074,76 +2528,57 @@ test1-67bc775467-sw5kg   1/1     Running   0          67s   172.16.2.3
 / # ping 172.16.2.2  -c1        #内网成功
 PING 172.16.2.2 (172.16.2.2): 56 data bytes
 64 bytes from 172.16.2.2: seq=0 ttl=62 time=0.658 ms
-```
 
-```text
 --- 172.16.2.2 ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.658/0.658/0.658 ms
 / # ping 114.114.114.114 -c1        #外网成功
 PING 114.114.114.114 (114.114.114.114): 56 data bytes
 64 bytes from 114.114.114.114: seq=0 ttl=127 time=11.139 ms
-```
 
-```text
 --- 114.114.114.114 ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 11.139/11.139/11.139 ms
-```
 
-```text
 / # ping -c1 www.baidu.com
 PING www.baidu.com (61.135.169.121): 56 data bytes
 64 bytes from 61.135.169.121: seq=0 ttl=127 time=5.634 ms
-```
 
-```text
 --- www.baidu.com ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 5.634/5.634/5.634 ms
-```
 
-```text
 / # cat /etc/resolv.conf
 nameserver 192.168.0.2
-search default.svc.cluster.local. svc.cluster.local. cluster.local. wang.org
+search default.svc.cluster.local. svc.cluster.local. cluster.local. bowen.org
 options ndots:5
 ```
 
 #### 3.6.5.9 将登录harbor的证书同步到node节点
+```bash
+[root@master1 ~]#mkdir /etc/docker/certs.d/harbor.bowen.org/ -pv
+[root@master1 ~]#scp harbor.bowen.org:/usr/local/src/harbor/certs/harbor.crt
+/etc/docker/certs.d/harbor.bowen.org/
 
-```text
-[root@master1 ~]#mkdir /etc/docker/certs.d/harbor.wang.org/ -pv
-[root@master1 ~]#scp harbor.wang.org:/usr/local/src/harbor/certs/harbor.crt
-/etc/docker/certs.d/harbor.wang.org/
-```
-
-```text
 [root@master1 ~]#ansible kube-node -m copy -a 'src=/etc/docker/certs.d
 dest=/etc/docker/'
-```
 
-```text
 #在node节点测试登录harbor
-[root@node1 ~]#docker login harbor.wang.org
+[root@node1 ~]#docker login harbor.bowen.org
 Username: admin
 Password:
 WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
 Configure a credential helper to remove this warning. See
 https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-```
 
-```text
 Login Succeeded
-```
 
-```text
-[root@node1 ~]#docker pull harbor.wang.org/kubernetes/alpine:latest
+[root@node1 ~]#docker pull harbor.bowen.org/kubernetes/alpine:latest
 latest: Pulling from kubernetes/alpine
 cbdbe7a5bc2a: Pull complete
 Digest: sha256:39eda93d15866957feaee28f8fc5adb545276a64147445c64992ef69804dbf01
-Status: Downloaded newer image for harbor.wang.org/kubernetes/alpine:latest
-harbor.wang.org/kubernetes/alpine:latest
+Status: Downloaded newer image for harbor.bowen.org/kubernetes/alpine:latest
+harbor.bowen.org/kubernetes/alpine:latest
 ```
 
 #### 3.6.5.10 添加master和node
@@ -3151,15 +2586,12 @@ harbor.wang.org/kubernetes/alpine:latest
 前面的操作中master和node各有两个主机，还可以再添加新的主机。
 
 提供了一个工具easzctl 可以实现后续的管理
-
-```text
+```bash
 [root@master1 ~]#which easzctl
 /usr/bin/easzctl
 [root@master1 ~]#easzctl --help
 Usage: easzctl COMMAND [args]
-```
 
-```text
 Cluster-wide operation:
 checkout        To switch to context <clustername>, or create it if not
 existed
@@ -3169,9 +2601,7 @@ list        To list all of clusters managed
 setup       To setup a cluster using the current context
 start-aio       To quickly setup an all-in-one cluster for testing (like
 minikube)
-```
 
-```text
 In-cluster operation:
 add-etcd        To add a etcd-node to the etcd cluster
 add-master      To add a kube-master(master node) to the k8s cluster
@@ -3180,24 +2610,17 @@ del-etcd        To delete a etcd-node from the etcd cluster
 del-master      To delete a kube-master from the k8s cluster
 del-node        To delete a kube-node from the k8s cluster
 upgrade     To upgrade the k8s cluster
-```
 
-```text
 Extra operation:
 basic-auth      To enable/disable basic-auth for apiserver
-```
 
-```text
 Use "easzctl help <command>" for more information about a given command.
 ```
 
 ##### 3.6.5.10.1 添加新的master节点
-
-```text
+```bash
 [root@master1 ~]#easzctl add-master 10.0.0.103
-```
 
-```text
 [root@master1 ~]#kubectl get nodes
 NAME         STATUS                     ROLES    AGE   VERSION
 10.0.0.101   Ready,SchedulingDisabled   master   77m   v1.17.2
@@ -3205,9 +2628,7 @@ NAME         STATUS                     ROLES    AGE   VERSION
 10.0.0.103   Ready,SchedulingDisabled   master   40s   v1.17.2
 10.0.0.107   Ready                      node     71m   v1.17.2
 10.0.0.108   Ready                      node     71m   v1.17.2
-```
 
-```text
 #自动更新的hosts文件
 [root@master1 ~]#grep -A 3 kube-master /etc/ansible/hosts
 [kube-master]
@@ -3217,8 +2638,7 @@ NAME         STATUS                     ROLES    AGE   VERSION
 ```
 
 ##### 3.6.5.10.2 添加node节点
-
-```text
+```bash
 [root@master1 ~]#easzctl add-node 10.0.0.109
 [root@master1 ~]#kubectl get nodes
 NAME         STATUS                     ROLES    AGE    VERSION
@@ -3233,9 +2653,7 @@ NAME         STATUS                     ROLES    AGE    VERSION
 10.0.0.109 NEW_NODE=yes
 10.0.0.107
 10.0.0.108
-```
 
-```text
 #同步证书到新node节点
 [root@master1 ~]#ansible kube-node -m copy -a 'src=/etc/docker/certs.d
 dest=/etc/docker/'
@@ -3248,8 +2666,7 @@ dest=/etc/docker/'
 集群升级存在一定风险，请谨慎操作。项目分支master 安装的集群可以在当前支持k8s大版本基础上升级任意小版本，比如当前安装集群为1.16.0，可以方便的升级到任何1.16.x版本。只需要将对应的二进制文件替换即可升级，如下面说明。
 
 各节点对应主要的二进制文件以下：
-
-```text
+```bash
 #master节点:共个文件
 kube-apiserver
 kube-controller-manager
@@ -3264,8 +2681,7 @@ kube-proxy
 ```
 
 下面案例将从 1.17.2升级到1.17.6。
-
-```text
+```bash
 #查看当前版本
 [root@master1 ~]#kubectl version
 Client Version: version.Info{Major:"1", Minor:"17", GitVersion:"v1.17.2",
@@ -3276,42 +2692,32 @@ Server Version: version.Info{Major:"1", Minor:"17", GitVersion:"v1.17.2",
 GitCommit:"59603c6e503c87169aea6106f57b9f242f64df89", GitTreeState:"clean",
 BuildDate:"2020-01-18T23:22:30Z", GoVersion:"go1.13.5", Compiler:"gc",
 Platform:"linux/amd64"}
-```
 
-```text
 #备份旧版本
 [root@master1 ~]#mkdir kubernetes1.17.2
 [root@master1 ~]#cd /etc/ansible/bin/
 [root@master1 bin]#cp kube-apiserver  kube-controller-manager  kubectl   kubelet
 kube-proxy kube-scheduler /root/kubernetes1.17.2/
-```
 
-```text
 #下载升级的版本文件
 [root@master1 ~]#mkdir kubernetes1.17.6
 [root@master1 ~]#cd kubernetes1.17.6
 [root@master1 kubernetes1.17.6]#wget https://dl.k8s.io/v1.17.6/kubernetes-
 server-linux-amd64.tar.gz
-```
 
-```text
 [root@master1 kubernetes1.17.6]#tar xvf kubernetes-server-linux-amd64.tar.gz
 [root@master1 kubernetes1.17.6]#cd kubernetes/server/bin
 [root@master1 bin]#pwd
 /root/kubernetes1.17.6/kubernetes/server/bin
 [root@master1 bin]#cp kube-apiserver    kube-controller-manager  kubectl
 kubelet   kube-proxy       kube-scheduler /etc/ansible/bin/
-```
 
-```text
 #升级方法1
 [root@master1 ~]#easzctl upgrade
 #升级方法2，此方式也可以完成降级
 [root@master1 ~]#cd /etc/ansible/
 [root@master1 ansible]#ansible-playbook -t upgrade_k8s 22.upgrade.yml
-```
 
-```text
 #验证升级是否成功
 [root@master1 ~]#kubectl get nodes
 NAME         STATUS                     ROLES    AGE    VERSION
@@ -3321,37 +2727,28 @@ NAME         STATUS                     ROLES    AGE    VERSION
 10.0.0.107   Ready                      node     142m   v1.17.6
 10.0.0.108   Ready                      node     142m   v1.17.6
 10.0.0.109   Ready                      node     67m    v1.17.6
-```
 
-```text
 node: kubectl     kubelet     kube-proxy
 master: kube-apiserver    kube-controller-manager  kubectl     kubelet
 kube-proxy       kube-scheduler
-```
 
-```text
 #cp kube-apiserver    kube-controller-manager  kubectl     kubelet
 kube-proxy       kube-scheduler /opt/k8s-1.17.2/
 #cp kube-apiserver   kube-controller-manager  kubectl  kubelet  kube-proxy
 kube-scheduler /opt/k8s-1.17.4/
-```
 
-```text
 #systemctl  stop kube-apiserver kube-controller-manager kubelet kube-proxy
 kube-scheduler
 #systemctl  stop  kubelet kube-proxy
 ```
 
 #### 3.6.5.12 删除 kubernetes 的playbook
-
-```text
+```bash
 [root@master1 ~]#cat /etc/ansible/99.clean.yml
 # WARNING: This playbook will erase the entire k8s-cluster, include PODs, ETCD
 data etc.
 # Make sure you know what you are doing.
-```
 
-```text
 - hosts:
 - kube-master
 - kube-node
@@ -3373,7 +2770,6 @@ roles:
 ### 3.7.1 基本流程
 
 参考资料:
-
 ```text
 https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#init-
 workflow
@@ -3394,7 +2790,6 @@ workflow
 #### 3.7.2.1 master 节点解析
 
 1 当前环境检查，确保当前主机可以部署kubernetes
-
 ```text
 [init] Using Kubernetes version: v1.22.1
 [preflight] Running pre-flight checks
@@ -3403,21 +2798,18 @@ workflow
 internet connection
 [preflight] You can also perform this action in beforehand using 'kubeadm config
 images pull'
-```
 
-```text
 #对于交换分区的检查，可以通过 --ignore-preflight-errors=Swap 省略检查
 ```
 
 2 生成kubernetes对外提供服务所需要的各种私钥以及数字证书
-
-```text
+```bash
 [certs] Using certificateDir folder "/etc/kubernetes/pki"
 [certs] Generating "ca" certificate and key
 [certs] Generating "apiserver" certificate and key
-[certs] apiserver serving cert is signed for DNS names [kubeapi.wang.org
+[certs] apiserver serving cert is signed for DNS names [kubeapi.bowen.org
 kubernetes kubernetes.default kubernetes.default.svc
-kubernetes.default.svc.wang.org master1.wang.org] and IPs [192.168.0.1
+kubernetes.default.svc.bowen.org master1.bowen.org] and IPs [192.168.0.1
 10.0.0.101]
 [certs] Generating "apiserver-kubelet-client" certificate and key
 [certs] Generating "front-proxy-ca" certificate and key
@@ -3425,16 +2817,14 @@ kubernetes.default.svc.wang.org master1.wang.org] and IPs [192.168.0.1
 [certs] Generating "etcd/ca" certificate and key
 [certs] Generating "etcd/server" certificate and key
 [certs] etcd/server serving cert is signed for DNS names [localhost
-master1.wang.org] and IPs [10.0.0.101 127.0.0.1 ::1]
+master1.bowen.org] and IPs [10.0.0.101 127.0.0.1 ::1]
 [certs] Generating "etcd/peer" certificate and key
 [certs] etcd/peer serving cert is signed for DNS names [localhost
-master1.wang.org] and IPs [10.0.0.101 127.0.0.1 ::1]
+master1.bowen.org] and IPs [10.0.0.101 127.0.0.1 ::1]
 [certs] Generating "etcd/healthcheck-client" certificate and key
 [certs] Generating "apiserver-etcd-client" certificate and key
 [certs] Generating "sa" key and public key
-```
 
-```text
 #查看证书相关文件
 [root@master1 ~]#ls /etc/kubernetes/pki/
 apiserver.crt              apiserver.key                 ca.crt  front-proxy-
@@ -3446,8 +2836,7 @@ client.crt  sa.pub
 ```
 
 3 生成kubernetes控制组件的kubeconfig文件及相关的启动配置文件
-
-```text
+```yaml
 [kubeconfig] Using kubeconfig folder "/etc/kubernetes"
 [kubeconfig] Writing "admin.conf" kubeconfig file
 [kubeconfig] Writing "kubelet.conf" kubeconfig file
@@ -3458,16 +2847,12 @@ client.crt  sa.pub
 [kubelet-start] Writing kubelet configuration to file
 "/var/lib/kubelet/config.yaml"
 [kubelet-start] Starting the kubelet
-```
 
-```text
 #查看配置文件
 [root@master1 ~]#ls /etc/kubernetes/
 admin.conf  controller-manager.conf  kubelet.conf  manifests  pki
 scheduler.conf
-```
 
-```text
 #kubectl的管理授权信息
 [root@master1 ~]#cat /etc/kubernetes/admin.conf
 apiVersion: v1
@@ -3493,7 +2878,7 @@ YVVTbThBczJtMjJJeFc3R1ZHZVNNaWhqbkVPSXJMVXdPaEdSRQoreVBYOEw4ZGIxQVY5RFhRWGVHZWlk
 RU84Yjg4Uy9OcXNiRm1ldjVHRTZNemlkYitZTytNbkhzeXE5NXdISi9MClk5RUp3M2FJSldZeTE0V05R
 MTRySE84eGpldno1d3pjRW9mRlVma0JVQkg2V28yM1N3SUh4T3lYcnM3bGUvbGUKMHJ3PQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443  #指定API的总入口地址
+server: https://kubeapi.bowen.org:6443  #指定API的总入口地址
 name: kubernetes
 contexts:
 - context:
@@ -3506,9 +2891,7 @@ preferences: {}
 users:
 - name: kubernetes-admin
 user:
-```
 
-```text
 client-certificate-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lJYS9SMnRrSUNOQVF3
 RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TWpB
@@ -3559,19 +2942,17 @@ OWpuaXk0Z1duTkdDMnYrS1BGYUV0CkNjYWR3UUtCZ1FEZ1RTQlM0UTBuY1dtSkpYcnltUTErU0JuUytT
 ZFJLSldGUjlLUXdjRHN3eHJyS0dOR0w3TDcKb3piTzhXcHo0U2V0eTQwbFN0SU8zejJNekJpdndqbWJt
 anozNjhlN2o5ZGpzbHFveTZMYkRRbzdZUXpwbG51VApUQ1Q1NTZkNXV0VTlERUVoTGZhSTJFblpUbUcy
 UEhBY3QyU3ZQOEM4eGFJV1AybHgrY1NDK0E9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
-```
 
-```text
 #kubelet采集的属性信息
+```
+```yaml
 [root@master1 ~]#cat /var/lib/kubelet/config.yaml
 apiVersion: kubelet.config.k8s.io/v1beta1
 authentication:
 anonymous:
 enabled: false
 webhook:
-```
 
-```text
 cacheTTL: 0s
 enabled: true
 x509:
@@ -3584,7 +2965,7 @@ cacheUnauthorizedTTL: 0s
 cgroupDriver: systemd
 clusterDNS:
 - 192.168.0.10
-clusterDomain: wang.org
+clusterDomain: bowen.org
 cpuManagerReconcilePeriod: 0s
 evictionPressureTransitionPeriod: 0s
 fileCheckFrequency: 0s
@@ -3606,9 +2987,7 @@ staticPodPath: /etc/kubernetes/manifests
 streamingConnectionIdleTimeout: 0s
 syncFrequency: 0s
 volumeStatsAggPeriod: 0s
-```
 
-```text
 #kubeadm的启动参数
 [root@master1 ~]#cat /var/lib/kubelet/kubeadm-flags.env
 KUBELET_KUBEADM_ARGS="--network-plugin=cni --pod-infra-container-
@@ -3617,50 +2996,30 @@ image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.5"
 
 4 生成kubernetes控制组件的pod对象需要的manifest文件
 
-```text
-[control-plane] Using manifest folder "/etc/kubernetes/manifests"
-[control-plane] Creating static Pod manifest for "kube-apiserver"
-[control-plane] Creating static Pod manifest for "kube-controller-manager"
-[control-plane] Creating static Pod manifest for "kube-scheduler"
-[etcd] Creating static Pod manifest for local etcd in
-"/etc/kubernetes/manifests"
-[wait-control-plane] Waiting for the kubelet to boot up the control plane as
-static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
-[apiclient] All control plane components are healthy after 10.528963 seconds
-[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in
-the "kube-system" Namespace
-[kubelet] Creating a ConfigMap "kubelet-config-1.22" in namespace kube-system
-with the configuration for the kubelets in the cluster
-[upload-certs] Skipping phase. Please see --upload-certs
-```
 
-```text
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"[control-plane] Creating static Pod manifest for "kube-apiserver"[control-plane] Creating static Pod manifest for "kube-controller-manager"[control-plane] Creating static Pod manifest for "kube-scheduler"[etcd] Creating static Pod manifest for local etcd in"/etc/kubernetes/manifests"[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s[apiclient] All control plane components are healthy after 10.528963 seconds[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace[kubelet] Creating a ConfigMap "kubelet-config-1.22" in namespace kube-system with the configuration for the kubelets in the cluster[upload-certs] Skipping phase. Please see --upload-certs
+
+```bash
 #查看默认启动的容器
 [root@master1 ~]#ls /etc/kubernetes/manifests
 etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-scheduler.yaml
-```
 
-```text
 #查看配置信息
 [root@master1 ~]#kubectl get configmaps -n kube-system  | grep kubelet
 kubelet-config-1.22                  1      21d
 [root@master1 ~]#kubectl describe  configmaps kubelet-config-1.22 -n kube-system
 | grep static
 staticPodPath: /etc/kubernetes/manifests
-```
 
-```text
 #查看etcd相关数据
 [root@master1 ~]#kubectl -n kube-system get pods | grep etcd
-etcd-master1.wang.org                      1/1     Running   5 (6m15s ago)
+etcd-master1.bowen.org                      1/1     Running   5 (6m15s ago)
 21d
-etcd-master2.wang.org                      1/1     Running   75 (6m12s ago)
+etcd-master2.bowen.org                      1/1     Running   75 (6m12s ago)
 21d
-etcd-master3.wang.org                      1/1     Running   6 (6m9s ago)
+etcd-master3.bowen.org                      1/1     Running   6 (6m9s ago)
 21d
-```
 
-```text
 #进入容器
 # kubectl -n kube-system exec -it etcd-master1 /bin/
 #定制命令
@@ -3669,9 +3028,7 @@ sh-5.0#alias etcdctl='etcdctl \
 --cert=/etc/kubernetes/pki/etcd/server.crt  \
 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
 --endpoints 10.0.0.101:2379,10.0.0.102:2379,10.0.0.103:2379'
-```
 
-```text
 #查看etcd节点
 sh-5.0#  ETCDCTL_API=3 etcdctl -w table member list
 +------------------+---------+--------------------+-------------------------+---
@@ -3680,58 +3037,38 @@ sh-5.0#  ETCDCTL_API=3 etcdctl -w table member list
 CLIENT ADDRS       | IS LEARNER |
 +------------------+---------+--------------------+-------------------------+---
 ----------------------+------------+
-| 419f5fe22e157b23 | started | master3.wang.org | https://10.0.0.103:2380 |
+| 419f5fe22e157b23 | started | master3.bowen.org | https://10.0.0.103:2380 |
 https://10.0.0.103:2379 |      false |
-| 5d894fc423b0d45d | started | master2.wang.org | https://10.0.0.102:2380 |
+| 5d894fc423b0d45d | started | master2.bowen.org | https://10.0.0.102:2380 |
 https://10.0.0.102:2379 |      false |
-| f2fd0c12369e0d75 | started | master1.wang.org | https://10.0.0.101:2380 |
+| f2fd0c12369e0d75 | started | master1.bowen.org | https://10.0.0.101:2380 |
 https://10.0.0.101:2379 |      false |
 +------------------+---------+--------------------+-------------------------+---
 ----------------------+------------+
-```
 
-```text
 sh-5.0# ETCDCTL_API=3 etcdctl get /registry/configmaps/kube-system/ --
 prefix=true  --keys-only
 /registry/configmaps/kube-system/coredns
-```
 
-```text
 /registry/configmaps/kube-system/extension-apiserver-authentication
-```
 
-```text
 /registry/configmaps/kube-system/kube-flannel-cfg
-```
 
-```text
 /registry/configmaps/kube-system/kube-proxy
-```
 
-```text
 /registry/configmaps/kube-system/kube-root-ca.crt
-```
 
-```text
 /registry/configmaps/kube-system/kubeadm-config
-```
 
-```text
 /registry/configmaps/kube-system/kubelet-config-1.22
-```
 
-```text
 sh-5.0# ETCDCTL_API=3 etcdctl get /registry/configmaps/kube-system/kubelet-
 config-1.22 --prefix=true
 /registry/configmaps/kube-system/kubelet-config-1.22
 k8s
-```
 
-```text
 v1  ConfigMap½
-```
 
-```text
 kubelet-config-1.22
 kube-system"*$d997f89b-a378-487c-8384-1391902b36622 bv
 +kubeadm.kubernetes.io/component-
@@ -3748,44 +3085,36 @@ enabled: false
 ```
 
 5 为集群控制节点添加相关的标识，不让master节点参与node角色工作
-
-```text
-[mark-control-plane] Marking the node master1.wang.org as control-plane by adding
+```bash
+[mark-control-plane] Marking the node master1.bowen.org as control-plane by adding
 the labels: [node-role.kubernetes.io/master(deprecated) node-
 role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-
 balancers]
-[mark-control-plane] Marking the node master1.wang.org as control-plane by adding
+[mark-control-plane] Marking the node master1.bowen.org as control-plane by adding
 the taints [node-role.kubernetes.io/master:NoSchedule]
-```
 
-```text
 #查看主机的角色
 [root@master1 ~]#kubectl get nodes
 NAME                 STATUS   ROLES                  AGE   VERSION
-master1.wang.org   Ready    control-plane,master   21d   v1.22.1
-master2.wang.org   Ready    control-plane,master   21d   v1.22.1
-master3.wang.org   Ready    control-plane,master   21d   v1.22.1
-node1.wang.org     Ready    <none>                 21d   v1.22.1
-node2.wang.org     Ready    <none>                 21d   v1.22.1
-node3.wang.org     Ready    <none>                 21d   v1.22.1
-```
+master1.bowen.org   Ready    control-plane,master   21d   v1.22.1
+master2.bowen.org   Ready    control-plane,master   21d   v1.22.1
+master3.bowen.org   Ready    control-plane,master   21d   v1.22.1
+node1.bowen.org     Ready    <none>                 21d   v1.22.1
+node2.bowen.org     Ready    <none>                 21d   v1.22.1
+node3.bowen.org     Ready    <none>                 21d   v1.22.1
 
-```text
 [root@master1 ~]# kubectl describe nodes | grep -i taint
 Taints:             node-role.kubernetes.io/master:NoSchedule
 Taints:             node-role.kubernetes.io/master:NoSchedule
 Taints:             node-role.kubernetes.io/master:NoSchedule
 Taints:             <none>
-```
 
-```text
 Taints:             <none>
 Taints:             <none>
 ```
 
 6 生成集群的统一认证的token信息，方便其他节点加入到当前的集群
-
-```text
+```bash
 [bootstrap-token] Using token: BOOTSTRAP_TOKEN
 [bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC
 Roles
@@ -3799,9 +3128,7 @@ automatically approve CSRs from a Node Bootstrap Token
 node client certificates in the cluster
 [bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public"
 namespace
-```
 
-```text
 #查看token的信息
 [root@master1 ~]#kubeadm token list
 TOKEN         TTL         EXPIRES   USAGES        DESCRIPTION
@@ -3812,19 +3139,16 @@ system:bootstrappers:kubeadm:default-node-token
 ```
 
 **7 进行基于TLS的安全引导相关的配置、角色策略、签名请求、自动配置策略**
-
-```text
+```yaml
 [kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a
 rotatable kubelet client certificate and key
-```
 
-```text
 #查看证书相关信息
 [root@master1 ~]#kubectl get csr
 NAME        AGE   SIGNERNAME                                    REQUESTOR
 REQUESTEDDURATION   CONDITION
 csr-4cxvc   35m   kubernetes.io/kube-apiserver-client-kubelet
-system:node:master1.wang.org   <none>              Approved,Issued
+system:node:master1.bowen.org   <none>              Approved,Issued
 csr-crg6s   15m   kubernetes.io/kube-apiserver-client-kubelet
 system:bootstrap:xtqj5u          <none>              Approved,Issued
 csr-dk626   12m   kubernetes.io/kube-apiserver-client-kubelet
@@ -3835,13 +3159,9 @@ csr-q54zl   12m   kubernetes.io/kube-apiserver-client-kubelet
 system:bootstrap:xtqj5u          <none>              Approved,Issued
 csr-vhgkr   16m   kubernetes.io/kube-apiserver-client-kubelet
 system:bootstrap:xtqj5u          <none>              Approved,Issued
-```
 
-```text
 #查看角色相关信息
-```
 
-```text
 [root@master1 ~]#kubectl get role -n kube-system
 NAME                                             CREATED AT
 extension-apiserver-authentication-reader        2021-09-13T08:36:10Z
@@ -3854,9 +3174,7 @@ system::leader-locking-kube-scheduler            2021-09-13T08:36:10Z
 system:controller:bootstrap-signer               2021-09-13T08:36:10Z
 system:controller:cloud-provider                 2021-09-13T08:36:10Z
 system:controller:token-cleaner                  2021-09-13T08:36:10Z
-```
 
-```text
 [root@master1 ~]#cat /etc/kubernetes/kubelet.conf
 apiVersion: v1
 clusters:
@@ -3881,31 +3199,28 @@ YVVTbThBczJtMjJJeFc3R1ZHZVNNaWhqbkVPSXJMVXdPaEdSRQoreVBYOEw4ZGIxQVY5RFhRWGVHZWlk
 RU84Yjg4Uy9OcXNiRm1ldjVHRTZNemlkYitZTytNbkhzeXE5NXdISi9MClk5RUp3M2FJSldZeTE0V05R
 MTRySE84eGpldno1d3pjRW9mRlVma0JVQkg2V28yM1N3SUh4T3lYcnM3bGUvbGUKMHJ3PQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
 cluster: kubernetes
-user: system:node:master1.wang.org
-name: system:node:master1.wang.org@kubernetes
-current-context: system:node:master1.wang.org@kubernetes
+user: system:node:master1.bowen.org
+name: system:node:master1.bowen.org@kubernetes
+current-context: system:node:master1.bowen.org@kubernetes
 kind: Config
 preferences: {}
 users:
-- name: system:node:master1.wang.org
+- name: system:node:master1.bowen.org
 user:
 client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
 ```
 
 **8 为集群安装DNS和kube-porxy插件**
-
-```text
+```bash
 [addons] Applied essential addon: CoreDNS
 [addons] Applied essential addon: kube-proxy
-```
 
-```text
 #查看效果
 [root@master1 ~]# kubectl get pod -n kube-system | egrep 'proxy|core'
 coredns-7f6cbbb7b8-4b88c          1/1     Running            0
@@ -3927,24 +3242,19 @@ kube-proxy-ztn8r                  1/1     Running            0
 #### 3.7.2.2  node 注册解析
 
 1 当前环境检查，读取相关集群配置信息
-
-```text
-[root@node1 ~]#kubeadm join kubeapi.wang.org:6443 --token
+```bash
+[root@node1 ~]#kubeadm join kubeapi.bowen.org:6443 --token
 BOOTSTRAP_TOKEN \
 > --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH
 ```
 
-```text
-[preflight] Running pre-flight checks
-[preflight] Reading configuration from the cluster...
-[preflight] FYI: You can look at this config file with 'kubectl -n kube-system
-get cm kubeadm-config -o yaml'
-```
+
+[preflight] Running pre-flight checks[preflight] Reading configuration from the cluster...[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+
 
 **在master节点上看属性细节**
-
-```text
+```yaml
 [root@master1 ~]#kubectl  -n kube-system get cm kubeadm-config -o yaml
 apiVersion: v1
 data:
@@ -3956,7 +3266,7 @@ timeoutForControlPlane: 4m0s
 apiVersion: kubeadm.k8s.io/v1beta3
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
-controlPlaneEndpoint: kubeapi.wang.org:6443
+controlPlaneEndpoint: kubeapi.bowen.org:6443
 controllerManager: {}
 dns: {}
 etcd:
@@ -3964,12 +3274,10 @@ local:
 dataDir: /var/lib/etcd
 imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
 kind: ClusterConfiguration
-```
 
-```text
 kubernetesVersion: v1.22.1
 networking:
-dnsDomain: wang.org
+dnsDomain: bowen.org
 podSubnet: 172.16.0.0/16
 serviceSubnet: 192.168.0.0/16
 scheduler: {}
@@ -3983,16 +3291,13 @@ uid: efd19a8a-15c2-4398-afde-1f40e83faa61
 ```
 
 2 获取集群相关数据后启动kubelet服务
-
-```text
+```bash
 [kubelet-start] Writing kubelet configuration to file
 "/var/lib/kubelet/config.yaml"
 [kubelet-start] Writing kubelet environment file with flags to file
 "/var/lib/kubelet/kubeadm-flags.env"
 [kubelet-start] Starting the kubelet
-```
 
-```text
 #查看获取文件
 [root@node1 ~]#ls /var/lib/kubelet
 config.yaml  cpu_manager_state  device-plugins  kubeadm-flags.env
@@ -4000,22 +3305,16 @@ memory_manager_state  pki  plugins  plugins_registry  pod-resources  pods
 ```
 
 3 获取认证信息后，基于证书方式进行通信
-
 ```text
 [kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
 ```
 
-```text
-This node has joined the cluster:
-* Certificate signing request was sent to apiserver and a response was received.
-* The Kubelet was informed of the new secure connection details.
-```
 
-```text
+This node has joined the cluster:* Certificate signing request was sent to apiserver and a response was received.* The Kubelet was informed of the new secure connection details.
+
+```bash
 Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
-```
 
-```text
 #文件查看
 [root@node1 ~]#ls /var/lib/kubelet/pki
 kubelet-client-2022-02-22-20-39-59.pem  kubelet-client-current.pem  kubelet.crt

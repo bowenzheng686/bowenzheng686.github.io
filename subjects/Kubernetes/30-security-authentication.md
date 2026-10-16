@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 安全体系与身份认证'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -39,9 +40,9 @@ kubelet 和kube apiserver类似，提供一个简单的REST API 服务，也监�
 
 **安全基本流程**
 
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/
-```
+
+- <https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/>
+
 
 对APIServer的访问一般都要经过的三个步骤的安全访问控制。
 
@@ -95,9 +96,9 @@ https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/
 
 ### 2.1.1 Kubernetes 中的用户
 
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authentication/
-```
+
+- <https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authentication/>
+
 
 所有 Kubernetes 集群都有两类用户：由 Kubernetes 管理的服务账号和普通用户。在 Kubernetes 中，subject 是指一个对象或实体，该对象或实体可以是用户、服务帐户、组或其他可识别的实体。它在授权策略中用于标识哪些实体被允许或被拒绝访问资源。简而言之，subject 就是需要被授权访问资源的实体。认证用户即属于Subject。
 
@@ -164,7 +165,6 @@ Kubernetes本身并没有对用户或用户组的内建概念或实体。在Kube
 所以，如果想要查看当前Kubernetes集群中的用户和用户组，通常需要查看的是外部身份提供商的设置或Kubeconfig文件。同时，您可以查看在Kubernetes中定义的RBAC策略，以理解哪些用户和用户组有权访问特定资源。
 
 在Kubernetes中，服务帐户(ServiceAccount)默认会被放入两个组之一：
-
 ```text
 system:serviceaccounts （表示集群中的所有服务帐户）和system:serviceaccounts:
 ```
@@ -172,27 +172,20 @@ system:serviceaccounts （表示集群中的所有服务帐户）和system:servi
 <namespace> （表示给定命名空间中的所有服务帐户）。这些是内置的组。
 
 范例：查看用户组kubeadm:cluster-admins的权限（新版）
-
-```text
+```yaml
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS     ROLES           AGE   VERSION
-master1.wang.org   Ready      control-plane   96d   v1.30.0
-node1.wang.org     Ready      <none>          96d   v1.30.0
-node2.wang.org     NotReady   <none>          96d   v1.30.0
-node3.wang.org     NotReady   <none>          96d   v1.30.0
-```
+master1.bowen.org   Ready      control-plane   96d   v1.30.0
+node1.bowen.org     Ready      <none>          96d   v1.30.0
+node2.bowen.org     NotReady   <none>          96d   v1.30.0
+node3.bowen.org     NotReady   <none>          96d   v1.30.0
 
-```text
 [root@master1 ~]#diff /etc/kubernetes/admin.conf .kube/config
-```
 
-```text
 [root@master1 ~]#grep client-certificate-data .kube/config |awk  '{print
 $NF}'|base64 -d | openssl x509 -noout -subject
 subject=O = kubeadm:cluster-admins, CN = kubernetes-admin
-```
 
-```text
 #新版：查看role角色cluster-admin同名的clusterrolebinding，分配权限给kubeadm:cluster-
 admins组
 [root@master1 ~]#kubectl get clusterrolebinding  kubeadm:cluster-admins -o yaml
@@ -214,17 +207,14 @@ name: kubeadm:cluster-admins
 ```
 
 范例：查看用户组system:masters的权限(旧版)
-
-```text
+```yaml
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS   ROLES           AGE    VERSION
-master1.wang.org   Ready    control-plane   511d   v1.26.2
-node1.wang.org     Ready    <none>          511d   v1.26.2
-node2.wang.org     Ready    <none>          511d   v1.26.2
-node3.wang.org     Ready    <none>          511d   v1.26.2
-```
+master1.bowen.org   Ready    control-plane   511d   v1.26.2
+node1.bowen.org     Ready    <none>          511d   v1.26.2
+node2.bowen.org     Ready    <none>          511d   v1.26.2
+node3.bowen.org     Ready    <none>          511d   v1.26.2
 
-```text
 [root@master1 ~]#diff /etc/kubernetes/admin.conf .kube/config
 [root@master1 ~]#grep client-certificate-data .kube/config |awk  '{print
 $NF}'|base64 -d | openssl x509 -noout -subject
@@ -253,13 +243,10 @@ name: system:masters
 
 范例：查看用户组system:masters的权限(旧版)
 
-```text
-#所有的k8s集群资源操作，其实都是通过node节点上的kubelet和master节点上的apiserver之间的通信
-实现，而在kubernetes的认证目录中有其专用的通信认证证书 apiserver-kubelet-client.crt，可以
-通过该文件来检查一下这两者之间是一个怎样的关系。
-```
 
-```text
+#所有的k8s集群资源操作，其实都是通过node节点上的kubelet和master节点上的apiserver之间的通信实现，而在kubernetes的认证目录中有其专用的通信认证证书 apiserver-kubelet-client.crt，可以通过该文件来检查一下这两者之间是一个怎样的关系。
+
+```yaml
 #新版
 [root@master1 ~]#openssl x509 -in /etc/kubernetes/pki/apiserver-kubelet-
 client.crt  -text -noout
@@ -273,9 +260,7 @@ Validity
 Not Before: Jul 15 03:00:20 2024 GMT
 Not After : Jul 15 03:05:20 2025 GMT
 Subject: O = kubeadm:cluster-admins, CN = kube-apiserver-kubelet-client
-```
 
-```text
 #旧版
 [root@master1 ~]#openssl x509 -in /etc/kubernetes/pki/apiserver-kubelet-
 client.crt  -text -noout
@@ -289,9 +274,7 @@ Subject: O=system:masters, CN=kube-apiserver-kubelet-client
 ...
 #结果显示：对于kubelet，用户名是kube-apiserver-kubelet-client，而且属于system:master的
 组，这两者的关系是在基于openssl或者csffl工具创建用户时候基于CN和O来设定的信息。
-```
 
-```text
 #查看集群角色的权限
 [root@master1 ~]#kubectl get clusterrole  cluster-admin -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -312,16 +295,12 @@ resources:
 - '*'
 verbs:
 - '*'
-```
 
-```text
 - nonResourceURLs:
 - '*'
 verbs:
 - '*'
-```
 
-```text
 #新版：查看role角色cluster-admin同名的clusterrolebinding，分配权限给kubeadm:cluster-
 admins组
 [root@master1 ~]#kubectl get clusterrolebinding  kubeadm:cluster-admins -o yaml
@@ -340,9 +319,7 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: Group
 name: kubeadm:cluster-admins
-```
 
-```text
 #旧版：查看role角色cluster-admin同名的clusterrolebinding，分配权限给system:masters组
 [root@master1 ~]#kubectl get clusterrolebinding  cluster-admin -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -427,8 +404,7 @@ X509客户端证书认证Bootstrap令牌认证前端代理身份认证 front-pro
 注意：API Server并不保证各认证插件的生效次序与定义的次序相同。
 
 范例:  查看API Server 的认证机制
-
-```text
+```yaml
 #在Master节查看认证机制
 [root@master1 ~]#cat /etc/kubernetes/manifests/kube-apiserver.yaml
 apiVersion: v1
@@ -446,9 +422,7 @@ namespace: kube-system
 spec:
 containers:
 - command:
-```
 
-```text
 - kube-apiserver
 - --advertise-address=10.0.0.200
 - --allow-privileged=true
@@ -507,9 +481,7 @@ failureThreshold: 3
 httpGet:
 host: 10.0.0.200
 path: /readyz
-```
 
-```text
 port: 6443
 scheme: HTTPS
 periodSeconds: 1
@@ -568,9 +540,7 @@ name: etc-pki
 path: /etc/kubernetes/pki
 type: DirectoryOrCreate
 name: k8s-certs
-```
 
-```text
 - hostPath:
 path: /usr/local/share/ca-certificates
 type: DirectoryOrCreate
@@ -605,8 +575,7 @@ Kubelet API功能简介
 API Server是该API端点的客户端，因此，kubelet需要在验证客户端身份时信任给API Server颁发数字证书的CA。
 
 范例:  查看 Kubelet 的认证机制
-
-```text
+```yaml
 #在每个worker节点查看
 [root@node1 ~]#cat /var/lib/kubelet/config.yaml
 apiVersion: kubelet.config.k8s.io/v1beta1
@@ -628,9 +597,7 @@ clusterDNS:
 - 10.96.0.10
 clusterDomain: cluster.local
 cpuManagerReconcilePeriod: 0s
-```
 
-```text
 evictionPressureTransitionPeriod: 0s
 fileCheckFrequency: 0s
 healthzBindAddress: 127.0.0.1
@@ -656,9 +623,7 @@ staticPodPath: /etc/kubernetes/manifests
 streamingConnectionIdleTimeout: 0s
 syncFrequency: 0s
 volumeStatsAggPeriod: 0s
-```
 
-```text
 #如果修改,不建议修改/var/lib/kubelet/config.yaml配置文件,而通过修改对应的configmap实现
 [root@master1 ~]#kubectl get cm kubelet-config  -n kube-system  -o yaml
 apiVersion: v1
@@ -691,9 +656,7 @@ httpCheckFrequency: 0s
 imageMinimumGCAge: 0s
 kind: KubeletConfiguration
 logging:
-```
 
-```text
 flushFrequency: 0
 options:
 json:
@@ -731,9 +694,9 @@ uid: e4834954-b6a4-494a-a1e0-5bc7d3cad278
 
 **官方说明**
 
-```text
-https://kubernetes.io/zh/docs/setup/best-practices/certificates/
-```
+
+- <https://kubernetes.io/zh/docs/setup/best-practices/certificates/>
+
 
 Kubernetes集群中的X509客户端认证依赖于PKI证书体系,有如下三套CA证书系统。
 
@@ -766,7 +729,6 @@ proxy-ca For the front-end proxy
 localhost ,
 
 kube-etcd etcd-ca server,
-
 ```text
 127.0.0.1
 ```
@@ -780,7 +742,6 @@ kube-etcd-peer etcd-ca server,
 client
 
 localhost ,
-
 ```text
 127.0.0.1
 ```
@@ -798,7 +759,6 @@ kube-apiserver-etcd-client etcd-ca system:masters client
 kube-apiserver kubernetes-ca server
 
 <advertise_IP> ,
-
 ```text
 [1]
 ```
@@ -822,89 +782,68 @@ front-proxy-ca client
 ###### 2.2.1.2.1.1 创建基于X509客户端普通的用户证书
 
 范例：创建基于X509客户端普通的用户证书，并使用此证书访问kubernetes集群
-
-```text
+```bash
 #查看到以下内容，表示默认kubernetes的CA签发的证书，都是k8s客户端的用户
 [root@master1 ~]#grep '\-\-client-ca-file' /etc/kubernetes/manifests/kube-
 apiserver.yaml
 - --client-ca-file=/etc/kubernetes/pki/ca.crt
-```
 
-```text
 #在master节点创建test用户证书
 [root@master1 ~]#mkdir pki
 [root@master1 ~]#(umask 077; openssl genrsa -out pki/test.key 4096)
 [root@master1 ~]#ls pki/
 test.key
-```
 
-```text
 #生成证书申请,加入ops组只具有普通权限
 [root@master1 ~]#openssl req -new -key pki/test.key -out pki/test.csr -subj
-"/CN=wangxiaochun/O=ops"
-```
+"/CN=bowen/O=ops"
 
-```text
 #使用kubernetes-ca颁发证书
 [root@master1 ~]#openssl x509 -req -days 3650 -CA /etc/kubernetes/pki/ca.crt -
 CAkey  /etc/kubernetes/pki/ca.key -CAcreateserial -in pki/test.csr -out
 pki/test.crt
-```
 
-```text
 #复制证书文件到到worker节点
 [root@master1 ~]#scp -r pki/ node1:
-```
 
-```text
 #在worker节点使用证书访问kubernetes集群,权限不足
 [root@node1 ~]#ls pki/
 test.crt  test.csr  test.key
 [root@node1 ~]#ls /etc/kubernetes/pki/
 ca.crt
-```
 
-```text
 #默认从worker节点因为API-Server地址错误的原因，所以无法访问,报错如下
 [root@node1 ~]#kubectl get pod
 E0415 20:16:30.966136  668159 memcache.go:238] couldn't get current server API
 group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080:
 connect: connection refused
-```
 
-```text
 #验证身份
 #方法1:指定apiserver地址和证书信息等信息,再次执行可以看到下面提示已识别用户test，但无权限访问
 资源
-[root@node1 ~]#kubectl get pod  --server=https://kubeapi.wang.org:6443 --client-
+[root@node1 ~]#kubectl get pod  --server=https://kubeapi.bowen.org:6443 --client-
 certificate=pki/test.crt  --client-key=pki/test.key --certificate-
 authority=/etc/kubernetes/pki/ca.crt
-Error from server (Forbidden): pods is forbidden: User "wangxiaochun" cannot
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot
 list resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #方法2:下面选项忽略证书校验也可以
-```
 
-```text
-[root@node1 ~]#kubectl get pod -s https://kubeapi.wang.org:6443 --client-
+[root@node1 ~]#kubectl get pod -s https://kubeapi.bowen.org:6443 --client-
 certificate=pki/test.crt  --client-key=pki/test.key  --insecure-skip-tls-
 verify=true
-Error from server (Forbidden): pods is forbidden: User "wangxiaochun" cannot
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot
 list resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #方法3:通过curl使用证书访问，仍是权限不足，无法访问
 [root@node1 ~]#curl --cert pki/test.crt --key pki/test.key --key-type PEM --
-cacert /etc/kubernetes/pki/ca.crt https://kubeapi.wang.org:6443
+cacert /etc/kubernetes/pki/ca.crt https://kubeapi.bowen.org:6443
 {
 "kind": "Status",
 "apiVersion": "v1",
 "metadata": {},
 "status": "Failure",
-"message": "forbidden: User \"wangxiaochun\" cannot get path \"/\"",
+"message": "forbidden: User \"bowen\" cannot get path \"/\"",
 "reason": "Forbidden",
 "details": {},
 "code": 403
@@ -914,31 +853,24 @@ cacert /etc/kubernetes/pki/ca.crt https://kubeapi.wang.org:6443
 ###### 2.2.1.2.1.2 创建基于X509客户端管理员的用户证书
 
 范例：创建X509客户端管理员的用户证书，并使用此证书访问 Kubernetes 集群
-
-```text
-#创建管理员用户wang证书
-[root@master1 ~]#(umask 077; openssl genrsa -out pki/wang.key 4096)
+```yaml
+#创建管理员用户bowen证书
+[root@master1 ~]#(umask 077; openssl genrsa -out pki/bowen.key 4096)
 [root@master1 ~]#ls pki
-test.crt  test.csr  test.key  wang.key
-```
+test.crt  test.csr  test.key  bowen.key
 
-```text
 #生成证书申请文件,注意：加入kubeadm:cluster-admins/system:masters组或System组才具有管理
 权限
-```
 
-```text
 #新版v1.32.0以后版本
-[root@master1 ~]#openssl req -new -key pki/wang.key -out pki/wang.csr -subj
-"/CN=wang/O=kubeadm:cluster-admins"
+[root@master1 ~]#openssl req -new -key pki/bowen.key -out pki/bowen.csr -subj
+"/CN=bowen/O=kubeadm:cluster-admins"
 #旧版：v1.31.0以前版本
-[root@master1 ~]#openssl req -new -key pki/wang.key -out pki/wang.csr -subj
-"/CN=wang/O=system:masters"
+[root@master1 ~]#openssl req -new -key pki/bowen.key -out pki/bowen.csr -subj
+"/CN=bowen/O=system:masters"
 [root@master1 ~]#ls pki
-test.crt  test.csr  test.key  wang.csr  wang.key
-```
+test.crt  test.csr  test.key  bowen.csr  bowen.key
 
-```text
 #查看到system:masters组被授权ClusterRole角色,具有集群的管理权限
 #新版
 [root@master1 ~]#kubectl get clusterrolebinding  kubeadm:cluster-admins -o yaml
@@ -955,14 +887,10 @@ kind: ClusterRole
 name: cluster-admin
 subjects:
 - apiGroup: rbac.authorization.k8s.io
-```
 
-```text
 kind: Group
 name: kubeadm:cluster-admins
-```
 
-```text
 #旧版
 [root@master1 ~]#kubectl get clusterrolebindings.rbac.authorization.k8s.io
 cluster-admin -o yaml
@@ -985,41 +913,31 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: Group
 name: system:masters
-```
 
-```text
 #使用kubernetes-ca颁发证书
 [root@master1 ~]#openssl x509 -req -days 3650 -CA /etc/kubernetes/pki/ca.crt -
-CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -in pki/wang.csr -out
-pki/wang.crt
+CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -in pki/bowen.csr -out
+pki/bowen.crt
 Certificate request self-signature ok
-subject=CN = wang, O = system:masters
-```
+subject=CN = bowen, O = system:masters
 
-```text
 [root@master1 ~]#ls pki
-test.crt  test.csr  test.key  wang.crt  wang.csr  wang.key
-```
+test.crt  test.csr  test.key  bowen.crt  bowen.csr  bowen.key
 
-```text
-[root@master1 ~]#scp -r pki/ node1.wang.org:
-```
+[root@master1 ~]#scp -r pki/ node1.bowen.org:
 
-```text
 #worker节点使用证书访问测试
-[root@node1 ~]#kubectl  get pods -s https://kubeapi.wang.org:6443 --certificate-
-authority=/etc/kubernetes/pki/ca.crt --client-certificate=pki/wang.crt  --client-
-key=pki/wang.key
+[root@node1 ~]#kubectl  get pods -s https://kubeapi.bowen.org:6443 --certificate-
+authority=/etc/kubernetes/pki/ca.crt --client-certificate=pki/bowen.crt  --client-
+key=pki/bowen.key
 NAME                        READY   STATUS    RESTARTS      AGE
 pod-test-6d8c97ff75-qt8zq   1/1     Running   1 (10h ago)   2d
 pod-test-6d8c97ff75-rhwkv   1/1     Running   1 (10h ago)   2d
 pod-test-6d8c97ff75-tmtl9   1/1     Running   1 (10h ago)   2d
-```
 
-```text
 #curl命令使用证书访问
-[root@node1 ~]#curl --cert pki/wang.crt --key pki/wang.key --key-type PEM --
-cacert /etc/kubernetes/pki/ca.crt https://kubeapi.wang.org:6443/api
+[root@node1 ~]#curl --cert pki/bowen.crt --key pki/bowen.key --key-type PEM --
+cacert /etc/kubernetes/pki/ca.crt https://kubeapi.bowen.org:6443/api
 {
 "kind": "APIVersions",
 "versions": [
@@ -1027,50 +945,40 @@ cacert /etc/kubernetes/pki/ca.crt https://kubeapi.wang.org:6443/api
 ],
 "serverAddressByClientCIDRs": [
 {
-```
 
-```text
 "clientCIDR": "0.0.0.0/0",
 "serverAddress": "10.0.0.200:6443"
 }
 ]
 }
-```
 
-```text
 #注意：如果在master节点执行会出现下面提示错
-[root@master1 ~]#kubectl  get pods -s https://kubeapi.wang.org:6443 --
+[root@master1 ~]#kubectl  get pods -s https://kubeapi.bowen.org:6443 --
 certificate-authority=/etc/kubernetes/pki/ca.crt --client-
-certificate=pki/wang.crt  --client-key=pki/wang.key
+certificate=pki/bowen.crt  --client-key=pki/bowen.key
 Error in configuration:
 * client-cert-data and client-cert are both specified for kubernetes-admin.
 client-cert-data will override.
 * client-key-data and client-key are both specified for kubernetes-admin;
 client-key-data will override
-```
 
-```text
 #提示错误的原因:$HOME/.kube/config文件还有其它用户身份，解决方法如下
 [root@master1 ~]#mv ~/.kube/config  /tmp
 #再次执行成功
-[root@master1 ~]#kubectl  get pods -s https://kubeapi.wang.org:6443 --
+[root@master1 ~]#kubectl  get pods -s https://kubeapi.bowen.org:6443 --
 certificate-authority=/etc/kubernetes/pki/ca.crt --client-
-certificate=pki/wang.crt  --client-key=pki/wang.key
+certificate=pki/bowen.crt  --client-key=pki/bowen.key
 NAME                        READY   STATUS    RESTARTS      AGE
 pod-test-6d8c97ff75-qt8zq   1/1     Running   1 (10h ago)   2d
 pod-test-6d8c97ff75-rhwkv   1/1     Running   1 (10h ago)   2d
 pod-test-6d8c97ff75-tmtl9   1/1     Running   1 (10h ago)   2d
-```
 
-```text
 #报错
 [root@master1 ~]#kubectl get pod
 E0415 20:16:30.966136  668159 memcache.go:238] couldn't get current server API
 group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080:
 connect: connection refused
-```
 
-```text
 #还原环境
 [root@master1 ~]#mv /tmp/config ~/.kube/
 #测试成功
@@ -1078,24 +986,17 @@ connect: connection refused
 ```
 
 ##### 2.2.1.2.2 方法2: Kubernetes的API资源实现证书管理功能
-
-```text
+```yaml
 #创建私钥
-[root@master1 ~]#openssl genrsa -out wang.key 2048
-```
+[root@master1 ~]#openssl genrsa -out bowen.key 2048
 
-```text
 #创建证书申请
-[root@master1 ~]#openssl req -new -key wang.key -out wang.csr -subj
-"/CN=wangxiaochun/O=devops"
-```
+[root@master1 ~]#openssl req -new -key bowen.key -out bowen.csr -subj
+"/CN=bowen/O=devops"
 
-```text
 #查看证书信息
-[root@master1 ~]#cat wang.csr |base64 |tr -d "\n"
-```
+[root@master1 ~]#cat bowen.csr |base64 |tr -d "\n"
 
-```text
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1pUQ0NBVTBDQVFBd0lERU5NQXNH
 QTFVRUF3d0VkMkZ1WnpFUE1BMEdBMVVFQ2d3R1pHVjJiM0J6TUlJQgpJakFOQmdrcWhraUc5dzBCQVFF
 RkFBT0NBUThBTUlJQkNnS0NBUUVBa3VjSjl4UjVHRnZ4WEdXWmdCQWxVYk14Ckk3a1VqYk5wbTQ2MlpW
@@ -1112,15 +1013,13 @@ YUlrLzFVcG41Zyt2b1lPc1BtOHNFOURYQ3ovbXhuCkRMSWJXZCtmeWdSVE1EM0xsTDVHbUMxU0tybFU1
 NHpmNjRlWnNiemlNWWJWMS9IUGRjZkI3WVRvS1dybXB6RTAKYi96TUVHaldxM3AwOVpOZzNxa0pNZTJO
 ck94YUpzTXhub09EbmR5T3huZEJUUnlFMEtKZ1hXWT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVT
 VC0tLS0tCg==
-```
 
-```text
 #将CSR进行base64编码后，创建为Kubernetes的CSR资源对象，并提交给API Server
-[root@master1 ~]#vim securiy-certificaterequests-wang.yaml
+[root@master1 ~]#vim securiy-certificaterequests-bowen.yaml
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
-name: wang
+name: bowen
 spec: #将上面生成的证书信息填定在下面
 request:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1pUQ0NBVTBDQVFBd0lERU5NQXNH
@@ -1143,47 +1042,33 @@ signerName: kubernetes.io/kube-apiserver-client
 expirationSeconds: 8640000
 usages:
 - client auth
-```
 
-```text
-[root@master1 ~]#kubectl apply -f securiy-certificaterequests-wang.yaml
-certificatesigningrequest.certificates.k8s.io/wang created
-```
+[root@master1 ~]#kubectl apply -f securiy-certificaterequests-bowen.yaml
+certificatesigningrequest.certificates.k8s.io/bowen created
 
-```text
 [root@master1 ~]#kubectl get csr
 NAME   AGE   SIGNERNAME                            REQUESTOR
 REQUESTEDDURATION   CONDITION
-wang   13s   kubernetes.io/kube-apiserver-client   kubernetes-admin   100d
+bowen   13s   kubernetes.io/kube-apiserver-client   kubernetes-admin   100d
 Pending
-```
 
-```text
 #以kubernetes管理员身份，颁发证书
-[root@master1 ~]#kubectl certificate approve wang
-```
+[root@master1 ~]#kubectl certificate approve bowen
 
-```text
-certificatesigningrequest.certificates.k8s.io/wang approved
-```
+certificatesigningrequest.certificates.k8s.io/bowen approved
 
-```text
 #查看状态已颁发
 [root@master1 ~]#kubectl get csr
 NAME   AGE   SIGNERNAME                            REQUESTOR
 REQUESTEDDURATION   CONDITION
-wang   50s   kubernetes.io/kube-apiserver-client   kubernetes-admin   100d
+bowen   50s   kubernetes.io/kube-apiserver-client   kubernetes-admin   100d
 Approved,Issued
-```
 
-```text
 #获取证书
-[root@master1 ~]#kubectl get csr wang -o jsonpath={.status.certificate}|base64 -d
-> wang.crt
-```
+[root@master1 ~]#kubectl get csr bowen -o jsonpath={.status.certificate}|base64 -d
+> bowen.crt
 
-```text
-[root@master1 ~]#cat wang.crt
+[root@master1 ~]#cat bowen.crt
 -----BEGIN CERTIFICATE-----
 MIIDBjCCAe6gAwIBAgIRAMZsUjMXeJvzlst5Ot7UgwUwDQYJKoZIhvcNAQELBQAw
 FTETMBEGA1UEAxMKa3ViZXJuZXRlczAeFw0yNDA3MjcxNTQ4MDZaFw0yNDExMDQx
@@ -1203,29 +1088,23 @@ tveHG7lNWYuGxiH8GR0hVZYH/3yWA2a4dDfK9Bdpcjl0pem7pwHCbauJEAc5Bdpc
 Qy949nHoe5tzA8/ctncqZIlOof3I4dZ99ka2W9ESRi7bG9a/ZimZYkGK4p3jYyZb
 nPZpYPD37pIwLw==
 -----END CERTIFICATE-----
-```
 
-```text
 #用户证书访问
-[root@master1 ~]#scp wang.crt wang.key  node1.wang.org:
-```
+[root@master1 ~]#scp bowen.crt bowen.key  node1.bowen.org:
 
-```text
 #验证访问
 #方法1：
-[root@node1 ~]#kubectl  get pods -s https://kubeapi.wang.org:6443 --certificate-
-authority=/etc/kubernetes/pki/ca.crt --client-certificate=/tmp/wang.crt  --
-client-key=/tmp/wang.key
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+[root@node1 ~]#kubectl  get pods -s https://kubeapi.bowen.org:6443 --certificate-
+authority=/etc/kubernetes/pki/ca.crt --client-certificate=/tmp/bowen.crt  --
+client-key=/tmp/bowen.key
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #方法2：
-[root@node1 ~]#kubectl  get pods -s https://kubeapi.wang.org:6443 --insecure-
-skip-tls-verify=true --client-certificate=/tmp/wang.crt  --client-
-key=/tmp/wang.key
-Error from server (Forbidden): pods is forbidden: User "wangxiaochun" cannot
+[root@node1 ~]#kubectl  get pods -s https://kubeapi.bowen.org:6443 --insecure-
+skip-tls-verify=true --client-certificate=/tmp/bowen.crt  --client-
+key=/tmp/bowen.key
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot
 list resource "pods" in API group "" in the namespace "default"
 ```
 
@@ -1270,7 +1149,6 @@ Webhook令牌
 **静态令牌认证的配置说明**
 
 令牌信息保存于格式为CSV的文本文件，每行定义一个用户，由“令牌、用户名、用户ID和所属的用户组”四个字段组成，用户组为可选字段。
-
 ```text
 #格式：
 token,user,uid,"group1,group2,....."
@@ -1281,8 +1159,7 @@ token,user,uid,"group1,group2,....."
 静态令牌认证配置过程
 
 生成token，命令如下：
-
-```text
+```bash
 echo "$(openssl rand -hex 3).$(openssl rand -hex 8)"
 ```
 
@@ -1291,58 +1168,44 @@ echo "$(openssl rand -hex 3).$(openssl rand -hex 8)"
 配置kube-apiserver加载该静态令牌文件以启用相应的认证功能。
 
 测试命令：
-
-```text
+```bash
 #方法1
 curl -k -H "Authorization: Bearer $TOKEN"
 https://API_SERVER:6443/api/v1/namespaces/default/pods/
 #方法2
 kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod
-```
+https://kubeapi.bowen.org:6443 get pod
 
-```text
 #说明： TOKEN表示上面用户生成的token
 ```
 
 范例:  基于静态token令牌向API Server添加认证用户
-
-```text
+```bash
 #在所有Master节点上配置下面过程,如果只有一个Master节点配置,只能连接此Master节点测试
 #准备Token文件存放的独立目录
 [root@master1 ~]#mkdir /etc/kubernetes/auth
-```
 
-```text
 #创建静态令牌文件并添加用户信息
 [root@master1 ~]#echo "$(openssl rand -hex 3).$(openssl rand -hex
-8),wang,1001,ops" > /etc/kubernetes/auth/token.csv
+8),bowen,1001,ops" > /etc/kubernetes/auth/token.csv
 [root@master1 ~]#echo "$(openssl rand -hex 3).$(openssl rand -hex
 8),test,1002,dev" >> /etc/kubernetes/auth/token.csv
-```
 
-```text
 #新版添加管理员用户
 [root@master1 ~]#echo "$(openssl rand -hex 3).$(openssl rand -hex
 8),admin,1002,kubeadm:cluster-admins" >> /etc/kubernetes/auth/token.csv
 #旧版添加管理员用户
 [root@master1 ~]#echo "$(openssl rand -hex 3).$(openssl rand -hex
 8),admin,1002,kubeadm:system:masters" >> /etc/kubernetes/auth/token.csv
-```
 
-```text
 [root@master1 ~]#cat /etc/kubernetes/auth/token.csv
-BOOTSTRAP_TOKEN,wang,1001,ops
+BOOTSTRAP_TOKEN,bowen,1001,ops
 BOOTSTRAP_TOKEN,test,1002,dev
 BOOTSTRAP_TOKEN,admin,1003,kubeadm:cluster-admins
-```
 
-```text
 #先备份配置文件，注意：不要将备份文件放在原目录下
 [root@master1 ~]#cp /etc/kubernetes/manifests/kube-apiserver.yaml .
-```
 
-```text
 #直接修改原文件三次
 [root@master1 ~]#vim /etc/kubernetes/manifests/kube-apiserver.yaml
 ......
@@ -1353,13 +1216,9 @@ BOOTSTRAP_TOKEN,admin,1003,kubeadm:cluster-admins
 - --advertise-address=10.0.0.200
 - --allow-privileged=true
 - --authorization-mode=Node,RBAC
-```
 
-```text
 - --client-ca-file=/etc/kubernetes/pki/ca.crt
-```
 
-```text
 .....
 volumeMounts:
 ......
@@ -1377,66 +1236,54 @@ type: DirectoryOrCreate
 name: static-auth-token
 status: {}
 .....
-```
 
-```text
-#上面文件修改后,Kubernetes会自动重启名为kube-apiserver-master1.wang.org的Pod,可能需要等
+#上面文件修改后,Kubernetes会自动重启名为kube-apiserver-master1.bowen.org的Pod,可能需要等
 一会儿才能启动成功
-[root@master1 ~]#kubectl get pod -n kube-system kube-apiserver-master1.wang.org
+[root@master1 ~]#kubectl get pod -n kube-system kube-apiserver-master1.bowen.org
 NAME                              READY   STATUS    RESTARTS   AGE
-kube-apiserver-master1.wang.org   1/1     Running   0          45s
-```
+kube-apiserver-master1.bowen.org   1/1     Running   0          45s
 
-```text
 #查看容器是否加载了token.csv文件
 [root@master1 ~]#docker ps |grep api
 109a085e8573   63d3239c3c15                                        "kube-
 apiserver --ad…"   11 minutes ago      Up 11 minutes                k8s_kube-
-apiserver_kube-apiserver-master1.wang.org_kube-
+apiserver_kube-apiserver-master1.bowen.org_kube-
 system_ea7b1e231e4db35575d1ce2d202143cb_0
 70aa628e4602   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 11 minutes ago      Up 11 minutes                k8s_POD_kube-
-apiserver-master1.wang.org_kube-system_ea7b1e231e4db35575d1ce2d202143cb_0
-```
+apiserver-master1.bowen.org_kube-system_ea7b1e231e4db35575d1ce2d202143cb_0
 
-```text
 [root@master1 ~]#docker inspect 109 |grep -n token.csv
 11:            "--token-auth-file=/etc/kubernetes/auth/token.csv",
 303:                "--token-auth-file=/etc/kubernetes/auth/token.csv",
-```
 
-```text
-#验证方法1:使用上面任意用户的token访问,提示用户wang被禁止访问，说明用户验证成功，只是权限不足
+#验证方法1:使用上面任意用户的token访问,提示用户bowen被禁止访问，说明用户验证成功，只是权限不足
 #注意:如果只是修改一个master节点的配置,只能连接此节点测试,示例:  "https://修改配置的master
 节点:6443/api/....."
-```
 
-```text
 [root@master1 ~]#TOKEN="BOOTSTRAP_TOKEN";
 [root@node1 ~]#curl -k -H "Authorization: Bearer $TOKEN"
-https://kubeapi.wang.org:6443
+https://kubeapi.bowen.org:6443
 {
 "kind": "Status",
 "apiVersion": "v1",
 "metadata": {},
 "status": "Failure",
-"message": "forbidden: User \"wang\" cannot get path \"/\"",
+"message": "forbidden: User \"bowen\" cannot get path \"/\"",
 "reason": "Forbidden",
 "details": {},
 "code": 403
 }
-```
 
-```text
 [root@master1 ~]#curl -k -H "Authorization: Bearer $TOKEN"
-https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
+https://kubeapi.bowen.org:6443/api/v1/namespaces/default/pods/
 #结果如下
 {
 "kind": "Status",
 "apiVersion": "v1",
 "metadata": {},
 "status": "Failure",
-"message": "pods is forbidden: User \"wang\" cannot list resource \"pods\" in
+"message": "pods is forbidden: User \"bowen\" cannot list resource \"pods\" in
 API group \"\" in the namespace \"default\"",
 "reason": "Forbidden",
 "details": {
@@ -1444,12 +1291,12 @@ API group \"\" in the namespace \"default\"",
 },
 "code": 403
 }
-```
 
-```text
 #管理员访问
+```
+```bash
 [root@ubuntu2204 ~]#TOKEN="BOOTSTRAP_TOKEN";curl -k -H "Authorization:
-Bearer $TOKEN"  https://kubeapi.wang.org:6443/api/v1/namespaces/kube-
+Bearer $TOKEN"  https://kubeapi.bowen.org:6443/api/v1/namespaces/kube-
 system/pods/
 "kind": "PodList",
 "apiVersion": "v1",
@@ -1461,78 +1308,66 @@ system/pods/
 "metadata": {
 "name": "coredns-855c4dd65d-fz59g",
 .....
-```
 
-```text
-#验证方法2:忽略证书验证，在worker节点执行,提示用户wang被禁止访问，说明用户验证成功，只是权限不
+#验证方法2:忽略证书验证，在worker节点执行,提示用户bowen被禁止访问，说明用户验证成功，只是权限不
 足
 #注意:如果只是修改一下master节点的配置,只能连接此节点测试,示例: -s "https://修改配置的
 master节点:6443"
-[root@node1 ~]#kubectl -s "https://kubeapi.wang.org:6443" --token="$TOKEN"  --
+[root@node1 ~]#kubectl -s "https://kubeapi.bowen.org:6443" --token="$TOKEN"  --
 certificate-authority=/etc/kubernetes/pki/ca.crt  get pod
 [root@node1 ~]#TOKEN="BOOTSTRAP_TOKEN";kubectl -s
-"https://kubeapi.wang.org:6443" --token="$TOKEN"  --insecure-skip-tls-verify=true
+"https://kubeapi.bowen.org:6443" --token="$TOKEN"  --insecure-skip-tls-verify=true
 get pod
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #管理员访问
 [root@node1 ~]#TOKEN="BOOTSTRAP_TOKEN";kubectl -n kube-system -s
-"https://kubeapi.wang.org:6443" --token="$TOKEN" --insecure-skip-tls-verify=true
+"https://kubeapi.bowen.org:6443" --token="$TOKEN" --insecure-skip-tls-verify=true
 get pod
 NAME                                       READY   STATUS    RESTARTS        AGE
 coredns-855c4dd65d-fz59g                   1/1     Running   3 (7h45m ago)   9d
 coredns-855c4dd65d-pb78b                   1/1     Running   3 (7h45m ago)   9d
-etcd-master1.wang.org                      1/1     Running   6 (7h45m ago)   15d
-kube-apiserver-master1.wang.org            1/1     Running   0
+etcd-master1.bowen.org                      1/1     Running   6 (7h45m ago)   15d
+kube-apiserver-master1.bowen.org            1/1     Running   0
 9m16s
-kube-controller-manager-master1.wang.org   1/1     Running   8 (9m42s ago)   15d
+kube-controller-manager-master1.bowen.org   1/1     Running   8 (9m42s ago)   15d
 kube-proxy-472v7                           1/1     Running   4 (7h45m ago)   10d
-```
 
-```text
 kube-proxy-4nlj6                           1/1     Running   5 (7h9m ago)    10d
 kube-proxy-jpml5                           1/1     Running   4 (7h45m ago)   10d
 kube-proxy-khsjs                           1/1     Running   7 (7h45m ago)   10d
-kube-scheduler-master1.wang.org            1/1     Running   7 (9m41s ago)   15d
+kube-scheduler-master1.bowen.org            1/1     Running   7 (9m41s ago)   15d
 metrics-server-76467c74d9-llzqz            1/1     Running   8 (7h45m ago)   13d
-```
 
-```text
 #验证方法3：证书验证
 [root@node1 ~]#TOKEN="BOOTSTRAP_TOKEN";kubectl -s
-"https://kubeapi.wang.org:6443" --token="$TOKEN"  --certificate-
+"https://kubeapi.bowen.org:6443" --token="$TOKEN"  --certificate-
 authority='/etc/kubernetes/pki/ca.crt'  get pod
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #管理员访问
 [root@node1 ~]#TOKEN="BOOTSTRAP_TOKEN";kubectl -n kube-system -s
-"https://kubeapi.wang.org:6443" --token="$TOKEN"  --certificate-
+"https://kubeapi.bowen.org:6443" --token="$TOKEN"  --certificate-
 authority='/etc/kubernetes/pki/ca.crt'  get pod
 NAME                                       READY   STATUS    RESTARTS        AGE
 coredns-855c4dd65d-fz59g                   1/1     Running   3 (7h41m ago)   9d
 coredns-855c4dd65d-pb78b                   1/1     Running   3 (7h41m ago)   9d
-etcd-master1.wang.org                      1/1     Running   6 (7h41m ago)   15d
-kube-apiserver-master1.wang.org            1/1     Running   0
+etcd-master1.bowen.org                      1/1     Running   6 (7h41m ago)   15d
+kube-apiserver-master1.bowen.org            1/1     Running   0
 5m24s
-kube-controller-manager-master1.wang.org   1/1     Running   8 (5m50s ago)   15d
+kube-controller-manager-master1.bowen.org   1/1     Running   8 (5m50s ago)   15d
 kube-proxy-472v7                           1/1     Running   4 (7h41m ago)   10d
 kube-proxy-4nlj6                           1/1     Running   5 (7h5m ago)    10d
 kube-proxy-jpml5                           1/1     Running   4 (7h41m ago)   10d
 kube-proxy-khsjs                           1/1     Running   7 (7h41m ago)   10d
-kube-scheduler-master1.wang.org            1/1     Running   7 (5m49s ago)   15d
+kube-scheduler-master1.bowen.org            1/1     Running   7 (5m49s ago)   15d
 metrics-server-76467c74d9-llzqz            1/1     Running   8 (7h41m ago)   13d
-```
 
-```text
 #使用错误Token访问，观察结果
 [root@master1 ~]#TOKEN="123456";curl  -k -H "Authorization: Bearer $TOKEN"
-https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
+https://kubeapi.bowen.org:6443/api/v1/namespaces/default/pods/
 {
 "kind": "Status",
 "apiVersion": "v1",
@@ -1542,12 +1377,10 @@ https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
 "reason": "Unauthorized",
 "code": 401
 }
-```
 
-```text
 #不使用Token访问，观察结果
 [root@master1 ~]#curl  -k
-https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
+https://kubeapi.bowen.org:6443/api/v1/namespaces/default/pods/
 {
 "kind": "Status",
 "apiVersion": "v1",
@@ -1558,9 +1391,7 @@ https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
 "reason": "Forbidden",
 "details": {
 "kind": "pods"
-```
 
-```text
 },
 "code": 403
 }
@@ -1577,9 +1408,8 @@ https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
 通过kubeadm在创建集群的时候，其中有一步就是：生成kubernetes控制组件的kubeconfig文件及相关的启动配置文件,通过各种conf文件，让不同的组件具备操作相关资源的权限。
 
 范例: 集群始始化的过程
-
-```text
-[root@master1 ~]#kubeadm init --control-plane-endpoint kubeapi.wang.org --
+```bash
+[root@master1 ~]#kubeadm init --control-plane-endpoint kubeapi.bowen.org --
 kubernetes-version=v1.22.1 --pod-network-cidr 10.244.0.0/16 --service-cidr
 10.96.0.0/12  --image-repository registry.cn-
 hangzhou.aliyuncs.com/google_containers --token-ttl=0
@@ -1593,9 +1423,9 @@ images pull'
 [certs] Using certificateDir folder "/etc/kubernetes/pki"
 [certs] Generating "ca" certificate and key
 [certs] Generating "apiserver" certificate and key
-[certs] apiserver serving cert is signed for DNS names [kubeapi.wang.org
+[certs] apiserver serving cert is signed for DNS names [kubeapi.bowen.org
 kubernetes kubernetes.default kubernetes.default.svc
-kubernetes.default.svc.cluster.local master1.wang.org] and IPs [10.96.0.1
+kubernetes.default.svc.cluster.local master1.bowen.org] and IPs [10.96.0.1
 10.0.0.101]
 [certs] Generating "apiserver-kubelet-client" certificate and key
 [certs] Generating "front-proxy-ca" certificate and key
@@ -1603,10 +1433,10 @@ kubernetes.default.svc.cluster.local master1.wang.org] and IPs [10.96.0.1
 [certs] Generating "etcd/ca" certificate and key
 [certs] Generating "etcd/server" certificate and key
 [certs] etcd/server serving cert is signed for DNS names [localhost
-master1.wang.org] and IPs [10.0.0.101 127.0.0.1 ::1]
+master1.bowen.org] and IPs [10.0.0.101 127.0.0.1 ::1]
 [certs] Generating "etcd/peer" certificate and key
 [certs] etcd/peer serving cert is signed for DNS names [localhost
-master1.wang.org] and IPs [10.0.0.101 127.0.0.1 ::1]
+master1.bowen.org] and IPs [10.0.0.101 127.0.0.1 ::1]
 [certs] Generating "etcd/healthcheck-client" certificate and key
 [certs] Generating "apiserver-etcd-client" certificate and key
 [certs] Generating "sa" key and public key
@@ -1614,106 +1444,44 @@ master1.wang.org] and IPs [10.0.0.101 127.0.0.1 ::1]
 [kubeconfig] Writing "admin.conf" kubeconfig file        #生成相关的kubeconfig文件
 ```
 
-```text
-[kubeconfig] Writing "kubelet.conf" kubeconfig file       #生成相关的kubeconfig文件
-[kubeconfig] Writing "controller-manager.conf" kubeconfig file  #生成相关的
-kubeconfig文件
-[kubeconfig] Writing "scheduler.conf" kubeconfig file         #生成相关的
-kubeconfig文件
-[kubelet-start] Writing kubelet environment file with flags to file
-"/var/lib/kubelet/kubeadm-flags.env"
-[kubelet-start] Writing kubelet configuration to file
-"/var/lib/kubelet/config.yaml"
-[kubelet-start] Starting the kubelet
-[control-plane] Using manifest folder "/etc/kubernetes/manifests"
-[control-plane] Creating static Pod manifest for "kube-apiserver"
-[control-plane] Creating static Pod manifest for "kube-controller-manager"
-[control-plane] Creating static Pod manifest for "kube-scheduler"
-[etcd] Creating static Pod manifest for local etcd in
-"/etc/kubernetes/manifests"
-[wait-control-plane] Waiting for the kubelet to boot up the control plane as
-static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
-[apiclient] All control plane components are healthy after 11.530951 seconds
-[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in
-the "kube-system" Namespace
-[kubelet] Creating a ConfigMap "kubelet-config-1.22" in namespace kube-system
-with the configuration for the kubelets in the cluster
-[upload-certs] Skipping phase. Please see --upload-certs
-[mark-control-plane] Marking the node master1.wang.org as control-plane by adding
-the labels: [node-role.kubernetes.io/master(deprecated) node-
-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-
-balancers]
-[mark-control-plane] Marking the node master1.wang.org as control-plane by adding
-the taints [node-role.kubernetes.io/master:NoSchedule]
-[bootstrap-token] Using token: BOOTSTRAP_TOKEN
-[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC
-Roles
-[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get
-nodes
-[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post
-CSRs in order for nodes to get long term certificate credentials
-[bootstrap-token] configured RBAC rules to allow the csrapprover controller
-automatically approve CSRs from a Node Bootstrap Token
-[bootstrap-token] configured RBAC rules to allow certificate rotation for all
-node client certificates in the cluster
-[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public"
-namespace
-[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a
-rotatable kubelet client certificate and key
-[addons] Applied essential addon: CoreDNS
-[addons] Applied essential addon: kube-proxy
-```
 
-```text
+[kubeconfig] Writing "kubelet.conf" kubeconfig file       #生成相关的kubeconfig文件[kubeconfig] Writing "controller-manager.conf" kubeconfig file  #生成相关的 kubeconfig文件[kubeconfig] Writing "scheduler.conf" kubeconfig file         #生成相关的 kubeconfig文件[kubelet-start] Writing kubelet environment file with flags to file"/var/lib/kubelet/kubeadm-flags.env"[kubelet-start] Writing kubelet configuration to file"/var/lib/kubelet/config.yaml"[kubelet-start] Starting the kubelet[control-plane] Using manifest folder "/etc/kubernetes/manifests"[control-plane] Creating static Pod manifest for "kube-apiserver"[control-plane] Creating static Pod manifest for "kube-controller-manager"[control-plane] Creating static Pod manifest for "kube-scheduler"[etcd] Creating static Pod manifest for local etcd in"/etc/kubernetes/manifests"[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s[apiclient] All control plane components are healthy after 11.530951 seconds[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace[kubelet] Creating a ConfigMap "kubelet-config-1.22" in namespace kube-system with the configuration for the kubelets in the cluster[upload-certs] Skipping phase. Please see --upload-certs[mark-control-plane] Marking the node master1.bowen.org as control-plane by adding the labels: [node-role.kubernetes.io/master(deprecated) node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers][mark-control-plane] Marking the node master1.bowen.org as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule][bootstrap-token] Using token: BOOTSTRAP_TOKEN[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public"namespace[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key[addons] Applied essential addon: CoreDNS[addons] Applied essential addon: kube-proxy
+
+```bash
 Your Kubernetes control-plane has initialized successfully!
-```
 
-```text
 To start using your cluster, you need to run the following as a regular user:
-```
 
-```text
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config  #配置使用kubeconfig文件
 才能访问集群
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
-```text
 Alternatively, if you are the root user, you can run:
-```
 
-```text
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
-```text
-You should now deploy a pod network to the cluster.
-Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-https://kubernetes.io/docs/concepts/cluster-administration/addons/
-```
 
-```text
+You should now deploy a pod network to the cluster. Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+
+<https://kubernetes.io/docs/concepts/cluster-administration/addons/>
+
+```bash
 You can now join any number of control-plane nodes by copying certificate
 authorities
 and service account keys on each node and then running the following as root:
-```
 
-```text
-kubeadm join kubeapi.wang.org:6443 --token BOOTSTRAP_TOKEN \
+kubeadm join kubeapi.bowen.org:6443 --token BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH \
 --control-plane   --certificate-key
 CERTIFICATE_KEY
-```
 
-```text
 Then you can join any number of worker nodes by running the following on each as
 root:
-```
 
-```text
-kubeadm join kubeapi.wang.org:6443 --token BOOTSTRAP_TOKEN \
+kubeadm join kubeapi.bowen.org:6443 --token BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH
 ```
@@ -1733,16 +1501,13 @@ clusters：每个Kubernetes集群的信息，包括集群对应访问端点（AP
 --kubeconfig选项,只支持一个文件KUBECONFIG环境变量：其值是包含有kubeconfig文件的列表,支持多个文件,用冒号隔离默认路径：$HOME/.kube/config。
 
 范例：默认 /etc/kubernetes/*.conf 的文件都属于 Kubeconfig 文件
-
-```text
+```yaml
 [root@master1 ~]#ls /etc/kubernetes/*.conf
 /etc/kubernetes/admin.conf
 /etc/kubernetes/controller-manager.conf
 /etc/kubernetes/kubelet.conf
 /etc/kubernetes/scheduler.conf
-```
 
-```text
 [root@master1 ~]#grep '^[a-z]' /etc/kubernetes/admin.conf
 apiVersion: v1
 clusters:
@@ -1751,9 +1516,7 @@ current-context: kubernetes-admin@kubernetes
 kind: Config
 preferences: {}
 users:
-```
 
-```text
 [root@master1 ~]#grep '^[a-z]' /etc/kubernetes/controller-manager.conf
 apiVersion: v1
 clusters:
@@ -1762,9 +1525,7 @@ current-context: system:kube-controller-manager@kubernetes
 kind: Config
 preferences: {}
 users:
-```
 
-```text
 [root@master1 ~]#grep '^[a-z]' /etc/kubernetes/scheduler.conf
 apiVersion: v1
 clusters:
@@ -1773,22 +1534,19 @@ current-context: system:kube-scheduler@kubernetes
 kind: Config
 preferences: {}
 users:
-```
 
-```text
 [root@master1 ~]#grep '^[a-z]' /etc/kubernetes/kubelet.conf
 apiVersion: v1
 clusters:
 contexts:
-current-context: system:node:master1.wang.org@kubernetes
+current-context: system:node:master1.bowen.org@kubernetes
 kind: Config
 preferences: {}
 users:
 ```
 
 范例: 利用kubeconfig实现集群外主机访问集群资源
-
-```text
+```yaml
 #在集群外节点安装kubectl工具
 #方法1
 [root@ubuntu2204 ~]#curl -s  https://mirrors.aliyun.com/kubernetes/apt/doc/apt-
@@ -1796,26 +1554,20 @@ key.gpg | apt-key add -
 [root@ubuntu2204 ~]#cat << EOF > /etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
-```
 
-```text
 [root@ubuntu2204 ~]#cat /etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 [root@ubuntu2204 ~]#apt update &> /dev/null
 [root@ubuntu2204 ~]#apt install -y  kubectl
-```
 
-```text
 #方法2:直接将master节点的kubectl程序文件复制到集群外节点
-[root@ubuntu2204 ~]#scp master1.wang.org:/usr/bin/kubectl /usr/local/bin/
+[root@ubuntu2204 ~]#scp master1.bowen.org:/usr/bin/kubectl /usr/local/bin/
 [root@ubuntu2204 ~]#ls -l /usr/local/bin/
 total 46904
 -rwxr-xr-x 1 root root 48029696 Jul  6 14:23 kubectl
 [root@ubuntu2204 ~]#ldd /usr/local/bin/kubectl
 not a dynamic executable
-```
 
-```text
 #确认安装工具成功
 [root@ubuntu2204 ~]#kubectl version --output=yaml
 clientVersion:
@@ -1829,17 +1581,13 @@ major: "1"
 minor: "27"
 platform: linux/amd64
 kustomizeVersion: v5.0.1
-```
 
-```text
 The connection to the server localhost:8080 was refused - did you specify the
 right host or port?
-```
 
-```text
 #查看集群控制节点上的 Kubeconfig 文件
 #复制kubeconfig文件到集群外的节点
-[root@ubuntu2204 ~]#scp master1.wang.org:/etc/kubernetes/admin.conf .
+[root@ubuntu2204 ~]#scp master1.bowen.org:/etc/kubernetes/admin.conf .
 [root@ubuntu2204 ~]#cat admin.conf
 apiVersion: v1
 clusters:
@@ -1849,7 +1597,7 @@ LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWa0h4Um42cmYwNkJiNXFrYVZXVjR6Z0JCVTVkNkFhCkRjeGNoclk1
 aTZRdUtuTkZQbVV5WEVTbGw5QmtVTFFxQjVUK3lyalJqNmRJR3ZITUo4OEJpcTl3bTdrdUhRTlkKRUNZ
 PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -1862,9 +1610,7 @@ preferences: {}
 users:
 - name: kubernetes-admin
 user:
-```
 
-```text
 client-certificate-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lJRVMzdk5VQ200Sjh3
 RFFZSktvWklodmNOQVFFTEJRQXdGbDZVY2NVM2h0UHh6OTkKWEdQbUpHeHlVR1JKcUFmdWZ4bU1GUXp5
@@ -1873,46 +1619,34 @@ client-key-data:
 LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcFFJQkFBS0NBUUVBeXNLZWFMYjZPcjFC
 UUkyUFUva3VVZE1zMUUwZmMyVlJIWFRUeURwVERCdUxQN0VJdkNVWjN6VkZGNGFVPQotLS0tLUVORCBS
 U0EgUFJJVkFURSBLRVktLS0tLQo=
-```
 
-```text
 #在集群外节点实现kubeapi节点的名称解析
-[root@ubuntu2204 ~]#echo 10.0.0.200 kubeapi.wang.org >> /etc/hosts
-```
+[root@ubuntu2204 ~]#echo 10.0.0.200 kubeapi.bowen.org >> /etc/hosts
 
-```text
 #在集群外节点不使用kubeconfig直接访问集群失败
 [root@ubuntu2204 ~]#kubectl  get nodes
 E0608 11:15:05.855109    2218 memcache.go:265] couldn't get current server API
 group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080:
 connect: connection refused
-```
 
-```text
 #在集群外节点引用kubeconfig文件,执行访问集群命令成功
 [root@ubuntu2204 ~]#kubectl --kubeconfig=admin.conf  get nodes
 NAME               STATUS   ROLES           AGE   VERSION
-master1.wang.org   Ready    control-plane   92d   v1.26.2
-node1.wang.org     Ready    <none>          92d   v1.26.2
-node2.wang.org     Ready    <none>          92d   v1.26.2
-node3.wang.org     Ready    <none>          92d   v1.26.2
-```
+master1.bowen.org   Ready    control-plane   92d   v1.26.2
+node1.bowen.org     Ready    <none>          92d   v1.26.2
+node2.bowen.org     Ready    <none>          92d   v1.26.2
+node3.bowen.org     Ready    <none>          92d   v1.26.2
 
-```text
 #通过环境变量实现
 [root@ubuntu2204 ~]#export KUBECONFIG=admin.conf
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl  get nodes
 NAME               STATUS   ROLES           AGE   VERSION
-master1.wang.org   Ready    control-plane   92d   v1.26.2
-node1.wang.org     Ready    <none>          92d   v1.26.2
-node2.wang.org     Ready    <none>          92d   v1.26.2
-node3.wang.org     Ready    <none>          92d   v1.26.2
-```
+master1.bowen.org   Ready    control-plane   92d   v1.26.2
+node1.bowen.org     Ready    <none>          92d   v1.26.2
+node2.bowen.org     Ready    <none>          92d   v1.26.2
+node3.bowen.org     Ready    <none>          92d   v1.26.2
 
-```text
 #查看集群
 [root@ubuntu2204 ~]#kubectl config get-clusters
 NAME
@@ -1920,8 +1654,7 @@ kubernetes
 ```
 
 范例:查看 kubeconfig 中的用户证书信息
-
-```text
+```bash
 [root@master1 ~]#awk  '/client-certificate-data/{print $NF}' .kube/config |
 base64 -d | openssl  x509  -noout -text
 Certificate:
@@ -1936,9 +1669,7 @@ Not After : Mar  6 04:30:13 2024 GMT
 Subject: O = system:masters, CN = kubernetes-admin   #加入system:masters组
 织,即为管理员
 Subject Public Key Info:
-```
 
-```text
 Public Key Algorithm: rsaEncryption
 Public-Key: (2048 bit)
 Modulus:
@@ -1998,7 +1729,6 @@ kubectl config 命令可以创建和管理kubeconfig文件。
 kubectx is a tool to switch between contexts (clusters) on kubectl faster.
 
 kubens is a tool to switch between Kubernetes namespaces (and configure them for kubectl)easily.
-
 ```text
 https://github.com/ahmetb/kubectx
 https://github.com/junegunn/fzf
@@ -2007,110 +1737,60 @@ the k on prompt modification script
 ```
 
 **kubectl config 命令用法**
-
-```text
+```bash
 #kubernetes 配置文件管理
 [root@master ~]# kubectl config -h
 Modify kubeconfig files using subcommands like "kubectl config set current-
 context my-context"
-```
 
-```text
 The loading order follows these rules:
 ```
 
-```text
-1. If the --kubeconfig flag is set, then only that file is loaded. The flag
-may only be set once and no merging takes place.
-2. If $KUBECONFIG environment variable is set, then it is used as a list of
-paths (normal path delimitting rules for your system). These paths are merged.
-When a value is modified, it is modified in the file that defines the stanza.
-When a value is created, it is created in the first file that exists. If no
-files in the chain exist, then it creates the last file in the list.
-3. Otherwise, ${HOME}/.kube/config is used and no merging takes place.
-# 配置文件的基本信息
-1 使用 --kubeconfig 参数管理某个指定的配置文件路径
-2 该文件可以使用 $KUBECONFIG 变量来管理
-3 其他情况下，配置文件指的就是 ${HOME}/.kube/config
-优先级： 1 > 2 > 3
-Available Commands:
-current-context   显示 current_context
-delete-cluster    删除 kubeconfig 文件中指定的集群
-delete-context    删除 kubeconfig 文件中指定的 context
-get-clusters      显示 kubeconfig 文件中定义的集群
-get-contexts      描述一个或多个 contexts
-rename-context    Renames a context from the kubeconfig file.
-set               设置 kubeconfig 文件中的一个单个值
-set-cluster       设置 kubeconfig 文件中的一个集群条目
-set-context       设置 kubeconfig 文件中的一个 context 条目
-set-credentials   设置 kubeconfig 文件中的一个用户条目
-unset             取消设置 kubeconfig 文件中的一个单个值
-use-context       设置 kubeconfig 文件中的当前上下文
-view              显示合并的 kubeconfig 配置或一个指定的 kubeconfig 文件
-```
+
+1. If the --kubeconfig flag is set, then only that file is loaded. The flag may only be set once and no merging takes place. 2. If $KUBECONFIG environment variable is set, then it is used as a list of paths (normal path delimitting rules for your system). These paths are merged. When a value is modified, it is modified in the file that defines the stanza. When a value is created, it is created in the first file that exists. If no files in the chain exist, then it creates the last file in the list. 3. Otherwise, ${HOME}/.kube/config is used and no merging takes place.# 配置文件的基本信息 1 使用 --kubeconfig 参数管理某个指定的配置文件路径 2 该文件可以使用 $KUBECONFIG 变量来管理 3 其他情况下，配置文件指的就是 ${HOME}/.kube/config 优先级： 1 > 2 > 3 Available Commands: current-context   显示 current_context delete-cluster    删除 kubeconfig 文件中指定的集群 delete-context    删除 kubeconfig 文件中指定的 context get-clusters      显示 kubeconfig 文件中定义的集群 get-contexts      描述一个或多个 contexts rename-context    Renames a context from the kubeconfig file. set               设置 kubeconfig 文件中的一个单个值 set-cluster       设置 kubeconfig 文件中的一个集群条目 set-context       设置 kubeconfig 文件中的一个 context 条目 set-credentials   设置 kubeconfig 文件中的一个用户条目 unset             取消设置 kubeconfig 文件中的一个单个值 use-context       设置 kubeconfig 文件中的当前上下文 view              显示合并的 kubeconfig 配置或一个指定的 kubeconfig 文件
 
 ```text
 Usage:
 kubectl config SUBCOMMAND [options]
-```
 
-```text
 #集群相关
 delete-cluster
 set-cluster
 get-clusters
-```
 
-```text
 #用户相关
 set-credentials
 get-users
-```
 
-```text
 delete-user
-```
 
-```text
 #上下文相关
 delete-context
 get-contexts
 set-context
 rename-context
-```
 
-```text
 #current-context相关的子命令
 use-context
 current-context
-```
 
-```text
 #查看
 view
 ```
 
-```text
-#结果显示：对于一个用户账号，至少包含三部分：
-1.用户条目-credentials 设定具体的user account名称
-2.集群-cluster 设定该user account所工作的区域
-3.上下文环境-context 设定用户和集群的关系
-```
+
+#结果显示：对于一个用户账号，至少包含三部分：1.用户条目-credentials 设定具体的user account名称 2.集群-cluster 设定该user account所工作的区域 3.上下文环境-context 设定用户和集群的关系
+
 
 范例：加载 kubeconfig 文件三种方式
-
-```text
+```bash
 #方法1：默认方式：使用${HOME}/.kube/config
 [root@master1 ~]# kubectl config --help
 Modify kubeconfig files using subcommands like "kubectl config set current-
 context my-context"
-```
 
-```text
 The loading order follows these rules:
-```
 
-```text
 1.  If the --kubeconfig flag is set, then only that file is loaded. The flag
 may only be set once and no merging takes
 place.
@@ -2122,9 +1802,7 @@ a value is created, it is created in the first file that exists. If no files in
 the chain exist, then it creates the
 last file in the list.
 3.  Otherwise, ${HOME}/.kube/config is used and no merging takes place.
-```
 
-```text
 Available Commands:
 current-context Display the current-context
 delete-cluster  删除 kubeconfig 文件中指定的集群
@@ -2141,120 +1819,89 @@ set-credentials Set a user entry in kubeconfig
 unset           Unset an individual value in a kubeconfig file
 use-context     Set the current-context in a kubeconfig file
 view            显示合并的 kubeconfig 配置或一个指定的 kubeconfig 文件
-```
 
-```text
 Usage:
 kubectl config SUBCOMMAND [options]
 ```
 
-```text
-Use "kubectl <command> --help" for more information about a given command.
-Use "kubectl options" for a list of global command-line options (applies to all
-commands).
-```
 
-```text
+Use "kubectl <command> --help" for more information about a given command. Use "kubectl options" for a list of global command-line options (applies to all commands).
+
+```bash
 #结果显示：默认使用的kubeconfig 就是当前用户家目录下的 .kube/config 文件，而这个文件是在创建
 集群复制过来的
 [root@master1 ~]# diff .kube/config /etc/kubernetes/admin.conf
-```
 
-```text
 #方法2：命令方式
 [root@master1 ~]#kubectl options | grep kubeconfig
 --cluster='': The name of the kubeconfig cluster to use
 --context='': The name of the kubeconfig context to use
 --kubeconfig='': Path to the kubeconfig file to use for CLI requests.
 --user='': The name of the kubeconfig user to use
-```
 
-```text
 #结果显示：如果有自己的config文件，可以使用 --kubeconfig 选项来覆盖默认的配置文件
-```
 
-```text
 #方法3：环境变量方式
 [root@master1 ~]#export KUBECONFIG=/etc/kubernetes/admin.conf
-```
 
-```text
 [root@master1 ~]#kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes
 NAME               STATUS   ROLES                  AGE   VERSION
-master1.wang.org   Ready    control-plane,master   2d    v1.22.1
-master2.wang.org   Ready    control-plane,master   47h   v1.22.1
-master3.wang.org   Ready    control-plane,master   47h   v1.22.1
-node1.wang.org     Ready    <none>                 47h   v1.22.1
-node2.wang.org     Ready    <none>                 47h   v1.22.1
-node3.wang.org     Ready    <none>                 47h   v1.22.1
+master1.bowen.org   Ready    control-plane,master   2d    v1.22.1
+master2.bowen.org   Ready    control-plane,master   47h   v1.22.1
+master3.bowen.org   Ready    control-plane,master   47h   v1.22.1
+node1.bowen.org     Ready    <none>                 47h   v1.22.1
+node2.bowen.org     Ready    <none>                 47h   v1.22.1
+node3.bowen.org     Ready    <none>                 47h   v1.22.1
 ```
 
 **创建和使用kubeconfig 流程**
-
-```text
+```bash
 #1)在kubeconfig中添加集群信息
 kubectl config set-cluster mykube --embed-certs=true --certificate-
-authority=/etc/kubernetes/pki/ca.crt --server="https://kubeapi.wang.org:6443" --
+authority=/etc/kubernetes/pki/ca.crt --server="https://kubeapi.bowen.org:6443" --
 kubeconfig=$HOME/.kube/mykube.conf
-```
 
-```text
 #2)在kubeconfig中添加用户凭证
 #方式1:X509数字证书认证
-kubectl config set-credentials wang --embed-certs=true --client-
-certificate=./wang.crt --client-key=./wang.key --
+kubectl config set-credentials bowen --embed-certs=true --client-
+certificate=./bowen.crt --client-key=./bowen.key --
 kubeconfig=$HOME/.kube/mykube.conf
-```
 
-```text
 #方式2:静态令牌认证
-kubectl config set-credentials wang --token="xxxxxxx" --
+kubectl config set-credentials bowen --token="xxxxxxx" --
 kubeconfig=$HOME/.kube/mykube.conf
-```
 
-```text
 #3)在kubeconfig中添加context,实现集群和用户关联
-kubectl config set-context wang@mykube --cluster=mykube --user=wang --
+kubectl config set-context bowen@mykube --cluster=mykube --user=bowen --
 kubeconfig=$HOME/.kube/mykube.conf
-kubectl --context='wang@mykube'  get pods  --kubeconfig=$HOME/.kube/mykube.conf
-```
+kubectl --context='bowen@mykube'  get pods  --kubeconfig=$HOME/.kube/mykube.conf
 
-```text
 #4)设置默认context
-```
 
-```text
-kubectl config use-context wang@mykube --kubeconfig=$HOME/.kube/mykube.conf
-```
+kubectl config use-context bowen@mykube --kubeconfig=$HOME/.kube/mykube.conf
 
-```text
 #5)查看kubeconfig内容
 kubectl config view --kubeconfig=$HOME/.kube/mykube.conf --raw
 cat $HOME/.kube/mykube.conf
-```
 
-```text
 #6)使用kubeconfig
 1)kubectl get pods --kubeconfig=$HOME/.kube/mykube.conf
 2)export KUBECONFIG="$HOME/.kube/mykube.conf"; kubectl get pods
 3)kubectl get pods
-```
 
-```text
 #7)使用指定的context访问集群
-kubectl get pods --context='wang@mykube' --kubeconfig=$HOME/.kube/mykube.conf
+kubectl get pods --context='bowen@mykube' --kubeconfig=$HOME/.kube/mykube.conf
 ```
 
 范例： 查看默认的kubeconfig配置内容
-
-```text
+```yaml
 #查看默认的配置文件内容
 [root@master1 ~]# kubectl config view [--raw]
 apiVersion: v1
 clusters:                                   # 集群列表
 - cluster:
 certificate-authority-data: DATA+OMITTED    # 证书的认证方式
-server: https://kubeapi.wang.org:6443       # api_server 的地址
+server: https://kubeapi.bowen.org:6443       # api_server 的地址
 name: kubernetes                              # 当前集群的名称
 contexts:                                       # 上下文列表，一般指的是多集群间用户的
 切换所需的环境属性
@@ -2273,35 +1920,26 @@ client-certificate-data: REDACTED           # 客户端证书
 client-key-data: REDACTED                   # 客户端私钥
 ```
 
-```text
-#结果显示：
-一个config主要包含了三部分内容：users、clusters、contexts，每个部分都有两部分组成：
-name和user|cluster|context
-对于cluster，对外的地址-server 和 基本的认证方式-certificate-authority-data
-对于context，连接到的集群-cluster 和 连接集群的用户-user
-对于user，连接集群的认证方式-client-certificate-data 和 私钥信息-client-key-data
-current-context表明我们是处于哪一个环境中。
-```
+
+#结果显示：一个config主要包含了三部分内容：users、clusters、contexts，每个部分都有两部分组成：name和user|cluster|context 对于cluster，对外的地址-server 和 基本的认证方式-certificate-authority-data 对于context，连接到的集群-cluster 和 连接集群的用户-user 对于user，连接集群的认证方式-client-certificate-data 和 私钥信息-client-key-data current-context表明我们是处于哪一个环境中。
+
 
 范例: 查看指定的 kubeconfig 配置
-
-```text
+```yaml
 #查看kubeconfig文件列表
 [root@master1 ~]#ls /etc/kubernetes/*.conf -1
 /etc/kubernetes/admin.conf
 /etc/kubernetes/controller-manager.conf
 /etc/kubernetes/kubelet.conf
 /etc/kubernetes/scheduler.conf
-```
 
-```text
 #查看默认的kubeconfig路径：~/.kube/config文件，默认不显示敏感信息，--raw=true 显示敏感
 [root@master1 ~]#kubectl config view
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -2316,20 +1954,16 @@ users:
 user:
 client-certificate-data: DATA+OMITTED
 client-key-data: DATA+OMITTED
-```
 
-```text
 [root@master1 ~]#kubectl config view --raw=true
-```
 
-```text
 #指定kubeconfig文件路径
 [root@master1 ~]#kubectl config view --kubeconfig=/etc/kubernetes/admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -2344,9 +1978,7 @@ users:
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/etc/kubernetes/controller-
 manager.conf
 apiVersion: v1
@@ -2357,9 +1989,7 @@ server: https://10.0.0.101:6443
 name: kubernetes
 contexts:
 - context:
-```
 
-```text
 cluster: kubernetes
 user: system:kube-controller-manager
 name: system:kube-controller-manager@kubernetes
@@ -2371,36 +2001,30 @@ users:
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/etc/kubernetes/kubelet.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
 cluster: kubernetes
-user: system:node:master1.wang.org
-name: system:node:master1.wang.org@kubernetes
-current-context: system:node:master1.wang.org@kubernetes
+user: system:node:master1.bowen.org
+name: system:node:master1.bowen.org@kubernetes
+current-context: system:node:master1.bowen.org@kubernetes
 kind: Config
 preferences: {}
 users:
-- name: system:node:master1.wang.org
+- name: system:node:master1.bowen.org
 user:
 client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
 client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/etc/kubernetes/scheduler.conf
-```
 
-```text
 apiVersion: v1
 clusters:
 - cluster:
@@ -2420,15 +2044,13 @@ users:
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 #查看证书信息
+```
+```yaml
 [root@master1 ~]#cat  /etc/kubernetes/manifests/kube-apiserver.yaml
 apiVersion: v1
-```
 
-```text
 kind: Pod
 metadata:
 annotations:
@@ -2487,9 +2109,7 @@ timeoutSeconds: 15
 name: kube-apiserver
 readinessProbe:
 failureThreshold: 3
-```
 
-```text
 httpGet:
 host: 10.0.0.200
 path: /readyz
@@ -2548,9 +2168,7 @@ path: /etc/pki
 type: DirectoryOrCreate
 name: etc-pki
 - hostPath:
-```
 
-```text
 path: /etc/kubernetes/pki
 type: DirectoryOrCreate
 name: k8s-certs
@@ -2564,8 +2182,7 @@ type: DirectoryOrCreate
 name: usr-share-ca-certificates
 status: {}
 ```
-
-```text
+```bash
 [root@master1 ~]#ls /etc/kubernetes/pki/
 apiserver.crt                 apiserver-kubelet-client.key  front-proxy-ca.key
 apiserver-etcd-client.crt     ca.crt                        front-proxy-
@@ -2574,9 +2191,7 @@ apiserver-etcd-client.key     ca.key                        front-proxy-
 client.key
 apiserver.key                 etcd                          sa.key
 apiserver-kubelet-client.crt  front-proxy-ca.crt            sa.pub
-```
 
-```text
 [root@master1 ~]#ls /etc/kubernetes/pki/etcd/
 ca.crt  healthcheck-client.crt  peer.crt  server.crt
 ca.key  healthcheck-client.key  peer.key  server.key
@@ -2587,24 +2202,19 @@ ca.key  healthcheck-client.key  peer.key  server.key
 #### 2.3.3.1 为静态令牌的认证用户添加至自定义的kubeconfig文件
 
 范例：为静态令牌认证的用户设定一个自定义的kubeconfig文件
-
-```text
+```yaml
 #定义Cluster:提供包括集群名称、API Server URL和信任的CA的证书相关的配置；clusters配置段中
 的各列表项名称需要唯一
 [root@master1 ~]#kubectl config set-cluster kube-test --embed-certs=true --
 certificate-authority=/etc/kubernetes/pki/ca.crt --
-server="https://kubeapi.wang.org:6443" --kubeconfig=$HOME/.kube/kubeusers.conf
+server="https://kubeapi.bowen.org:6443" --kubeconfig=$HOME/.kube/kubeusers.conf
 #如不指定选项--kubeconfig,则默认存放在$HOME/.kube/config文件中
-```
 
-```text
 [root@master1 ~]#cat .kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
-```
 
-```text
 certificate-authority-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeU1EZ3lNVEF4TURj
@@ -2625,55 +2235,45 @@ MlY1Q2ZLMFVVTHdsMzYwNEt2S1BEVGxLa0t6Z2xCdmpqU2JqTwpGUzg5TEVrUER2WXFqU2FVZlA2aDRh
 VUNLb050QTE4Tk9iU25aOHg3SSsvTzV0eTZmWU9tZTlQL0tGMGE4OXhOCkhYTFdUR2tGdXI4Rm9qMTkr
 L2k4VXpPazRFL2FOZGdsM1FjeWhGclhOeXBrRUgyMHF6OS81cWFqNHBRM1BVWm4KVzBZPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users: null
-```
 
-```text
 #确认之前创建的token用户信息
 [root@master1 ~]#cat /etc/kubernetes/auth/token.csv
-BOOTSTRAP_TOKEN,wang,10001,admins
+BOOTSTRAP_TOKEN,bowen,10001,admins
 BOOTSTRAP_TOKEN,test,10001,users
-```
 
-```text
-#定义User:添加身份凭据，使用静态令牌文件认证的wang用户的令牌令牌
+#定义User:添加身份凭据，使用静态令牌文件认证的bowen用户的令牌令牌
 [root@master1 ~]#TOKEN="BOOTSTRAP_TOKEN";kubectl config set-credentials
-wang --token="$TOKEN"  --kubeconfig=$HOME/.kube/kubeusers.conf
-```
+bowen --token="$TOKEN"  --kubeconfig=$HOME/.kube/kubeusers.conf
 
-```text
 #查看更新的$HOME/.kube/kubeusers.conf文件
 [root@master1 ~]#kubectl config view  --kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 token: REDACTED
-```
 
-```text
 #加--raw选项显示原始数据,则可以看到token信息
 [root@master1 ~]#kubectl config view --raw --
 kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
-```
 
-```text
 clusters:
 - cluster:
 certificate-authority-data:
@@ -2696,20 +2296,20 @@ MlY1Q2ZLMFVVTHdsMzYwNEt2S1BEVGxLa0t6Z2xCdmpqU2JqTwpGUzg5TEVrUER2WXFqU2FVZlA2aDRh
 VUNLb050QTE4Tk9iU25aOHg3SSsvTzV0eTZmWU9tZTlQL0tGMGE4OXhOCkhYTFdUR2tGdXI4Rm9qMTkr
 L2k4VXpPazRFL2FOZGdsM1FjeWhGclhOeXBrRUgyMHF6OS81cWFqNHBRM1BVWm4KVzBZPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 token: BOOTSTRAP_TOKEN
-```
 
-```text
 #查看文件内容
+```
+```yaml
 [root@master1 ~]#cat .kube/kubeusers.conf
 apiVersion: v1
 clusters:
@@ -2734,59 +2334,49 @@ MlY1Q2ZLMFVVTHdsMzYwNEt2S1BEVGxLa0t6Z2xCdmpqU2JqTwpGUzg5TEVrUER2WXFqU2FVZlA2aDRh
 VUNLb050QTE4Tk9iU25aOHg3SSsvTzV0eTZmWU9tZTlQL0tGMGE4OXhOCkhYTFdUR2tGdXI4Rm9qMTkr
 L2k4VXpPazRFL2FOZGdsM1FjeWhGclhOeXBrRUgyMHF6OS81cWFqNHBRM1BVWm4KVzBZPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-```
 
-```text
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 token: BOOTSTRAP_TOKEN
-```
 
-```text
-#定义Context:为用户wang的身份凭据与kube-test集群建立映射关系
-[root@master1 ~]#kubectl config set-context wang@kube-test --cluster=kube-test --
-user=wang --kubeconfig=$HOME/.kube/kubeusers.conf
-```
+#定义Context:为用户bowen的身份凭据与kube-test集群建立映射关系
+[root@master1 ~]#kubectl config set-context bowen@kube-test --cluster=kube-test --
+user=bowen --kubeconfig=$HOME/.kube/kubeusers.conf
 
-```text
 #查看关联生效
 [root@master1 ~]#kubectl config view  --kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts:
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
+user: bowen
+name: bowen@kube-test
 current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 token: REDACTED
-```
 
-```text
 #查看文件内容
 [root@master1 ~]#cat .kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
-```
 
-```text
 certificate-authority-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeU1EZ3lNVEF4TURj
@@ -2807,80 +2397,68 @@ MlY1Q2ZLMFVVTHdsMzYwNEt2S1BEVGxLa0t6Z2xCdmpqU2JqTwpGUzg5TEVrUER2WXFqU2FVZlA2aDRh
 VUNLb050QTE4Tk9iU25aOHg3SSsvTzV0eTZmWU9tZTlQL0tGMGE4OXhOCkhYTFdUR2tGdXI4Rm9qMTkr
 L2k4VXpPazRFL2FOZGdsM1FjeWhGclhOeXBrRUgyMHF6OS81cWFqNHBRM1BVWm4KVzBZPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts:
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
+user: bowen
+name: bowen@kube-test
 current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 token: BOOTSTRAP_TOKEN
-```
 
-```text
 #使用上面的创建的context访问kubernetes集群,因没有授权而失败
-[root@master1 ~]#kubectl  get pods --context='wang@kube-test' --
-kubeconfig=$HOME/.kube/kubeusers.conf
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
-resource "pods" in API group "" in the namespace "default"
 ```
+```yaml
+[root@master1 ~]#kubectl  get pods --context='bowen@kube-test' --
+kubeconfig=$HOME/.kube/kubeusers.conf
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
+resource "pods" in API group "" in the namespace "default"
 
-```text
 #设定默认的Current-Context: 每次都使用--context指定context方式比较繁琐，可以设定默认的
 Current-Context后无需再指定
-[root@master1 ~]#kubectl config use-context wang@kube-test --
+[root@master1 ~]#kubectl config use-context bowen@kube-test --
 kubeconfig=$HOME/.kube/kubeusers.conf
-Switched to context "wang@kube-test".
-```
+Switched to context "bowen@kube-test".
 
-```text
 #查看当前context是否指定
 [root@master1 ~]#kubectl config view  --kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts:
 - context:
 cluster: kube-test
-```
 
-```text
-user: wang
-name: wang@kube-test
-current-context: wang@kube-test #指定当前的context
+user: bowen
+name: bowen@kube-test
+current-context: bowen@kube-test #指定当前的context
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 token: REDACTED
-```
 
-```text
-#再次访问,使用当前的context访问kubernetes集群,因为wang为普通用户权限不足失败
+#再次访问,使用当前的context访问kubernetes集群,因为bowen为普通用户权限不足失败
 [root@master1 ~]#kubectl  get pods --kubeconfig=$HOME/.kube/kubeusers.conf
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #使用环境变量指定kubeconfig文件路径，则无需再使用--kubeconfig选项
 [root@master1 ~]#export KUBECONFIG="$HOME/.kube/kubeusers.conf"
 [root@master1 ~]#kubectl  get pods
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #清理环境
 [root@master1 ~]#unset KUBECONFIG
 ```
@@ -2888,152 +2466,129 @@ resource "pods" in API group "" in the namespace "default"
 #### 2.3.4.2 为基于X509客户端证书的认证用户添加至自定义的kubeconfig文件
 
 范例：将基于X509客户端证书认证的用户添加至kubeusers.conf文件中
-
-```text
+```yaml
 #前一个范例已创建Cluster,此处可不执行,或者指定新的cluster名称
 #定义Cluster:使用不同的身份凭据访问同一集群时，集群相关的配置无须重复定义
 [root@master1 ~]#kubectl config set-cluster kube-test --embed-certs=true --
 certificate-authority=/etc/kubernetes/pki/ca.crt --
-server="https://kubeapi.wang.org:6443" --kubeconfig=$HOME/.kube/kubeusers.conf
-```
+server="https://kubeapi.bowen.org:6443" --kubeconfig=$HOME/.kube/kubeusers.conf
 
-```text
 #定义User:添加身份凭据，基于X509客户端证书认证时，需要提供客户端证书和私钥,注意:同一个列表下不
 同项的名称不能相同
-[root@master1 ~]#kubectl config set-credentials wang2 --embed-certs=true --
-client-certificate=pki/wang.crt --client-key=pki/wang.key --
+[root@master1 ~]#kubectl config set-credentials bowen2 --embed-certs=true --
+client-certificate=pki/bowen.crt --client-key=pki/bowen.key --
 kubeconfig=$HOME/.kube/kubeusers.conf
-```
 
-```text
 #查看用户是否生成
 [root@master1 ~]#kubectl config view --kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts:
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
-current-context: wang@kube-test
+user: bowen
+name: bowen@kube-test
+current-context: bowen@kube-test
 kind: Config
 preferences: {}
 users:
-```
 
-```text
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
 token: REDACTED
-- name: wang2   #添加新用户信息
+- name: bowen2   #添加新用户信息
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
-#定义Context:为用户wang2的身份凭据与kube-test集群建立映射关系
-[root@master1 ~]#kubectl config set-context wang2@kube-test --cluster=kube-test -
--user=wang2 --kubeconfig=$HOME/.kube/kubeusers.conf
-```
+#定义Context:为用户bowen2的身份凭据与kube-test集群建立映射关系
+[root@master1 ~]#kubectl config set-context bowen2@kube-test --cluster=kube-test -
+-user=bowen2 --kubeconfig=$HOME/.kube/kubeusers.conf
 
-```text
 #查看关联生效
 [root@master1 ~]#kubectl config view --kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts:
 - context:
 cluster: kube-test
-user: wang2
-name: wang2@kube-test  #添加的新context
+user: bowen2
+name: bowen2@kube-test  #添加的新context
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
-current-context: wang@kube-test
+user: bowen
+name: bowen@kube-test
+current-context: bowen@kube-test
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
 token: REDACTED
-- name: wang2
+- name: bowen2
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
-#使用创建的context访问kubernetes集群,因为wang2为管理员,可以成功访问
-[root@master1 ~]#kubectl  get pods --context wang2@kube-test --
+#使用创建的context访问kubernetes集群,因为bowen2为管理员,可以成功访问
+[root@master1 ~]#kubectl  get pods --context bowen2@kube-test --
 kubeconfig=$HOME/.kube/kubeusers.conf
-```
 
-```text
 #设定Current-Context
-[root@master1 ~]#kubectl config use-context wang2@kube-test --
+[root@master1 ~]#kubectl config use-context bowen2@kube-test --
 kubeconfig=$HOME/.kube/kubeusers.conf
-```
 
-```text
 #查看切换context成功
 [root@master1 ~]#kubectl config view --kubeconfig=$HOME/.kube/kubeusers.conf
 apiVersion: v1
 clusters:
-```
 
-```text
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 contexts:
 - context:
 cluster: kube-test
-user: wang2
-name: wang2@kube-test
+user: bowen2
+name: bowen2@kube-test
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
-current-context: wang2@kube-test
+user: bowen
+name: bowen@kube-test
+current-context: bowen2@kube-test
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
 token: REDACTED
-- name: wang2
+- name: bowen2
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
-#使用创建的context访问kubernetes集群,因为wang2为管理员,可以成功访问
+#使用创建的context访问kubernetes集群,因为bowen2为管理员,可以成功访问
 [root@master1 ~]#kubectl  get pods --kubeconfig=$HOME/.kube/kubeusers.conf
 NAME                       READY   STATUS    RESTARTS      AGE
 demoapp-78b49597cf-j2bk2   1/1     Running   1 (14d ago)   14d
 demoapp-78b49597cf-jxtj9   1/1     Running   1 (14d ago)   14d
 demoapp-78b49597cf-lt5qn   1/1     Running   1 (14d ago)   14d
-```
 
-```text
 #使用环境变量指定kubeconfig文件路径，则无需再使用--kubeconfig选项
 [root@master1 ~]#export KUBECONFIG="$HOME/.kube/kubeusers.conf"
 [root@master1 ~]#kubectl  get pods
@@ -3041,9 +2596,7 @@ NAME                       READY   STATUS    RESTARTS      AGE
 demoapp-78b49597cf-j2bk2   1/1     Running   1 (14d ago)   14d
 demoapp-78b49597cf-jxtj9   1/1     Running   1 (14d ago)   14d
 demoapp-78b49597cf-lt5qn   1/1     Running   1 (14d ago)   14d
-```
 
-```text
 #清理环境
 [root@master1 ~]#unset KUBECONFIG
 ```
@@ -3067,14 +2620,13 @@ demoapp-78b49597cf-lt5qn   1/1     Running   1 (14d ago)   14d
 若使用了--context 选项，则加载该选项指定要使用的上下文否则，将使用合并后的kubeconfig文件中的current-context的设定。
 
 范例:  利用 KUBECONFIG 变量合并多个文件
-
-```text
+```yaml
 [root@master1 ~]#kubectl config view --kubeconfig=/etc/kubernetes/admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -3089,9 +2641,7 @@ users:
 user:
 client-certificate-data: DATA+OMITTED
 client-key-data: DATA+OMITTED
-```
 
-```text
 #注意:文件顺序,左边优先生效
 [root@master1 ~]#export
 KUBECONFIG="$HOME/.kube/kubeusers.conf:/etc/kubernetes/admin.conf"
@@ -3100,11 +2650,11 @@ apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -3112,17 +2662,15 @@ cluster: kubernetes
 user: kubernetes-admin
 name: kubernetes-admin@kubernetes
 - context:
-```
 
-```text
 cluster: kube-test
-user: wang2
-name: wang2@kube-test
+user: bowen2
+name: bowen2@kube-test
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
-current-context: wang2@kube-test  #左边文件优先生效
+user: bowen
+name: bowen@kube-test
+current-context: bowen2@kube-test  #左边文件优先生效
 kind: Config
 preferences: {}
 users:
@@ -3130,40 +2678,32 @@ users:
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
 token: REDACTED
-- name: wang2
+- name: bowen2
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 #指定context，普通用户权限不足
-[root@master1 ~]#kubectl get pods --context="wang@kube-test"
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+[root@master1 ~]#kubectl get pods --context="bowen@kube-test"
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
-```
 
-```text
 #管理员访问成功
 [root@master1 ~]#kubectl get pods --context=kubernetes-admin@kubernetes
 NAME                       READY   STATUS    RESTARTS      AGE
 demoapp-78b49597cf-j2bk2   1/1     Running   1 (14d ago)   14d
 demoapp-78b49597cf-jxtj9   1/1     Running   1 (14d ago)   14d
 demoapp-78b49597cf-lt5qn   1/1     Running   1 (14d ago)   14d
-```
 
-```text
 #切换当前的context
-[root@master1 ~]#kubectl config use-context wang@kube-test --
+[root@master1 ~]#kubectl config use-context bowen@kube-test --
 kubeconfig=$HOME/.kube/kubeusers.conf
-```
 
-```text
 #调整文件的前后次序
 [root@master1 ~]#export
 KUBECONFIG="/etc/kubernetes/admin.conf:$HOME/.kube/kubeusers.conf"
@@ -3172,28 +2712,26 @@ apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kube-test
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
 cluster: kubernetes
-```
 
-```text
 user: kubernetes-admin
 name: kubernetes-admin@kubernetes
 - context:
 cluster: kube-test
-user: wang2
-name: wang2@kube-test
+user: bowen2
+name: bowen2@kube-test
 - context:
 cluster: kube-test
-user: wang
-name: wang@kube-test
+user: bowen
+name: bowen@kube-test
 current-context: kubernetes-admin@kubernetes  #发现左边文件生效
 kind: Config
 preferences: {}
@@ -3202,18 +2740,16 @@ users:
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
 token: REDACTED
-- name: wang2
+- name: bowen2
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 #使用当前context身份kubernetes-admin@kubernetes访问
 [root@master1 ~]#kubectl get pods
 NAME                       READY   STATUS    RESTARTS      AGE
@@ -3267,9 +2803,8 @@ demoapp-78b49597cf-lt5qn   1/1     Running   1 (14d ago)   14d
 #### 2.4.1.2 UA 创建案例
 
 ##### 2.4.1.2.1 创建私钥文件
-
-```text
-#给用户 wang 创建一个私钥，命名成：wang.key(无加密)
+```bash
+#给用户 bowen 创建一个私钥，命名成：bowen.key(无加密)
 [root@master1 ~]#cd /etc/kubernetes/pki/
 [root@master1 pki]#ls
 apiserver.crt              apiserver.key                 ca.crt  front-proxy-
@@ -3278,88 +2813,60 @@ apiserver-etcd-client.crt  apiserver-kubelet-client.crt  ca.key  front-proxy-
 ca.key      sa.key
 apiserver-etcd-client.key  apiserver-kubelet-client.key  etcd    front-proxy-
 client.crt  sa.pub
-```
 
-```text
-[root@master1 pki]#(umask 077; openssl genrsa -out wang.key 2048)
+[root@master1 pki]#(umask 077; openssl genrsa -out bowen.key 2048)
 #命令解析：
 genrsa          该子命令用于生成RSA私钥，不会生成公钥，因为公钥提取自私钥
 -out filename   生成的私钥保存至filename文件，若未指定输出文件，则为标准输出
 -numbits        指定私钥的长度，默认1024，该项必须为命令行的最后一项参数
-```
 
-```text
 #注意：为了避免对当前环境产生不必要的影响，使用子shell的方式创建私钥,为了方便后面使用k8s的私钥
 对用户进行认证，此处在k8s的认证文件目录中创建用户文件
 ```
 
 ##### 2.4.1.2.2 签名请求
-
-```text
-#用刚创建的私钥创建一个证书签名请求文件：wang.csr
+```bash
+#用刚创建的私钥创建一个证书签名请求文件：bowen.csr
 [root@master1 ~]#cd /etc/kubernetes/pki
-[root@master1 pki]#openssl req -new -key  wang.key -out wang.csr -subj
-"/CN=wang/O=devops"
+[root@master1 pki]#openssl req -new -key  bowen.key -out bowen.csr -subj
+"/CN=bowen/O=devops"
 ```
 
-```text
-#参数说明：
--new    生成证书请求文件
--key    指定已有的秘钥文件生成签名请求，必须与-new配合使用
--out    输出证书文件名称
--subj   输入证书拥有者信息，这里指定 CN 以及 O 的值，/表示内容分隔
-CN以及O的值对于kubernetes很重要，因为kubernetes会从证书这两个值对应获取相关信
-息：
-"CN"：Common Name，用于从证书中提取该字段作为请求的用户名 (User Name)；浏览器
-使用该字段验证网站是否合法；
-"O"：Organization，用于分组认证
-#注意：用户是wang、组是devops
-```
 
-```text
+#参数说明：-new    生成证书请求文件-key    指定已有的秘钥文件生成签名请求，必须与-new配合使用-out    输出证书文件名称-subj   输入证书拥有者信息，这里指定 CN 以及 O 的值，/表示内容分隔 CN以及O的值对于kubernetes很重要，因为kubernetes会从证书这两个值对应获取相关信息："CN"：Common Name，用于从证书中提取该字段作为请求的用户名 (User Name)；浏览器使用该字段验证网站是否合法；"O"：Organization，用于分组认证#注意：用户是bowen、组是devops
+
+```bash
 #检查效果：
-[root@master1 pki]#ls wang.*
-wang.csr  wang.key
+[root@master1 pki]#ls bowen.*
+bowen.csr  bowen.key
 #结果显示：*.key 是私钥，*.csr是签名请求文件
 ```
 
 ##### 2.4.1.2.3 生成证书
 
 刚才的私钥和认证并没有被Kubernetes集群纳入到管理体系，需要基于kubeadm集群的CA相关证书来进行认证。CA相关文件位于/etc/kubernetes/pki/目录下面，利用该目录下面的ca.crt和ca.key两个文件来批准上面的证书请求。
-
-```text
+```bash
 [root@master1 ~]#cd /etc/kubernetes/pki
 [root@master1 pki]#openssl x509 -req  -CA ./ca.crt  -CAkey ./ca.key  -
-CAcreateserial -in wang.csr -out wang.crt -days 365
+CAcreateserial -in bowen.csr -out bowen.crt -days 365
 #结果显示
 Signature ok
-subject=/CN=wang/O=devops
+subject=/CN=bowen/O=devops
 Getting CA Private Key
 ```
 
-```text
-#参数说明：
--req                产生证书签发申请命令
--in                 指定需要签名的请求文件
--CA                 指定CA证书文件
--CAkey              指定CA证书的秘钥文件
--CAcreateserial     生成唯一的证书序列号
--x509               表示输出一个X509格式的证书
--days               指定证书过期时间为365天
--out                输出证书文件
-```
 
-```text
+#参数说明：-req                产生证书签发申请命令-in                 指定需要签名的请求文件-CA                 指定CA证书文件-CAkey              指定CA证书的秘钥文件-CAcreateserial     生成唯一的证书序列号-x509               表示输出一个X509格式的证书-days               指定证书过期时间为365天-out                输出证书文件
+
+```bash
 #检查文件效果
 [root@master1 ~]#cd /etc/kubernetes/pki
-[root@master1 pki]#ls wang.*
-wang.crt  wang.csr  wang.key
+[root@master1 pki]#ls bowen.*
+bowen.crt  bowen.csr  bowen.key
 #结果显示：*.crt就是最终生成的签证证书
-```
 
-```text
 #查看证书信息
-[root@master1 pki]# openssl x509 -in wang.crt -text -noout
+[root@master1 pki]# openssl x509 -in bowen.crt -text -noout
 Certificate:
 ...
 Signature Algorithm: sha256WithRSAEncryption
@@ -3367,38 +2874,27 @@ Issuer: CN=kubernetes
 Validity
 Not Before: Oct  6 01:32:46 2021 GMT
 Not After : Oct  6 01:32:46 2022 GMT
-Subject: CN=wang, O=devops
+Subject: CN=bowen, O=devops
 #结果显示：Issuer: 表示是哪个CA机构帮我们认证的,我们关注的重点在于Subject内容中的请求用户所属
 的组信息
 ```
 
 ##### 2.4.1.2.4 创建kubernetes用户
-
-```text
+```bash
 #创建用户信息
 [root@master1 ~]#cd /etc/kubernetes/pki
+
+[root@master1 pki]#kubectl config set-credentials bowen --client-
+certificate=./bowen.crt --client-key=./bowen.key  --embed-certs=true --
+kubeconfig=/tmp/bowen.conf
 ```
 
-```text
-[root@master1 pki]#kubectl config set-credentials wang --client-
-certificate=./wang.crt --client-key=./wang.key  --embed-certs=true --
-kubeconfig=/tmp/wang.conf
-```
 
-```text
-#参数详解：
-set-credentials     #子命令的作用就是给kubeconfig认证文件创建一个用户条目
---client-certificate=path/to/certfile   #指定用户的签证证书文件
---client-key=path/to/keyfile            #指定用户的私钥文件
---embed-certs=true                      #在kubeconfig中为用户条目嵌入客户端证书/密钥，
-默认值是false
---kubeconfig=/path/other_config.file    #表示将属性信息单独输出到一个文件，如不指定，默认
-存放在 ~/.kube/config文件中
-```
+#参数详解：set-credentials     #子命令的作用就是给kubeconfig认证文件创建一个用户条目--client-certificate=path/to/certfile   #指定用户的签证证书文件--client-key=path/to/keyfile            #指定用户的私钥文件--embed-certs=true                      #在kubeconfig中为用户条目嵌入客户端证书/密钥，默认值是false--kubeconfig=/path/other_config.file    #表示将属性信息单独输出到一个文件，如不指定，默认存放在 ~/.kube/config文件中
 
-```text
+```yaml
 #查看生成文件
-[root@master1 ~]#cat /tmp/wang.conf
+[root@master1 ~]#cat /tmp/bowen.conf
 apiVersion: v1
 clusters: null
 contexts: null
@@ -3406,18 +2902,16 @@ current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 client-certificate-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSVCQ3dVQU1CVXgKRXpB
 ......
 client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS
 ......
-```
 
-```text
 #检查效果
-[root@master1 ~]#kubectl config view --kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl config view --kubeconfig=/tmp/bowen.conf
 apiVersion: v1
 clusters: []
 contexts: []
@@ -3425,59 +2919,49 @@ current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:                                     #下面是--embed-certs=false后的证书效果,
 会显示证书和私钥的路径
 client-certificate-data: REDACTED       #client-certificate:
-/etc/kubernetes/pki/wang.crt
+/etc/kubernetes/pki/bowen.crt
 client-key-data: REDACTED               #client-key:
-/etc/kubernetes/pki/wang.key
-#结果显示：在指定配置文件的users部分增加了一个wang的普通用户
+/etc/kubernetes/pki/bowen.key
+#结果显示：在指定配置文件的users部分增加了一个bowen的普通用户
 ```
 
 ##### 2.4.1.2.5 创建集群
-
-```text
+```bash
 #创建一个新的集群mycluster
 [root@master1 ~]#kubectl config set-cluster mycluster  --
-server="https://kubeapi.wang.org:6443" --certificate-
+server="https://kubeapi.bowen.org:6443" --certificate-
 authority=/etc/kubernetes/pki/ca.crt --embed-certs=true --
-kubeconfig=/tmp/wang.conf
-```
+kubeconfig=/tmp/bowen.conf
 
-```text
 #参数详解：
 ```
 
-```text
---server=cluster_api_server
---certificate-authority=path/to/certificate/authority
---embed-certs=true  #默认为false,会将证书文件路径存入kubeconfig文件中,true时会将证书内容
-存入kubdconfig文件中
-#注意：这里使用到的证书必须是kubernetes的ca证书。
-```
 
-```text
+--server=cluster_api_server--certificate-authority=path/to/certificate/authority--embed-certs=true  #默认为false,会将证书文件路径存入kubeconfig文件中,true时会将证书内容存入kubdconfig文件中#注意：这里使用到的证书必须是kubernetes的ca证书。
+
+```yaml
 #检查效果
-[root@master1 ~]#kubectl config view --kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl config view --kubeconfig=/tmp/bowen.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: mycluster
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 #属性解析:如果--embed-certs=false 效果如下:certificate-authority:
 /etc/kubernetes/pki/ca.crt
 ```
@@ -3485,151 +2969,123 @@ client-key-data: REDACTED
 ##### 2.4.1.2.6 关联用户和集群
 
 所谓关联实际上就是设置用户能在哪个集群的使用。
-
-```text
+```bash
 #配置上下文信息
-[root@master1 ~]# kubectl  config set-context wang@mycluster --cluster=mycluster
---user=wang  --kubeconfig=/tmp/wang.conf
+[root@master1 ~]# kubectl  config set-context bowen@mycluster --cluster=mycluster
+--user=bowen  --kubeconfig=/tmp/bowen.conf
 ```
 
-```text
-#属性详解
---cluster=cluster_nickname      关联的集群名称
---user=user_nickname            关联的用户名称
---namespace=namespace           可以设置该生效的命名空间
-```
 
-```text
+#属性详解--cluster=cluster_nickname      关联的集群名称--user=user_nickname            关联的用户名称--namespace=namespace           可以设置该生效的命名空间
+
+```yaml
 #最终效果
-[root@master1 ~]#kubectl config view --kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl config view --kubeconfig=/tmp/bowen.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: mycluster
 contexts:
 - context:                     #生成以下信息
 cluster: mycluster
-user: wang
-name: wang@mycluster
+user: bowen
+name: bowen@mycluster
 current-context: ""
 kind: Config
 preferences: {}
 users:
-```
 
-```text
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
 ```
 
 ##### 2.4.1.2.7 验证效果
-
-```text
+```yaml
 #根据刚才的信息显示，current-context的信息是空，那么切换上下文
 #更改上下文
-[root@master1 ~]#kubectl config use-context wang@mycluster --
-kubeconfig=/tmp/wang.conf
-```
+[root@master1 ~]#kubectl config use-context bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
 
-```text
 #检查效果
-[root@master1 ~]#kubectl config view --kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl config view --kubeconfig=/tmp/bowen.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: mycluster
 contexts:
 - context:
 cluster: mycluster
-user: wang
-name: wang@mycluster
-current-context: wang@mycluster            #生成此行信息
+user: bowen
+name: bowen@mycluster
+current-context: bowen@mycluster            #生成此行信息
 kind: Config
 preferences: {}
 users:
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 #验证访问,权限不足
-[root@master1 ~]#kubectl get pod --kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+[root@master1 ~]#kubectl get pod --kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "default"
 #结果显示：虽然认证信息配置好了，但是由于权限相关的内容没有设置，所以我们看不了任何资源信息
-```
 
-```text
 #简便方法
-[root@master1 ~]# kubectl get pods --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
+[root@master1 ~]# kubectl get pods --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
 ```
 
 ### 2.4.2 User Account 使用
-
 ```text
 #优先级从大到小
 --kubeconfig  > 环境变量KUBECONFIG >  ~/.kube/config
 ```
 
 #### 2.4.2.1 使用默认的kubectl配置文件
-
-```text
+```bash
 [root@master1 ~]# kubectl get sa
 NAME      SECRETS   AGE
 admin     1         10h
 default   1         2d22h
-```
 
-```text
 #注意：默认的配置文件是 ~/.kube/config 文件
 ```
 
 #### 2.4.2.2 使用--kubeconfig 参数
-
-```text
+```bash
 [root@master1 ~]# kubectl get sa --kubeconfig=/etc/kubernetes/admin.conf
 NAME      SECRETS   AGE
 admin     1         10h
 default   1         2d22h
-```
 
-```text
-[root@master1 ~]#kubectl get sa --kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): serviceaccounts is forbidden: User "wang" cannot
+[root@master1 ~]#kubectl get sa --kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): serviceaccounts is forbidden: User "bowen" cannot
 list resource "serviceaccounts" in API group "" in the namespace "default"
-```
 
-```text
 #结果显示：--kubeconfig 参数的优先级要高于默认的 .kube/config 配置文件
 ```
 
 #### 2.4.2.3 使用环境变量
-
-```text
+```bash
 [root@master1 ~]# export KUBECONFIG='/etc/kubernetes/admin.conf'
 [root@master1 ~]# kubectl get sa
 NAME      SECRETS   AGE
 admin     1         10h
 default   1         2d22h
-```
 
-```text
-[root@master1 ~]# export KUBECONFIG='/tmp/wang.conf'
+[root@master1 ~]# export KUBECONFIG='/tmp/bowen.conf'
 [root@master1 ~]# kubectl get sa
-Error from server (Forbidden): serviceaccounts is forbidden: User "wang" cannot
+Error from server (Forbidden): serviceaccounts is forbidden: User "bowen" cannot
 list resource "serviceaccounts" in API group "" in the namespace "default"
-```
 
-```text
 [root@master1 ~]# kubectl get sa --kubeconfig=/etc/kubernetes/admin.conf
 NAME      SECRETS   AGE
 admin     1         10h
@@ -3639,32 +3095,27 @@ default   1         2d22h
 #### 2.4.2.4 合并多个 kubeconfig 文件
 
 为了能让所有动作可以正常执行，我们合并两个配置文件。
-
-```text
+```yaml
 #环境变量方式
-[root@master1 ~]# export KUBECONFIG='/etc/kubernetes/admin.conf:/tmp/wang.conf'
+[root@master1 ~]# export KUBECONFIG='/etc/kubernetes/admin.conf:/tmp/bowen.conf'
 [root@master1 ~]# kubectl get sa
 NAME      SECRETS   AGE
 admin     1         11h
 default   1         2d23h
 #注意：多个文件可以通过冒号隔开
-```
 
-```text
 #查看多个配置文件的合并统一查询效果
 [root@master1 ~]# kubectl config view
 apiVersion: v1
-```
 
-```text
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: mycluster
 contexts:
 - context:
@@ -3673,8 +3124,8 @@ user: kubernetes-admin
 name: kubernetes-admin@kubernetes
 - context:
 cluster: mycluster
-user: wang
-name: wang@mycluster
+user: bowen
+name: bowen@mycluster
 current-context: kubernetes-admin@kubernetes
 kind: Config
 preferences: {}
@@ -3683,47 +3134,39 @@ users:
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-- name: wang
+- name: bowen
 user:
 client-certificate-data: REDACTED
 client-key-data: REDACTED
-```
 
-```text
 #采用 merge 参数合并文件,--flatten 用于显示加密后的内容
 [root@master1 ~]#kubectl config view --merge --flatten > /tmp/newconfig.conf
-```
 
-```text
 #使用效果
 [root@master1 ~]# kubectl get sa --kubeconfig=/tmp/newconfig.conf
 NAME      SECRETS   AGE
 admin     1         11h
 default   1         2d23h
 #结果显示：我们可以在一个config文件中，配置多个用户和集群及配套的上下文环境。
-```
 
-```text
 #查看当前的上下文
 [root@master1 ~]# kubectl config view --kubeconfig=/tmp/newconfig.conf | grep
 current
 current-context: kubernetes-admin@kubernetes
-```
 
-```text
 #切换上下文
-[root@master1 ~]# kubectl config use-context wang@mycluster --
+[root@master1 ~]# kubectl config use-context bowen@mycluster --
 kubeconfig=/tmp/newkubeconfig.conf
 [root@master1 ~]# kubectl get sa --kubeconfig=/tmp/newkubeconfig.conf
-Error from server (Forbidden): serviceaccounts is forbidden: User "wang" cannot
+Error from server (Forbidden): serviceaccounts is forbidden: User "bowen" cannot
 list resource "serviceaccounts" in API group "" in the namespace "default"
 ```
 
 ## 2.5 Service Account 管理
 
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authentication/
-```
+
+- <https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authentication/>
+
 
 ### 2.5.1 Service Account 基础
 
@@ -3798,20 +3241,17 @@ serviceAccountToken：用于ServiceAccount的Token信息提供给Pod，同样为
 configMap/kube-root-ca.crt：将kubernetes root ca自身的证书提供给Pod，同样为ca.crt。
 
 downwardAPI: metadata.namespace，用于限制该SA可生效的名称空间，同样为namespace文件。
-
-```text
+```yaml
 #Pod内的Projected卷
 [root@master1 ~]#kubectl run myapp -n demo  --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 [root@master1 ~]#kubectl get pod -n demo myapp -o yaml
 apiVersion: v1
 kind: Pod
 metadata:
 ......
 spec:
-```
 
-```text
 containers:
 .....
 volumeMounts:
@@ -3845,8 +3285,7 @@ status:
 每个serviceaccount，被API Server认证为“system:serviceaccount:NAMESPACE:SANAME”
 
 ServiceAccount用到的token，也可以为被创建为kubeconfig文件，从而被kubectl等其它客户端引用；
-
-```text
+```bash
 kubectl config set-cluster myk8s --server=https://kubernetes.default -
 certificate-authority=ca.crt
 kubectl config set-credentials user --token={serviceaccount_token}
@@ -3857,18 +3296,10 @@ kubectl config use-context user@myk8s
 
 认证示例:
 
-```text
-#在k8s环境中创建任意一个pod的时候，它都会自动创建一个属性信息：
-#样式1：
-Volumes:
-...
-default-token-9vs4d:
-Type:        Secret (a volume populated by a Secret)
-SecretName:  default-token-qzmqq
-Optional:    false
-```
 
-```text
+#在k8s环境中创建任意一个pod的时候，它都会自动创建一个属性信息：#样式1：Volumes:... default-token-9vs4d: Type:        Secret (a volume populated by a Secret) SecretName:  default-token-qzmqq Optional:    false
+
+```bash
 #这里的SecretName就是一个认证信息，来源于我们创建k8s的时候，默认创建的一个secret
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
@@ -3876,23 +3307,12 @@ default-token-qzmqq   kubernetes.io/service-account-token   3      47h
 #这是k8s提供的一种认证模式，只不过默认的认证权限不是太大。
 ```
 
-```text
-#token是有期限的，如果过期，token就没有了，那么就会出现第二种方式。
-#样式2：
-Volumes:
-...
-kube-api-access-x84dp:
-Type:                    Projected (a volume that contains injected data
-from multiple sources)
-TokenExpirationSeconds:  3607
-ConfigMapName:           kube-root-ca.crt
-ConfigMapOptional:       <nil>
-DownwardAPI:             true
-```
+
+#token是有期限的，如果过期，token就没有了，那么就会出现第二种方式。#样式2：Volumes:... kube-api-access-x84dp: Type:                    Projected (a volume that contains injected data from multiple sources) TokenExpirationSeconds:  3607 ConfigMapName:           kube-root-ca.crt ConfigMapOptional:       <nil>DownwardAPI:             true
+
 
 范例: k8s-v1.21版后
-
-```text
+```yaml
 [root@master1 ~]#kubectl get pod pod-test-6d8c97ff75-hrzpz -o yaml
 apiVersion: v1
 kind: Pod
@@ -3915,7 +3335,7 @@ resourceVersion: "562315"
 uid: 453ca77b-f495-48e6-aa59-2d61c315ec56
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 name: pod-test
 resources: {}
@@ -3927,7 +3347,7 @@ name: kube-api-access-52ljr                #卷
 readOnly: true
 dnsPolicy: ClusterFirst
 enableServiceLinks: true
-nodeName: node1.wang.org
+nodeName: node1.bowen.org
 preemptionPolicy: PreemptLowerPriority
 priority: 0
 restartPolicy: Always
@@ -3936,9 +3356,7 @@ securityContext: {}
 serviceAccount: default
 serviceAccountName: default
 terminationGracePeriodSeconds: 30
-```
 
-```text
 tolerations:
 - effect: NoExecute
 key: node.kubernetes.io/not-ready
@@ -3988,8 +3406,8 @@ type: PodScheduled
 containerStatuses:
 - containerID:
 docker://8a35285cef62b4ab4e31db5f23f55e47691334c64636a9789dd9ccde913f0a24
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-imageID: docker-pullable://wangxiaochun/pod-
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
+imageID: docker-pullable://bowen/pod-
 test@sha256:54402cda2ef15f45e4aafe98a5e56d4de076e3d4100c2a1bf1b780c787372fed
 lastState:
 terminated:
@@ -3997,9 +3415,7 @@ containerID:
 docker://99bfc003e55d10a1fe75f76e245b179b89f42a54fcb9f7e0e45048282f31af47
 exitCode: 255
 finishedAt: "2022-04-18T00:18:34Z"
-```
 
-```text
 reason: Error
 startedAt: "2022-04-13T00:28:58Z"
 name: pod-test
@@ -4017,8 +3433,7 @@ podIPs:
 qosClass: BestEffort
 startTime: "2022-04-06T00:36:27Z"
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl exec -it pod-test-6d8c97ff75-6js8j -- ls -l
 /var/run/secrets/kubernetes.io/serviceaccount
 total 0
@@ -4026,9 +3441,7 @@ lrwxrwxrwx    1 root     root            13 Apr 18 00:18 ca.crt -> ..data/ca.crt
 lrwxrwxrwx    1 root     root            16 Apr 18 00:18 namespace ->
 ..data/namespace
 lrwxrwxrwx    1 root     root            12 Apr 18 00:18 token -> ..data/token
-```
 
-```text
 [root@master1 ~]#kubectl exec -it pod-test-6d8c97ff75-6js8j -- ls -l
 /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 lrwxrwxrwx    1 root     root            13 Apr 18 00:18
@@ -4054,17 +3467,13 @@ PTo1AxtObXrzJVJ7fH78p9jh5J/zGd9QnWB5RwufehSmIj+/RrCMbQEO/c73Te2n
 DcxchrY5i6QuKnNFPmUyXESll9BkULQqB5T+yrjRj6dIGvHMJ88Biq9wm7kuHQNY
 ECY=
 -----END CERTIFICATE-----
-```
 
-```text
 #获取Token方法1
 [root@master1 ~]#kubectl exec -it pod-test-6d8c97ff75-6js8j -- cat
 /var/run/secrets/kubernetes.io/serviceaccount/namespace
 default[root@master1 ~]#kubectl exec -it pod-test-6d8c97ff75-6js8j -- cat
 /var/run/secrets/kubernetes.io/serviceaccount/token
-```
 
-```text
 eyJhbGciOiJSUzI1NiIsImtpZCI6IkZJSXBRS19ESnJUQjlaVXZva3Zrakg4b29Bb0gtRjVkd24ybWtt
 UXdFcDAifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jY
 WwiXSwiZXhwIjoxNzEzMzM2NTYyLCJpYXQiOjE2ODE4MDA1NjIsImlzcyI6Imh0dHBzOi8va3ViZXJuZ
@@ -4079,39 +3488,29 @@ AQoC7nMtoKrN5NpylFy01EZnTOOJV59IynxFxaYWhXGlXsGPcOK4vj5PWi3xVg8cGskoLtyCPRWMmhHR
 bH6lvw-bRUYkWvDuHuQpBzQWuRlsVtUu-
 inlECyNt_CYWRSBI4kwbXi439FFSKY5rj2u7WQhguUvC8fkn9ZYIIY0f4mrUUYm5W0Wy878lrmpf8lg6
 TM_etgO_cjRnUPHQINIuC9cR48SzwrI118iLHjvp3s_NrTrdC1oJE4FFEBemw
-```
 
-```text
 ##获取Token方法2
 [root@master1 ~]#kubectl cp pod-test-6d8c97ff75-
 6js8j:/var/run/secrets/kubernetes.io/serviceaccount/..data/token token
-```
 
-```text
 #在一个worker节点执行
 [root@node1 ~]#kubectl get pod
 E0418 15:04:56.246545  387925 memcache.go:238] couldn't get current server API
 group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080:
 connect: connection refused
-```
 
-```text
 #便用前面的Pod内的/var/run/secrets/kubernetes.io/serviceaccount/token文件内容定义
 TOKEN变量
 [root@node1
 ~]#TOKEN="eyJhbGciOiJSUzI1NiIsIm.....I118iLHjvp3s_NrTrdC1oJE4FFEBemw"
-```
 
-```text
 #验证方法1:使用此TOKEN访问,提示权限不足,说明认证成功
 [root@node1 ~]#kubectl get pod --insecure-skip-tls-verify -s
-https://kubeapi.wang.org:6443 --token $TOKEN
+https://kubeapi.bowen.org:6443 --token $TOKEN
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:default" cannot list resource "pods" in API group
 "" in the namespace "default"
-```
 
-```text
 #验证方法2
 [root@master1 ~]#kubectl run kubeclient --image=bitnami/kubectl --restart=Never -
 it --rm --command -- /bin/sh
@@ -4123,9 +3522,7 @@ authority=./ca.crt get pods
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:default" cannot list resource "pods" in API group
 "" in the namespace "default"
-```
 
-```text
 #验证方法3
 [root@master1 ~]#kubectl run kubeclient --image=bitnami/kubectl --restart=Never -
 it --rm --command -- /bin/sh
@@ -4134,9 +3531,7 @@ $ cd /var/run/secrets/kubernetes.io/serviceaccount/
 $ curl -k -H "Authorization: Bearer $(cat ./token)"
 https://kubernetes.default.svc.cluster.local
 {
-```
 
-```text
 "kind": "Status",
 "apiVersion": "v1",
 "metadata": {},
@@ -4148,8 +3543,10 @@ path \"/\"",
 "code": 403
 }
 #验证方法4
+```
+```bash
 [root@ubuntu2204 ~]#curl -k -H "Authorization: Bearer $TOKEN"
-https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods
+https://kubeapi.bowen.org:6443/api/v1/namespaces/default/pods
 {
 "kind": "Status",
 "apiVersion": "v1",
@@ -4163,18 +3560,15 @@ cannot list resource \"pods\" in API group \"\" in the namespace \"default\"",
 },
 "code": 403
 }
-```
 
-```text
 #使用错误的TOKEN测试访问,提示没有认证
 [root@node1 ~]#kubectl get pod --insecure-skip-tls-verify -s
-https://kubeapi.wang.org:6443 --token 123
+https://kubeapi.bowen.org:6443 --token 123
 error: You must be logged in to the server (Unauthorized)
 ```
 
 **SA的资源属性**
-
-```text
+```yaml
 apiVersion: v1                          # ServiceAccount所属的API群组及版本
 kind: ServiceAccount                    # 资源类型标识
 metadata:
@@ -4197,15 +3591,12 @@ name <string>                         # docker-registry类型的Secret资源的�
 #### 2.5.2.1 查看 SA
 
 范例:  查看SA
-
-```text
+```bash
 #查看普通用户空间的信息
 [root@master1 ~]#kubectl get serviceaccount
 NAME      SECRETS   AGE
 default   1         3d20h
-```
 
-```text
 #查看所有NS
 [root@master1 ~]#kubectl get ns
 NAME              STATUS   AGE
@@ -4214,9 +3605,7 @@ kube-flannel      Active   34d
 kube-node-lease   Active   34d
 kube-public       Active   34d
 kube-system       Active   34d
-```
 
-```text
 #每个命名空间都会有一个默认的default的SA账号名称
 [root@master1 ~]#kubectl get sa -A
 NAMESPACE         NAME                                 SECRETS   AGE
@@ -4256,25 +3645,20 @@ kube-system       replication-controller               0         21d
 kube-system       resourcequota-controller             0         21d
 kube-system       root-ca-cert-publisher               0         21d
 kube-system       service-account-controller           0         21d
-```
 
-```text
 kube-system       service-controller                   0         21d
 kube-system       statefulset-controller               0         21d
 kube-system       token-cleaner                        0         21d
 kube-system       ttl-after-finished-controller        0         21d
 kube-system       ttl-controller                       0         21d
-```
 
-```text
 #查看kube-system的sa信息
 [root@master1 ~]#kubectl get sa -n kube-system | grep -v SECR| wc -l
 37
 ```
 
 范例: 查看 sa 属性
-
-```text
+```yaml
 [root@master1 ~]#kubectl get sa default -o yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -4286,16 +3670,13 @@ resourceVersion: "424"
 uid: a9e985a2-e737-4f61-b535-1c8afc9bf45d
 secrets:
 - name: default-token-qzmqq
-```
 
-```text
 #结果显示：对于一个serviceaccount来说，其属性信息在metadata部分，对于sa的信息交流还是需要通
 过secrets的认证信息进行通信，而这个认证信息它是自动帮我们附加的，我们无需关心。
 ```
 
 范例: secrets信息
-
-```text
+```yaml
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
 default-token-qzmqq   kubernetes.io/service-account-token   3      46h
@@ -4322,14 +3703,11 @@ type: kubernetes.io/service-account-token
 #### 2.5.2.2 创建和使用SA 账号
 
 ##### 2.5.2.2.1 创建方法
-
-```text
+```yaml
 #命令格式：
 ]# kubectl create serviceaccount NAME  -n namespace [--dry-run] [options]
 #作用：创建一个"服务账号"
-```
 
-```text
 #参数详解
 --dry-run=false                     模拟创建模式
 --generator='serviceaccount/v1'     设定api版本信息
@@ -4337,17 +3715,13 @@ type: kubernetes.io/service-account-token
 json|yaml|name|template|...
 --save-config=false                 保存配置信息
 --template=''                       设定配置模板文件
-```
 
-```text
 #文件格式:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
 name: <SA名称>
-```
 
-```text
 #创建SA资源文件的简单方法
 ]# kubectl create serviceaccount mysa -n default--dry-run=client -o yaml
 apiVersion: v1
@@ -4358,20 +3732,15 @@ namespace: default
 ```
 
 范例: 创建SA(旧版本k8s)
-
-```text
+```bash
 #创建SA
 [root@master1 ~]#kubectl create serviceaccount admin
-```
 
-```text
 [root@master1 ~]#kubectl get sa
 NAME      SECRETS   AGE
 admin     1         10m                 #生成了一个sa账号
 default   1         47h
-```
 
-```text
 [root@master1 ~]#kubectl describe sa admin
 Name:                admin
 Namespace:           default
@@ -4381,9 +3750,7 @@ Image pull secrets:  <none>               #下载镜像时候的认证信息
 Mountable secrets:   admin-token-tkjxl    #挂载数据时候的认证信息
 Tokens:              admin-token-tkjxl    #原始的账户认证信息
 Events:              <none>
-```
 
-```text
 #SA账号配套的token是在secrets对象中,注意:v1.24版后创建SA不会自动生成对应Secret
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
@@ -4395,43 +3762,34 @@ default-token-qzmqq   kubernetes.io/service-account-token   3      47h
 ##### 2.5.2.2.2 应用 SA
 
 在pod资源中一个属性专门来设置该资源属于哪个SA管理
-
 ```text
 kubectl explain pod.spec.serviceAccountName
 ```
 
 验证SA：
-
-```text
+```bash
 #方法1:在集群节点上执行
 kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod
-```
+https://kubeapi.bowen.org:6443 get pod
 
-```text
 #方法2:在集群节点上执行
 curl -s -H "Authorization: Bearer $TOKEN"  --cacert /etc/kubernetes/pki/ca.crt
 https://API_SERVER:6443/api/v1/namespaces/default/pods/
-```
 
-```text
 #方法3:在Pod内执行下面命令
 curl --cacert /etc/kubernetes/pki/ca.crt -H "Authorization: Bearer ${token}"
 https://kubernetes.default/api/v1/pod/namespaces/{namespace}
 ```
 
 范例: 对SA创建对应的Token
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat security-sa-admin.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
 name: admin
-```
 
-```text
 ---
 #v1.24版之后添加下面内容手动创建secret
 apiVersion: v1
@@ -4441,9 +3799,7 @@ metadata:
 name: admin-secret
 annotations:
 kubernetes.io/service-account.name: "admin"
-```
 
-```text
 ---
 apiVersion: v1
 kind: Pod
@@ -4452,29 +3808,21 @@ name: pod-sa-admin
 spec:
 containers:
 - name: pod-sa-admin
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 serviceAccountName: admin  #使用sa
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  security-sa-admin.yaml
 serviceaccount/admin created
 pod/pod-sa-admin created
-```
 
-```text
 #注意: 新版Kubernetes下面的Secret为 0
-```
 
-```text
 [root@master1 ~]#kubectl get sa
 NAME      SECRETS   AGE
 admin     1         2s
 default   1         46h
-```
 
-```text
 [root@master1 ~]#kubectl describe sa admin
 Name:                admin
 Namespace:           default
@@ -4484,9 +3832,7 @@ Image pull secrets:  <none>               #下载镜像时候的认证信息
 Mountable secrets:   admin-token-pm97q    #挂载数据时候的认证信息
 Tokens:              admin-token-pm97q    #原始的账户认证信息
 Events:              <none>
-```
 
-```text
 [root@master1 ~]#kubectl get  sa admin -o yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -4502,25 +3848,19 @@ resourceVersion: "71342"
 uid: f269ecf5-3e33-407e-9ded-679cafeecdc1
 secrets:
 - name: admin-token-pm97q
-```
 
-```text
 #旧版：sa账号配套的token 保存在secrets对象中
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
 admin-token-pm97q     kubernetes.io/service-account-token   3      110s
 default-token-qzmqq   kubernetes.io/service-account-token   3      46h
 #注意：token是有准入控制器自动为用户配套创建的，无需手工干预
-```
 
-```text
 #旧版
 [root@master1 ~]#kubectl get secrets admin-token-pm97q -o yaml
 apiVersion: v1
 data:
-```
 
-```text
 ca.crt:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeU1ETXlPVEE0TVRR
@@ -4569,9 +3909,7 @@ namespace: default
 resourceVersion: "71340"
 uid: 082d3ad6-593a-4703-a420-8669c9a01e5d
 type: kubernetes.io/service-account-token
-```
 
-```text
 [root@master1 ~]# kubectl describe pod pod-sa-admin
 Name:         pod-sa-admin
 Namespace:    default
@@ -4582,20 +3920,10 @@ Container ID:
 docker://4adadb55c1eaba8051398c6a4d4cc289a0f4779200459362be0aec0cbbd3aaf0
 ```
 
-```text
-Image:          wangxiaochun/pod-test:v0.1
-Image ID:       docker-pullable://wangxiaochun/pod-
-test@sha256:54402cda2ef15f45e4aafe98a5e56d4de076e3d4100c2a1bf1b780c787372fed
-.......
-Mounts:
-/var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-fhh5z
-(ro)
-.......
-#结果显示：由于pod中是被admin的serviceaccount管理的，所以该资源对象自动附加了admin账号的认
-证信息。这些信息挂载到容器的 /var/run/secrets/kubernetes.io/serviceaccount 目录下了
-```
 
-```text
+Image:          bowen/pod-test:v0.1 Image ID:       docker-pullable://bowen/pod-test@sha256:54402cda2ef15f45e4aafe98a5e56d4de076e3d4100c2a1bf1b780c787372fed....... Mounts:/var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-fhh5z(ro).......#结果显示：由于pod中是被admin的serviceaccount管理的，所以该资源对象自动附加了admin账号的认证信息。这些信息挂载到容器的 /var/run/secrets/kubernetes.io/serviceaccount 目录下了
+
+```bash
 #查看SA对应的TOKEN
 #方法1
 [root@master1 ~]#kubectl get secrets admin-secret -o yaml
@@ -4604,14 +3932,12 @@ Mounts:
 '/token:/{print $2}' |base64 -d)
 #方法2
 [root@master1 ~]#kubectl describe secrets admin-secret
-```
 
-```text
 #验证方法1:因为没有授权访问失败，但显示验证用户成功
 [root@master1 ~]#curl -s -k -H "Authorization: Bearer ${TOKEN}"
-https://kubeapi.wang.org:6443
+https://kubeapi.bowen.org:6443
 [root@master1 ~]#curl -s  --cacert /etc/kubernetes/pki/ca.crt -H "Authorization:
-Bearer ${TOKEN}" https://kubeapi.wang.org:6443
+Bearer ${TOKEN}" https://kubeapi.bowen.org:6443
 {
 "kind": "Status",
 "apiVersion": "v1",
@@ -4623,63 +3949,49 @@ path \"/\"",
 "details": {},
 "code": 403
 }
-```
 
-```text
 #验证方法2:在worker节点使用kubectl进行验证也能成功，但没有权限,注意:在worker节点执行,不要在
 master节点执行
 [root@node1 ~]#TOkEN=<复制master节点上的值>
 [root@node1 ~]#kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod
+https://kubeapi.bowen.org:6443 get pod
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:admin" cannot list resource "pods" in API group
 "" in the namespace "default"
-```
 
-```text
 #在master节点上授权访问default名称空间
 root@master1 ~]#kubectl create rolebinding admin-rolebinding --clusterrole=admin
 --serviceaccount=default:admin
-```
 
-```text
 #在worker节点验证访问default名称空间成功
 [root@node1 ~]#kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod
+https://kubeapi.bowen.org:6443 get pod
 NAME                                      READY   STATUS             RESTARTS
 AGE
 mysql-bnxch                               1/1     Running            2 (3d21h
 ago)    5d10h
-```
 
-```text
 nacos-0                                   1/1     Running            2 (3d21h
 ago)    5d10h
 nacos-1                                   1/1     Running            2 (3d21h
 ago)    5d10h
 nacos-2                                   0/1     ImagePullBackOff   1 (3d21h
 ago)    5d10h
-```
 
-```text
 #在worker节点仍然无法访问其它名称空间
 [root@node1 ~]#kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod -n kube-system
+https://kubeapi.bowen.org:6443 get pod -n kube-system
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:admin" cannot list resource "pods" in API group
 "" in the namespace "kube-system"
-```
 
-```text
 #在master节点上授权访问kube-system名称空间
 [root@master1 ~]#kubectl create clusterrolebinding admin-clusterrolebinding --
 clusterrole=admin --serviceaccount=default:admin -n kube-system
-```
 
-```text
 #在worker节点上访问default和kube-system名称空间成功
 [root@node1 ~]#kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod -n kube-system
+https://kubeapi.bowen.org:6443 get pod -n kube-system
 NAME                                       READY   STATUS    RESTARTS
 AGE
 coredns-5bbd96d687-l68km                   1/1     Running   46 (3d21h ago)
@@ -4688,22 +4000,18 @@ coredns-5bbd96d687-l6kdg                   1/1     Running   30 (3d21h ago)
 39d
 #在worker节点仍然无法访问default和kube-system以外其它名称空间
 [root@node1 ~]#kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod -n kube-flannel
+https://kubeapi.bowen.org:6443 get pod -n kube-flannel
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:admin" cannot list resource "pods" in API group
 "" in the namespace "kube-flannel"
-```
 
-```text
 #在master节点上授权所有名称空间权限
 [root@master1 ~]#kubectl create clusterrolebinding admin-clusterrolebinding --
 clusterrole=admin --serviceaccount=default:admin
-```
 
-```text
 #在worker节点验证访问所有名称空间成功
 [root@node1 ~]#kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod -n kube-system
+https://kubeapi.bowen.org:6443 get pod -n kube-system
 NAME                                       READY   STATUS    RESTARTS
 AGE
 coredns-5bbd96d687-l68km                   1/1     Running   46 (3d21h ago)
@@ -4712,9 +4020,7 @@ coredns-5bbd96d687-l6kdg                   1/1     Running   30 (3d21h ago)
 39d
 #结论:SA可以跨名称空间进行授权，即A名称空间的SA帐号可以授权给B名称空间的权限，甚至对所有名称空
 间授权
-```
 
-```text
 #进入到容器中确认信息
 [root@master1 ~]# kubectl exec -it pod-sa-admin -- /bin/sh
 [root@pod-sa-admin /]# ls -l /var/run/secrets/kubernetes.io/serviceaccount/
@@ -4723,9 +4029,7 @@ lrwxrwxrwx    1 root     root            13 Mar 31 07:13 ca.crt -> ..data/ca.crt
 lrwxrwxrwx    1 root     root            16 Mar 31 07:13 namespace ->
 ..data/namespace
 lrwxrwxrwx    1 root     root            12 Mar 31 07:13 token -> ..data/token
-```
 
-```text
 [root@pod-sa-admin /]# cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 -----BEGIN CERTIFICATE-----
 MIIC/jCCAeagAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
@@ -4764,54 +4068,42 @@ zxXs9pVql_5eFBRTuphJ5DDM1HR_z4hqQEh77C4owm8lYJLyp8VRP-qpbYX29SQKRZiZhPO-
 5W1FGxh8p8qp1Z8sy-hrYOIBxR0zMCLU_xcYyVAt-
 XOWUtUvyZpABQ0Hr68XBHKoK6l1G7T5CDB6olO5d7ZMbH6Y9mbj-HiBIlutj2_NA[root@pod-sa-
 admin /]#
-```
 
-```text
 #转换为base64
 [root@master1 ~]#kubectl exec  pod-sa-admin --  cat
 /var/run/secrets/kubernetes.io/serviceaccount/token  | base64
 ```
 
 范例: SA 验证
-
-```text
+```bash
 #验证格式：
 #在容器内执行
 cd /var/run/secrets/kubernetes.io/serviceaccount/ && curl --cacert ca.crt -H
 "Authorization: Bearer $(cat token)"
 https://kubernetes.default/api/v1/pod/namespaces/{namespace}
-```
 
-```text
 #在集群节点上执行
 kubectl --insecure-skip-tls-verify  --token=$TOKEN -s
-https://kubeapi.wang.org:6443 get pod
-```
+https://kubeapi.bowen.org:6443 get pod
 
-```text
 #进入容器中
 [root@pod-sa-admin /]#cd /var/run/secrets/kubernetes.io/serviceaccount
 [root@pod-sa-admin serviceaccount]#curl --cacert ca.crt -H "Authorization:
 Bearer $(cat token)" https://kubernetes.default/api/v1/pod/namespaces/default/
-```
 
-```text
 [root@pod-sa-admin serviceaccount]# host -t A kubernetes.default
 kubernetes.default.svc.cluster.local has address 10.96.0.1
 ```
 
 ##### 2.5.2.2.3 为SA帐号创建 kubeconfig
-
-```text
+```yaml
 #创建SA并获取Token
 [root@master1 ~]#cat security-sa-admin.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
 name: admin
-```
 
-```text
 ---
 #v1.24版之后添加下面内容手动创建secret
 apiVersion: v1
@@ -4821,13 +4113,9 @@ metadata:
 name: admin-secret
 annotations:
 kubernetes.io/service-account.name: "admin"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f yaml/security-sa-admin.yaml
-```
 
-```text
 #获取SA帐号的Token
 #方法1
 [root@master1 ~]#KUBEADMIN_TOKEN=$(kubectl get secret admin-secret -n default -o
@@ -4835,52 +4123,36 @@ jsonpath='{.data.token}' |base64 -d)
 #方法2
 [root@master1 ~]#KUBEADMIN_TOKEN=$(kubectl describe secrets  admin-secret |awk
 '/^token/{print $2}')
-```
 
-```text
 #设置用户信息
 [root@master1 ~]#kubectl config set-credentials kubeadmin --
 token=$KUBEADMIN_TOKEN --kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 #设置集群信息
 [root@master1 ~]#kubectl config set-cluster kubernetes --certificate-
-authority=/etc/kubernetes/pki/ca.crt  --server="https://kubeapi.wang.org:6443" --
+authority=/etc/kubernetes/pki/ca.crt  --server="https://kubeapi.bowen.org:6443" --
 embed-certs=true --kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 #设置上下文信息Context
-```
 
-```text
 [root@master1 ~]#kubectl config set-context kubeadmin@kubernetes --
 cluster=kubernetes --user=kubeadmin --kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 #指定默认Context
 [root@master1 ~]#kubectl config use-context kubeadmin@kubernetes --
 kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 #验证Kubeconfig,权限不足
 [root@master1 ~]#kubectl get pod  --kubeconfig=/root/kubeadmin.conf
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:admin" cannot list resource "pods" in API group
 "" in the namespace "default"
-```
 
-```text
 #授权
 [root@master1 ~]#kubectl create clusterrolebinding admin-binding --serviceaccount
 default:admin --clusterrole cluster-admin
 clusterrolebinding.rbac.authorization.k8s.io/adminbinding created
-```
 
-```text
 #再次访问成功
 [root@master1 ~]#kubectl get pod  -A --kubeconfig=/root/kubeadmin.conf
 default                myapp-7dbd45d496-5hfbg                      1/1
@@ -4889,11 +4161,11 @@ default                myapp-7dbd45d496-7vncf                      1/1
 Running   0               6h
 default                myapp-7dbd45d496-zhd89                      1/1
 Running   0               6h
-kube-system            etcd-master1.wang.org                       1/1
+kube-system            etcd-master1.bowen.org                       1/1
 Running   5 (6h25m ago)   142d
-kube-system            kube-apiserver-master1.wang.org             1/1
+kube-system            kube-apiserver-master1.bowen.org             1/1
 Running   5 (6h25m ago)   142d
-kube-system            kube-controller-manager-master1.wang.org    1/1
+kube-system            kube-controller-manager-master1.bowen.org    1/1
 Running   5 (6h25m ago)   142d
 ......
 ```

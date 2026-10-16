@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 网络基础与 Flannel'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -14,7 +15,6 @@ syntax_highlight: true
 # 1 Kubernetes 网络
 
 ## 1.1 Kubernetes 网络机制
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/compute-storage-
 net/network-plugins/
@@ -62,10 +62,10 @@ Kube Proxy 功能
 
 ### 1.1.2 CNI
 
-```text
-https://www.cni.dev/
-https://github.com/containernetworking/cni
-```
+
+- <https://www.cni.dev/>
+- <https://github.com/containernetworking/cni>
+
 
 ![原 PDF 第 3 页插图](assets/Kubernetes网络插件/img-c4b3cf99b168facc.png)
 
@@ -103,10 +103,10 @@ CNI 网络插件可以分为三部分：
 
 main、meta、ipam (按照源代码中的存放目录可以看出)。
 
-```text
-https://github.com/containernetworking/plugins/tree/main/plugins
-https://www.cni.dev/plugins/current/
-```
+
+- <https://github.com/containernetworking/plugins/tree/main/plugins>
+- <https://www.cni.dev/plugins/current/>
+
 
 ![原 PDF 第 4 页插图](assets/Kubernetes网络插件/img-2340edaf63d08f51.png)
 
@@ -237,31 +237,24 @@ VETH实现更为强大的控制能力的解决方案，但是此方式对网络�
 范例：通过veth网卡在不同名称空间通信
 
 ![原 PDF 第 9 页插图](assets/Kubernetes网络插件/img-f9b1d23a256171fa.png)
-
-```text
+```bash
 #查看网络名称空间
 [root@node1 ~]#ip netns
-```
 
-```text
 #创建网络名称空间
 [root@node1 ~]#ip netns add ns1
 [root@node1 ~]#ip netns add ns2
 [root@node1 ~]#ip netns
 ns2
 ns1
-```
 
-```text
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 [root@node1 ~]#ip netns exec ns2 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-```
 
-```text
 #创建veth的网卡对,注意：名称不能使用关健字，比如a
 [root@node1 ~]#ip link add  veth-ns1 type veth peer name  veth-ns2
 [root@node1 ~]#ip a
@@ -272,9 +265,7 @@ link/ether ba:ca:48:ad:d9:c5 brd ff:ff:ff:ff:ff:ff
 8: veth-ns1@veth-ns2: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state
 DOWN group default qlen 1000
 link/ether d6:36:47:df:80:1e brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 [root@node1 ~]#ethtool -i veth-ns1
 driver: veth
 version: 1.0
@@ -286,15 +277,11 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 [root@node1 ~]#ethtool -S veth-ns1
 NIC statistics:
 peer_ifindex: 7
-```
 
-```text
 rx_queue_0_xdp_packets: 0
 rx_queue_0_xdp_bytes: 0
 rx_queue_0_drops: 0
@@ -315,9 +302,7 @@ rx_pp_recycle_cache_full: 0
 rx_pp_recycle_ring: 0
 rx_pp_recycle_ring_full: 0
 rx_pp_recycle_released_ref: 0
-```
 
-```text
 #将网卡对分别加入不同的名称空间
 [root@node1 ~]#ip link set veth-ns1 netns ns1
 [root@node1 ~]#ip a
@@ -325,26 +310,18 @@ rx_pp_recycle_released_ref: 0
 7: veth-ns2@if8: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
 link/ether ba:ca:48:ad:d9:c5 brd ff:ff:ff:ff:ff:ff link-netns ns1
-```
 
-```text
 [root@node1 ~]#ip netns list
 ns2
 ns1 (id: 0)
-```
 
-```text
 [root@node1 ~]#ip link set veth-ns2 netns ns2
 [root@node1 ~]#ip a
-```
 
-```text
 [root@node1 ~]#ip netns
 ns2 (id: 1)
 ns1 (id: 0)
-```
 
-```text
 #查看网络名称空间的网卡信息
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
@@ -352,32 +329,26 @@ link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 8: veth-ns1@if7: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
 link/ether d6:36:47:df:80:1e brd ff:ff:ff:ff:ff:ff link-netns ns2
-```
 
-```text
 [root@node1 ~]#ip netns exec ns2 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 7: veth-ns2@if8: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
 link/ether ba:ca:48:ad:d9:c5 brd ff:ff:ff:ff:ff:ff link-netns ns1
-```
 
-```text
 #启用网卡对
-[root@node1 ~]#ip netns exec ns1 ip link set veth-ns1 up
 ```
+```bash
+[root@node1 ~]#ip netns exec ns1 ip link set veth-ns1 up
 
-```text
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 8: veth-ns1@if7: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue
 state LOWERLAYERDOWN group default qlen 1000
 link/ether d6:36:47:df:80:1e brd ff:ff:ff:ff:ff:ff link-netns ns2
-```
 
-```text
 [root@node1 ~]#ip netns exec ns2 ip link set veth-ns2 up
 [root@node1 ~]#ip netns exec ns2 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
@@ -387,9 +358,7 @@ UP group default qlen 1000
 link/ether ba:ca:48:ad:d9:c5 brd ff:ff:ff:ff:ff:ff link-netns ns1
 inet6 fe80::b8ca:48ff:fead:d9c5/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #给网卡对配置IP
 [root@node1 ~]#ip netns exec ns1 ip a a 1.1.1.1/24 dev veth-ns1
 [root@node1 ~]#ip netns exec ns1 ip a
@@ -402,9 +371,7 @@ inet 1.1.1.1/24 scope global veth-ns1
 valid_lft forever preferred_lft forever
 inet6 fe80::d436:47ff:fedf:801e/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 [root@node1 ~]#ip netns exec ns2 ip a a 1.1.1.2/24 dev veth-ns2
 [root@node1 ~]#ip netns exec ns2 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
@@ -416,30 +383,22 @@ inet 1.1.1.2/24 scope global veth-ns2
 valid_lft forever preferred_lft forever
 inet6 fe80::b8ca:48ff:fead:d9c5/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #测试不同名称空间的网卡对相互访问
 [root@node1 ~]#ip netns exec ns1 ping =c1 1.1.1.2
 PING 1.1.1.2 (1.1.1.2) 56(84) bytes of data.
 64 bytes from 1.1.1.2: icmp_seq=1 ttl=64 time=0.055 ms
-```
 
-```text
 #默认无法访问自身
 [root@node1 ~]#ip netns exec ns1 ping -c1 1.1.1.1
 PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.
 --- 1.1.1.1 ping statistics ---
 1 packets transmitted, 0 received, 100% packet loss, time 3055ms
-```
 
-```text
 #查看原因lo网卡没有启用
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
-```
 
-```text
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 8: veth-ns1@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state
 UP group default qlen 1000
@@ -448,14 +407,10 @@ inet 1.1.1.1/24 scope global veth-ns1
 valid_lft forever preferred_lft forever
 inet6 fe80::d436:47ff:fedf:801e/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #启用lo网卡
 [root@node1 ~]#ip netns exec ns1 ip link set lo up
-```
 
-```text
 #再次访问成功
 [root@node1 ~]#ip netns exec ns1 ping -c1 1.1.1.1
 PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.
@@ -463,9 +418,7 @@ PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.
 --- 1.1.1.1 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 1025ms
 rtt min/avg/max/mdev = 0.027/0.029/0.031/0.002 ms
-```
 
-```text
 #清理环境：删除网络名称空间和veth网卡对
 [root@node1 ~]#ip netns delete ns1
 [root@node1 ~]#ip netns delete ns2
@@ -473,36 +426,25 @@ rtt min/avg/max/mdev = 0.027/0.029/0.031/0.002 ms
 ```
 
 范例:  veth 桥接
-
-```text
+```bash
 #创建网桥
 [root@node1 ~]#ip link add br0 type bridge
-```
 
-```text
 #创建虚拟网卡对veth
 [root@node1 ~]#ip link add veth1 type veth peer veth1-eth0
-```
 
-```text
 #veth桥接
 [root@node1 ~]#ip link set veth1-eth0 master br0
-```
 
-```text
 #查看桥接
 [root@node1 ~]#ip link show master br0
 9: veth1-eth0@veth1: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop master br0
 state DOWN mode DEFAULT group default qlen 1000
 link/ether 56:e8:ef:3f:8e:af brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 #veth桥接
 [root@node1 ~]#ip link set veth1 master br0
-```
 
-```text
 [root@node1 ~]#ip link show master br0
 9: veth1-eth0@veth1: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop master br0
 state DOWN mode DEFAULT group default qlen 1000
@@ -580,10 +522,10 @@ Pod间的网络通信，最为核心的功能。
 
 ### 1.5.2 常见的CNI解决方案
 
-```text
-https://github.com/containernetworking/cni
-https://kubernetes.io/zh-cn/docs/concepts/cluster-administration/addons/
-```
+
+- <https://github.com/containernetworking/cni>
+- <https://kubernetes.io/zh-cn/docs/concepts/cluster-administration/addons/>
+
 
 ![原 PDF 第 17 页插图](assets/Kubernetes网络插件/img-d8869dbd0b6af97c.png)
 
@@ -611,9 +553,9 @@ Canal
 
 cilium
 
-```text
-https://github.com/cilium/cilium
-```
+
+- <https://github.com/cilium/cilium>
+
 
 Cilium 是一款基于 eBPF 技术的 Kubernetes CNI 插件。
 
@@ -649,9 +591,9 @@ Weave Net
 
 **安装及配置的便捷性比较**
 
-```text
-https://itnext.io/
-```
+
+- <https://itnext.io/>
+
 
 ![原 PDF 第 19 页插图](assets/Kubernetes网络插件/img-2db9b421ca19f911.png)
 
@@ -717,21 +659,13 @@ Flannel(毛巾)是Kubernetes的一种兼容CNI的API的开源的网络插件,基
 
 支持Kubernetes、OpenShift、Cloud Foundry、Mesos、Amazon ECS、 Singularity和OpenSVC等平台
 
-```text
-2013年1月CoreOS发布CoreOS操作系统，后改名为Container Linux,是一个基于Linux内核的轻量级操
-作系统，为了计算机集群的基础设施建设而生，专注于自动化、轻松部署、安全、可靠及可扩缩性。作为一个
-操作系统，CoreOS 提供了在应用容器内部署应用所需要的基础功能环境以及一系列用于服务发现和配置共享
-的内建工具。
-2013年7月21日：Flannel 由 CoreOS 开发，作为一个用于容器网络的解决方案
-2013年7月30日：etcd 在 CoreOS 的开发过程中首次发布
-2015年：CoreOS 发布了自己的容器运行时 rkt
-2018年1月30日，RedHat宣布已经签署了收购CoreOS。
-2020年5月26日，CoreOS Container Linux达到其寿命的终结，不再接收更新。Fedora CoreOS是其正
-式继任者
-```
+
+2013年1月CoreOS发布CoreOS操作系统，后改名为Container Linux,是一个基于Linux内核的轻量级操作系统，为了计算机集群的基础设施建设而生，专注于自动化、轻松部署、安全、可靠及可扩缩性。作为一个操作系统，CoreOS 提供了在应用容器内部署应用所需要的基础功能环境以及一系列用于服务发现和配置共享的内建工具。2013年7月21日：Flannel 由 CoreOS 开发，作为一个用于容器网络的解决方案 2013年7月30日：etcd 在 CoreOS 的开发过程中首次发布
+
+2015年：CoreOS 发布了自己的容器运行时 rkt 2018年1月30日，RedHat宣布已经签署了收购CoreOS。2020年5月26日，CoreOS Container Linux达到其寿命的终结，不再接收更新。Fedora CoreOS是其正式继任者
+
 
 官网:
-
 ```text
 http://coreos.com/flannel/
 https://github.com/flannel-io/flannel
@@ -817,7 +751,6 @@ Pod之间的通信被用VXLAN的UDP协议封装后,向目标Pod所在的主机84
 官网Flannel 的网络通信
 
 注意:官网图中docker0是错误的,应该为cni0。
-
 ```text
 https://docs.openshift.com/container-
 platform/3.4/architecture/additional_concepts/flannel.html
@@ -830,49 +763,36 @@ kube-apiserver为了更方便后续 flannel与etcd 直接的交流，单独分�
 #### 2.2.1.3 范例：通过网卡桥接veth网卡对，实现不同名称空间网卡相互通信
 
 ![原 PDF 第 26 页插图](assets/Kubernetes网络插件/img-5e5af8efbc36f840.png)
-
-```text
+```bash
 #创建网络名称空间
 [root@node1 ~]#ip netns
 [root@node1 ~]#ip netns add ns1
 [root@node1 ~]#ip netns add ns2
 [root@node1 ~]#ip netns
-```
 
-```text
 ns2
 ns1
-```
 
-```text
 #创建网桥
 [root@node1 ~]#ip link add br0 type bridge
-```
 
-```text
 [root@node1 ~]#ip a show br0
 9: br0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen
 1000
 link/ether e2:6c:6b:49:ee:78 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 [root@node1 ~]#apt update && apt -y install bridge-utils
 [root@node1 ~]#brctl show
 bridge name bridge id       STP enabled interfaces
 br0     8000.e26c6b49ee78   no
-```
 
-```text
 #启用网桥
 [root@node1 ~]#ip link set br0 up
 [root@node1 ~]#ip a show br0
 9: br0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
 group default qlen 1000
 link/ether e2:6c:6b:49:ee:78 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 #创建veth网卡对
 [root@node1 ~]#ip link add  veth1 type veth peer name veth1-ns1
 [root@node1 ~]#ip link add  veth2 type veth peer name veth2-ns2
@@ -893,29 +813,21 @@ link/ether c6:a3:df:ea:2f:e3 brd ff:ff:ff:ff:ff:ff
 13: veth2@veth2-ns2: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN
 group default qlen 1000
 link/ether 9e:fd:86:30:9c:10 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 #将网卡对加入不同的名称空间
 [root@node1 ~]#ip link set veth1-ns1 netns ns1
 [root@node1 ~]#ip link set veth2-ns2 netns ns2
-```
 
-```text
 [root@node1 ~]#ip netns
 ns2 (id: 1)
 ns1 (id: 0)
-```
 
-```text
 #查看宿主机网络空间
 [root@node1 ~]#ip a
 .......
 9: br0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
 group default qlen 1000
-```
 
-```text
 link/ether e2:6c:6b:49:ee:78 brd ff:ff:ff:ff:ff:ff
 11: veth1@if10: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
@@ -923,9 +835,7 @@ link/ether a6:55:12:8c:96:c6 brd ff:ff:ff:ff:ff:ff link-netns ns1
 13: veth2@if12: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
 link/ether 9e:fd:86:30:9c:10 brd ff:ff:ff:ff:ff:ff link-netns ns2
-```
 
-```text
 #查看不同网络空间的网络信息
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
@@ -933,24 +843,18 @@ link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 10: veth1-ns1@if11: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
 link/ether 96:ab:a3:21:3d:c3 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-```
 
-```text
 [root@node1 ~]#ip netns exec ns2 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 12: veth2-ns2@if13: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
 default qlen 1000
 link/ether c6:a3:df:ea:2f:e3 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-```
 
-```text
 #启用不同网络空间的网卡对
 [root@node1 ~]#ip netns exec ns1 ip link set veth1-ns1 up
 [root@node1 ~]#ip netns exec ns2 ip link set veth2-ns2 up
-```
 
-```text
 #确认启用
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
@@ -964,15 +868,13 @@ link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 12: veth2-ns2@if13: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue
 state LOWERLAYERDOWN group default qlen 1000
 link/ether c6:a3:df:ea:2f:e3 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-```
 
-```text
 #给不同网络空间的网卡配置IP
+```
+```bash
 [root@node1 ~]#ip netns exec ns1 ip a a 1.1.1.1/24 dev veth1-ns1
 [root@node1 ~]#ip netns exec ns2 ip a a 1.1.1.2/24 dev veth2-ns2
-```
 
-```text
 #确认配置
 [root@node1 ~]#ip netns exec ns1 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
@@ -985,42 +887,30 @@ valid_lft forever preferred_lft forever
 [root@node1 ~]#ip netns exec ns2 ip a
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-```
 
-```text
 12: veth2-ns2@if13: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue
 state LOWERLAYERDOWN group default qlen 1000
 link/ether c6:a3:df:ea:2f:e3 brd ff:ff:ff:ff:ff:ff link-netnsid 0
 inet 1.1.1.2/24 scope global veth2-ns2
 valid_lft forever preferred_lft forever
-```
 
-```text
 #查看网桥
 [root@node1 ~]#brctl show
 bridge name bridge id       STP enabled interfaces
 br0     8000.e26c6b49ee78   no
 cni0        8000.eaff474161e4   no
-```
 
-```text
 #测试不同名空间的网络通信不成功
 [root@node1 ~]#ip netns exec ns1 ping -c1 1.1.1.2
 PING 1.1.1.2 (1.1.1.2) 56(84) bytes of data.
-```
 
-```text
 --- 1.1.1.2 ping statistics ---
 1 packets transmitted, 0 received, 100% packet loss, time 0ms
-```
 
-```text
 #将网卡桥接至br0
 [root@node1 ~]#ip link set veth1 master br0
 [root@node1 ~]#ip link set veth2 master br0
-```
 
-```text
 #查看桥接
 [root@node1 ~]#ip link show master br0
 10: veth1@veth1-ns1: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop master br0
@@ -1029,51 +919,35 @@ link/ether a6:55:12:8c:96:c6 brd ff:ff:ff:ff:ff:ff
 12: veth2@veth2-ns2: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop master br0
 state DOWN mode DEFAULT group default qlen 1000
 link/ether a6:55:12:8c:96:86 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 [root@node1 ~]#brctl show
 bridge name bridge id       STP enabled interfaces
 br0     8000.e26c6b49ee78   no      veth1
 veth2
 cni0        8000.eaff474161e4   no
-```
 
-```text
 #启用网卡对
 [root@node1 ~]#ip link set veth1 up
 [root@node1 ~]#ip link set veth2 up
-```
 
-```text
 #测试不同名称空间的网卡相互访问成功
 [root@node1 ~]#ip netns exec ns1 ping -c1 1.1.1.2
 PING 1.1.1.2 (1.1.1.2) 56(84) bytes of data.
 64 bytes from 1.1.1.2: icmp_seq=1 ttl=64 time=0.135 ms
-```
 
-```text
 --- 1.1.1.2 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.135/0.135/0.135/0.000 ms
-```
 
-```text
 [root@node1 ~]#ip netns exec ns2 ping -c1 1.1.1.1
 PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.
 64 bytes from 1.1.1.1: icmp_seq=1 ttl=64 time=0.087 ms
-```
 
-```text
 --- 1.1.1.1 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
-```
 
-```text
 rtt min/avg/max/mdev = 0.087/0.087/0.087/0.000 ms
-```
 
-```text
 #清理环境
 [root@node1 ~]#ip netns
 ns2 (id: 1)
@@ -1178,35 +1052,28 @@ Vxlan 报文中内层IP中Pod的IP，MAC层flannel.1的接口MAC
 
 ![原 PDF 第 36 页插图](assets/Kubernetes网络插件/img-cd06b95da150943f.png)
 
-```text
-https://www.cnblogs.com/bakari/p/11131268.html
-```
+
+- <https://www.cnblogs.com/bakari/p/11131268.html>
+
 
 ![原 PDF 第 36 页插图](assets/Kubernetes网络插件/img-906e5838016b6dc9.png)
-
-```text
+```bash
 #测试访问Pod
 [root@master1 ~]#kubectl  create deployment myapp --image  registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl run client-test-$RANDOM --image registry.cn-
-beijing.aliyuncs.com/registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-
+beijing.aliyuncs.com/registry.cn-beijing.aliyuncs.com/bowen/admin-
 box:v0.1:v0.1 --restart=Never --rm -it --command -- /bin/bash
 root@client-test-646 /# curl 10.244.2.108
 kubernetes pod-test v0.1!! ClientIP: 10.244.1.113, ServerName: myapp-684cc94c55-
 p5mdz, ServerIP: 10.244.2.10!
-```
 
-```text
 #在源节点的cni和flannel.1接口抓包都显示未封装为XVLAN之前的原始的Pod 10.244.2.108 通信的数
 据包
 [root@node1 ~]#tcpdump  -i cni0 -nn net 10.244.0.0/16
 [root@node1 ~]#tcpdump  -i cni0 -nn host 10.244.2.108 and tcp port 80
-```
 
-```text
 [root@node1 ~]#tcpdump  -i flannel.1 -nn host 10.244.2.108 and tcp port 80
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
 listening on cni0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
@@ -1235,9 +1102,7 @@ length 248: HTTP
 267, win 506, options [nop,nop,TS val 2210939317 ecr 3567778562], length 0
 19:19:09.532872 IP 10.244.2.108.80 > 10.244.1.113.54114: Flags [.], ack 78, win
 502, options [nop,nop,TS val 3567778563 ecr 2210939317], length 0
-```
 
-```text
 #在源节点物理网卡上抓包显示为VXLAN协议,默认使用8472/UDP
 [root@node1 ~]#tcpdump  -i eth0 -nn host 10.0.0.202 and udp port 8472
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
@@ -1266,9 +1131,7 @@ IP 10.244.2.108.80 > 10.244.1.113.37374: Flags [.], ack 77, win 502, options
 [nop,nop,TS val 3568210364 ecr 2211371119], length 0
 19:26:21.336662 IP 10.0.0.202.37513 > 10.0.0.201.8472: OTV, flags [I] (0x08),
 overlay 0, instance 1
-```
 
-```text
 IP 10.244.2.108.80 > 10.244.1.113.37374: Flags [P.], seq 1:18, ack 77, win 502,
 options [nop,nop,TS val 3568210365 ecr 2211371119], length 17: HTTP: HTTP/1.0
 200 OK
@@ -1288,9 +1151,7 @@ options [nop,nop,TS val 2211371121 ecr 3568210365], length 0
 overlay 0, instance 1
 IP 10.244.2.108.80 > 10.244.1.113.37374: Flags [.], ack 78, win 502, options
 [nop,nop,TS val 3568210365 ecr 2211371121], length 0
-```
 
-```text
 #查看node1的路由表,发现只要到达10.244.2.0/24网段的IP,需要走flannel.1接口下一跳到达
 10.244.2.0网关
 [root@node1 ~]#route -n
@@ -1306,22 +1167,18 @@ flannel.1
 10.244.3.0      10.244.3.0      255.255.255.0   UG    0      0        0
 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #从节点node1访问node2的flannel.1接口
+```
+```bash
 [root@node1 ~]#ping 10.244.2.0 -c1
 PING 10.244.2.0 (10.244.2.0) 56(84) bytes of data.
 64 bytes from 10.244.2.0: icmp_seq=1 ttl=64 time=1.05 ms
-```
 
-```text
 --- 10.244.2.0 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 1.054/1.054/1.054/0.000 ms
-```
 
-```text
 #在节点node2上抓包可以看到下面显示
 [root@node2 ~]#tcpdump  -i eth0 -nn  port 8472
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
@@ -1332,25 +1189,17 @@ IP 10.244.1.0 > 10.244.2.0: ICMP echo request, id 7, seq 1, length 64
 15:36:22.062690 IP 10.0.0.202.53977 > 10.0.0.201.8472: OTV, flags [I] (0x08),
 overlay 0, instance 1
 IP 10.244.2.0 > 10.244.1.0: ICMP echo reply, id 7, seq 1, length 64
-```
 
-```text
 #从节点node1访问node2的cni0接口
-```
 
-```text
 [root@node1 ~]#ping 10.244.2.1 -c1
 PING 10.244.2.1 (10.244.2.1) 56(84) bytes of data.
 64 bytes from 10.244.2.1: icmp_seq=1 ttl=64 time=0.692 ms
-```
 
-```text
 --- 10.244.2.1 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.692/0.692/0.692/0.000 ms
-```
 
-```text
 #在节点node2上抓包可以看到下面显示
 [root@node2 ~]#tcpdump  -i eth0 -nn  port 8472
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
@@ -1361,35 +1210,25 @@ IP 10.244.1.0 > 10.244.2.1: ICMP echo request, id 9, seq 1, length 64
 15:38:33.673816 IP 10.0.0.202.60718 > 10.0.0.201.8472: OTV, flags [I] (0x08),
 overlay 0, instance 1
 IP 10.244.2.1 > 10.244.1.0: ICMP echo reply, id 9, seq 1, length 64
-```
 
-```text
 #从节点node1访问node2的flannel.1接口接口
 [root@node1 ~]#ping 10.244.2.0 -c1
 PING 10.244.2.0 (10.244.2.0) 56(84) bytes of data.
 64 bytes from 10.244.2.0: icmp_seq=1 ttl=64 time=0.626 ms
-```
 
-```text
 --- 10.244.2.0 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.626/0.626/0.626/0.000 ms
-```
 
-```text
 #节点node1访问node2的cni0接口
 [root@node1 ~]#ping 10.244.2.1 -c1
 PING 10.244.2.1 (10.244.2.1) 56(84) bytes of data.
 64 bytes from 10.244.2.1: icmp_seq=1 ttl=64 time=1.14 ms
-```
 
-```text
 --- 10.244.2.1 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 1.141/1.141/1.141/0.000 ms
-```
 
-```text
 #在节点node2上的flannel.1接口抓包可以看到下面显示
 [root@node2 ~]#tcpdump  -i flannel.1 -nn
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
@@ -1408,18 +1247,13 @@ length 64
 ##### 2.2.2.1.4 VXLAN 配置
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#kubectl get cm -n kube-flannel
 NAME               DATA   AGE
-```
 
-```text
 kube-flannel-cfg   2      56d
 kube-root-ca.crt   1      56d
-```
 
-```text
 [root@master1 ~]#kubectl get cm kube-flannel-cfg -o yaml -n kube-flannel
 apiVersion: v1
 data:
@@ -1473,21 +1307,15 @@ name: kube-flannel-cfg
 namespace: kube-flannel
 resourceVersion: "1119278"
 uid: f8cb1488-41bf-46dc-8492-24f361295f61
-```
 
-```text
 [root@master1 ~]#kubectl describe  cm kube-flannel-cfg -n kube-system
-```
 
-```text
 Name:         kube-flannel-cfg
 Namespace:    kube-system
 Labels:       app=flannel
 tier=node
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 net-conf.json:
@@ -1498,9 +1326,7 @@ net-conf.json:
 "Type": "vxlan"  #默认模式
 }
 }
-```
 
-```text
 cni-conf.json:
 ----
 {
@@ -1522,18 +1348,12 @@ cni-conf.json:
 }
 ]
 }
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #worker节点的路由表
 [root@node1 ~]#route -n
 内核 IP 路由表
@@ -1547,13 +1367,9 @@ flannel.1
 flannel.1
 10.244.3.0      10.244.3.0      255.255.255.0   UG    0      0        0
 flannel.1
-```
 
-```text
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node2 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -1567,9 +1383,7 @@ flannel.1
 10.244.3.0      10.244.3.0      255.255.255.0   UG    0      0        0
 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node3 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -1621,43 +1435,40 @@ cni0直接借助于内核中的路由表，通过宿主机的网卡交给同网�
 
 ### 2.2.3 Flannel 的网络配置和相关文件
 
-```text
-https://github.com/flannel-io/flannel/blob/master/Documentation/configuration.md
-```
+
+- <https://github.com/flannel-io/flannel/blob/master/Documentation/configuration.md>
+
 
 范例：查看Flannel地址和一个节点最多的Pod数量
-
-```text
-[root@master1 ~]#kubectl get nodes master1.wang.org -o yaml|grep pod
+```bash
+[root@master1 ~]#kubectl get nodes master1.bowen.org -o yaml|grep pod
 podCIDR: 10.244.0.0/24
 podCIDRs:
 pods: "110"    #一个节点上可分配的Pod最大数量
 pods: "110"
-```
 
-```text
-[root@master1 ~]#kubectl get nodes node1.wang.org -o yaml|grep CIDR
+[root@master1 ~]#kubectl get nodes node1.bowen.org -o yaml|grep CIDR
 podCIDR: 10.244.1.0/24
 podCIDRs:
-[root@master1 ~]#kubectl get nodes node2.wang.org -o yaml|grep CIDR
+[root@master1 ~]#kubectl get nodes node2.bowen.org -o yaml|grep CIDR
 podCIDR: 10.244.2.0/24
 podCIDRs:
-[root@master1 ~]#kubectl get nodes node3.wang.org -o yaml|grep CIDR
+[root@master1 ~]#kubectl get nodes node3.bowen.org -o yaml|grep CIDR
 podCIDR: 10.244.3.0/24
 podCIDRs:
 ```
 
 范例: 创建flannel的yaml文件
-
-```text
+```yaml
 [root@master1 ~]#wget https://github.com/flannel-
 io/flannel/releases/latest/download/kube-flannel.yml
 [root@master1 ~]#wget https://raw.githubusercontent.com/flannel-
 io/flannel/master/Documentation/kube-flannel.yml
+
+[root@master1 ~]#cat kube-flannel.yml
 ```
 
-```text
-[root@master1 ~]#cat kube-flannel.yml
+```yaml
 ---
 kind: Namespace
 apiVersion: v1
@@ -1665,6 +1476,9 @@ metadata:
 name: kube-flannel
 labels:
 pod-security.kubernetes.io/enforce: privileged
+```
+
+```yaml
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1690,6 +1504,9 @@ resources:
 - nodes/status
 verbs:
 - patch
+```
+
+```yaml
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1703,15 +1520,19 @@ subjects:
 - kind: ServiceAccount
 name: flannel
 namespace: kube-flannel
+```
+
+```yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-```
 
-```text
 name: flannel
 namespace: kube-flannel
+```
+
+```yaml
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -1749,6 +1570,9 @@ net-conf.json: |
 "Type": "vxlan"
 }
 }
+```
+
+```yaml
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -1768,9 +1592,7 @@ labels:
 tier: node
 app: flannel
 spec:
-```
 
-```text
 affinity:
 nodeAffinity:
 requiredDuringSchedulingIgnoredDuringExecution:
@@ -1829,9 +1651,7 @@ resources:
 requests:
 cpu: "100m"
 memory: "50Mi"
-```
 
-```text
 limits:
 cpu: "100m"
 memory: "50Mi"
@@ -1875,30 +1695,23 @@ hostPath:
 path: /run/xtables.lock
 type: FileOrCreate
 ```
-
-```text
+```yaml
 [root@master1 ~]#kubectl apply -f https://raw.githubusercontent.com/flannel-
 io/flannel/master/Documentation/kube-flannel.yml
-```
 
-```text
 #自动生成configmap
 [root@master1 ~]#kubectl get cm -n kube-flannel
 NAME               DATA   AGE
 kube-flannel-cfg   2      44d
 kube-root-ca.crt   1      44d
-```
 
-```text
 [root@master1 ~]#kubectl get cm -n kube-flannel kube-flannel-cfg -o yaml
 apiVersion: v1
 data:
 cni-conf.json: |
 {
 "name": "cbr0",
-```
 
-```text
 "cniVersion": "0.3.1",
 "plugins": [
 {
@@ -1949,8 +1762,7 @@ uid: 4432b601-013f-43e5-a529-ded5f928f43d
 ```
 
 范例; Flannel相关文件
-
-```text
+```bash
 [root@master1 ~]#find / -name "flannel"
 /opt/cni/bin/flannel
 /run/flannel
@@ -1958,24 +1770,18 @@ uid: 4432b601-013f-43e5-a529-ded5f928f43d
 5aaab157f/merged/run/flannel
 /var/lib/docker/overlay2/652019cbd604cccda3223a13f3dded3e4cd7419fe5150fffc83df03
 5aaab157f/diff/run/flannel
-```
 
-```text
 /var/lib/docker/overlay2/46fc2daf9f617d15f5ccba070969836c6f56e3dd989a3e762c025f3
 4a022a423/diff/run/flannel
 /var/lib/docker/overlay2/a106dc111c3cc4048f4fd1a5ca17a9b79543f44e56411db8692400c
 69462424d/diff/flannel
 /var/lib/cni/flannel
-```
 
-```text
 #相关二进制程序
 [root@master1 ~]#ls /opt/cni/bin/
 bandwidth  dhcp   firewall  host-device  ipvlan    macvlan  ptp  static  vlan
 bridge     dummy  flannel   host-local   loopback  portmap  sbr  tuning  vrf
-```
 
-```text
 [root@master1 ~]#file /opt/cni/bin/flannel
 /opt/cni/bin/flannel: ELF 64-bit LSB executable, x86-64, version 1 (SYSV),
 statically linked, Go BuildID=TA3IAC4IGjof2nNGZbNc/J3CYt8XKF-ZIjcZE6v69/c9VYx4-
@@ -1990,18 +1796,14 @@ FLANNEL_NETWORK=10.244.0.0/16
 FLANNEL_SUBNET=10.244.0.1/24
 FLANNEL_MTU=1450
 FLANNEL_IPMASQ=true
-```
 
-```text
 #/var/lib/cni/flannel/目录下文件是由Pod生成，Pod删除后也会自动删除对应的文件
 [root@master1 ~]#file /var/lib/cni/flannel/*
 /var/lib/cni/flannel/0973661b27d16e0a174ab88e9f13fba2ffb0ec12e9605baec686362c050
 71deb: JSON data
 /var/lib/cni/flannel/17e3b2a86015534d935006b9eca3a495764552f049ff703e54375164db3
 5c91c: JSON data
-```
 
-```text
 [root@master1 ~]#cat
 /var/lib/cni/flannel/0973661b27d16e0a174ab88e9f13fba2ffb0ec12e9605baec686362c050
 71deb
@@ -2016,45 +1818,34 @@ local"},"isDefaultGateway":true,"isGateway":true,"mtu":1450,"name":"cbr0","type"
 [[{"subnet":"10.244.0.0/24"}]],"routes":[{"dst":"10.244.0.0/16"}],"type":"host-
 local"},"isDefaultGateway":true,"isGateway":true,"mtu":1450,"name":"cbr0","type"
 :"bridge"}[root@master1 ~]#
-```
 
-```text
 #每个节点的网络配置
 [root@node1 ~]#cat /run/flannel/subnet.env
 FLANNEL_NETWORK=10.244.0.0/16
 FLANNEL_SUBNET=10.244.1.1/24
 FLANNEL_MTU=1450
 FLANNEL_IPMASQ=true
-```
 
-```text
 [root@node2 ~]#cat /run/flannel/subnet.env
 FLANNEL_NETWORK=10.244.0.0/16
-```
 
-```text
 FLANNEL_SUBNET=10.244.2.1/24
 FLANNEL_MTU=1450
 FLANNEL_IPMASQ=true
-```
 
-```text
 [root@node3 ~]#cat /run/flannel/subnet.env
 FLANNEL_NETWORK=10.244.0.0/16
 FLANNEL_SUBNET=10.244.3.1/24
 FLANNEL_MTU=1450
 FLANNEL_IPMASQ=true
-```
 
-```text
 #所有节点打开8472/UDP端口
 [root@master1 ~]#ss -ntul|grep 8472
 udp    UNCONN  0       0              0.0.0.0:8472         0.0.0.0:*
 ```
 
 范例: 查看集群节点的网络分配
-
-```text
+```yaml
 #查看静态Pod的配置
 [root@master1 ~]#cat /etc/kubernetes/manifests/kube-controller-manager.yaml
 apiVersion: v1
@@ -2092,21 +1883,16 @@ image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-
 manager:v1.22.1
 imagePullPolicy: IfNotPresent
 livenessProbe:
-```
 
-```text
 #配置解析：
 #allocate-node-cidrs属性表示，每增加一个新的节点，都从cluster-cidr子网中切分一个新的子网网
 段分配给对应的节点上。
-```
 
-```text
 #这些相关的网络状态属性信息，会经过 kube-apiserver 存储到etcd中。
 ```
 
 kubelet在/etc/cni/net.d目录查找cni json配置文件，基于type属性到/opt/cni/bin中查找相关插件的二进制文件，然后调用相应插件设置网络。
-
-```text
+```bash
 [root@master1 ~]#cat /etc/cni/net.d/10-flannel.conflist
 {
 "name": "cbr0",
@@ -2130,86 +1916,67 @@ kubelet在/etc/cni/net.d目录查找cni json配置文件，基于type属性到/o
 ```
 
 范例:  flannel状态
-
-```text
+```bash
 #k8s节点上所有节点都运行了flannel容器
 [root@master1 ~]#kubectl get pod -o wide -n kube-system  |grep flannel
 kube-flannel-ds-4q5zk                        1/1     Running   3 (21h ago)
-4d21h   10.0.0.105    node2.wang.org     <none>           <none>
+4d21h   10.0.0.105    node2.bowen.org     <none>           <none>
 kube-flannel-ds-5tsz8                        1/1     Running   5 (2m6s ago)
-4d21h   10.0.0.102    master2.wang.org   <none>           <none>
+4d21h   10.0.0.102    master2.bowen.org   <none>           <none>
 kube-flannel-ds-bd6nx                        1/1     Running   3 (21h ago)
-4d21h   10.0.0.103    master3.wang.org   <none>           <none>
+4d21h   10.0.0.103    master3.bowen.org   <none>           <none>
 kube-flannel-ds-csjt6                        1/1     Running   3 (21h ago)
-4d21h   10.0.0.101    master1.wang.org   <none>           <none>
+4d21h   10.0.0.101    master1.bowen.org   <none>           <none>
 kube-flannel-ds-snfbt                        1/1     Running   4 (21h ago)
-4d21h   10.0.0.106    node3.wang.org     <none>           <none>
+4d21h   10.0.0.106    node3.bowen.org     <none>           <none>
 kube-flannel-ds-xx7hc                        1/1     Running   4 (21h ago)
-4d21h   10.0.0.104    node1.wang.org     <none>           <none>
-```
+4d21h   10.0.0.104    node1.bowen.org     <none>           <none>
 
-```text
 [root@node1 ~]#ps aux|grep flanneld
 root        3966  0.0  0.4 1340616 35852 ?       Ssl  09:20   0:29
 /opt/bin/flanneld --ip-masq --kube-subnet-mgr
 root      701127  0.0  0.0   9716  2356 pts/0    S+   17:35   0:00 grep --
 color=auto flanneld
-```
 
-```text
 #每个节点上都生成了一个网卡 flannel.1,并且每个节点都有自已的独立网段
 #注意：flannel.1 后面的.1 就是 vxlan的网络标识。便于隧道正常通信。
 [root@master1 ~]#ip a show  flannel.1
 4: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state
 UNKNOWN group default
-```
 
-```text
 link/ether de:95:94:85:ad:12 brd ff:ff:ff:ff:ff:ff
 inet10.244.0.0/32 scope global flannel.1
-```
 
-```text
 [root@master2 ~]#ip a show  flannel.1
 4: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state
 UNKNOWN group default
 link/ether 56:3c:fc:74:1c:57 brd ff:ff:ff:ff:ff:ff
 inet10.244.5.0/32 scope global flannel.1
-```
 
-```text
 [root@master3 ~]#ip a show  flannel.1
 4: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state
 UNKNOWN group default
 link/ether 96:bd:44:a3:41:b4 brd ff:ff:ff:ff:ff:ff
 inet10.244.4.0/32 scope global flannel.1
-```
 
-```text
 [root@node1 ~]#ip a show  flannel.1
 4: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state
 UNKNOWN group default
 link/ether 06:3b:df:68:3d:67 brd ff:ff:ff:ff:ff:ff
 inet10.244.1.0/32 scope global flannel.1
-```
 
-```text
 [root@node2 ~]#ip a show  flannel.1
 4: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state
 UNKNOWN group default
 link/ether 46:1e:de:bf:3b:f7 brd ff:ff:ff:ff:ff:ff
 inet10.244.2.0/32 scope global flannel.1
-```
 
-```text
 [root@node3 ~]#ip a show  flannel.1
 4: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state
 UNKNOWN group default
 link/ether 2a:d2:bb:0b:d8:5c brd ff:ff:ff:ff:ff:ff
 inet10.244.3.0/32 scope global flannel.1
-```
 
-```text
 [root@master1 ~]#ip route
 default via 10.0.0.2 dev eth0 proto static
 10.0.0.0/24 dev eth0 proto kernel scope link src 10.0.0.101
@@ -2223,8 +1990,7 @@ default via 10.0.0.2 dev eth0 proto static
 ```
 
 范例：默认的网络配置
-
-```text
+```bash
 [root@master1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2236,9 +2002,7 @@ valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP
 group default qlen 1000
 link/ether 00:0c:29:36:5e:a3 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 altname enp2s1
 altname ens33
 inet 10.0.0.200/24 brd 10.0.0.255 scope global eth0
@@ -2269,9 +2033,7 @@ master cni0 state UP group default
 link/ether 5a:ac:a7:a3:9f:1d brd ff:ff:ff:ff:ff:ff link-netnsid 0
 inet6 fe80::58ac:a7ff:fea3:9f1d/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 [root@master1 ~]#route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -2285,9 +2047,7 @@ flannel.1
 10.244.3.0      10.244.3.0      255.255.255.0   UG    0      0        0
 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2300,9 +2060,7 @@ valid_lft forever preferred_lft forever
 group default qlen 1000
 link/ether 00:0c:29:a2:c6:a1 brd ff:ff:ff:ff:ff:ff
 altname enp2s1
-```
 
-```text
 altname ens33
 inet 10.0.0.201/24 brd 10.0.0.255 scope global eth0
 valid_lft forever preferred_lft forever
@@ -2340,8 +2098,7 @@ link/ether 72:ac:92:0e:22:17 brd ff:ff:ff:ff:ff:ff link-netnsid 3
 inet6 fe80::541d:68ff:fe7c:4a26/64 scope link
 valid_lft forever preferred_lft forever
 ```
-
-```text
+```bash
 [root@node1 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2355,18 +2112,14 @@ flannel.1
 10.244.3.0      10.244.3.0      255.255.255.0   UG    0      0        0
 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node2 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 inet 127.0.0.1/8 scope host lo
 valid_lft forever preferred_lft forever
-```
 
-```text
 inet6 ::1/128 scope host
 valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP
@@ -2397,9 +2150,7 @@ inet 10.244.2.1/24 brd 10.244.2.255 scope global cni0
 valid_lft forever preferred_lft forever
 inet6 fe80::e8ff:47ff:fe41:61e4/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 [root@node2 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2413,9 +2164,7 @@ flannel.1
 10.244.3.0      10.244.3.0      255.255.255.0   UG    0      0        0
 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node3 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2428,9 +2177,7 @@ valid_lft forever preferred_lft forever
 group default qlen 1000
 link/ether 00:0c:29:5d:31:24 brd ff:ff:ff:ff:ff:ff
 altname enp2s1
-```
 
-```text
 altname ens33
 inet 10.0.0.203/24 brd 10.0.0.255 scope global eth0
 valid_lft forever preferred_lft forever
@@ -2456,8 +2203,7 @@ valid_lft forever preferred_lft forever
 inet6 fe80::c473:3eff:fef0:6d72/64 scope link
 valid_lft forever preferred_lft forever
 ```
-
-```text
+```bash
 [root@node3 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2471,38 +2217,32 @@ flannel.1
 flannel.1
 10.244.3.0      0.0.0.0         255.255.255.0   U     0      0        0 cni0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #创建Pod,查看Pod的默认网络配置
 [root@master1 ~]#kubectl  create deployment myapp --image  registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 deployment.apps/myapp created
 [root@master1 ~]#kubectl  get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 myapp-684cc94c55-2qz5x   1/1     Running   0          3s    10.244.1.5
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 myapp-684cc94c55-p5mdz   1/1     Running   0          3s    10.244.2.10
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-684cc94c55-w8pg2   1/1     Running   0          3s    10.244.3.3
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 [root@master1 ~]#kubectl  exec myapp-684cc94c55-2qz5x  -- ip route
 default via 10.244.1.1 dev eth0
 10.244.0.0/16 via 10.244.1.1 dev eth0
 10.244.1.0/24 dev eth0 proto kernel scope link src 10.244.1.5
 [root@master1 ~]#kubectl  exec myapp-684cc94c55-2qz5x  -- route -n
 Kernel IP routing table
-```
 
-```text
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.244.1.1      0.0.0.0         UG    0      0        0 eth0
 10.244.0.0      10.244.1.1      255.255.0.0     UG    0      0        0 eth0
 10.244.1.0      0.0.0.0         255.255.255.0   U     0      0        0 eth0
-```
 
-```text
 [root@master1 ~]#kubectl  exec myapp-684cc94c55-p5mdz  -- ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2520,9 +2260,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.244.2.1      0.0.0.0         UG    0      0        0 eth0
 10.244.0.0      10.244.2.1      255.255.0.0     UG    0      0        0 eth0
 10.244.2.0      0.0.0.0         255.255.255.0   U     0      0        0 eth0
-```
 
-```text
 [root@master1 ~]#kubectl  exec myapp-684cc94c55-w8pg2  -- ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2540,18 +2278,14 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.244.3.1      0.0.0.0         UG    0      0        0 eth0
 10.244.0.0      10.244.3.1      255.255.0.0     UG    0      0        0 eth0
 10.244.3.0      0.0.0.0         255.255.255.0   U     0      0        0 eth0
-```
 
-```text
 #查看MAC
 [root@master1 ~]#ip neigh show dev flannel.1
 10.244.1.0 lladdr de:10:30:ea:a0:4b PERMANENT #de:10:30:ea:a0:4b是集群节点上的
 flannel.1网卡10.244.1.0的mac
 10.244.3.0 lladdr 32:7a:85:b3:8d:cf PERMANENT
 10.244.2.0 lladdr 86:85:f6:1a:c7:31 PERMANENT
-```
 
-```text
 [root@master1 ~]#arp -n
 地址                     类型    硬件地址            标志  Mask            接口
 10.244.1.0               ether   de:10:30:ea:a0:4b   CM
@@ -2559,9 +2293,7 @@ flannel.1
 10.0.0.203               ether   00:0c:29:92:df:f7   C                     eth0
 10.244.3.0               ether   32:7a:85:b3:8d:cf   CM
 flannel.1
-```
 
-```text
 10.244.2.0               ether   86:85:f6:1a:c7:31   CM
 flannel.1
 10.0.0.201               ether   00:0c:29:ad:94:b5   C                     eth0
@@ -2581,17 +2313,14 @@ flannel.1
 ### 2.3.1 Flannel 部署和默认环境
 
 flannel 默认会在每个节点上创建cni0的网桥,并将该节点上的每个Pod对应生成对应的vethXXXX网卡并桥接至cni0。
-
-```text
+```yaml
 #要接入到虚拟网络的功能，在部署flannel的时候，有一个配置文件，在这个配置文件中的configmap中就
 定义了虚拟网络的接入功能。
 [root@master1 ~]#wget https://github.com/flannel-
 io/flannel/releases/latest/download/kube-flannel.yml
 [root@master1 ~]#wget https://raw.githubusercontent.com/flannel-
 io/flannel/master/Documentation/kube-flannel.yml
-```
 
-```text
 [root@master1 ~]#grep ^kind kube-flannel.yml
 kind: Namespace
 kind: ServiceAccount
@@ -2599,9 +2328,7 @@ kind: ClusterRole
 kind: ClusterRoleBinding
 kind: ConfigMap
 kind: DaemonSet
-```
 
-```text
 [root@master1 ~]#cat kube-flannel.yml
 .....
 apiVersion: v1
@@ -2621,9 +2348,7 @@ cni-conf.json: |                      #cni插件的功能配置
 {
 "type": "portmap",            #来实现端口映射的功能
 "capabilities": {
-```
 
-```text
 "portMappings": true
 }
 }
@@ -2645,15 +2370,12 @@ tier: node
 name: kube-flannel-cfg
 namespace: kube-flannel
 ......
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  kube-flannel.yml
 ```
 
 **每个节点上都有一个路由表**
-
-```text
+```bash
 [root@node1 ~]#route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -2666,9 +2388,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.244.4.0     10.244.4.0      255.255.255.0   UG    0      0        0 flannel.1
 10.244.5.0     10.244.5.0      255.255.255.0   UG    0      0        0 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node2 ~]#route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -2681,17 +2401,13 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.244.4.0     10.244.4.0      255.255.255.0   UG    0      0        0 flannel.1
 10.244.5.0     10.244.5.0      255.255.255.0   UG    0      0        0 flannel.1
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node3 ~]#route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.0.0.2        0.0.0.0         UG    0      0        0 eth0
 10.0.0.0        0.0.0.0         255.255.255.0   U     0      0        0 eth0
-```
 
-```text
 10.244.0.0     10.244.0.0      255.255.255.0   UG    0      0        0 flannel.1
 10.244.1.0     10.244.1.0      255.255.255.0   UG    0      0        0 flannel.1
 10.244.2.0     10.244.2.0      255.255.255.0   UG    0      0        0 flannel.1
@@ -2708,17 +2424,14 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 **flannel.1子网内处理**
 
 当flannel.1接收到子网请求的时候，首先有flanneld进行数据包的解封。会从etcd中获取相关的网络细节配置。为了避免每次请求都去etcd中获取相关的数据信息，所以会在第一次查询后，会在本地生成一个历史的查询记录。
-
-```text
+```bash
 [root@node1 ~]#ip neigh | grep flannel
 10.244.0.0 dev flannel.1 lladdr de:95:94:85:ad:12 PERMANENT
 10.244.5.0 dev flannel.1 lladdr 56:3c:fc:74:1c:57 PERMANENT
 10.244.3.0 dev flannel.1 lladdr 2a:d2:bb:0b:d8:5c PERMANENT
 10.244.4.0 dev flannel.1 lladdr 96:bd:44:a3:41:b4 PERMANENT
 10.244.2.0 dev flannel.1 lladdr 46:1e:de:bf:3b:f7 PERMANENT
-```
 
-```text
 #注意：这些条目记录，都是由flanneld来进行自动维护的，一旦节点丢弃或者关闭后，这里面的信息会自动
 更新的。
 ```
@@ -2726,8 +2439,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 flannel的转发逻辑，对于节点上的数据包转发，都保存在内核的FDB(Forwarding Database entry)的二层转发表中。
 
 如果涉及到转发的会有相关的目标如果不涉及转发的会直接有对应的记录信息。
-
-```text
+```bash
 [root@node1 ~]#bridge fdb show  flannel.1 |grep flannel.1
 46:1e:de:bf:3b:f7 dev flannel.1 dst 10.0.0.105 self permanent
 06:2f:17:8e:f5:f9 dev flannel.1 dst 10.0.0.103 self permanent
@@ -2741,16 +2453,12 @@ d6:50:76:40:6e:dc dev flannel.1 dst 10.0.0.103 self permanent
 de:95:94:85:ad:12 dev flannel.1 dst 10.0.0.101 self permanent
 56:3c:fc:74:1c:57 dev flannel.1 dst 10.0.0.102 self permanent
 #前面的mac地址是本地对应dst ip地址的信息。
-```
 
-```text
 [root@node1 ~]#bridge fdb show dev flannel.1
 2e:f5:17:b6:9f:7b dst 10.0.0.200 self permanent
 d2:dd:17:e8:24:98 dst 10.0.0.200 self permanent
 22:cf:41:f7:05:92 dst 10.0.0.203 self permanent
-```
 
-```text
 da:bd:d6:48:b6:99 dst 10.0.0.202 self permanent
 0a:5f:07:60:60:88 dst 10.0.0.202 self permanent
 a6:30:69:72:76:92 dst 10.0.0.202 self permanent
@@ -2758,25 +2466,20 @@ a6:30:69:72:76:92 dst 10.0.0.202 self permanent
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#kubectl create deployment pod-test --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                                      READY   STATUS    RESTARTS       AGE
 IP            NODE             NOMINATED NODE   READINESS GATES
 pod-test-5b8795b9bc-8k6sd                 1/1     Running   0              85m
-10.244.1.18   node1.wang.org   <none>           <none>
+10.244.1.18   node1.bowen.org   <none>           <none>
 pod-test-5b8795b9bc-thx5k                 1/1     Running   0              85m
-10.244.3.11   node3.wang.org   <none>           <none>
+10.244.3.11   node3.bowen.org   <none>           <none>
 pod-test-5b8795b9bc-tmctw                 1/1     Running   0              85m
-10.244.2.15   node2.wang.org   <none>           <none>
-```
+10.244.2.15   node2.bowen.org   <none>           <none>
 
-```text
 #从node1的Pod访问node2中的Pod
 [root@master1 ~]#kubectl exec -it pod-test-5b8795b9bc-8k6sd  -- sh
 [root@pod-test-5b8795b9bc-8k6sd /]# route -n
@@ -2785,32 +2488,24 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.244.1.1      0.0.0.0         UG    0      0        0 eth0
 10.244.0.0      10.244.1.1      255.255.0.0     UG    0      0        0 eth0
 10.244.1.0      0.0.0.0         255.255.255.0   U     0      0        0 eth0
-```
 
-```text
 [root@pod-test-5b8795b9bc-8k6sd /]# ping -c1 10.244.2.15
 PING 10.244.2.15 (10.244.2.15): 56 data bytes
 64 bytes from 10.244.2.15: seq=0 ttl=62 time=0.914 ms
-```
 
-```text
 --- 10.244.2.15 ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.914/0.914/0.914 ms
 [root@pod-test-5b8795b9bc-8k6sd /]# curl  10.244.2.15
 kubernetes pod-test v0.1!! ClientIP: 10.244.1.18, ServerName: pod-test-
 5b8795b9bc-tmctw, ServerIP: 10.244.2.15!
-```
 
-```text
 #网桥信息
 [root@node1 ~]#brctl show
 bridge name bridge id       STP enabled interfaces
 cni0        8000.32bd6cf9242c   no      veth6977fe6c
 docker0     8000.02422420184b   no
-```
 
-```text
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2822,9 +2517,7 @@ valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP
 group default qlen 1000
 link/ether 00:0c:29:2b:7d:2b brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 inet 10.0.0.104/24 brd 10.0.0.255 scope global eth0
 valid_lft forever preferred_lft forever
 inet6 fe80::20c:29ff:fe2b:7d2b/64 scope link
@@ -2854,18 +2547,14 @@ link/ether 46:ce:48:4f:e8:68 brd ff:ff:ff:ff:ff:ff link-netns cni-1c837b3d-
 32e7-48dc-fbac-10f95d2ae1df
 inet6 fe80::44ce:48ff:fe4f:e868/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #查看桥接到cni0网卡
 [root@node1 ~]#ip link show master cni0
 6: vethd995d92f@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue
 master cni0 state UP group default
 link/ether 46:ce:48:4f:e8:68 brd ff:ff:ff:ff:ff:ff link-netns cni-1c837b3d-
 32e7-48dc-fbac-10f95d2ae1df
-```
 
-```text
 #查看网卡类型
 [root@node1 ~]#ethtool -i flannel.1
 driver: vxlan
@@ -2879,8 +2568,7 @@ supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
 ```
-
-```text
+```bash
 [root@node1 ~]#ethtool -i cni0
 driver: bridge
 version: 2.3
@@ -2888,16 +2576,12 @@ firmware-version: N/A
 expansion-rom-version:
 bus-info: N/A
 supports-statistics: no
-```
 
-```text
 supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 [root@node1 ~]#ethtool -i vethd995d92f
 driver: veth
 version: 1.0
@@ -2909,15 +2593,11 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 #查看网络名称空间
 [root@node1 ~]#ip netns
 cni-1c837b3d-32e7-48dc-fbac-10f95d2ae1df (id: 0)
-```
 
-```text
 #查看指定网络名称空间的IP信息
 [root@node1 ~]#ip netns exec cni-1c837b3d-32e7-48dc-fbac-10f95d2ae1df  ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
@@ -2934,9 +2614,7 @@ inet 10.244.1.60/24 brd 10.244.1.255 scope global eth0
 valid_lft forever preferred_lft forever
 inet6 fe80::a459:f2ff:fe61:4126/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #抓包分析,因为是跨主机的Pod通信,可以看到下面8472/UDP的通信,但如果在同一个节点的Pod间通信,将不
 会产生通过eth0的8472/UDP的流量
 [root@node1 ~]#tcpdump  -i eth0 -nn -X udp port 8472
@@ -2955,9 +2633,7 @@ IP 10.244.2.15.80 > 10.244.1.18.33534: Flags [S.], seq 3183550743, ack
 overlay 0, instance 1
 IP 10.244.1.18.33534 > 10.244.2.15.80: Flags [.], ack 1, win 507, options
 [nop,nop,TS val 1922593001 ecr 3433060110], length 0
-```
 
-```text
 12:12:53.843340 IP 10.0.0.104.37483 > 10.0.0.105.8472: OTV, flags [I] (0x08),
 overlay 0, instance 1
 IP 10.244.1.18.33534 > 10.244.2.15.80: Flags [P.], seq 1:76, ack 1, win 507,
@@ -2997,8 +2673,7 @@ overlay 0, instance 1
 IP 10.244.2.15.80 > 10.244.1.18.33534: Flags [.], ack 77, win 502, options
 [nop,nop,TS val 3433060116 ecr 1922593006], length 0
 ```
-
-```text
+```bash
 [root@node1 ~]#tcpdump  -i flannel.1 -nn port 80
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on flannel.1, link-type EN10MB (Ethernet), capture size 262144 bytes
@@ -3015,9 +2690,7 @@ listening on flannel.1, link-type EN10MB (Ethernet), capture size 262144 bytes
 GET / HTTP/1.1
 11:16:37.963516 IP 10.244.2.15.80 > 10.244.1.18.50640: Flags [.], ack 76, win
 502, options [nop,nop,TS val 3429684228 ecr 1919217121], length 0
-```
 
-```text
 11:16:37.964803 IP 10.244.2.15.80 > 10.244.1.18.50640: Flags [P.], seq 1:18, ack
 76, win 502, options [nop,nop,TS val 3429684229 ecr 1919217121], length 17:
 HTTP: HTTP/1.0 200 OK
@@ -3030,9 +2703,7 @@ HTTP
 268, win 506, options [nop,nop,TS val 1919217124 ecr 3429684230], length 0
 11:16:37.966270 IP 10.244.2.15.80 > 10.244.1.18.50640: Flags [.], ack 77, win
 502, options [nop,nop,TS val 3429684231 ecr 1919217124], length 0
-```
 
-```text
 [root@node1 ~]#tcpdump  -i cni0 -nn port 80
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on cni0, link-type EN10MB (Ethernet), capture size 262144 bytes
@@ -3061,9 +2732,7 @@ HTTP
 268, win 506, options [nop,nop,TS val 1919642247 ecr 3430109353], length 0
 11:23:43.089932 IP 10.244.2.15.80 > 10.244.1.18.58468: Flags [.], ack 77, win
 502, options [nop,nop,TS val 3430109355 ecr 1919642247], length 0
-```
 
-```text
 [root@node1 ~]#tcpdump  -i veth6977fe6c -nn port 80
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on veth6977fe6c, link-type EN10MB (Ethernet), capture size 262144
@@ -3079,9 +2748,7 @@ bytes
 11:28:42.728269 IP 10.244.1.18.32872 > 10.244.2.15.80: Flags [P.], seq 1:76, ack
 1, win 507, options [nop,nop,TS val 1919941886 ecr 3430408993], length 75: HTTP:
 GET / HTTP/1.1
-```
 
-```text
 11:28:42.728554 IP 10.244.2.15.80 > 10.244.1.18.32872: Flags [.], ack 76, win
 502, options [nop,nop,TS val 3430408994 ecr 1919941886], length 0
 11:28:42.730291 IP 10.244.2.15.80 > 10.244.1.18.32872: Flags [P.], seq 1:18, ack
@@ -3099,7 +2766,6 @@ HTTP
 ```
 
 **在宿主机的物理网卡抓包**
-
 ```text
 ip.addr == 10.0.0.104 and  ip.addr == 10.0.0.105
 #注意:先在wireshark中配置如下的分析中的解码方式再抓包才能解码VXLAN
@@ -3122,8 +2788,7 @@ VXLAN 模式下在每个节点上：
 Flannel.1 用来进行vxlan报文的封包和解包处理，如果要实现跨节点之间的Pod通讯,Pod的流量先到达cni网桥,查询路由表后,都从Flannel.1 设备以隧道的形式封装后发送到对端的Flannel.1 设备,再解封装,转发到cni0网桥,再转发给相应的Pod。
 
 范例: 查看
-
-```text
+```bash
 [root@node1 ~]#brctl show
 bridge name bridge id       STP enabled interfaces
 cni0        8000.ce904d8918e0   no      vethb04cd1e7
@@ -3134,9 +2799,7 @@ docker0     8000.0242f9a566e7   no
 UNKNOWN group default
 link/ether 1e:8d:ab:49:f3:fe brd ff:ff:ff:ff:ff:ff
 inet 10.244.1.0/32 scope global flannel.1
-```
 
-```text
 valid_lft forever preferred_lft forever
 inet6 fe80::1c8d:abff:fe49:f3fe/64 scope link
 valid_lft forever preferred_lft forever
@@ -3148,9 +2811,7 @@ inet 10.244.1.1/24 brd 10.244.1.255 scope global cni0
 valid_lft forever preferred_lft forever
 inet6 fe80::cc90:4dff:fe89:18e0/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 [root@node1 ~]#ethtool -i flannel.1
 driver: vxlan
 version: 0.1
@@ -3162,9 +2823,7 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 [root@node1 ~]#ethtool -i cni0
 driver: bridge
 version: 2.3
@@ -3179,8 +2838,7 @@ supports-priv-flags: no
 ```
 
 范例： 默认使用vxlan模式
-
-```text
+```yaml
 [root@master1 ~]#kubectl get cm kube-flannel-cfg  -o yaml -n kube-flannel
 apiVersion: v1
 data:
@@ -3199,9 +2857,7 @@ cni-conf.json: |
 {
 "type": "portmap",
 "capabilities": {
-```
 
-```text
 "portMappings": true
 }
 }
@@ -3237,65 +2893,49 @@ name: kube-flannel-cfg
 namespace: kube-flannel
 resourceVersion: "3682845"
 uid: f8cb1488-41bf-46dc-8492-24f361295f61
-```
 
-```text
 #开启第1个测试容器
 [root@master1 ~]#kubectl run pod-client --image="registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1" -it --rm --command -- /bin/sh
+beijing.aliyuncs.com/bowen/admin-box:v0.1" -it --rm --command -- /bin/sh
 If you don't see a command prompt, try pressing enter.
 / # ifconfig eth0
 eth0      Link encap:Ethernet  HWaddr 0A:2C:4F:F2:EA:08
 inet addr:10.244.1.21  Bcast:10.244.1.255  Mask:255.255.255.0
-```
 
-```text
 #查看节点部署效果
 [root@master1 ~]#kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE    IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-client   1/1     Running   0          30s   10.244.1.21   node1.wang.org
+pod-client   1/1     Running   0          30s   10.244.1.21   node1.bowen.org
 <none>           <none>
-```
 
-```text
 #开启第2个测试容器
 [root@master1 ~]#cat pod-test.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-```
 
-```text
 name: pod-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl apply -f pod-test.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE    IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-client   1/1     Running   0          30s   10.244.1.21   node1.wang.org
+pod-client   1/1     Running   0          30s   10.244.1.21   node1.bowen.org
 <none>           <none>
-pod-test     1/1     Running   0          104s  10.244.3.17   node3.wang.org
+pod-test     1/1     Running   0          104s  10.244.3.17   node3.bowen.org
 <none>           <none>
-```
 
-```text
 #从node1上的pod中发起访问node3的pod网络请求
 root@pod-client #/ # ping -c1 10.244.3.17
 PING10.244.3.17 (10.244.3.17): 56 data bytes
 64 bytes from10.244.3.17: seq=0 ttl=62 time=0.439 ms
-```
 
-```text
 #根据上面的结果,在node3节点上启动一个数据包的抓取工具,抓取从node1发过来的数据
 #注意：Flannel默认使用8285端口作为UDP封装报文的端口，VxLan使用8472端口
 [root@node3 ~]#tcpdump -i eth0 -vvv -en host 10.0.0.104  and udp port 8472
@@ -3317,8 +2957,7 @@ length 148: 10.0.0.106.58843 > 10.0.0.104.8472: OTV, flags [I] (0x08), overlay
 ```
 
 ### 2.3.3 host-gw 模式
-
-```text
+```bash
 #开启flannel的host-gw直连路由模型
 #方法1：在线编辑CM
 [root@master1 ~]#kubectl edit cm kube-flannel-cfg -n kube-flannel
@@ -3332,9 +2971,7 @@ net-conf.json: |
 }
 ......
 #方法2：修改配置文件
-```
 
-```text
 [root@master1 ~]#kubectl get  cm kube-flannel-cfg  -o yaml -n kube-flannel >
 /tmp/kube-flannel.yml
 [root@master1 ~]#vim /tmp/kube-flannel.yml
@@ -3347,28 +2984,20 @@ net-conf.json: |
 }
 }
 ......
-```
 
-```text
 #重启flannel相关的pod
 [root@master1 ~]#kubectl apply -f /tmp/kube-flannel.yml
-```
 
-```text
 #删除旧的flannel相关Pod才能使配置生效
 #方法1:
 [root@master1 ~]#kubectl rollout restart ds -n kube-flannel kube-flannel-ds
-```
 
-```text
 #方法2:
 #新版:
 [root@master1 ~]#kubectl delete pod -n kube-flannel -l app=flannel
 #旧版
 [root@master1 ~]#kubectl delete pod -n kube-system -l app=flannel
-```
 
-```text
 #自动重新创建pod
 [root@master1 ~]#kubectl get pod -A |grep flannel
 kube-system   kube-flannel-ds-4g9vf                        1/1     Running   0
@@ -3383,9 +3012,7 @@ kube-system   kube-flannel-ds-r79ls                        1/1     Running   0
 21s
 kube-system   kube-flannel-ds-vkzp9                        1/1     Running   0
 21s
-```
 
-```text
 #重启所有节点,可以看到flannel.1接口不再存在
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
@@ -3402,9 +3029,7 @@ altname enp2s1
 altname ens33
 inet 10.0.0.104/24 brd 10.0.0.255 scope global eth0
 valid_lft forever preferred_lft forever
-```
 
-```text
 inet6 fe80::20c:29ff:fead:94b5/64 scope link
 valid_lft forever preferred_lft forever
 3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state
@@ -3429,9 +3054,7 @@ master cni0 state UP group default
 link/ether 3a:ce:36:79:98:4d brd ff:ff:ff:ff:ff:ff link-netnsid 1
 inet6 fe80::38ce:36ff:fe79:984d/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #查看路由效果，
 [root@master1 ~]#route -n
 Kernel IP routing table
@@ -3445,66 +3068,52 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.244.4.0      10.0.0.103      255.255.255.0   UG    0      0        0 eth0
 10.244.5.0      10.0.0.102      255.255.255.0   UG    0      0        0 eth0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #所有的路由转发，都不再使用flannel了，直接进行路由转发了
 #如果是第一次安装flannel的时候，使用这种模式，flannel.1网卡不会生成
 #显示的路表由表和VXLAN DirectRouting 模式一样
-```
 
-```text
 #开启两个测试pod
-[root@master1 ~]#kubectl run pod-client --image="registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1:v0.1" -it --rm --command --
-/bin/sh
 ```
+```yaml
+[root@master1 ~]#kubectl run pod-client --image="registry.cn-
+beijing.aliyuncs.com/bowen/admin-box:v0.1:v0.1" -it --rm --command --
+/bin/sh
 
-```text
 #开启第2个测试容器
 #方法1
 [root@master1 ~]#kubectl run pod-test --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 #方法2
 [root@master1 ~]#cat pod-test.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-```
 
-```text
 name: pod-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 [root@master1 ~]#kubectl apply -f pod-test.yaml
-```
 
-```text
 #查看pod的IP
 [root@master1 ~]#kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-client   1/1     Running   0          2m58s  10.244.1.22   node1.wang.org
+pod-client   1/1     Running   0          2m58s  10.244.1.22   node1.bowen.org
 <none>           <none>
-pod-test     1/1     Running   0          35m    10.244.3.17   node3.wang.org
+pod-test     1/1     Running   0          35m    10.244.3.17   node3.bowen.org
 <none>           <none>
-```
 
-```text
 #在第2个pod运行的节点node3上tcpdump抓包目标是本机Pod的http请求
 [root@node3 ~]#tcpdump -i eth0 -nn host 10.244.3.17 and tcp port 80
-```
 
-```text
 #在测试容器里面使用curl来进行访问
 root@pod-client # curl 10.244.3.17
 kubernetes pod-test v0.1!! ClientIP:10.244.1.22, ServerName: pod-test,
 ServerIP:10.244.3.17!
-```
 
-```text
 #由于这种模式下，与直连路由的工作方式一致，所以抓包效果是一样的。
 19:58:27.519784 IP10.244.1.22.53752 >10.244.3.17.80: Flags [S], seq 1504809261,
 win 64860, options [mss 1410,sackOK,TS val 3890284537 ecr 0,nop,wscale 7],
@@ -3534,8 +3143,7 @@ options [nop,nop,TS val 1865518322 ecr 3890284547], length 0
 ```
 
 ### 2.3.4 VXLAN DirectRouting 模式
-
-```text
+```bash
 #修改flannel为直连路由模型
 #方法1：在线修改CM
 [root@master1 ~]#kubectl edit cm kube-flannel-cfg -n kube-flannel
@@ -3549,9 +3157,7 @@ net-conf.json: |
 }
 }
 .....
-```
 
-```text
 #方法2：修改配置文件
 [root@master1 ~]#kubectl get  cm kube-flannel-cfg  -o yaml -n kube-flannel >
 /tmp/kube-flannel.yml
@@ -3566,14 +3172,10 @@ net-conf.json: |
 }
 }
 .....
-```
 
-```text
 #重启flannel相关的pod
 [root@master1 ~]#kubectl apply -f kube-flannel.yml
-```
 
-```text
 #删除旧的flannel相关Pod,才能生效
 #新版:
 [root@master1 ~]#kubectl get daemonset -n kube-flannel
@@ -3581,30 +3183,22 @@ NAME              DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE
 SELECTOR   AGE
 kube-flannel-ds   4         4         4       4            4           <none>
 56d
-```
 
-```text
 #配置生效
 #方法1
 [root@master1 ~]#kubectl rollout restart daemonset kube-flannel-ds -n kube-
 flannel
-```
 
-```text
 #方法2
 #新版
 [root@master1 ~]#kubectl delete pod -n kube-flannel -l app=flannel
 #旧版
 [root@master1 ~]#kubectl delete pod -n kube-system -l app=flannel
-```
 
-```text
 #自动重新生成pod
 #新版
 [root@master1 ~]#kubectl get pod -A |grep flannel
-```
 
-```text
 kube-flannel   kube-flannel-ds-57xzq                      1/1     Running
 0             110s
 kube-flannel   kube-flannel-ds-bdxmj                      1/1     Running
@@ -3617,9 +3211,7 @@ kube-flannel   kube-flannel-ds-wmw5s                      1/1     Running
 0             111s
 kube-flannel   kube-flannel-ds-zkslg                      1/1     Running
 0             110s
-```
 
-```text
 #旧版
 [root@master1 ~]#kubectl get pod -A |grep flannel
 kube-system   kube-flannel-ds-55rb8                        1/1     Running   0
@@ -3634,9 +3226,7 @@ kube-system   kube-flannel-ds-r6sjn                        1/1     Running   0
 35s
 kube-system   kube-flannel-ds-txvdn                        1/1     Running   0
 35s
-```
 
-```text
 #如果节点间没有跨网段的环境,查看路由效果和host-gw模式相同
 [root@master1 ~]#route -n
 Kernel IP routing table
@@ -3652,10 +3242,10 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
 #结果显示：所有的路由转发，都不再使用flannel，直接进行路由转发,这是因为当前环境没有涉及到跨网段
 的主机节点
-```
 
-```text
 #自动生成flannel.1网卡接口
+```
+```yaml
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -3669,9 +3259,7 @@ group default qlen 1000
 link/ether 00:0c:29:ad:94:b5 brd ff:ff:ff:ff:ff:ff
 altname enp2s1
 altname ens33
-```
 
-```text
 inet 10.0.0.201/24 brd 10.0.0.255 scope global eth0
 valid_lft forever preferred_lft forever
 inet6 fe80::20c:29ff:fead:94b5/64 scope link
@@ -3705,19 +3293,15 @@ inet 10.244.1.0/32 scope global flannel.1
 valid_lft forever preferred_lft forever
 inet6 fe80::58bd:ddff:fe02:ea18/64 scope link tentative
 valid_lft forever preferred_lft forever
-```
 
-```text
 #开启第1个测试pod
 [root@master1 ~]#kubectl run pod-client --image="registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1" -it --rm --command -- /bin/sh
-```
+beijing.aliyuncs.com/bowen/admin-box:v0.1" -it --rm --command -- /bin/sh
 
-```text
 #开启第2个测试容器
 #方法1
 [root@master1 ~]#kubectl run pod-test --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 #方法2
 [root@master1 ~]#cat pod-test.yaml
 apiVersion: v1
@@ -3727,40 +3311,28 @@ name: pod-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl apply -f pod-test.yaml
-```
 
-```text
 #查看pod的IP
 [root@master1 ~]#kubectl get pod -o wide
-```
 
-```text
 NAME         READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-client   1/1     Running   0          2m58s  10.244.1.22   node1.wang.org
+pod-client   1/1     Running   0          2m58s  10.244.1.22   node1.bowen.org
 <none>           <none>
-pod-test     1/1     Running   0          35m    10.244.3.17   node3.wang.org
+pod-test     1/1     Running   0          35m    10.244.3.17   node3.bowen.org
 <none>           <none>
-```
 
-```text
 #在第2个pod运行的节点node3上tcpdump抓包
 [root@node3 ~]#tcpdump -i eth0 -nn host10.244.3.17 and tcp port 80
-```
 
-```text
 #在测试容器里面使用curl来进行访问
 root@pod-client # curl10.244.3.17
 kubernetes pod-test v0.1!! ClientIP:10.244.1.22, ServerName: pod-test,
 ServerIP:10.244.3.17!
-```
 
-```text
 #查看抓包效果，显示不再通XVLAN封装跨节点的通信
 [root@node1 ~]#tcpdump  -i cni0 -nn host 10.244.1.22 and tcp port 80
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode

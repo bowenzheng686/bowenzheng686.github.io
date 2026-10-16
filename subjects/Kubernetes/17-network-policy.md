@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 网络策略'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -15,10 +16,10 @@ syntax_highlight: true
 
 ### 3.4.1 网络策略说明
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/services-networking/network-policies/
-https://kubernetes.io/docs/concepts/services-networking/network-policies/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/services-networking/network-policies/>
+- <https://kubernetes.io/docs/concepts/services-networking/network-policies/>
+
 
 #### 3.4.1.1 网络策略介绍
 
@@ -70,12 +71,9 @@ Network Policy的主要功能是对Pod间的网络通信进行限制和准入控
 #### 3.4.1.2 网络策略资源对象属性
 
 ![原 PDF 第 147 页插图](assets/Kubernetes网络插件/img-92c1a8bfa4d92532.png)
-
-```text
+```yaml
 #kubectl explain NetworkPolicy.spec
-```
 
-```text
 apiVersion: networking.k8s.io/v1    # 资源隶属的API群组及版本号
 kind: NetworkPolicy                 # 资源类型的名称，名称空间级别的资源；
 metadata:                           # 资源元数据
@@ -107,17 +105,14 @@ egress <[]Object>               # 出站流量目规则，白名单，{}表示�
 ingress.from
 ports <[]Object>              # 出向流量要访问的目标端口对象列表，{}表示所有合法端
 口
-```
 
-```text
 #注意：
 #入栈和出栈哪个策略生效，由 policyTypes 来决定
 #如果仅配置了podSelector，表示当前限制仅限于当前的命名空间
 ```
 
 范例：
-
-```text
+```yaml
 #允许所有
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -131,26 +126,20 @@ ingress:
 空的元素则表示匹配所有流量源
 policyTypes:
 - Ingress
-```
 
-```text
 #ingress拒绝所有
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
 name: deny-all-ingresS
-```
 
-```text
 namespace: default
 spec:
 podSelector: {}  #表示所有Pod
 ingress: [] #不配置ingress字段，或者ingress:  或者ingress: []  都表示不匹配所有流量源
 policyTypes:
 - Ingress
-```
 
-```text
 #ingress和egress拒绝所有
 ---
 apiVersion: networking.k8s.io/v1
@@ -168,11 +157,10 @@ policyTypes:
 
 **配置示例**
 
-```text
-https://kubernetes.io/docs/concepts/services-networking/network-policies/
-```
 
-```text
+- <https://kubernetes.io/docs/concepts/services-networking/network-policies/>
+
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -204,17 +192,14 @@ egress:
 - to:
 - ipBlock:
 cidr: 10.0.0.0/24
-```
 
-```text
 ports:
 - protocol: TCP
 port: 5978
 ```
 
 **配置示例**
-
-```text
+```yaml
 apiVersion:  networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -252,116 +237,73 @@ port: 3306
 ```
 
 范例：networkpolicies 资源
-
-```text
+```bash
 [root@master1 ~]#kubectl api-resources --api-group networking.k8s.io
 NAME              SHORTNAMES   APIVERSION             NAMESPACED   KIND
 ingressclasses                 networking.k8s.io/v1   false        IngressClass
 ingresses         ing          networking.k8s.io/v1   true         Ingress
 networkpolicies   netpol       networking.k8s.io/v1   true         NetworkPolicy
-```
 
-```text
 [root@master1 ~]#kubectl explain  NetworkPolicies
 KIND:     NetworkPolicy
 VERSION:  networking.k8s.io/v1
-```
 
-```text
 DESCRIPTION:
 NetworkPolicy describes what network traffic is allowed for a set of Pods
 ```
 
-```text
-FIELDS:
-apiVersion   <string>
-APIVersion defines the versioned schema of this representation of an
-object. Servers should convert recognized schemas to the latest internal
-value, and may reject unrecognized values. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#resources
-```
 
-```text
-kind <string>
-Kind is a string value representing the REST resource this object
-represents. Servers may infer this from the endpoint the client submits
-requests to. Cannot be updated. In CamelCase. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+FIELDS: apiVersion   <string>APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
+conventions.md#resources
+
+
+kind <string>Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#types-kinds
-```
 
 ```text
 metadata <Object>
 Standard object's metadata. More info:
 https://git.k8s.io/community/contributors/devel/sig-architecture/api-
 conventions.md#metadata
-```
 
-```text
 spec <Object>
 Specification of the desired behavior for this NetworkPolicy.
 ```
 
-```text
-status   <Object>
-Status is the current state of the NetworkPolicy. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#spec-and-status
-```
 
-```text
+status   <Object>Status is the current state of the NetworkPolicy. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
+conventions.md#spec-and-status
+
+```bash
 [root@master1 ~]#kubectl explain  NetworkPolicies.spec
 KIND:     NetworkPolicy
 VERSION:  networking.k8s.io/v1
-```
 
-```text
 RESOURCE: spec <Object>
-```
 
-```text
 DESCRIPTION:
 Specification of the desired behavior for this NetworkPolicy.
-```
 
-```text
 NetworkPolicySpec provides the specification of a NetworkPolicy
 ```
 
-```text
-FIELDS:
-egress   <[]Object>
-List of egress rules to be applied to the selected pods. Outgoing traffic
-is allowed if there are no NetworkPolicies selecting the pod (and cluster
-policy otherwise allows the traffic), OR if the traffic matches at least
-one egress rule across all of the NetworkPolicy objects whose podSelector
-matches the pod. If this field is empty then this NetworkPolicy limits all
-outgoing traffic (and serves solely to ensure that the pods it selects are
-isolated by default). This field is beta-level in 1.8
-```
 
-```text
-ingress  <[]Object>
-List of ingress rules to be applied to the selected pods. Traffic is
-allowed to a pod if there are no NetworkPolicies selecting the pod (and
-cluster policy otherwise allows the traffic), OR if the traffic source is
-the pod's local node, OR if the traffic matches at least one ingress rule
-across all of the NetworkPolicy objects whose podSelector matches the pod.
-If this field is empty then this NetworkPolicy does not allow any traffic
-(and serves solely to ensure that the pods it selects are isolated by
-default)
-```
+FIELDS: egress   <[]Object>List of egress rules to be applied to the selected pods. Outgoing traffic is allowed if there are no NetworkPolicies selecting the pod (and cluster policy otherwise allows the traffic), OR if the traffic matches at least one egress rule across all of the NetworkPolicy objects whose podSelector matches the pod. If this field is empty then this NetworkPolicy limits all outgoing traffic (and serves solely to ensure that the pods it selects are isolated by default). This field is beta-level in 1.8
 
-```text
-podSelector  <Object> -required-
-Selects the pods to which this NetworkPolicy object applies. The array of
-ingress rules is applied to any pods selected by this field. Multiple
-network policies can select the same set of pods. In this case, the ingress
-rules for each are combined additively. This field is NOT optional and
-follows standard label selector semantics. An empty podSelector matches all
-pods in this namespace.
-```
+
+ingress  <[]Object>List of ingress rules to be applied to the selected pods. Traffic is allowed to a pod if there are no NetworkPolicies selecting the pod (and cluster policy otherwise allows the traffic), OR if the traffic source is the pod's local node, OR if the traffic matches at least one ingress rule across all of the NetworkPolicy objects whose podSelector matches the pod. If this field is empty then this NetworkPolicy does not allow any traffic(and serves solely to ensure that the pods it selects are isolated by default)
+
+
+podSelector  <Object> -required-Selects the pods to which this NetworkPolicy object applies. The array of ingress rules is applied to any pods selected by this field. Multiple network policies can select the same set of pods. In this case, the ingress rules for each are combined additively. This field is NOT optional and follows standard label selector semantics. An empty podSelector matches all pods in this namespace.
 
 ```text
 policyTypes  <[]string>
@@ -380,13 +322,12 @@ would not include an Egress section and would otherwise default to just [
 
 ### 3.4.2 网络策略案例
 
-```text
-https://faun.pub/a-deep-dive-into-kubernetes-network-policy-2c9cda156436
-```
+
+- <https://faun.pub/a-deep-dive-into-kubernetes-network-policy-2c9cda156436>
+
 
 #### 3.4.2.1 准备环境
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#vim calico-deployment-myapp.yaml
 apiVersion: v1
@@ -395,9 +336,7 @@ metadata:
 name: develop
 labels:
 kubernetes.io/metadata.name: develop  #后续需要使用此注释
-```
 
-```text
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -417,10 +356,8 @@ labels:
 app: myapp
 spec:
 containers:
-```
 
-```text
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 name: pod-test
 ---
 apiVersion: v1
@@ -438,14 +375,10 @@ targetPort: 80
 selector:
 app: myapp
 type: ClusterIP
-```
 
-```text
 #应用清单
 [root@master1 ~]#kubectl apply  -f  calico-deployment-myapp.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get ns
 NAME                   STATUS   AGE
 default                Active   34d
@@ -454,46 +387,36 @@ kube-node-lease        Active   34d
 kube-public            Active   34d
 kube-system            Active   34d
 kubernetes-dashboard   Active   28d
-```
 
-```text
 [root@master1 ~]#kubectl get svc -n develop
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 myapp   ClusterIP   10.109.231.31   <none>        80/TCP    85s
-```
 
-```text
 [root@master1 ~]#kubectl get pod  -o wide  -n develop
 NAME                               READY   STATUS    RESTARTS   AGE     IP
 NODE               NOMINATED NODE   READINESS GATES
 myapp-775b8ff746-h49wg   1/1     Running   0          2m42s   10.244.5.4
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-775b8ff746-qv9p8   1/1     Running   0          2m41s   10.244.5.5
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-775b8ff746-vg56z   1/1     Running   0          2m41s   10.244.4.4
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 [root@master1 ~]#
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide  -n develop
 NAME                               READY   STATUS    RESTARTS   AGE     IP
 NODE               NOMINATED NODE   READINESS GATES
 myapp-689d76c74d-cxqf7   1/1     Running   0          2m36s  10.244.4.12
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-689d76c74d-lfmkt   1/1     Running   0          2m36s  10.244.3.6
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 myapp-689d76c74d-skv2c   1/1     Running   0          2m36s  10.244.7.5
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #测试访问
-```
 
-```text
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/sh
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -it --rm --command -- /bin/sh
 If you don't see a command prompt, try pressing enter.
 root@pod-client /# ping myapp
 ping: bad address 'myapp'
@@ -517,8 +440,7 @@ vg56z, ServerIP: 10.244.4.4!
 #### 3.4.2.2  设置默认的拒绝 Pod 策略
 
 范例: 实现所有的pod都无法正常的访问
-
-```text
+```yaml
 [root@master1 ~]#cat calico-networkpolicy-denyall.yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -529,20 +451,14 @@ spec:
 podSelector: {}   #podSelector 值为空，表示当前命名空间中所有的pod
 policyTypes: ["Ingress", "Egress"] #policyType中指明了 Ingress 和 Egress。但是没有
 定义任何ingress和egress字段，默认表示不允许所有pod进出的流量通过
-```
 
-```text
 #应用资源配置文件
 [root@master1 ~]#kubectl apply  -f  calico-networkpolicy-denyall.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get networkpolicies -n develop
 NAME               POD-SELECTOR   AGE
 deny-all-ingress   <none>         26m
-```
 
-```text
 [root@master1 ~]#kubectl describe  networkpolicies  -n develop
 Name:         deny-all-ingress
 Namespace:    develop
@@ -555,27 +471,19 @@ namespace)
 Allowing ingress traffic:
 <none> (Selected pods are isolated for ingress connectivity)
 Allowing egress traffic:
-```
 
-```text
 <none> (Selected pods are isolated for egress connectivity)
 Policy Types: Ingress, Egress
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -it --rm --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 root@pod-client /# curl 10.244.5.5
 curl: (28) Failed to connect to 10.244.5.5 port 80: Operation timed out
-```
 
-```text
 #结果显示：所有的流量都被拒绝了
-```
 
-```text
 #清除环境
 [root@master1 ~]#kubectl delete  -f calico-networkpolicy-denyall.yaml
 ```
@@ -583,8 +491,7 @@ curl: (28) Failed to connect to 10.244.5.5 port 80: Operation timed out
 #### 3.4.2.3 设置默认的允许 Pod 策略
 
 范例: 定制所有的pod都正常的访问
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat calico-networkpolicy-allowall.yaml
 apiVersion: networking.k8s.io/v1
@@ -599,23 +506,15 @@ egress:
 - {}
 ingress:
 - {}
-```
 
-```text
 #配置解析：分别指定了egress和ingress，但没有做配置，默认表示所有的pod全部允许请求
-```
 
-```text
 #应用资源配置文件
 [root@master1 ~]#kubectl apply  -f  calico-networkpolicy-allowall.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl describe  networkpolicies allow-all-ingress  -n develop
-```
 
-```text
 Name:         allow-all-ingress
 Namespace:    develop
 Created on:   2021-03-29 17:39:01 +0800 CST
@@ -633,27 +532,15 @@ To: <any> (traffic not restricted by destination)
 Policy Types: Ingress, Egress
 ```
 
-```text
-#访问查看效果
-root@pod-client /# curl myapp.develop
-kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-
-h49wg, ServerIP: 10.244.5.4!
-root@pod-client /# curl myapp.develop
-kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-
-vg56z, ServerIP: 10.244.4.4!
-root@pod-client /# curl myapp.develop
-kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-
-qv9p8, ServerIP: 10.244.5.5!
-```
 
-```text
+#访问查看效果 root@pod-client /# curl myapp.develop kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-h49wg, ServerIP: 10.244.5.4! root@pod-client /# curl myapp.develop kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-vg56z, ServerIP: 10.244.4.4! root@pod-client /# curl myapp.develop kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-qv9p8, ServerIP: 10.244.5.5!
+
+```bash
 root@pod-client /# curl 10.244.5.5
 kubernetes pod-test v0.1!! ClientIP: 10.244.4.5, ServerName: myapp-775b8ff746-
 qv9p8, ServerIP: 10.244.5.5!
 #结果显示：所有的pod都可以正常访问了
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete  -f calico-networkpolicy-allowall.yaml
 ```
@@ -661,8 +548,7 @@ qv9p8, ServerIP: 10.244.5.5!
 #### 3.4.2.4 仅允许当前命名空间内Pod间所有流量允许访问
 
 范例: 仅允许当前命名空间所有流量允许访问
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat calico-networkpolicy-allow-namespace.yaml
 apiVersion: networking.k8s.io/v1
@@ -681,14 +567,10 @@ ingress:
 - podSelector: {}     #表示当前命名空间所有Pod允许入栈访问本名称空间的所有Pod
 #配置解析：虽然设置了egress和ingress属性，但是下面的podSelector没有选择节点，表示只有当前命
 名空间所有Pod不受限制
-```
 
-```text
 #应用资源配置文件
 [root@master1 ~]#kubectl apply -f calico-networkpolicy-allow-namespace.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl describe  networkpolicies -n develop
 Name:         allow-namespace-ingress
@@ -699,9 +581,7 @@ Annotations:  <none>
 Spec:
 PodSelector:     <none> (Allowing the specific traffic to all pods in this
 namespace)
-```
 
-```text
 Allowing ingress traffic:
 To Port: <any> (traffic allowed to all ports)
 From:
@@ -711,39 +591,29 @@ To Port: <any> (traffic allowed to all ports)
 To:
 PodSelector: <none>
 Policy Types: Ingress, Egress
-```
 
-```text
 #不同namespace的pod访问不成功
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -it --rm --command -- /bin/bash
 root@pod-client /# curl 10.244.5.5
 curl: (28) Failed to connect to 10.244.5.5 port 80: Operation timed out
-```
 
-```text
 #同一个namespace的pod访问测试
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop -it --rm --command --
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -n develop -it --rm --command --
 /bin/bash
 If you don't see a command prompt, try pressing enter.
 #在同一个NS中IP访问不成功
 root@pod-client /# curl 10.244.5.5
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.5, ServerName: myapp-775b8ff746-
 qv9p8, ServerIP: 10.244.5.5!
-```
 
-```text
 #在同一个NS中域名访问不成功
 root@pod-client /# curl myapp
 curl: (6) Could not resolve host: myapp
-```
 
-```text
 #结果显示：只有同一名称空间的资源可以正常访问，而跨名称空间的资源是无法被访问
-```
 
-```text
 #删除资源配置文件
 [root@master1 ~]#kubectl delete -f calico-networkpolicy-allow-namespace.yaml
 ```
@@ -751,45 +621,32 @@ curl: (6) Could not resolve host: myapp
 #### 3.4.2.5 限制Pod入栈访问的端口和来源网段策略
 
 范例:
-
-```text
+```yaml
 #提前准备三个测试的pod
 #终端1
 [root@master1 ~]#kubectl run pod-client1 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -n develop
 
-```text
 #终端2
 [root@master1 ~]#kubectl run pod-client2 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -n develop
 
-```text
 #终端3: 不同NS
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #确认结果
 [root@master1 ~]#kubectl get pod -n develop -o wide --show-labels | egrep
 'NAME|client'
 NAME            READY   STATUS    IP           NODE               LABELS
-pod-client1     1/1     Running   10.244.3.6   node1.wang.org   run=pod-client1
-```
+pod-client1     1/1     Running   10.244.3.6   node1.bowen.org   run=pod-client1
 
-```text
-pod-client2     1/1     Running   10.244.4.7   node2.wang.org   run=pod-client2
-```
+pod-client2     1/1     Running   10.244.4.7   node2.bowen.org   run=pod-client2
 
-```text
 [root@master1 ~]#kubectl get pod  -o wide --show-labels | egrep 'NAME|client'
 NAME         READY    IP           NODE                 LABELS
-pod-client   1/1      10.244.5.6   node3.wang.org     run=pod-client
-```
+pod-client   1/1      10.244.5.6   node3.bowen.org     run=pod-client
 
-```text
 #清单文件，限制只有从指定网段和Label的Pod才能访问名称空间的Pod
 [root@master1 ~]#cat calico-networkpolicy-deny-pod.yaml
 apiVersion: networking.k8s.io/v1
@@ -814,23 +671,17 @@ except:
 #     matchLabels:
 #       run: pod-test1   #白名单,此label的Pod可以入栈访问，如果存在多个matchLabel条
 件,是and关系,即都要同时满足
-```
 
-```text
 ports:
 - protocol: TCP     #限制只能访问目标HTTP服务，支持TCP，UDP和SCTP，注意：ports不论在
 ingress和egress都表示目标端口
 port: 80
 # 配置解析：设置了egress和ingress属性，允许10.244.0.0/16网段的Pod,但排除10.244.3.6/32对
 应的单个Pod
-```
 
-```text
 #应用清单
 [root@master1 ~]#kubectl apply -f calico-networkpolicy-deny-pod.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl describe  networkpolicies -n develop
 Name:         deny-pod-ingress
@@ -848,27 +699,21 @@ IPBlock:
 CIDR: 10.244.0.0/16
 Except: 10.244.3.6/32
 Allowing egress traffic:
-```
 
-```text
 To Port: <any> (traffic allowed to all ports)
 To:
 PodSelector: <none>
 Policy Types: Ingress, Egress
-```
 
-```text
 #查看SVC
 [root@master1 ~]#kubectl get svc -n develop
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 myapp   ClusterIP   10.109.231.31   <none>        80/TCP    102m
-```
 
-```text
 #访问测试
 #从pod-client1对应10.244.3.6的Pod无法访问其它Pod,但此pod可以被其它Pod访问
 [root@master1 ~]#kubectl run pod-client1 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop -it --rm --command --
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -n develop -it --rm --command --
 /bin/sh
 root@pod-client1 /# hostname -i
 10.244.3.6
@@ -876,12 +721,12 @@ root@pod-client1 /# curl 10.244.5.5
 curl: (28) Failed to connect to 10.244.5.5 port 80: Operation timed out
 root@pod-client1 /# curl 10.109.231.31
 curl: (28) Failed to connect to 10.109.231.31 port 80: Operation timed out
-```
 
-```text
 #同一个NS的其它pod都可以访问ip,但域名无法访问
+```
+```yaml
 [root@master1 ~]#kubectl run pod-client2 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop -it --rm --command --
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -n develop -it --rm --command --
 /bin/sh
 root@pod-client2 /# hostname -i
 10.244.4.7
@@ -895,12 +740,10 @@ curl: (6) Could not resolve host: myapp.develop
 root@pod-client2 /# curl 10.109.231.31
 kubernetes pod-test v0.1!! ClientIP: 10.244.4.7, ServerName: myapp-775b8ff746-
 vg56z, ServerIP: 10.244.4.4!
-```
 
-```text
 #不同NS也可以访问IP和域名
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/sh
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -it --rm --command -- /bin/sh
 root@pod-client /# hostname -i
 10.244.5.6
 root@pod-client /# curl 10.244.5.5
@@ -914,9 +757,7 @@ h49wg, ServerIP: 10.244.5.4!
 root@pod-client /# curl 10.109.231.31
 kubernetes pod-test v0.1!! ClientIP: 10.244.5.6, ServerName: myapp-775b8ff746-
 h49wg, ServerIP: 10.244.5.4!
-```
 
-```text
 #修改清单文件
 [root@master1 ~]#cat calico-networkpolicy-deny-pod.yaml
 apiVersion: networking.k8s.io/v1
@@ -944,14 +785,10 @@ ports:
 port: 80
 - protocol: TCP
 port: 8080
-```
 
-```text
 #应用清单文件
 [root@master1 ~]#kubectl apply -f calico-networkpolicy-deny-pod.yaml
-```
 
-```text
 [root@master1 ~]#kubectl describe  networkpolicies -n develop
 Name:         deny-pod-ingress
 Namespace:    develop
@@ -974,14 +811,10 @@ To Port: <any> (traffic allowed to all ports)
 To:
 PodSelector: <none>
 Policy Types: Ingress, Egress
-```
 
-```text
 #再次测试使用pod-client1访问成功
 root@pod-client1 /# hostname -i
-```
 
-```text
 10.244.3.6
 root@pod-client1 /# curl 10.244.5.5
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-
@@ -991,28 +824,21 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-
 h49wg, ServerIP: 10.244.5.4!
 root@pod-client1 /# curl  myapp
 curl: (6) Could not resolve host: myapp
-```
 
-```text
 #其它pod也可以访问
-```
 
-```text
 #注意:先不要清理环境,后续使用
 ```
 
 #### 3.4.2.6 针对指定Pod限制开放出栈的DNS和HTTP请求
 
 范例
-
-```text
+```yaml
 #重新创建pod-client2
 [root@master1 ~]#kubectl delete pod pod-client2
 [root@master1 ~]#kubectl run pod-client2 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 -n develop
 
-```text
 #定制资源配置文件
 [root@master1 ~]#cat calico-networkpolicy-egress-dns.yaml
 apiVersion: networking.k8s.io/v1
@@ -1047,15 +873,11 @@ port: 443
 #  - ipBlock:
 #      cidr: 10.0.0.0/24   #白名单,可以访问此网段的Pod，注意：但egress中cidr 支持外部
 网络地址
-```
 
-```text
 #应用清单
 [root@master1 ~]#kubectl apply  -f calico-networkpolicy-deny-pod.yaml
 [root@master1 ~]#kubectl apply  -f calico-networkpolicy-egress-dns.yaml
-```
 
-```text
 #查看策略
 [root@master1 ~]#kubectl describe  networkpolicies -n develop
 Name:         deny-pod-ingress
@@ -1079,9 +901,7 @@ To Port: <any> (traffic allowed to all ports)
 To:
 PodSelector: <none>
 Policy Types: Ingress, Egress
-```
 
-```text
 Name:         egress-controller
 Namespace:    develop
 Created on:   2021-03-29 18:56:17 +0800 CST
@@ -1100,24 +920,13 @@ PodSelector: run=pod-client1
 Policy Types: Egress
 ```
 
-```text
-#访问测试
-#pod-client1成功访问DNS
-root@pod-client1 /# curl  myapp
+
+#访问测试#pod-client1成功访问DNS root@pod-client1 /# curl  myapp kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-qv9p8, ServerIP: 10.244.5.5! root@pod-client1 /# curl 10.109.231.31 kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-h49wg, ServerIP: 10.244.5.4! root@pod-client1 /# curl 10.244.5.5
+
+```bash
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-
 qv9p8, ServerIP: 10.244.5.5!
-root@pod-client1 /# curl 10.109.231.31
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-
-h49wg, ServerIP: 10.244.5.4!
-root@pod-client1 /# curl 10.244.5.5
-```
 
-```text
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-
-qv9p8, ServerIP: 10.244.5.5!
-```
-
-```text
 #同一个NS其它pod访问DNS不成功
 root@pod-client2 /# curl  myapp
 curl: (6) Could not resolve host: myapp
@@ -1127,9 +936,7 @@ qv9p8, ServerIP: 10.244.5.5!
 root@pod-client2 /# curl 10.109.231.31
 kubernetes pod-test v0.1!! ClientIP: 10.244.4.7, ServerName: myapp-775b8ff746-
 vg56z, ServerIP: 10.244.4.4!
-```
 
-```text
 #不同NS其它pod访问DNS不成功
 root@pod-client /# curl myapp.develop
 curl: (6) Could not resolve host: myapp.develop
@@ -1139,13 +946,9 @@ h49wg, ServerIP: 10.244.5.4!
 root@pod-client /# curl 10.244.5.5
 kubernetes pod-test v0.1!! ClientIP: 10.244.5.6, ServerName: myapp-775b8ff746-
 qv9p8, ServerIP: 10.244.5.5!
-```
 
-```text
 #结果显示：现在的pod不仅仅可以正常的进行服务访问，还可以对外发起域名解析
-```
 
-```text
 #清理所有的空间限制
 [root@master1 ~]#kubectl delete  -f  calico-networkpolicy-egress-dns.yaml
 [root@master1 ~]#kubectl delete  -f  calico-networkpolicy-deny-pod.yaml
@@ -1156,8 +959,7 @@ qv9p8, ServerIP: 10.244.5.5!
 如果定义了大量的规则，可能会导致管理困难。多个规则可能导致冲突、重复多个规则的先后执行顺序导致结果不一样。所以定制规则的时候，最好放到一个配置文件中。或者所有的规则都是经过精心管理和模块化管理的时候。而基于名称空间的控制就属于一种模块化管理方式,推存使用。
 
 范例: 只允许指定的命名空间的pod才可以发出访问
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#cat calico-networkpolicy-ingress-namespace.yaml
 apiVersion: networking.k8s.io/v1
@@ -1171,9 +973,7 @@ policyTypes: ["Ingress"]
 ingress:
 - from:
 - namespaceSelector:                #限制从哪些指定的名称空间的Pod发起请求访问
-```
 
-```text
 matchExpressions:
 - key: kubernetes.io/metadata.name
 operator: In
@@ -1186,18 +986,12 @@ values: [develop, kube-system, logs]  #指定允许从哪些名称空间的Pod�
 #      matchExpressions:
 #      - {key: kubernetes.io/metadata.name, operator: NotIn, values:
 ["develop"]}#禁止访问的源名称空间,黑名单
-```
 
-```text
 #配置解析：不允许default命名空间的pod访问，其他的NS允许访问
-```
 
-```text
 #应用资源配置文件
 [root@master1 ~]#kubectl apply -f calico-networkpolicy-ingress-namespace.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl describe  networkpolicies -n develop
 Name:         ingress-controller
@@ -1215,33 +1009,23 @@ NamespaceSelector: kubernetes.io/metadata.name in (develop,kube-
 system,logs)
 Not affecting egress traffic
 Policy Types: Ingress
-```
 
-```text
 #测试
 #develop, kube-system, logs名称空间的Pod,不在default空间可以访问
 root@pod-client1 /# curl 10.244.5.5
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.6, ServerName: myapp-775b8ff746-
 qv9p8, ServerIP: 10.244.5.5!
-```
 
-```text
 #develop, kube-system, logs名称空间的Pod,不在default空间可以访问
 root@pod-client2 /# curl 10.244.5.5
 kubernetes pod-test v0.1!! ClientIP: 10.244.4.7, ServerName: myapp-775b8ff746-
 qv9p8, ServerIP: 10.244.5.5!
-```
 
-```text
 #在default空间不能访问
 root@pod-client /# curl 10.244.5.5
-```
 
-```text
 #结果显示：只有允许指定的命名空间的pod才可以发出访问，其他的都不允许
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete  -f calico-networkpolicy-ingress-namespace.yaml
 ```
@@ -1251,8 +1035,7 @@ root@pod-client /# curl 10.244.5.5
 尽管kubernetes的NetworkPolicy功能上比较丰富，但是当前NetworkPolicy资源仍然具有相当的局限性，例如它没有明确的拒绝规则、缺乏对选择器高级表达式的支持、不支持应用层规则，以及没有集群范围的网络策略等。每个networkpolicy都是以当前命名空间为中心，进行的网络策略控制。如果命名空间很多时，同样也会导致很难管理。
 
 当安装完毕calico之后，会自动生成一些自定义的资源对象，这些资源对象包括NetworkPolicy和GlobalNetworkPolicy等.
-
-```text
+```bash
 [root@master1 ~]#kubectl api-resources | grep crd.pro
 bgpconfigurations                              crd.projectcalico.org/v1
 false        BGPConfiguration
@@ -1303,8 +1086,7 @@ GlobalNetworkPolicy简称 gnp / gnps ，是整个集群级别的资源，但与N
 是一样的
 
 范例
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#cat calico-networkpolicy-global.yaml
 apiVersion: crd.projectcalico.org/v1
@@ -1323,26 +1105,18 @@ namespaceSelector: name in {"kube-system","kubernetes-
 dashboard","logs","monitoring"}
 egress:
 - action: Allow
-```
 
-```text
 #在默认规则的基础上，添加了order这个优先级的属性，所以多个同类型的规则同时存在的时候，会根据优先
 级的方式，进行优先级进行使用。
-```
 
-```text
 #应用配置文件
 [root@master1 ~]#kubectl apply -f calico-networkpolicy-global.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get globalnetworkpolicy
 NAME                 AGE
 namespaces-default   48s
-```
 
-```text
 [root@master1 ~]#kubectl describe globalnetworkpolicy namespaces-default
 Name:         namespaces-default
 Namespace:
@@ -1358,9 +1132,7 @@ API Version:  crd.projectcalico.org/v1
 Fields Type:  FieldsV1
 fieldsV1:
 f:metadata:
-```
 
-```text
 f:annotations:
 .:
 f:kubectl.kubernetes.io/last-applied-configuration:
@@ -1391,34 +1163,26 @@ Types:
 Ingress
 Egress
 Events:  <none>
-```
 
-```text
 #测试效果
 #在default名称空间创建Pod
 [root@master1 ~]#kubectl run pod-test --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME       READY   STATUS    RESTARTS   AGE   IP           NODE
 NOMINATED NODE   READINESS GATES
-pod-test   1/1     Running   0          17s   10.244.5.7   node3.wang.org
+pod-test   1/1     Running   0          17s   10.244.5.7   node3.bowen.org
 <none>           <none>
-```
 
-```text
 #default空间测试
 [root@master1 ~]## kubectl run admin-box-default --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 --rm -it --command -- /bin/sh
+beijing.aliyuncs.com/bowen/admin-box:v0.1 --rm -it --command -- /bin/sh
 If you don't see a command prompt, try pressing enter.
 root@admin-box-default # curl 10.244.5.7
 curl: (28) Failed to connect to 10.244.5.7 port 80: Operation timed out
 #长时间无法查看，超时退出
-```
 
-```text
 #清除所有的策略
 [root@master1 ~]#kubectl delete -f calico-networkpolicy-global.yaml
 ```

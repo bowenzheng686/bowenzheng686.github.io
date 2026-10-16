@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · DaemonSet、Job 与 CronJob'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -15,9 +16,9 @@ syntax_highlight: true
 
 ### 2.6.1 DaemonSet 工作机制
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/daemonset/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/daemonset/>
+
 
 ![原 PDF 第 63 页插图](assets/Kubernetes工作负载/img-d66bf47666a6b0f4.png)
 
@@ -40,26 +41,21 @@ Kubernetes集群的系统级应用: kube-proxy,flannel,calico集群存储守护�
 **更新策略**：一般应为先删除一组节点上的实例，更新完成后，再进行下一组节点。
 
 范例: 查看默认的  daemonsets
-
-```text
+```bash
 #Kube-proxy组件以daemonsets方式运行
 [root@master1 ~]#kubectl get ds -n kube-system
 NAME              DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE
 SELECTOR            AGE
 kube-proxy        6         6         6       6            6
 kubernetes.io/os=linux   25d
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n kube-system  -l k8s-app=kube-proxy
 NAME               READY   STATUS    RESTARTS      AGE
 kube-proxy-2vstp   1/1     Running   1 (26m ago)   28m
 kube-proxy-jq4p7   1/1     Running   1 (27m ago)   28m
 kube-proxy-qbgkn   1/1     Running   1 (27m ago)   28m
 kube-proxy-s6knj   1/1     Running   1 (27m ago)   28m
-```
 
-```text
 #flannel网络插件以daemonsets方式运行
 #新版flannel存在于kube-flannel名称空间
 [root@master1 ~]#kubectl get ds -n kube-flannel --show-labels
@@ -67,27 +63,21 @@ NAME              DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE
 SELECTOR   AGE    LABELS
 kube-flannel-ds   4         4         4       4            4           <none>
 412d   app=flannel,k8s-app=flannel,tier=node
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n kube-flannel  -l k8s-app=flannel
 NAME                    READY   STATUS    RESTARTS       AGE
 kube-flannel-ds-bqkzc   1/1     Running   11 (29m ago)   412d
 kube-flannel-ds-j2dwh   1/1     Running   10 (29m ago)   412d
 kube-flannel-ds-rqbjl   1/1     Running   16 (28m ago)   412d
 kube-flannel-ds-v4r6f   1/1     Running   10 (29m ago)   412d
-```
 
-```text
 #旧版flannel存在于 kube-system 名称空间
 [root@master1 ~]#kubectl get ds -n kube-system
 NAME              DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE
 SELECTOR            AGE
 kube-flannel-ds   6         6         6       6            6           <none>
 25d
-```
 
-```text
 [root@master1 ~]#cat kube-flannel.yml
 .....
 kind: DaemonSet
@@ -99,8 +89,7 @@ kind: DaemonSet
 ### 2.6.2 DaemonSet 属性解析
 
 **DaemonSet 属性解析**
-
-```text
+```yaml
 apiVersion: apps/v1                 # API群组及版本
 kind: DaemonSet                     # 资源类型特有标识
 metadata:
@@ -122,8 +111,7 @@ maxUnavailable <string>       # 更新期间可比期望的Pod数量缺少的数
 ```
 
 官方示例:  利用daemonset 实现fluentd日志收集。
-
-```text
+```yaml
 #https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/daemonset/
 apiVersion: apps/v1
 kind: DaemonSet
@@ -155,9 +143,7 @@ containers:
 image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
 resources:
 limits:
-```
 
-```text
 memory: 200Mi
 requests:
 cpu: 100m
@@ -173,8 +159,7 @@ path: /var/log
 ```
 
 范例: 利用daemonset 实现fluent-bit 对容器日志收集
-
-```text
+```yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -216,9 +201,7 @@ mountPath: /fluent-bit/etc/
 terminationGracePeriodSeconds: 10
 volumes:
 - name: varlog
-```
 
-```text
 hostPath:
 path: /var/log
 - name: varlibdockercontainers
@@ -241,8 +224,7 @@ effect: "NoSchedule"
 ### 2.6.3 DaemonSet 案例
 
 范例:
-
-```text
+```yaml
 #准备配置
 [root@master1 ~]#cat controller-daemonset-test.yaml
 apiVersion: apps/v1
@@ -263,68 +245,52 @@ spec:
 #hostPID: true #直接使用宿主机的PID
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl get pod
 No resources found in default namespace.
-```
 
-```text
 #查看worker节点数量
 [root@master1 ~]#kubectl get node
 NAME                 STATUS   ROLES                  AGE   VERSION
-master1.wang.org   Ready    control-plane,master   25d   v1.22.1
-master2.wang.org   Ready    control-plane,master   25d   v1.22.1
-master3.wang.org   Ready    control-plane,master   25d   v1.22.1
-node1.wang.org     Ready    <none>                 25d   v1.22.1
-node2.wang.org     Ready    <none>                 25d   v1.22.1
-node3.wang.org     Ready    <none>                 25d   v1.22.1
-```
+master1.bowen.org   Ready    control-plane,master   25d   v1.22.1
+master2.bowen.org   Ready    control-plane,master   25d   v1.22.1
+master3.bowen.org   Ready    control-plane,master   25d   v1.22.1
+node1.bowen.org     Ready    <none>                 25d   v1.22.1
+node2.bowen.org     Ready    <none>                 25d   v1.22.1
+node3.bowen.org     Ready    <none>                 25d   v1.22.1
 
-```text
 #创建daemonset资源
 [root@master1 ~]#kubectl apply  -f controller-daemonset-test.yaml
-```
 
-```text
 #验证结果,发现pod数量和worker节点数量一致,且每个节点主机一个pod
 [root@master1 ~]#kubectl get pod -o wide
 NAME                              READY   STATUS    RESTARTS   AGE     IP
 NODE               NOMINATED NODE   READINESS GATES
 controller-daemonset-test-6n5cp   1/1     Running   0          2m15s
-172.16.3.94   node1.wang.org   <none>           <none>
+172.16.3.94   node1.bowen.org   <none>           <none>
 controller-daemonset-test-8jzbf   1/1     Running   0          2m15s
-172.16.1.48   node2.wang.org   <none>           <none>
+172.16.1.48   node2.bowen.org   <none>           <none>
 controller-daemonset-test-ptnpl   1/1     Running   0          2m15s
-172.16.2.56   node3.wang.org   <none>           <none>
-```
+172.16.2.56   node3.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#kubectl get ds
 NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE
 NODE SELECTOR   AGE
 controller-daemonset-test   3         3         3       3            3
 <none>          2m53s
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME                                  READY   STATUS    RESTARTS   AGE
 pod/controller-daemonset-test-c4l9h   1/1     Running   0          89s
 pod/controller-daemonset-test-d4d7b   1/1     Running   0          58s
 pod/controller-daemonset-test-kqfwk   1/1     Running   0          2m1s
-```
 
-```text
 NAME                                       DESIRED   CURRENT   READY   UP-TO-DATE
 AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/controller-daemonset-test   3         3         3       3
 3           <none>          13m
-```
 
-```text
 #查看所有daemonset
 [root@master1 ~]#kubectl get ds -A
 NAMESPACE     NAME                        DESIRED   CURRENT   READY   UP-TO-DATE
@@ -335,12 +301,10 @@ kube-system   kube-flannel-ds             6         6         6       6
 6           <none>                   25d
 kube-system   kube-proxy                  6         6         6       6
 6           kubernetes.io/os=linux   25d
-```
 
-```text
 #daemonset对象也支持滚动更新
 [root@master1 ~]#kubectl set image  daemonsets controller-daemonset-test pod-
-test='registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2' --record=true
+test='registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2' --record=true
 && kubectl rollout status daemonset controller-daemonset-test
 Flag --record has been deprecated, --record will be removed in the future
 Waiting for daemon set "controller-daemonset-test" rollout to finish: 0 out of 3
@@ -353,41 +317,23 @@ Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3
 new pods have been updated...
 ```
 
-```text
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3
-new pods have been updated...
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3
-new pods have been updated...
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3
-new pods have been updated...
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 out of 3
-new pods have been updated...
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 out of 3
-new pods have been updated...
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 out of 3
-new pods have been updated...
-Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 of 3
-updated pods are available...
-daemon set "controller-daemonset-test" successfully rolled out
-```
 
-```text
+Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3 new pods have been updated... Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3 new pods have been updated... Waiting for daemon set "controller-daemonset-test" rollout to finish: 1 out of 3 new pods have been updated... Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 out of 3 new pods have been updated... Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 out of 3 new pods have been updated... Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 out of 3 new pods have been updated... Waiting for daemon set "controller-daemonset-test" rollout to finish: 2 of 3 updated pods are available... daemon set "controller-daemonset-test" successfully rolled out
+
+```bash
 #注意：daemonsets对象不支持pause动作
-```
 
-```text
 #查看历史
 [root@master1 ~]#kubectl rollout history daemonset controller-daemonset-test
 daemonset.apps/controller-daemonset-test
 REVISION  CHANGE-CAUSE
 1         <none>
 2         kubectl set image daemonsets controller-daemonset-test pod-
-test=wangxiaochun/pod-test:v0.2 --record=true
+test=bowen/pod-test:v0.2 --record=true
 ```
 
 范例: 在所有节点上部署监控软件prometheus采集指标数据
-
-```text
+```yaml
 #定制基本配置文件
 [root@master1 ~]#cat controller-daemonset-prometheus.yaml
 apiVersion: apps/v1
@@ -417,9 +363,7 @@ spec:
 #- key: node-role.kubernetes.io/master
 #  operator: Exists
 #  effect: NoSchedule
-```
 
-```text
 containers:
 - image: prom/node-exporter:v1.2.2
 name: prometheus-node-exporter
@@ -439,46 +383,34 @@ scheme: HTTP
 initialDelaySeconds: 5
 hostNetwork: true
 hostPID: true
-```
 
-```text
 #属性解析：hostNetwork 和 hostPID 表示容器共享宿主机的网络和PID,从而实现对主机节点的资源监控
-```
 
-```text
 #创建
 [root@master1 ~]#kubectl apply  -f controller-daemonset-prometheus.yaml
-```
 
-```text
 #验证结果,发现只会部署至worker节点,而因为污点策略不会调度到master节点
 [root@master1 ~]#kubectl get all
 NAME                       READY   STATUS              RESTARTS   AGE
 pod/daemonset-demo-96fb8   0/1     ContainerCreating   0          2s
 pod/daemonset-demo-cmgzt   0/1     ContainerCreating   0          2s
 pod/daemonset-demo-slkzb   0/1     ContainerCreating   0          2s
-```
 
-```text
 NAME                            DESIRED   CURRENT   READY   UP-TO-DATE
 AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/daemonset-demo   3         3         0       3            0
 <none>          2s
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                   READY   STATUS    RESTARTS   AGE    IP           NODE
 NOMINATED NODE   READINESS GATES
 daemonset-demo-96fb8   1/1     Running   0          2m1s   10.0.0.104
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 daemonset-demo-cmgzt   1/1     Running   0          2m1s   10.0.0.106
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 daemonset-demo-slkzb   1/1     Running   0          2m1s   10.0.0.105
-node2.wang.org   <none>           <none>
-```
+node2.bowen.org   <none>           <none>
 
-```text
 #在每个worker节点通过节点端口即可获取监控相关的数据
 [root@master1 ~]#curl -s 10.0.0.104:9100/metrics | head
 # HELP go_gc_duration_seconds A summary of the pause duration of garbage
@@ -490,48 +422,39 @@ go_gc_duration_seconds{quantile="0.5"} 3.0918e-05
 go_gc_duration_seconds{quantile="0.75"} 4.0095e-05
 go_gc_duration_seconds{quantile="1"} 7.4009e-05
 go_gc_duration_seconds_sum 0.000414227
-```
 
-```text
 go_gc_duration_seconds_count 12
 # HELP go_goroutines Number of goroutines that currently exist.
-```
 
-```text
 [root@master1 ~]#curl 10.0.0.105:9100/metrics
 [root@master1 ~]#curl 10.0.0.106:9100/metrics
 ```
 
 范例: 仅在指定标签的每个主机上运行一个Pod
-
-```text
+```yaml
 #在指定的节点打上便签
-[root@master1 ~]#kubectl label node node1.wang.org node2.wang.org ds=true
-node/node1.wang.org labeled
-node/node2.wang.org labeled
-```
+[root@master1 ~]#kubectl label node node1.bowen.org node2.bowen.org ds=true
+node/node1.bowen.org labeled
+node/node2.bowen.org labeled
 
-```text
 #查看标签
 [root@master1 ~]#kubectl get node --show-labels
 NAME               STATUS   ROLES           AGE   VERSION   LABELS
-master1.wang.org   Ready    control-plane   13d   v1.25.3
+master1.bowen.org   Ready    control-plane   13d   v1.25.3
 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd
-64,kubernetes.io/hostname=master1.wang.org,kubernetes.io/os=linux,node-
+64,kubernetes.io/hostname=master1.bowen.org,kubernetes.io/os=linux,node-
 role.kubernetes.io/control-plane=,node.kubernetes.io/exclude-from-external-load-
 balancers=
-node1.wang.org     Ready    <none>          13d   v1.25.3
+node1.bowen.org     Ready    <none>          13d   v1.25.3
 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,ds=true,kubernetes.io/
-arch=amd64,kubernetes.io/hostname=node1.wang.org,kubernetes.io/os=linux
-node2.wang.org     Ready    <none>          13d   v1.25.3
+arch=amd64,kubernetes.io/hostname=node1.bowen.org,kubernetes.io/os=linux
+node2.bowen.org     Ready    <none>          13d   v1.25.3
 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,ds=true,kubernetes.io/
-arch=amd64,kubernetes.io/hostname=node2.wang.org,kubernetes.io/os=linux
-node3.wang.org     Ready    <none>          13d   v1.25.3
+arch=amd64,kubernetes.io/hostname=node2.bowen.org,kubernetes.io/os=linux
+node3.bowen.org     Ready    <none>          13d   v1.25.3
 beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd
-64,kubernetes.io/hostname=node3.wang.org,kubernetes.io/os=linux
-```
+64,kubernetes.io/hostname=node3.bowen.org,kubernetes.io/os=linux
 
-```text
 [root@master1 ~]#cat controller-daemonset-label-test.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -550,49 +473,38 @@ nodeSelector:
 ds: "true"       #指定条件
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #应用配置
 [root@master1 ~]#kubectl apply -f controller-daemonset-label-test.yaml
-```
 
-```text
 #查看结果,只以指定有标签的节点上运行Pod
 [root@master1 ~]#kubectl get pod -o wide
-```
 
-```text
 NAME                              READY   STATUS    RESTARTS   AGE   IP
 NODE             NOMINATED NODE   READINESS GATES
 controller-daemonset-label-test-klnmm   1/1     Running   0          47s
-10.244.2.23   node2.wang.org   <none>           <none>
+10.244.2.23   node2.bowen.org   <none>           <none>
 controller-daemonset-label-test-w9pnm   1/1     Running   0          47s
-10.244.1.31   node1.wang.org   <none>           <none>
-```
+10.244.1.31   node1.bowen.org   <none>           <none>
 
-```text
 #给新的节点也打上标签
-[root@master1 ~]#kubectl label node master1.wang.org  node3.wang.org ds=true
-```
+[root@master1 ~]#kubectl label node master1.bowen.org  node3.bowen.org ds=true
 
-```text
 #查看结果,node3节点也开始运行Pod,但master节点还是没有运行Pod
 [root@master1 ~]#kubectl get pod -o wide
 NAME                              READY   STATUS    RESTARTS   AGE     IP
 NODE             NOMINATED NODE   READINESS GATES
 controller-daemonset-label-test-klnmm   1/1     Running   0          4m54s
-10.244.2.23   node2.wang.org   <none>           <none>
+10.244.2.23   node2.bowen.org   <none>           <none>
 controller-daemonset-label-test-lgbx2   1/1     Running   0          78s
-10.244.3.24   node3.wang.org   <none>           <none>
+10.244.3.24   node3.bowen.org   <none>           <none>
 controller-daemonset-label-test-w9pnm   1/1     Running   0          4m54s
-10.244.1.31   node1.wang.org   <none>           <none>
+10.244.1.31   node1.bowen.org   <none>           <none>
 ```
 
 范例: 滚动更新
-
-```text
+```bash
 #查看daemonset的更新策略,和Deployment的策略是相似的
 [root@master1 ~]#kubectl get ds controller-daemonset-label-test -o yaml
 ......
@@ -602,15 +514,11 @@ maxSurge: 0
 maxUnavailable: 1
 type: RollingUpdate  #Pod自动更新
 ......
-```
 
-```text
 #更新镜像,会导致Pod自动更新镜像
 [root@master1 ~]#kubectl set image  ds controller-daemonset-label-test pod-
-test=wangxiaochun/pod-test:v0.2 --record
-```
+test=bowen/pod-test:v0.2 --record
 
-```text
 #跟踪更新
 [root@master1 ~]#kubectl get pod -w
 NAME                              READY   STATUS    RESTARTS   AGE
@@ -631,9 +539,7 @@ controller-daemonset-label-test-lgbx2   1/1     Terminating         0
 8m35s
 controller-daemonset-label-test-lgbx2   0/1     Terminating         0
 9m7s
-```
 
-```text
 controller-daemonset-label-test-lgbx2   0/1     Terminating         0
 9m7s
 controller-daemonset-label-test-lgbx2   0/1     Terminating         0
@@ -662,63 +568,47 @@ controller-daemonset-label-test-4npw7   0/1     ContainerCreating   0
 0s
 controller-daemonset-label-test-4npw7   1/1     Running             0
 36s
-```
 
-```text
 #自动更新镜像
 [root@master1 ~]#kubectl get pod
 NAME                              READY   STATUS    RESTARTS   AGE
 controller-daemonset-label-test-4npw7   1/1     Running   0          4m54s
 controller-daemonset-label-test-ddfdr   1/1     Running   0          6m2s
 controller-daemonset-label-test-gxngm   1/1     Running   0          6m41s
-```
 
-```text
 #查看Pod的镜像是否更新
 [root@master1 ~]#kubectl get pod controller-daemonset-label-test-4npw7
 controller-daemonset-label-test-ddfdr controller-daemonset-label-test-gxngm -o
 yaml | grep '\- image:'
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-```
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 
-```text
 #修改策略Ondelete,生产建议此策略
 [root@master1 ~]#kubectl edit ds
 ......
 updateStrategy:
 type: OnDelete  #只有手工删除Pod时才会更新
 .....
-```
 
-```text
 #修改镜像
 [root@master1 ~]#kubectl set image  ds controller-daemonset-label-test pod-
-test=wangxiaochun/pod-test:v0.1 --record
-```
+test=bowen/pod-test:v0.1 --record
 
-```text
 #删除一个Pod,可以看到此Pod更新
 [root@master1 ~]#kubectl delete pod controller-daemonset-label-test-4npw7
-```
 
-```text
 [root@master1 ~]#kubeget pod
 NAME                              READY   STATUS    RESTARTS   AGE
 controller-daemonset-label-test-ddfdr   1/1     Running   0          35m
 controller-daemonset-label-test-gxngm   1/1     Running   0          35m
 controller-daemonset-label-test-ltkrx   1/1     Running   0          28s
-```
 
-```text
 #查看Pod更新镜像
 [root@master1 ~]#kubectl get pod controller-daemonset-label-test-ltkrx -o yaml
 |grep '\- image:'
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #跟踪观察
 [root@master1 ~]#kubectl get pod -w
 NAME                              READY   STATUS    RESTARTS   AGE
@@ -735,9 +625,7 @@ controller-daemonset-label-test-ltkrx   0/1     ContainerCreating   0
 0s
 controller-daemonset-label-test-ltkrx   1/1     Running             0
 1s
-```
 
-```text
 #查看历史
 [root@master1 ~]#kubectl rollout history ds controller-daemonset-label-test
 ```
@@ -746,9 +634,9 @@ controller-daemonset-label-test-ltkrx   1/1     Running             0
 
 ### 2.7.1 Job 工作机制
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/job/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/job/>
+
 
 ![原 PDF 第 74 页插图](assets/Kubernetes工作负载/img-7a3195448840a6a5.png)
 
@@ -771,8 +659,7 @@ Job 资源是标准的API资源类型Job 资源所在群组为“batch/v1”Job 
 ### 2.7.2 Job 属性解析
 
 **属性解析**
-
-```text
+```yaml
 apiVersion: batch/v1                    # API群组及版本
 kind: Job                               # 资源类型特有标识
 metadata:
@@ -795,15 +682,12 @@ activeDeadlineSeconds  <integer>      # 作业启动后可处于活动状态的�
 ```
 
 **并行配置示例**
-
 ```text
 #串行运行共5次任务
 spec
 parallelism: 1
 completion: 5
-```
 
-```text
 #并行2个队列，总共运行6次任务
 spec
 parallelism: 2
@@ -813,8 +697,7 @@ completion: 6
 ### 2.7.3 Job 案例
 
 范例: 单个任务
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#cat controller-job-single.yaml
 apiVersion: batch/v1
@@ -829,36 +712,26 @@ spec:
 restartPolicy: Never
 containers:
 - name: job-single
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 #image: busybox:1.30.0
 command: [ "/bin/sh", "-c", "for i in `seq 10 -1 1`; do echo $i; sleep
 2; done" ]
-```
 
-```text
 #属性解析：job重启策略只有两种：仅支持Never和OnFailure两种，不支持Always，否则的话就成死循环
 了。
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f controller-job-single.yaml
 job.batch/job-single created
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                 READY   STATUS    RESTARTS   AGE
 job-single-1-7vn2n   1/1     Running   0          6s
-```
 
-```text
 [root@master1 ~]#kubectl get pod job-single-1-7vn2n --show-labels
 NAME                 READY   STATUS    RESTARTS   AGE   LABELS
 job-single-1-7vn2n   1/1     Running   0          30s   controller-uid=bbbf4413-
 712e-443d-911d-f8a1bd511c98,job-name=job-single
-```
 
-```text
 [root@master1 ~]#kubectl logs job-single-1-7vn2n -f --timestamps=true
 2021-05-23T06:58:32.176818037Z 10
 2021-05-23T06:58:34.177602074Z 9
@@ -866,35 +739,25 @@ job-single-1-7vn2n   1/1     Running   0          30s   controller-uid=bbbf4413-
 2021-05-23T06:58:38.179700574Z 7
 2021-05-23T06:58:40.180708381Z 6
 2021-05-23T06:58:42.181837659Z 5
-```
 
-```text
 2021-05-23T06:58:44.183217344Z 4
 2021-05-23T06:58:46.184596313Z 3
 2021-05-23T06:58:48.185299333Z 2
 2021-05-23T06:58:50.186220348Z 1
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get all
 NAME                      READY   STATUS      RESTARTS   AGE
 pod/job-single--1-7vn2n   0/1     Completed   0          46s
-```
 
-```text
 NAME                   COMPLETIONS   DURATION   AGE
 job.batch/job-single   1/1           21s        46s
-```
 
-```text
 #结果显示：job任务执行完毕后，状态是Completed
 [root@master1 ~]#kubectl get pod
 NAME                READY   STATUS      RESTARTS   AGE
 job-single--1-7vn2n   0/1     Completed   0          2m21s
-```
 
-```text
 [root@master1 ~]#kubectl get jobs.batch job-single -o yaml
 apiVersion: batch/v1
 kind: Job
@@ -935,9 +798,7 @@ name: job-single
 spec:
 containers:
 - command:
-```
 
-```text
 - /bin/sh
 - -c
 - for i in `seq 10 -1 1`; do echo $i; sleep 2; done
@@ -964,16 +825,13 @@ ready: 0
 startTime: ""
 succeeded: 1
 uncountedTerminatedPods: {}
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f controller-job-single.yaml
 ```
 
 范例: 多个串行任务
-
-```text
+```yaml
 #资源定义文件
 [root@master1 ~]#cat controller-job-multi-serial.yaml
 apiVersion: batch/v1
@@ -989,37 +847,27 @@ spec:
 containers:
 - name: job-multi-serial
 #image: busybox:1.30.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 command: ["/bin/sh","-c","echo serial job; sleep 3"]
 restartPolicy: OnFailure
-```
 
-```text
 [root@master1 ~]#kubectl applycontroller-job-multi-serial.yaml
 #查看结果
 [root@master1 ~]#kubectl get all
 NAME                            READY   STATUS      RESTARTS   AGE
 pod/job-multi-serial--1-bl9jb   0/1     Completed   0          58s
 pod/job-multi-serial--1-mwb9c   0/1     Completed   0          62s
-```
 
-```text
 pod/job-multi-serial--1-vhltw   0/1     Completed   0          66s
 pod/job-multi-serial--1-xwtgm   0/1     Completed   0          50s
 pod/job-multi-serial--1-zcpww   0/1     Completed   0          54s
-```
 
-```text
 NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   192.168.0.1   <none>        443/TCP   17h
-```
 
-```text
 NAME                         COMPLETIONS   DURATION   AGE
 job.batch/job-multi-serial   5/5           20s        66s
-```
 
-```text
 #验证是否串行
 [root@master1 ~]#job_list=$(kubectl get pod |sort -k5 | awk '!/^NAME/{print
 $1}')
@@ -1031,9 +879,7 @@ $1}')
 ......08:31:35.745865837Z serial job
 #结果显示：这些任务，确实是串行的方式来执行，由于涉及到任务本身是启动和删除，所以时间间隔要大于
 3s
-```
 
-```text
 #如果设置completionMode: Indexed,Pod名称效果如下
 [root@master1 ~]#kubectl get pod -l controller-uid
 NAME                       READY   STATUS      RESTARTS   AGE
@@ -1042,16 +888,13 @@ job-multi-serial-1-fzv5b   0/1     Completed   0          108s
 job-multi-serial-2-fmnff   0/1     Completed   0          101s
 job-multi-serial-3-ph9t6   0/1     Completed   0          94s
 job-multi-serial-4-9jq7v   0/1     Completed   0          87s
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f controller-job-multi-serial.yaml
 ```
 
 范例: 并行任务
-
-```text
+```yaml
 [root@master1 ~]#cat controller-job-multi-parallel.yaml
 apiVersion: batch/v1
 kind: Job
@@ -1070,16 +913,12 @@ spec:
 containers:
 - name: job-multi-parallel
 #image: busybox:1.30.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 command: ["/bin/sh","-c","echo parallel job; sleep 3"]
 restartPolicy: OnFailure
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f controller-job-multi-parallel.yaml
-```
 
-```text
 #查看Pod
 [root@master1 ~]#kubectl get pod -l job-name=job-multi-parallel
 NAME                              READY   STATUS      RESTARTS   AGE
@@ -1089,9 +928,7 @@ pod/job-multi-parallel--1-jvt9l   0/1     Completed   0          32s
 pod/job-multi-parallel--1-kr5d9   0/1     Completed   0          41s
 pod/job-multi-parallel--1-ss4sc   0/1     Completed   0          36s
 pod/job-multi-parallel--1-v797h   0/1     Completed   0          28s
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME                              READY   STATUS      RESTARTS   AGE
 pod/job-multi-parallel--1-9nmgt   0/1     Completed   0          41s
@@ -1100,14 +937,10 @@ pod/job-multi-parallel--1-jvt9l   0/1     Completed   0          32s
 pod/job-multi-parallel--1-kr5d9   0/1     Completed   0          41s
 pod/job-multi-parallel--1-ss4sc   0/1     Completed   0          36s
 pod/job-multi-parallel--1-v797h   0/1     Completed   0          28s
-```
 
-```text
 NAME                           COMPLETIONS   DURATION   AGE
 job.batch/job-multi-parallel   6/6           21s        41s
-```
 
-```text
 #验证结果
 [root@master1 ~]#job_list=$(kubectl get pod |sort -k5 | awk '!/^NAME/{print
 $1}')
@@ -1119,9 +952,7 @@ $1}')
 ... 09:50:58 ... parallel job
 ... 09:50:58 ... parallel job
 #结果显示：这6条任务确实是两两并行执行的
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f controller-job-multi-parallel.yaml
 ```
@@ -1130,9 +961,9 @@ $1}')
 
 ### 2.8.1 CronJob 工作机制
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/cron-jobs/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/cron-jobs/>
+
 
 ![原 PDF 第 81 页插图](assets/Kubernetes工作负载/img-cf1155b18683dfa7.png)
 
@@ -1149,7 +980,6 @@ CronJob资源也是标准的API资源类型
 注意：在CronJob中，通配符“?”和“*”的意义相同，它们都表示任何可用的有效值。
 
 **Cron 时间表语法**
-
 ```text
 # ┌───────────── 分钟 (0 - 59)
 # │ ┌───────────── 小时 (0 - 23)
@@ -1169,8 +999,7 @@ CronJob资源也是标准的API资源类型
 @hourly每小时的开始一次0 * * * *
 
 ### 2.8.2 CronJob 属性解析
-
-```text
+```yaml
 apiVersion: batch/v1                    # API群组及版本,早期版本为batch/v1beta1
 kind: CronJob                           # 资源类型特有标识
 metadata:
@@ -1197,17 +1026,13 @@ startingDeadlineSeconds  <integer>    # 因错过时间点而未执行的作业�
 续执行
 suspend  <boolean>                    # 是否挂起后续的作业，不影响当前作业，默认为
 false
-```
 
-```text
 #官方示例
 apiVersion: batch/v1
 kind: CronJob
 metadata:
 name: hello
-```
 
-```text
 spec:
 schedule: "* * * * *"
 jobTemplate:
@@ -1228,8 +1053,7 @@ restartPolicy: OnFailure
 ### 2.8.3 CronJob 案例
 
 范例: 单周期任务
-
-```text
+```yaml
 [root@master1 ~]#cat controller-cronjob-simple.yaml
 apiVersion: batch/v1
 kind: CronJob
@@ -1247,46 +1071,32 @@ restartPolicy: OnFailure
 containers:
 - name: cronjob
 #image: busybox:1.30.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 command: ["/bin/sh","-c","echo Cron Job"]
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f controller-cronjob-simple.yaml
-```
 
-```text
 #时间没有到时,pod不会创建
 [root@master1 ~]#kubectl get all
 NAME                    SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 cronjob.batch/cronjob   */2 * * * *   False     0        <none>          32s
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 No resources found in default namespace.
-```
 
-```text
 [root@master1 ~]#kubectl get cj
 NAME      SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 cronjob   */2 * * * *   False     0        <none>          10s
-```
 
-```text
 #过一会再观察,可以看到cronjob早由多个job组成
 [root@master1 ~]#kubectl get jobs.batch
 NAME               COMPLETIONS   DURATION   AGE
-```
 
-```text
 cronjob-27462776   1/1           1s         4m13s
 cronjob-27462778   1/1           0s         2m13s
 cronjob-27462780   1/1           1s         13s
 #注意：上面是6分钟过后才进行查看的效果
-```
 
-```text
 [root@master1 ~]#cornjob_list=$(kubectl get pod | grep cronjob | awk '{print
 $1}')
 [root@master1 ~]#for i in $cornjob_list ;do kubectl logs $i --timestamps=true;
@@ -1294,16 +1104,13 @@ done
 ... 10:18:02 ... Cron Job
 ... 10:20:02 ... Cron Job
 ... 10:22:02 ... Cron Job
-```
 
-```text
 #删除任务
 [root@master1 ~]#kubectl delete cronjob.batch/cronjob
 ```
 
 范例: 秒级周期任务
-
-```text
+```yaml
 [root@master1 ~]#cat controller-cronjob-second.yaml
 apiVersion: batch/v1
 kind: CronJob
@@ -1319,55 +1126,39 @@ restartPolicy: OnFailure
 containers:
 - name: cronjob
 #image: busybox:1.30.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 command: ["/bin/sh","-c","i=0; until [ $i -eq 60 ]; do sleep 10; let
 i=i+10; echo $i sencond job; done"]
-```
 
-```text
 #属性解析：调度是每秒都执行后面的命令,命令是每执行一下停止10s,这里的10s应该符合原则上的时间整除
 规则
-```
 
-```text
 #执行资源定义文件
 [root@master1 ~]#kubectl apply  -f controller-cronjob-second.yaml
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get all
 NAME                                   READY   STATUS      RESTARTS   AGE
 pod/cronjob-second-27462787--1-ccqmp   0/1     Completed   0          2m7s
 pod/cronjob-second-27462788--1-t9824   0/1     Completed   0          67s
 pod/cronjob-second-27462789--1-n59ch   1/1     Running     0          7s
-```
 
-```text
 NAME                           SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE
 AGE
 cronjob.batch/cronjob-second   * * * * *   False     1        7s
 2m8s
-```
 
-```text
 NAME                                COMPLETIONS   DURATION   AGE
 job.batch/cronjob-second-27462787   1/1           60s        2m7s
-```
 
-```text
 job.batch/cronjob-second-27462788   1/1           61s        67s
 job.batch/cronjob-second-27462789   0/1           7s         7s
 #结果显示：周期性任务每分钟执行一次
-```
 
-```text
 [root@master1 ~]#kubectl get cronjobs.batch
 NAME             SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 cronjob-second   * * * * *   False     1        11s             3m12s
-```
 
-```text
 #查看pod过程
 [root@master1 ~]#kubectl  get pod -w
 NAME                               READY   STATUS      RESTARTS   AGE
@@ -1382,9 +1173,7 @@ cronjob-second-27462793--1-7r4f8   1/1     Running             0          1s
 cronjob-second-27462792--1-rfn8t   0/1     Completed           0          61s
 cronjob-second-27462789--1-n59ch   0/1     Terminating         0          4m1s
 cronjob-second-27462789--1-n59ch   0/1     Terminating         0          4m1s
-```
 
-```text
 #查看pod日志
 [root@master1 ~]#kubectl logs cronjob-second-27462787--1-ccqmp
 10 sencond job

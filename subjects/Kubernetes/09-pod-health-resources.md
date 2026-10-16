@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Pod 健康、资源、安全与设计模式'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -12,7 +13,6 @@ syntax_highlight: true
 # 09 Pod 健康、资源、安全与设计模式
 
 ## 3.3 Pod 的健康状态监测
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
 liveness-readiness-startup-probes/
@@ -30,14 +30,9 @@ liveness-readiness-startup-probes/
 
 ![原 PDF 第 114 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-2eefa841dd25c25c.png)
 
-```text
-process health  #状态健康检测接口
-readiness       #容器可读状态的接口
-liveness        #容器存活状态的接口
-metrics         #监控指标接口
-tracing         #全链路监控的埋点(探针)接口
-logs            #容器日志接口
-```
+
+process health  #状态健康检测接口 readiness       #容器可读状态的接口 liveness        #容器存活状态的接口 metrics         #监控指标接口 tracing         #全链路监控的埋点(探针)接口 logs            #容器日志接口
+
 
 #### 3.3.1.2 Pod 的健康性监控
 
@@ -46,7 +41,6 @@ Pod 通过探针要制实现Pod 的健康性监控,当一旦检测出Pod故障�
 ##### 3.3.1.2.1 探针类型
 
 针对运行中的容器，kubelet 可以选择是否执行以下三种探针，以及如何针对探测结果作出反应。
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#types-of-
 probe
@@ -87,13 +81,10 @@ Pod 支持的监测探针类型如下：
 参考资料：kubectl explain pod.spec.containers.ReadnessProbe
 
 范例： 查看kube-apiserver 的Pod内置的探针
-
-```text
-[root@master1 ~]#kubectl get pod -n kube-system kube-apiserver-master1.wang.org -
+```bash
+[root@master1 ~]#kubectl get pod -n kube-system kube-apiserver-master1.bowen.org -
 o yaml |grep -A10  Probe
-```
 
-```text
 livenessProbe:
 failureThreshold: 8
 httpGet:
@@ -133,7 +124,6 @@ timeoutSeconds: 15
 ```
 
 ##### 3.3.1.2.2 配置探针
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
 liveness-readiness-startup-probes/#configure-probes
@@ -142,8 +132,7 @@ liveness-readiness-startup-probes/#configure-probes
 ![原 PDF 第 117 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-5d9a5d4e3eb4defe.png)
 
 ![原 PDF 第 118 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-a143669f21752b1d.png)
-
-```text
+```yaml
 ##注意：下面以livenessProbe为例，StartupProbe和readnessProbe 的属性与livenessProbe是相
 同的
 spec:
@@ -171,9 +160,9 @@ failureThreshold <integer>        # 连续失败几次才表示状态异常，�
 
 对于Pod中多容器的场景，只有所有容器就绪，才认为Pod就绪。
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#container-probes>
+
 
 kubelet 定期执行LivenessProbe和ReadinessProbe探针来诊断Pod的健康状况，Pod 探针有多种实现方式，常见的方式如下：
 
@@ -192,8 +181,7 @@ kubelet 定期执行LivenessProbe和ReadinessProbe探针来诊断Pod的健康状
 注意：不同探针可采用上述检测方式，具体支持情况以使用的 Kubernetes 版本为准。
 
 范例：
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod -n kube-system    -l k8s-app=kube-dns -o yaml
 |grep -m2 -EA9 'livenessProbe|readinessProbe'
 livenessProbe:
@@ -213,9 +201,7 @@ httpGet:
 path: /ready
 port: 8181
 scheme: HTTP
-```
 
-```text
 periodSeconds: 10
 successThreshold: 1
 timeoutSeconds: 1
@@ -225,7 +211,6 @@ resources:
 ### 3.3.3 探针案例
 
 #### 3.3.3.1 Exec 方式案例
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
 liveness-readiness-startup-probes/#define-a-liveness-command
@@ -236,8 +221,7 @@ exec 其实就是尝试通过在容器内部来执行一个命令，看看能不
 exec的执行动作与我们之前用到的command作用一样。
 
 范例：startupprobe的exec探针
-
-```text
+```yaml
 #准备yaml文件
 [root@master1 ~]#cat  pod-startup-exec.yaml
 apiVersion: v1
@@ -250,7 +234,7 @@ app: pod-startup-exec
 spec:
 containers:
 - name: pod-startup-exec-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 startupProbe:
 exec:
@@ -261,39 +245,27 @@ timeoutSeconds: 1                #此容器返回结果需要花几秒时间，�
 periodSeconds: 5
 successThreshold: 1
 failureThreshold: 1
-```
 
-```text
 #创建Pod
 [root@master1 ~]#kubectl apply -f pod-startup-exec.yaml
-```
 
-```text
 #查看Pod，发现READY为0/1表示没有
 [root@master1 pod]#kubectl get pod pod-startup-exec  -o wide
 NAME                             READY   STATUS        RESTARTS      AGE     IP
 NODE             pod-startup-exec            0/1     Running       0
-12s     10.244.2.116   node2.wang.org   <none>           <none
-```
+12s     10.244.2.116   node2.bowen.org   <none>           <none
 
-```text
 #此应用刚启动首次访问默认需要等5s后才能访问
 [root@master1 ~]#curl 10.244.2.116/livez
 ^C
-```
 
-```text
 #模拟故障
 [root@master1 ~]#curl -XPOST -d 'livez=FAIL'  10.244.2.116/livez
-```
 
-```text
 #访问故障
 [root@master1 ~]#curl 10.244.2.116/livez
 FAIL
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl describe pod pod-startup-exec
 .......
@@ -301,9 +273,9 @@ Events:
 Type     Reason     Age   From               Message
 ----     ------     ----  ----               -------
 Normal   Scheduled  49s   default-scheduler  Successfully assigned default/pod-
-startup-exec to node2.wang.org
+startup-exec to node2.bowen.org
 Normal   Pulled     49s   kubelet            Container image
-"wangxiaochun/pod-test:v0.1" already present on machine
+"bowen/pod-test:v0.1" already present on machine
 Normal   Created    49s   kubelet            Created container pod-startup-
 exec-container
 Normal   Started    49s   kubelet            Started container pod-startup-
@@ -314,9 +286,7 @@ exceeded
 Warning  Unhealthy  14s   kubelet            Startup probe failed:
 Normal   Killing    14s   kubelet            Container pod-startup-exec-
 container failed startup probe, will be restarted
-```
 
-```text
 #跟踪状态，发现重启，并修复故障
 [root@master1 ~]#kubectl get pod pod-startup-exec -w
 NAME               READY   STATUS    RESTARTS     AGE
@@ -324,16 +294,13 @@ pod-startup-exec   0/1     Running   0            5s
 pod-startup-exec   0/1     Running   1 (0s ago)   91s
 pod-startup-exec   0/1     Running   1 (65s ago)  2m36s
 pod-startup-exec   1/1     Running   1 (65s ago)  2m36s
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f pod-startup-exec.yaml
 ```
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-liveness-exec-cmd.yaml
 apiVersion: v1
 kind: Pod
@@ -343,26 +310,20 @@ namespace: default
 spec:
 containers:
 - name: pod-liveness-exec-cmd-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 imagePullPolicy: IfNotPresent
 command: ["/bin/sh","-c","touch /tmp/healthy; sleep 3; rm -f
 /tmp/healthy;sleep 3600"]
 livenessProbe:
 exec:
 command: ["test", "-e","/tmp/healthy"]
-```
 
-```text
 initialDelaySeconds: 1
 periodSeconds: 3
-```
 
-```text
 #创建容器
 [root@master1 ~]#kubectl apply -f pod-liveness-exec-cmd.yaml
-```
 
-```text
 #实时监控,发现不断重启
 [root@master1 ~]#kubectl get pod  pod-liveness-exec-cmd  -w
 NAME             READY   STATUS    RESTARTS   AGE
@@ -378,9 +339,7 @@ pod-liveness-exec-cmd   0/1     CrashLoopBackOff   6 (0s ago)    6m22s
 pod-liveness-exec-cmd   1/1     Running            7 (2m47s ago)   9m9s
 pod-liveness-exec-cmd   0/1     CrashLoopBackOff   7 (0s ago)      9m49s
 ...
-```
 
-```text
 [root@master1 ~]#kubectl get pod pod-liveness-exec-cmd -o yaml
 .....
 spec:
@@ -389,7 +348,7 @@ containers:
 - /bin/sh
 - -c
 - touch /tmp/healthy; sleep 3; rm -f /tmp/healthy;sleep 3600
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 imagePullPolicy: IfNotPresent
 livenessProbe:
 exec:
@@ -403,13 +362,9 @@ periodSeconds: 3
 successThreshold: 1
 timeoutSeconds: 1
 name: pod-liveness-exec-cmd-container
-```
 
-```text
 .....
-```
 
-```text
 #状态描述
 [root@master1 ~]#kubectl describe pod  pod-liveness-exec-cmd
 .....
@@ -421,9 +376,7 @@ Image:         busybox
 Image ID:      docker-
 pullable://busybox@sha256:5acba83a746c7608ed544dc1533b87c737a0b0fb730301639a0179
 f9344b1678
-```
 
-```text
 Port:          <none>
 Host Port:     <none>
 Command:
@@ -441,7 +394,7 @@ Events:
 Type     Reason     Age                   From               Message
 ----     ------     ----                  ----               -------
 Normal   Scheduled  10m                   default-scheduler  Successfully
-assigned default/pod-liveness-exec-cmd to node2.wang.org
+assigned default/pod-liveness-exec-cmd to node2.bowen.org
 Normal   Killing    8m47s (x3 over 10m)   kubelet            Container pod-
 liveness-exec-cmd-container failed liveness probe, will be restarted
 Normal   Pulled     8m17s (x4 over 10m)   kubelet            Container image
@@ -457,8 +410,7 @@ restarting failed container
 ```
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-liveness-exec-http.yaml
 apiVersion: v1
 kind: Pod
@@ -468,7 +420,7 @@ namespace: default
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 livenessProbe:
 exec:
@@ -477,37 +429,25 @@ initialDelaySeconds: 5
 timeoutSeconds: 1
 periodSeconds: 5
 #注意:此处的/livez 接口是此容器自定义的接口地址，并非所有容器都支持的
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  pod-liveness-exec-http.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod pod-liveness-exec -o wide
 NAME                    READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
-```
 
-```text
 pod-liveness-exec-http   1/1     Running   0          14m   172.16.3.11
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#curl -I 172.16.3.11/livez
 HTTP/1.0 200 OK
 Content-Type: text/html; charset=utf-8
 Content-Length: 2
 Server: Werkzeug/1.0.0 Python/3.8.2
-```
 
-```text
 #修改容器状态,当前的/livez支持post方法，用于更改接口的状态，从而来模拟容器的检测效果
 [root@master1 ~]#curl -XPOST -d 'livez=FAIL' 172.16.3.11/livez
-```
 
-```text
 #访问容器访问失败
 [root@master1 ~]#curl -I 172.16.3.11/livez
 FAIL
@@ -517,9 +457,7 @@ Content-Type: text/html; charset=utf-8
 Content-Length: 4
 Server: Werkzeug/1.0.0 Python/3.8.2
 Date: Thu, 17 Mar 2020 14:06:49 GMT
-```
 
-```text
 [root@master1 ~]#kubectl describe pod pod-liveness-exec-http
 ....
 State:          Running
@@ -536,20 +474,18 @@ Warning  Unhealthy  14s (x8 over 23m)    kubelet            Liveness probe
 failed:
 Normal   Killing    14s (x2 over 6m44s)  kubelet            Container pod-test
 failed liveness probe, will be restarted
-```
 
-```text
 Events:
 Type     Reason     Age                  From               Message
 ----     ------     ----                 ----               -------
 Normal   Scheduled  5m54s                default-scheduler  Successfully
-assigned default/pod-liveness-exec-http to node2.wang.org
+assigned default/pod-liveness-exec-http to node2.bowen.org
 Warning  Unhealthy  54s (x3 over 64s)    kubelet            Liveness probe
 failed:
 Normal   Killing    54s                  kubelet            Container pod-test
 failed liveness probe, will be restarted
 Normal   Pulled     24s (x2 over 5m54s)  kubelet            Container image
-"wangxiaochun/pod-test:v0.1" already present on machine
+"bowen/pod-test:v0.1" already present on machine
 Normal   Created    24s (x2 over 5m54s)  kubelet            Created container
 pod-test
 Normal   Started    24s (x2 over 5m53s)  kubelet            Started container
@@ -557,30 +493,22 @@ pod-test
 Warning  Unhealthy  16s (x2 over 5m41s)  kubelet            Liveness probe
 errored: rpc error: code = Unknown desc = deadline exceeded
 ("DeadlineExceeded"): context deadline exceeded
-```
 
-```text
 #结果显示：探针探测失败
 .....
-```
 
-```text
 #过一会儿发现Pod重启，自动修复故障
 [root@master1 pod]#kubectl get pod pod-liveness-exec-http
 NAME                    READY   STATUS    RESTARTS      AGE
 pod-liveness-exec-http   1/1     Running   1 (14s ago)   8m54s
-```
 
-```text
 #再次访问正常
 [root@master1 ~]#curl -I 172.16.3.11/livez
 HTTP/1.0 200 OK
 Content-Type: text/html; charset=utf-8
 Content-Length: 2
 Server: Werkzeug/1.0.0 Python/3.8.2
-```
 
-```text
 #如果执行了两次POST方法，会显示重启了两次
 [root@master1 ~]#kubectl get pod
 NAME                READY   STATUS    RESTARTS       AGE
@@ -588,8 +516,7 @@ pod-liveness-exec   1/1     Running   2 (117s ago)   26m
 ```
 
 范例： 监测 Redis 服务
-
-```text
+```yaml
 [root@master1 ~]#cat pod-liveness-exec-redis.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -607,7 +534,7 @@ app: redis-6379
 spec:
 containers:
 - name: redis
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/redis:6.2.5
+image: registry.cn-beijing.aliyuncs.com/bowen/redis:6.2.5
 ports:
 - containerPort: 6379
 livenessProbe:
@@ -619,17 +546,13 @@ periodSeconds: 3
 timeoutSeconds: 3
 successThreshold: 1
 failureThreshold: 3
-```
 
-```text
 ---
 apiVersion: v1
 kind: Service
 metadata:
 name: redis-svc
-```
 
-```text
 spec:
 ports:
 - name: redis
@@ -638,35 +561,25 @@ targetPort: 6379
 protocol: TCP
 selector:
 app: redis-6379
-```
 
-```text
 #执行
 [root@master1 ~]#kubectl apply -f pod-liveness-exec-redis.yaml
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get pod -o wide
 NAME                                READY   STATUS    RESTARTS   AGE   IP
 NODE             NOMINATED NODE   READINESS GATES
 redis-deployment-566d77d68d-gtw6m   1/1     Running   0          5s
-10.244.3.89   node3.wang.org   <none>           <none>
-```
+10.244.3.89   node3.bowen.org   <none>           <none>
 
-```text
 #查看SVC和endpoint
 [root@master1 ~]#kubectl get svc,ep redis-svc
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 service/redis-svc    ClusterIP   10.102.54.249   <none>        6379/TCP   12s
-```
 
-```text
 NAME                   ENDPOINTS          AGE
 endpoints/redis-svc    10.244.3.89:6379   12s
-```
 
-```text
 #直接访问Pod
 [root@master1 ~]#kubectl exec -it redis-deployment-566d77d68d-gtw6m -- redis-cli
 info server
@@ -691,18 +604,14 @@ configured_hz:10
 lru_clock:9526851
 executable:/data/redis-server
 config_file:
-```
 
-```text
 #测试通过SVC来访问Pod
 [root@master1 ~]#echo -e  "info server\nquit\nexit"  | nc 10.102.54.249 6379
 $461
 # Server
 redis_version:5.0.0
 redis_git_sha1:00000000
-```
 
-```text
 redis_git_dirty:0
 redis_build_id:9a5fa86bdce33ad2
 redis_mode:standalone
@@ -721,75 +630,55 @@ configured_hz:10
 lru_clock:9526982
 executable:/data/redis-server
 config_file:
-```
 
-```text
 +OK
-```
 
-```text
 #模拟故障
+```
+```yaml
 [root@master1 ~]#echo  "config set port 1234"  | nc 10.102.54.249 6379
 [root@master1 ~]#echo  "SHUTDOWN"  | nc 10.102.54.249 6379
-```
 
-```text
 #马上查看，可以看到Pod重启，并且将pod从endpoint删除
 [root@master1 ~]#kubectl get pod,svc,ep -o wide
 NAME                                    READY   STATUS             RESTARTS
 AGE    IP            NODE             NOMINATED NODE   READINESS GATES
 pod/redis-deployment-566d77d68d-gtw6m   0/1     CrashLoopBackOff   1 (11s ago)
-9m6s   10.244.3.89   node3.wang.org   <none>           <none>
-```
+9m6s   10.244.3.89   node3.bowen.org   <none>           <none>
 
-```text
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 SELECTOR
 service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    29d
 <none>
 service/redis-svc    ClusterIP   10.102.54.249   <none>        6379/TCP   9m6s
 app=redis-6379
-```
 
-```text
 NAME                   ENDPOINTS         AGE
 endpoints/kubernetes   10.0.0.200:6443   29d
 endpoints/redis-svc                      9m6s
-```
 
-```text
 #过一会儿再查看，恢复正常
 [root@master1 ~]#kubectl get pod,svc,ep -o wide
 NAME                                    READY   STATUS    RESTARTS        AGE
 IP            NODE             NOMINATED NODE   READINESS GATES
 pod/redis-deployment-566d77d68d-gtw6m   1/1     Running   2 (2m28s ago)   11m
-10.244.3.89   node3.wang.org   <none>           <none>
-```
+10.244.3.89   node3.bowen.org   <none>           <none>
 
-```text
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 SELECTOR
 service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP    29d
 <none>
 service/redis-svc    ClusterIP   10.102.54.249   <none>        6379/TCP   11m
 app=redis-6379
-```
 
-```text
 NAME                   ENDPOINTS          AGE
-```
 
-```text
 endpoints/kubernetes   10.0.0.200:6443    29d
 endpoints/redis-svc    10.244.3.89:6379   11m
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete -f pod-liveness-exec-redis.yaml
-```
 
-```text
 #修改配置
 [root@master1 ~]#vim pod-liveness-exec-redis.yaml
 apiVersion: apps/v1
@@ -816,60 +705,43 @@ readinessProbe:       #只修改此行
 exec:
 command: ['/bin/sh', '-c', 'redis-cli info']
 .....
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f pod-liveness-exec-redis.yaml
-```
 
-```text
 #查看Pod
 [root@master1 ~]#kubectl get pod -o wide
 NAME                                READY   STATUS    RESTARTS   AGE   IP
 NODE             NOMINATED NODE   READINESS GATES
 redis-deployment-865fd789d5-pc26n   1/1     Running   0          7s
-10.244.3.102   node3.wang.org   <none>           <none>
-```
+10.244.3.102   node3.bowen.org   <none>           <none>
 
-```text
 #关闭Redis服务
 [root@master1 ~]# echo -e  "SHUTDOWN"  | nc 10.244.3.102  6379
-```
 
-```text
 #查看重启，为什么？
 [root@master1 ~]#kubectl get pod
 NAME                                READY   STATUS    RESTARTS     AGE
 redis-deployment-865fd789d5-pc26n   1/1     Running   1 (9s ago)   105s
-```
 
-```text
 #查看endpoint下线
 [root@master1 ~]#kubectl get svc,ep redis-svc
 NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 service/redis-svc    ClusterIP   10.109.113.230   <none>        6379/TCP   45s
-```
 
-```text
 NAME                   ENDPOINTS         AGE
 endpoints/redis-svc                      45s
-```
 
-```text
 #稍过一会儿endpoint上线
 [root@master1 ~]#kubectl get svc,ep redis-svc
 NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 service/redis-svc   ClusterIP   10.109.113.230   <none>        6379/TCP   69s
-```
 
-```text
 NAME                  ENDPOINTS           AGE
 endpoints/redis-svc   10.244.3.102:6379   69s
 ```
 
 #### 3.3.3.2 Tcpsocket 方式案例
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
 liveness-readiness-startup-probes/#tcp-probes
@@ -880,8 +752,7 @@ liveness-readiness-startup-probes/#tcp-probes
 ##### 3.3.3.2.1 Liveness  的 Tcpsocket 探针
 
 范例：
-
-```text
+```yaml
 [root@master1 ~]#cat pod-liveness-tcpsocket.yaml
 apiVersion: v1
 kind: Pod
@@ -891,7 +762,7 @@ namespace: default
 spec:
 containers:
 - name: pod-liveness-tcpsocket-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 ports:
 - name: http           #给指定端口定义别名
@@ -907,26 +778,18 @@ port: http        #引用上面端口的定义
 periodSeconds: 5
 initialDelaySeconds: 5
 #注意：由于此镜像应用对外暴露的端口是80端口，所以要探测80端口
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-liveness-tcpsocket.yaml
-```
 
-```text
 #查看状态正常
 [root@master1 ~]#kubectl get pod  pod-liveness-tcpsocket
 NAME                     READY   STATUS    RESTARTS   AGE
 pod-liveness-tcpsocket   1/1     Running   0          2s
-```
 
-```text
 #模拟探测失败，添加防火墙规则，禁止探测
 [root@master1 ~]#kubectl exec pod-liveness-tcpsocket -- iptables -A INPUT -p tcp
 --dport 80 -j REJECT
-```
 
-```text
 #查看状态异常
 [root@master1 ~]#kubectl describe pod pod-liveness-tcpsocket
 .....
@@ -934,9 +797,9 @@ Events:
 Type     Reason     Age                From               Message
 ----     ------     ----               ----               -------
 Normal   Scheduled  54s                default-scheduler  Successfully assigned
-default/pod-liveness-tcpsocket to node1.wang.org
+default/pod-liveness-tcpsocket to node1.bowen.org
 Normal   Pulled     53s                kubelet            Container image
-"wangxiaochun/pod-test:v0.1" already present on machine
+"bowen/pod-test:v0.1" already present on machine
 Normal   Created    53s                kubelet            Created container
 pod-liveness-tcpsocket-container
 Normal   Started    53s                kubelet            Started container
@@ -945,18 +808,14 @@ Warning  Unhealthy  13s (x3 over 23s)  kubelet            Liveness probe
 failed: dial tcp 172.16.3.43:80: i/o timeout
 Normal   Killing    13s                kubelet            Container pod-
 liveness-tcpsocket-container failed liveness probe, will be restarted
-```
 
-```text
 #会自动重启,但无法清除iptables规则,所以会循环重启
 [root@master1 ~]#kubectl get pod -w
 NAME                     READY   STATUS    RESTARTS   AGE
 pod-liveness-tcpsocket   1/1     Running   0          70s
 pod-liveness-tcpsocket   1/1     Running   1 (0s ago)   96s
 pod-liveness-tcpsocket   1/1     Running   2 (0s ago)   2m26s
-```
 
-```text
 #手动清除防火墙规则后，不再重启
 [root@master1 ~]#kubectl exec pod-liveness-tcpsocket -- iptables -F
 ```
@@ -964,8 +823,7 @@ pod-liveness-tcpsocket   1/1     Running   2 (0s ago)   2m26s
 ##### 3.3.3.2.2 Readiness  的 Tcpsocket 探针
 
 范例：
-
-```text
+```html
 [root@master1 ~]#cat pod-readiness-tcpsocket.yaml
 apiVersion: v1
 kind: Pod
@@ -976,7 +834,7 @@ app: pod-readiness-tcpsocket
 spec:
 containers:
 - name: pod-readiness-tcpsocket-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 readinessProbe:
 tcpSocket:
 port: 80
@@ -985,9 +843,7 @@ periodSeconds: 10
 livenessProbe:
 tcpSocket:
 port: 80
-```
 
-```text
 initialDelaySeconds: 15
 periodSeconds: 20
 ---
@@ -1003,31 +859,23 @@ protocol: TCP
 targetPort: 80
 selector:
 app: pod-readiness-tcpsocket  #指定上面Pod相同的标签
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-readiness-tcpsocket.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-readiness-tcpsocket   1/1     Running   0          17s   172.16.3.41
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 [root@master1 ~]#curl 172.16.3.41
 <!DOCTYPE html>
 <html>
 <head>
 <title>Welcome to nginx!</title>
-```
 
-```text
 #删除Pod
 [root@master1 ~]#kubectl delete pod  pod-readiness-tcpsocket
-```
 
-```text
 #修改端口为8080
 [root@master1 ~]#vim pod-readiness-tcpsocket.yaml
 apiVersion: v1
@@ -1037,7 +885,7 @@ name: pod-readiness-tcpsocket
 spec:
 containers:
 - name: pod-readiness-tcpsocket-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 readinessProbe:
 tcpSocket:
 port: 8080    #只修改此行，不会导致重启Pod
@@ -1048,16 +896,12 @@ tcpSocket:
 port: 80     #如果修改此行为8080，才会导致Pod重启
 initialDelaySeconds: 15
 periodSeconds: 20
-```
 
-```text
 #查看状态,不会重启Pod
 [root@master1 ~]#kubectl get pod -w
 NAME                      READY   STATUS    RESTARTS   AGE
 pod-readiness-tcpsocket   0/1     Running   0          22s
-```
 
-```text
 #显示readinessProbe失败，但不会重启Pod
 [root@master1 ~]#kubectl describe pod pod-readiness-tcpsocket
 .....
@@ -1072,18 +916,16 @@ Events:
 Type     Reason     Age                 From               Message
 ----     ------     ----                ----               -------
 Normal   Scheduled  2m3s                default-scheduler  Successfully
-assigned default/pod-readiness-tcpsocket to node2.wang.org
+assigned default/pod-readiness-tcpsocket to node2.bowen.org
 Normal   Pulled     2m2s                kubelet            Container image
-"wangxiaochun/nginx:1.20.0" already present on machine
+"bowen/nginx:1.20.0" already present on machine
 Normal   Created    2m2s                kubelet            Created container
 pod-readiness-tcpsocket-container
 Normal   Started    2m2s                kubelet            Started container
 pod-readiness-tcpsocket-container
 Warning  Unhealthy  3s (x13 over 113s)  kubelet            Readiness probe
 failed: dial tcp 10.244.2.115:8080: connect: connection refused
-```
 
-```text
 #可以看到：由于容器内部没有该端口，所以探测的时候是失败的，所以pod一直无法正常启动。
 ```
 
@@ -1092,20 +934,13 @@ failed: dial tcp 10.244.2.115:8080: connect: connection refused
 HTTP 探测通过对容器内容开放的web服务，进行http方法的请求探测，如果探测成功(状态码为2XX和3XX)，那么表示http服务是正常的，否则就是失败的。
 
 HTTP Probes 允许针对 httpGet 配置额外的字段：
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
 liveness-readiness-startup-probes/#http-probes
 ```
 
-```text
-host：连接使用的主机名，默认是 Pod 的 IP。也可以在 HTTP 头中设置 “Host” 来代替。一般不配置此
-项
-scheme ：用于设置连接主机的方式（HTTP 还是 HTTPS）。默认是 "HTTP"。一般不配置此项
-path：访问 HTTP 服务的路径。默认值为 "/"。一般会配置此项
-port：访问容器的端口号或者端口名。如果数字必须在 1～65535 之间。一般会配置此项
-httpHeaders：请求中自定义的 HTTP 头。HTTP 头字段允许重复。一般不配置此项
-```
+
+host：连接使用的主机名，默认是 Pod 的 IP。也可以在 HTTP 头中设置 “Host” 来代替。一般不配置此项 scheme ：用于设置连接主机的方式（HTTP 还是 HTTPS）。默认是 "HTTP"。一般不配置此项 path：访问 HTTP 服务的路径。默认值为 "/"。一般会配置此项 port：访问容器的端口号或者端口名。如果数字必须在 1～65535 之间。一般会配置此项 httpHeaders：请求中自定义的 HTTP 头。HTTP 头字段允许重复。一般不配置此项
 
 ```text
 #示例:
@@ -1117,21 +952,18 @@ value: curl
 ##### 3.3.3.3.1 Liveness  的 httpGet 探针
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-liveness-http.yaml
 apiVersion: v1
 kind: Pod
 metadata:
 name: pod-liveness-http
-```
 
-```text
 spec:
 containers:
 - name: pod-liveness-http-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.26.0
-#image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0  #系统镜
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.26.0
+#image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0  #系统镜
 像无法持续前台运行，所以无法启动，k8s会自动重启
 ports:
 - name: http
@@ -1142,14 +974,10 @@ port: http    #或者指定80，如果非标准端口可以指定端口号
 path: /index.html
 initialDelaySeconds: 1
 periodSeconds: 3
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-liveness-http.yaml
 pod/pod-liveness-http created
-```
 
-```text
 #状态检查
 [root@master1 ~]# kubectl describe pod pod-liveness-http
 .....
@@ -1171,7 +999,7 @@ Events:
 Type     Reason     Age                From               Message
 ----     ------     ----               ----               -------
 Normal   Scheduled  42s                default-scheduler  Successfully assigned
-default/pod-liveness-http to node2.wang.org
+default/pod-liveness-http to node2.bowen.org
 Normal   Pulled     41s                kubelet            Successfully pulled
 image "busybox:latest" in 404.22751ms
 Normal   Created    25s (x2 over 41s)  kubelet            Created container
@@ -1185,26 +1013,18 @@ failed container
 Normal   Pulling    8s (x3 over 42s)   kubelet            Pulling image
 "busybox:latest"
 .......
-```
 
-```text
 [root@master1 ~]#kubectl get pod -w
 NAME                READY   STATUS             RESTARTS      AGE
 pod-liveness-http   0/1     CrashLoopBackOff   1 (21s ago)   39s
 ```
 
-```text
-pod-liveness-http   0/1     Completed          2 (30s ago)   48s
-pod-liveness-http   0/1     CrashLoopBackOff   2 (2s ago)    49s
-pod-liveness-http   0/1     Completed          3 (44s ago)   91s
-pod-liveness-http   0/1     CrashLoopBackOff   3 (2s ago)    93s
-pod-liveness-http   0/1     Completed          4 (58s ago)   2m29s
-pod-liveness-http   0/1     CrashLoopBackOff   4 (1s ago)    2m30s.
-```
+
+pod-liveness-http   0/1     Completed          2 (30s ago)   48s pod-liveness-http   0/1     CrashLoopBackOff   2 (2s ago)    49s pod-liveness-http   0/1     Completed          3 (44s ago)   91s pod-liveness-http   0/1     CrashLoopBackOff   3 (2s ago)    93s pod-liveness-http   0/1     Completed          4 (58s ago)   2m29s pod-liveness-http   0/1     CrashLoopBackOff   4 (1s ago)    2m30s.
+
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-liveness-httpget.yaml
 apiVersion: v1
 kind: Pod
@@ -1214,7 +1034,7 @@ namespace: default
 spec:
 containers:
 - name: pod-liveness-httpget-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 livenessProbe:
 httpGet:
@@ -1223,25 +1043,19 @@ port: 80
 scheme: HTTP
 initialDelaySeconds: 5
 [root@master1 ~]#kubectl apply -f  pod-liveness-httpget.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod  -o wide
 NAME                   READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-liveness-httpget   1/1     Running   0          59s   172.16.3.13
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#curl -I 172.16.3.13/livez
 HTTP/1.0 200 OK
 Content-Type: text/html; charset=utf-8
 Content-Length: 2
 Server: Werkzeug/1.0.0 Python/3.8.2
-```
 
-```text
 #模拟失败
 [root@master1 ~]#curl -XPOST -d 'livez=FAIL' 172.16.3.13/livez
 [root@master1 ~]#curl -I 172.16.3.13//livez
@@ -1249,22 +1063,16 @@ HTTP/1.0 506 VARIANT ALSO NEGOTIATES
 Content-Type: text/html; charset=utf-8
 Content-Length: 4
 Server: Werkzeug/1.0.0 Python/3.8.2
-```
 
-```text
 #实时监控
 [root@master1 ~]#kubectl get pod pod-liveness-httpget -w
 NAME                   READY   STATUS    RESTARTS   AGE
 pod-liveness-httpget   1/1     Running   0          2m34s
 pod-liveness-httpget   1/1     Running   1 (1s ago)   3m21s
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl describe pod pod-liveness-httpget
-```
 
-```text
 Warning  Unhealthy  4m1s (x3 over 4m21s)   kubelet            Liveness probe
 failed: HTTP probe failed with statuscode: 506
 Normal   Killing    4m1s                   kubelet            Container pod-
@@ -1277,8 +1085,7 @@ liveness-httpget-container failed liveness probe, will be restarted
 通过readiness的属性，尝试判断资源对象是否准备好了相关服务，来接受用户请求。如果readiness检测失败,相关的service会将此pod从Endpoints中移除,但不会重启pod。
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-readiness-http.yaml
 apiVersion: v1
 kind: Pod
@@ -1287,7 +1094,7 @@ name: pod-readiness-http
 spec:
 containers:
 - name: pod-readiness-http-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 ports:
 - name: http
 containerPort: 80
@@ -1297,22 +1104,16 @@ port: http
 path: /index.html
 initialDelaySeconds: 1
 periodSeconds: 3
-```
 
-```text
 #创建容器
 [root@master1 ~]#kubectl apply  -f  pod-readiness-http.yaml
-```
 
-```text
 #实时监控
 [root@master1 ~]#kubectl get pod -w
 NAME                 READY   STATUS             RESTARTS      AGE
 pod-readiness-http   0/1     CrashLoopBackOff   1 (26s ago)   43s
 pod-readiness-http   0/1     Completed          2 (32s ago)   49s
-```
 
-```text
 #状态检测
 [root@master1 ~]#kubectl describe pod pod-readiness-http
 ....
@@ -1328,16 +1129,13 @@ Restart Count:  3
 Readiness:      http-get http://:http/index.html delay=1s timeout=1s
 period=3s #success=1 #failure=3
 .....
-```
 
-```text
 #删除资源
 [root@master1 ~]#kubectl  delete -f  pod-readiness-http.yaml
 ```
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-readiness-httpget.yaml
 apiVersion: v1
 kind: Pod
@@ -1349,7 +1147,7 @@ app: pod-readiness-httpget
 spec:
 containers:
 - name: pod-readiness-httpget-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 readinessProbe:
 httpGet:
@@ -1361,9 +1159,7 @@ timeoutSeconds: 2
 periodSeconds: 5
 failureThreshold: 3
 restartPolicy: Always
-```
 
-```text
 ---
 #创建service文件
 apiVersion: v1
@@ -1378,46 +1174,32 @@ protocol: TCP
 targetPort: 80
 selector:
 app: pod-readiness-httpget  #指定上面Pod相同的标签
-```
 
-```text
 #创建容器和service
 [root@master1 ~]#kubectl apply -f  pod-readiness-httpget.yaml
-```
 
-```text
 #刚开始不会马上READY
 [root@master1 ~]#kubectl get pod
 NAME                    READY   STATUS    RESTARTS   AGE
 pod-readiness-httpget   0/1     Running   0          7s
-```
 
-```text
 #刚开始service中Endpoints没有对应的pod
 [root@master1 ~]#kubectl  describe svc pod-readiness-httpget-svc|grep Endpoints
 Endpoints:
-```
 
-```text
 #过一会儿变为READY
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                    READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-readiness-httpget   1/1     Running   0          35s   172.16.3.15
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #过一会儿service中Endpoints出现对应的pod
 [root@master1 ~]#kubectl get ep  pod-readiness-httpget-svc
 NAME                        ENDPOINTS         AGE
 pod-readiness-httpget-svc   172.16.3.15:80   117s
-```
 
-```text
 [root@master1 ~]#kubectl describe svc pod-readiness-httpget-svc
 Name:              pod-readiness-httpget-svc
 Namespace:         default
@@ -1434,9 +1216,7 @@ TargetPort:        80/TCP
 Endpoints:         172.16.3.15:80
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 #默认访问正常
 [root@master1 ~]#curl -I 172.16.3.15/readyz
 HTTP/1.0 200 OK
@@ -1444,57 +1224,41 @@ Content-Type: text/html; charset=utf-8
 Content-Length: 2
 Server: Werkzeug/1.0.0 Python/3.8.2
 Date: Thu, 17 Mar 2022 15:01:38 GMT
-```
 
-```text
 #通过service和Pod的IP都可以访问
 [root@master1 ~]#curl 192.168.105.57/readyz
 OK
 [root@master1 ~]#curl 172.16.3.15/readyz
 OK
-```
 
-```text
 #持续访问Service观察结果，可以访问
 [root@master1 ~]#while true;do curl 192.168.105.57;sleep 1;done
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: pod-liveness-
 httpget , ServerIP: 192.168.105.57!
-```
 
-```text
 #模拟访问故障
 [root@master1 ~]#curl -XPOST -d 'readyz=FAIL' 172.16.3.15/readyz
-```
 
-```text
 #持续访问Service观察结果，访问失败
 [root@master1 ~]#while true;do curl 192.168.105.57;sleep 1;done
 curl: (7) Failed to connect to 192.168.105.57 port 80: Connection refused
-```
 
-```text
 #访问失败
 [root@master1 ~]#curl -I 172.16.3.15/readyz
 HTTP/1.0 507 INSUFFICIENT STORAGE
 Content-Type: text/html; charset=utf-8
-```
 
-```text
 Content-Length: 4
 Server: Werkzeug/1.0.0 Python/3.8.2
 Date: Thu, 17 Mar 2022 15:02:20 GMT
-```
 
-```text
 #结果显示：虽然容器是running状态，但是就绪状态不正常，所以READY为 0/1
 [root@master1 ~]#kubectl get pod -o wide
 NAME                    READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-readiness-httpget   0/1     Running   0          2m38s   172.16.3.15
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #查看状态，不会自动重启Pod
 [root@master1 ~]#kubectl describe  pod pod-readiness-httpget
 Ready:          False
@@ -1503,23 +1267,15 @@ Readiness:      http-get http://:80/readyz delay=15s timeout=2s period=5s
 #success=1 #failure=3
 ```
 
-```text
-.......
-Warning  Unhealthy  4m29s (x3 over 4m39s)  kubelet            Readiness probe
-failed: Get "http://172.16.3.15:80/readyz": context deadline exceeded
-(Client.Timeout exceeded while awaiting headers)
-Warning  Unhealthy  96s (x19 over 3m1s)    kubelet            Readiness probe
-failed: HTTP probe failed with statuscode: 507
-```
 
-```text
+....... Warning  Unhealthy  4m29s (x3 over 4m39s)  kubelet            Readiness probe failed: Get "http://172.16.3.15:80/readyz": context deadline exceeded(Client.Timeout exceeded while awaiting headers) Warning  Unhealthy  96s (x19 over 3m1s)    kubelet            Readiness probe failed: HTTP probe failed with statuscode: 507
+
+```bash
 #发现service将pod从Endpoints中移除
 [root@master1 ~]#kubectl get ep pod-readiness-httpget-svc
 NAME                        ENDPOINTS   AGE
 pod-readiness-httpget-svc               3m58s
-```
 
-```text
 [root@master1 ~]#kubectl describe svc pod-readiness-httpget-svc
 Name:              pod-readiness-httpget-svc
 Namespace:         default
@@ -1536,9 +1292,7 @@ TargetPort:        80/TCP
 Endpoints:
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 #手动恢复正常
 [root@master1 ~]#curl -XPOST -d 'readyz=OK' 172.16.3.15/readyz
 [root@master1 ~]#curl 172.16.3.15/readyz -I
@@ -1547,20 +1301,14 @@ Content-Type: text/html; charset=utf-8
 Content-Length: 2
 Server: Werkzeug/1.0.0 Python/3.8.2
 Date: Thu, 17 Mar 2022 15:36:49 GMT
-```
 
-```text
 #验证还原
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                    READY   STATUS    RESTARTS   AGE
 pod-readiness-httpget   1/1     Running   0          6m19s
 #结果显示：一旦就绪状态ok，则READY变为 1/1
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl describe  pod pod-readiness-httpget
 .....
@@ -1568,16 +1316,12 @@ Ready:          True
 Restart Count:  0
 Readiness:      http-get http://:80/readyz delay=15s timeout=2s period=5s
 #success=1 #failure=3
-```
 
-```text
 #service再次将pod加入
 kubectl get ep pod-readiness-httpget-svc
 NAME                        ENDPOINTS         AGE
 pod-readiness-httpget-svc   172.16.3.15:80   7m21s
-```
 
-```text
 [root@master1 ~]#kubectl describe svc pod-readiness-httpget-svc
 Name:              pod-readiness-httpget-svc
 Namespace:         default
@@ -1594,9 +1338,7 @@ TargetPort:        80/TCP
 Endpoints:         172.16.3.15:80
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 #持续访问Service观察结果，可以看到恢复访问
 [root@master1 ~]#while true;do curl 192.168.105.57;sleep 1;done
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: pod-liveness-
@@ -1608,7 +1350,6 @@ httpget , ServerIP: 192.168.105.57!
 ### 3.4.1 资源限制说明
 
 Kubernetes是分布式的容器管理平台，所有资源都有Node节点提供，而Node节点上运行着很多Pod业务有很多，在一个项目中，有的业务占用的资源比重大，有的小，想要高效的利用Node资源，必须进行资源限制，那么Pod的资源限制应该如何处理？kubernetes 可以支持在容器级及namespace级分别实现资源限制。Kubernetes 已经对Pod做了相应的资源配额设置，这些资源主要体现在：CPU和内存、存储，因为存储在k8s中有专门的资源对象来进行管控，所以当前的pod资源限制，主要指的计算资源，即CPU和内存。为了方便与k8s的其他单独的资源对象区分开来，一般将CPU和内存其称为计算资源。
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/assign-cpu-
 resource/
@@ -1690,26 +1431,21 @@ Kubernetes中，对于每种资源的配额限定都需要两个参数：Request
 
 **官方链接**
 
-```text
-https://github.com/kubernetes-sigs/metrics-server
-```
+
+- <https://github.com/kubernetes-sigs/metrics-server>
+
 
 范例: 安装 metrics-server
-
-```text
+```yaml
 #没有部署metrics-server时,会提示下面错误
 [root@master1 ~]#kubectl top node
 error: Metrics API not available
-```
 
-```text
 #建议安装metrics-server,可以通过dashboard查看更多的信息,此步可选
 #官方链接:https://github.com/kubernetes-sigs/metrics-server
 [root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-
 server/releases/latest/download/components.yaml
-```
 
-```text
 #默认文件需要修改才能工作,因为默认需要内部证书验证和镜像地址k8s.gcr.io所以修改
 [root@master1 ~]#vim components.yaml
 ---
@@ -1750,45 +1486,34 @@ server:v0.6.1
 imagePullPolicy: IfNotPresent
 livenessProbe:
 ……
-```
 
-```text
 #应用此文件
 [root@master1 ~]#kubectl apply -f components.yaml
-```
 
-```text
 #查看性能信息
 [root@master1 ~]#kubectl top nodes
 NAME               CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-master1.wang.org   121m         6%     1010Mi          54%
-master2.wang.org   130m         6%     1091Mi          58%
-master3.wang.org   116m         5%     1020Mi          55%
-node1.wang.org     57m          2%     830Mi           44%
-node2.wang.org     52m          2%     453Mi           24%
-node3.wang.org     565m         28%    510Mi           27%
-```
+master1.bowen.org   121m         6%     1010Mi          54%
+master2.bowen.org   130m         6%     1091Mi          58%
+master3.bowen.org   116m         5%     1020Mi          55%
+node1.bowen.org     57m          2%     830Mi           44%
+node2.bowen.org     52m          2%     453Mi           24%
+node3.bowen.org     565m         28%    510Mi           27%
 
-```text
 [root@master1 ~]#kubectl top pod
 NAME                                                      CPU(cores)
 MEMORY(bytes)
 pod-test-5b8795b9bc-99p8d                                 1m           17Mi
-```
 
-```text
 pod-test-5b8795b9bc-bg765                                 1m           18Mi
-```
 
-```text
 pod-test-5b8795b9bc-pg4rm                                 1m           27Mi
 ```
 
 ### 3.4.2 资源限制实现
 
 范例: limits和requests值大小
-
-```text
+```yaml
 [root@master1 ~]#cat pod-limit-request.yaml
 apiVersion: v1
 kind: Pod
@@ -1797,7 +1522,7 @@ name: pod-limit-request
 spec:
 containers:
 - name: pod-limit-request-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 imagePullPolicy: IfNotPresent
 resources:
 requests:
@@ -1806,16 +1531,12 @@ cpu: "250m"
 limits:
 memory: "200Mi"
 cpu: "500m"
-```
 
-```text
 #提示错误
 [root@master1 ~]#kubectl apply  -f  pod-limit-request.yaml
 The Pod "pod-limit-request" is invalid: spec.containers[0].resources.requests:
 Invalid value: "500Mi": must be less than or equal to memory limit
-```
 
-```text
 #修改requests和limits值
 [root@master1 ~]#vim pod-limit-request.yaml
 apiVersion: v1
@@ -1825,7 +1546,7 @@ name: pod-limit-request
 spec:
 containers:
 - name: pod-limit-request-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 imagePullPolicy: IfNotPresent
 resources:
 requests:
@@ -1834,23 +1555,15 @@ cpu: "250m"
 limits:
 memory: "500Mi" #修改此行
 cpu: "500m"
-```
 
-```text
 #再次创建
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  pod-limit-request.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                READY   STATUS    RESTARTS   AGE
 pod-limit-request   1/1     Running   0          11s
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl describe pod pod-limit-request
 .....
@@ -1863,13 +1576,9 @@ Requests:
 cpu:        250m
 memory:     200Mi
 Environment:  <none>
-```
 
-```text
 #说明limits必须大于等于requests值
-```
 
-```text
 #再次修改
 [root@master1 ~]#vim pod-limit-request.yaml
 apiVersion: v1
@@ -1879,7 +1588,7 @@ name: pod-limit-request
 spec:
 containers:
 - name: pod-limit-request-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 imagePullPolicy: IfNotPresent
 resources:
 requests:
@@ -1888,20 +1597,14 @@ cpu: "250m"
 limits:
 memory: "50000Mi"    #超出物理节点内存
 cpu: "500m"
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  pod-limit-request.yaml
-```
 
-```text
 #显示为pending状态
 [root@master1 ~]#kubectl get pod
 NAME                READY   STATUS    RESTARTS   AGE
 pod-limit-request   0/1     Pending   0          7s
-```
 
-```text
 #显示不可容忍的didn't tolerate
 [root@master1 ~]#kubectl describe pod pod-limit-request
 Events:
@@ -1913,20 +1616,14 @@ that the pod didn't tolerate.
 Warning  FailedScheduling  39s   default-scheduler  0/6 nodes are available: 3
 Insufficient memory, 3 node(s) had taint {node-role.kubernetes.io/master: },
 that the pod didn't tolerate.
-```
 
-```text
 #说明requests不可以超过物理节点可用的资源,而limits可以超过
-```
 
-```text
 #删除限制
 [root@master1 ~]#kubectl delete limitranges  limit-mem-cpu-per-container
 #查看资源限制仍然存在
 [root@master1 ~]#kubectl describe pod pod-nginx
-```
 
-```text
 #重新创建后限制取消
 [root@master1 ~]#kubectl delete pod pod-nginx
 [root@master1 ~]#kubectl apply -f  pod-nginx.yaml
@@ -1934,8 +1631,7 @@ that the pod didn't tolerate.
 ```
 
 范例: 压力测试
-
-```text
+```yaml
 [root@master1 ~]#cat pod-stress.yaml
 apiVersion: v1
 kind: Pod
@@ -1944,7 +1640,7 @@ name: pod-stress
 spec:
 containers:
 - name: pod-stress
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/stress-ng:v0.03.11
+image: registry.cn-beijing.aliyuncs.com/bowen/stress-ng:v0.03.11
 imagePullPolicy: IfNotPresent
 # -m 3 表示内存性能压力测试3个进程,每个进程默认占256M内存, -c 2 表示cpu压力测试2个进程
 #command: ["/usr/bin/stress-ng","-m 3","-c 2","--metrics-brief"]
@@ -1956,19 +1652,13 @@ cpu: 200m
 limits:
 memory: 256Mi
 cpu: 500m
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  pod-stress.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME         READY   STATUS    RESTARTS   AGE
 pod-stress   1/1     Running   0          3m33s
-```
 
-```text
 [root@master1 ~]#kubectl describe pod pod-stress
 .....
 Limits:
@@ -1977,9 +1667,7 @@ memory:  256Mi
 Requests:
 cpu:        200m
 memory:     128Mi
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl exec pod-stress -- top
 Mem: 2064504K used, 1930156K free, 4280K shrd, 191364K buff, 1201540K cached
@@ -1989,25 +1677,17 @@ PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND
 7     1 root     R     6900   0%   1  12% {stress-ng-cpu} /usr/bin/stress-ng
 ```
 
-```text
-8     1 root     R     6900   0%   0  12% {stress-ng-cpu} /usr/bin/stress-ng
-1     0 root     S     6256   0%   0   0% /usr/bin/stress-ng -c 2 --metrics-
-9     0 root     R     1512   0%   1   0% top
-...
-#当前worker节点主机是2核，CPU资源限制是500m即0.5核，相当于cpu全部资源的1/4，也就是25%左右，
-而这里一共是两个线程，所以每个占据12%左右。
-```
 
-```text
+8     1 root     R     6900   0%   0  12% {stress-ng-cpu} /usr/bin/stress-ng 1     0 root     S     6256   0%   0   0% /usr/bin/stress-ng -c 2 --metrics-9     0 root     R     1512   0%   1   0% top...#当前worker节点主机是2核，CPU资源限制是500m即0.5核，相当于cpu全部资源的1/4，也就是25%左右，而这里一共是两个线程，所以每个占据12%左右。
+
+```bash
 #在运行Pod的节点查看可以看到下面状态
 [root@node2 ~]#docker stats --no-stream 19770849562a
 CONTAINER ID   NAME
 CPU %     MEM USAGE / LIMIT   MEM %     NET I/O   BLOCK I/O   PIDS
 19770849562a   k8s_pod-stress_pod-stress_default_a7822b5c-149d-40b1-84e2-
 af0de23a23a6_0   50.63%    7.086MiB / 256MiB   2.77%     0B / 0B   0B / 0B     3
-```
 
-```text
 #如果安装了metrics-server,多次执行kubectl top pod可以看到性能状态,刚开始会显示如下
 [root@master1 ~]#kubectl top pod pod-stress
 Error from server (NotFound): podmetrics.metrics.k8s.io "default/pod-stress" not
@@ -2019,8 +1699,7 @@ pod-stress   500m         7Mi
 ```
 
 范例: 内存OOM
-
-```text
+```yaml
 [root@master1 ~]#cat pod-memleak.yaml
 apiVersion: v1
 kind: Pod
@@ -2029,7 +1708,7 @@ name: pod-memleak
 spec:
 containers:
 - name: simmemleak
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/simmemleak:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/simmemleak:v0.1
 resources:
 requests:
 memory: "64Mi"
@@ -2038,13 +1717,9 @@ limits:
 memory: "64Mi"
 #memory: "6400Mi" #simmemleak:v0.1有bug，最多的内存，也会出现OOMKilled
 cpu: "1"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-memleak.yaml
-```
 
-```text
 [root@master1 ~]#kubectl describe pods pod-memleak
 .....
 State:          Waiting
@@ -2052,24 +1727,19 @@ Reason:       CrashLoopBackOff
 Last State:     Terminated
 Reason:       OOMKilled
 .....
-```
 
-```text
 [root@master1 ~]#kubectl get pod -w
 NAME          READY   STATUS             RESTARTS      AGE
 pod-memleak   0/1     CrashLoopBackOff   3 (55s ago)   2m42s
 pod-memleak   0/1     OOMKilled          4 (70s ago)   2m57s
-```
 
-```text
 pod-memleak   0/1     CrashLoopBackOff   4 (13s ago)   3m10s
 pod-memleak   0/1     OOMKilled          5 (98s ago)   4m35s
 pod-memleak   0/1     CrashLoopBackOff   5 (13s ago)   4m48s
 ```
 
 范例: 通过kubectl top 查看性能
-
-```text
+```yaml
 [root@master1 ~]#cat deployment-pod-stress.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -2087,7 +1757,7 @@ app: pod-stress
 spec:
 containers:
 - name: pod-stress
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/stress-ng:v0.03.11
+image: registry.cn-beijing.aliyuncs.com/bowen/stress-ng:v0.03.11
 imagePullPolicy: IfNotPresent
 # -m 3 表示内存性能压力测试3个进程  -c 2 表示cpu压力测试2个进程
 #command: ["/usr/bin/stress-ng","-m 4","-c 2","--metrics-brief"]
@@ -2099,9 +1769,7 @@ cpu: 200m
 limits:
 memory: 256Mi
 cpu: 500m
-```
 
-```text
 [root@master1 ~]#kubectl top pod
 ```
 
@@ -2112,7 +1780,6 @@ cpu: 500m
 一个 LimitRange（限制范围） 对象提供的限制能够做到：
 
 在一个命名空间中实施对每个 Pod 或 Container 最小和最大的资源使用量的限制。在一个命名空间中实施对每个 PersistentVolumeClaim 能申请的最小和最大的存储空间大小的限制。在一个命名空间中实施对一种资源的申请值和限制值的比值的控制。设置一个命名空间中对计算资源的默认申请/限制值，并且自动的在运行时注入到多个 Container中。
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/policy/limit-range/
 https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/
@@ -2127,8 +1794,7 @@ resources/memory-constraint-namespace/
 ```
 
 范例：
-
-```text
+```yaml
 apiVersion: v1
 kind: LimitRange
 metadata:
@@ -2169,8 +1835,7 @@ Pod和容器的安全上下文设置主要包括以下几个方面。
 Linux Capabilities自主访问控制DAC seccomp：securecomputing mode，实现限制程序使用某些系统调用AppArmor：Application Armor 与SELinux类似，可以限制程序的功能，比如程序可以读、写或运行哪些文件，是否可以打开端口等SELinux Privilege Mode Privilege Escalation 特权提升。
 
 **安全上下文相关属性**
-
-```text
+```yaml
 #Pod级安全上下文
 ~]#kubectl explain pod.spec.securityContext
 #容器级安全上下文
@@ -2211,17 +1876,15 @@ DefaultProcMount；
 readOnlyRootFilesystem <boolean>      # 是否将根文件系统设置为只读模式
 seLinuxOptions <Object>               # SELinux的相关配置
 windowsOptions <Object>               # windows容器专用的设置
-```
 
-```text
 #注意：上面的属性仅是最常用的属性，而不是所有的属性
 ```
 
 ### 3.5.2 资源策略
 
-```text
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/security-context/
-```
+
+- <https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/security-context/>
+
 
 #### 3.5.2.1 用户身份
 
@@ -2232,8 +1895,7 @@ https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/security-context/
 runAsUser runAsGroup
 
 范例: 默认为root身份运行pod内的进程
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#cat pod-test.yaml
 apiVersion: v1
@@ -2243,34 +1905,25 @@ name: pod-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl apply  -f  pod-test.yaml
-```
 
-```text
 #查看用户
 [root@master1 ~]#kubectl exec pod-test -- id
 uid=0(root) gid=0(root)
 groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(di
 alout),26(tape),27(video)
-```
 
-```text
 #删除资源
 [root@master1 ~]#kubectl  delete -f  pod-test.yaml
-```
 
-```text
 #注意：默认情况下一旦pod创建好后，是不允许对用户归属权限进行任意修改的，所以需要修改的话，必须先
 关闭，再开启
 ```
 
 范例: 添加安全上下属性实现指定用户身份运行Pod内的进程
-
-```text
+```yaml
 [root@master1 ~]#cat pod-securitycontext-runasuser.yaml
 apiVersion: v1
 kind: Pod
@@ -2280,28 +1933,22 @@ namespace: default
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 #env:
-```
 
-```text
 #- name: PORT
 #   value: "8080"
 securityContext:
 runAsUser: 1001     #指定运行身份
 runAsGroup: 1001
-```
 
-```text
 [root@master1 ~]#kubectl get pod pod-securitycontext-runasuser -o wide
 NAME                            READY   STATUS    RESTARTS   AGE   IP
 NODE               NOMINATED NODE   READINESS GATES
 pod-securitycontext-runasuser   1/1     Running   0          25s   172.16.3.48
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#curl 172.16.3.48:8080
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-
 securitycontext-runasuser, ServerIP: 172.16.3.48!
@@ -2309,33 +1956,23 @@ securitycontext-runasuser, ServerIP: 172.16.3.48!
 PID   USER     TIME  COMMAND
 1 1001      0:00 python3 /usr/local/bin/demo.py
 9 1001      0:00 ps aux
-```
 
-```text
 [root@master1 ~]#kubectl exec  pod-securitycontext-runasuser -- id
 uid=1001 gid=1001
-```
 
-```text
 [root@master1 ~]#kubectl exec -it pod-securitycontext-runasuser -- sh
 [@pod-securitycontext-runasuser /]$ ss -nlt
 State               Recv-Q              Send-Q                            Local
 Address:Port                             Peer Address:Port              Process
-```
 
-```text
 LISTEN              0                   128
 0.0.0.0:88                                    0.0.0.0:*
-```
 
-```text
 #默认Pod内所有端口都是非特权端口
 [@pod-securitycontext-runasuser /]$ sysctl -a |grep
 net.ipv4.ip_unprivileged_port_start
 net.ipv4.ip_unprivileged_port_start = 0
-```
 
-```text
 #Pod和宿主机的内核配置不同
 [root@node3 ~]#sysctl -a|grep net.ipv4.ip_unprivileged_port_start
 net.ipv4.ip_unprivileged_port_start = 1024
@@ -2344,7 +1981,6 @@ net.ipv4.ip_unprivileged_port_start = 1024
 #### 3.5.2.2 资源能力
 
 **参考资料**
-
 ```text
 https://man7.org/linux/man-pages/man7/capabilities.7.html
 ~]#man 7 capabilities
@@ -2352,19 +1988,12 @@ https://man7.org/linux/man-pages/man7/capabilities.7.html
 
 **Linux 中相关的资源能力**
 
-```text
-CAP_CHOWN       #改变文件的所有者和所属组
-CAP_MKNOD       #mknod()，创建设备文件
-CAP_NET_ADMIN   #网络管理权限
-CAP_SYS_TIME    #更改系统的时钟
-CAP_SYS_MODULE  #装载卸载内核模块
-CAP_NET_BIND_SERVER：#允许普通用户绑定1024以内的特权端口
-CAP_SYS_ADMIN   #大部分的管理权限,基本相当于root权限
-```
+
+CAP_CHOWN       #改变文件的所有者和所属组 CAP_MKNOD       #mknod()，创建设备文件 CAP_NET_ADMIN   #网络管理权限 CAP_SYS_TIME    #更改系统的时钟 CAP_SYS_MODULE  #装载卸载内核模块 CAP_NET_BIND_SERVER：#允许普通用户绑定1024以内的特权端口 CAP_SYS_ADMIN   #大部分的管理权限,基本相当于root权限
+
 
 范例：flannel的Pod中添加了Linux 中相关的资源能力
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod -n kube-flannel   kube-flannel-ds-jqvct -o yaml
 |grep -A10     securityContext:
 securityContext:
@@ -2381,8 +2010,7 @@ name: run
 ```
 
 范例: 默认能力无法直接创建iptables规则
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#cat pod-securitycontext-capabilities.yaml
 apiVersion: v1
@@ -2393,47 +2021,34 @@ namespace: default
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 command: ["/bin/sh","-c"]
 args: ["/sbin/iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT -
 -to-port 80 && /usr/bin/python3 /usr/local/bin/demo.py"]
-```
 
-```text
 #注意：可以在容器内部通过 command + args 运行一个自定义的容器启动命令
-```
 
-```text
 #创建资源
 [root@master1 ~]#kubectl apply -f  pod-securitycontext-capabilities.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get pod pod-securitycontext-capabilities
 NAME                               READY   STATUS   RESTARTS      AGE
 pod-securitycontext-capabilities   0/1     Error    2 (30s ago)   67s
-```
 
-```text
 [root@master1 ~]#kubectl logs  pod-securitycontext-capabilities
 getsockopt failed strangely: Operation not permitted
-```
 
-```text
 #结果提示：当容器在启动的时候，默认是以linux系统普通用户启动的，所以普通用户是没有权限更改系统级
 别的内容的，所以导致我们更改命令权限失败
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete -f pod-securitycontext-capabilities.yaml
 ```
 
 范例: 通过 add 指令添加特权
-
-```text
+```yaml
 [root@master1 ~]#cat pod-securitycontext-capabilities.yaml
 apiVersion: v1
 kind: Pod
@@ -2443,7 +2058,7 @@ namespace: default
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 command: ["/bin/sh","-c"]
 args: ["/sbin/iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT -
@@ -2452,54 +2067,38 @@ args: ["/sbin/iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT -
 securityContext:
 capabilities:
 add: ['NET_ADMIN']
-```
 
-```text
 #注意：add后面的权限能力使用单引号(''),也可以使用双引号("")
-```
 
-```text
 #创建资源
 [root@master1 ~]#kubectl apply  -f  pod-securitycontext-capabilities.yaml
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl get pod pod-securitycontext-capabilities  -o wide
 NAME                               READY   STATUS    RESTARTS   AGE   IP
 NODE               NOMINATED NODE   READINESS GATES
 pod-securitycontext-capabilities   1/1     Running   0          67s
-172.16.7.45   node3.wang.org   <none>           <none>
-```
+172.16.7.45   node3.bowen.org   <none>           <none>
 
-```text
 #结果显示：将容器里面的防火墙规则更改成功
 [root@master1 ~]#kubectl exec  pod-securitycontext-capabilities  -- iptables -nvL
 PREROUTING -t nat
 Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
 pkts bytes target     prot opt in     out     source               destination
-```
 
-```text
 0     0 REDIRECT   tcp  --  *      *       0.0.0.0/0            0.0.0.0/0
 tcp dpt:8080 redir ports 80
-```
 
-```text
 [root@master1 ~]#kubectl exec  pod-securitycontext-capabilities  -- hostname -i
 172.16.7.45
-```
 
-```text
 [root@master1 ~]#curl 172.16.7.45
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-
 securitycontext-capabilities, ServerIP: 172.16.7.45!
 [root@master1 ~]#curl 172.16.7.45:8080
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-
 securitycontext-capabilities, ServerIP: 172.16.7.45!
-```
 
-```text
 #结果显示：默认情况下可以对容器里面的资源进行相应的修改权限操作
 [root@master1 ~]#kubectl exec  pod-securitycontext-capabilities  -- ls -l
 /etc/hosts
@@ -2509,16 +2108,13 @@ securitycontext-capabilities, ServerIP: 172.16.7.45!
 [root@master1 ~]#kubectl exec  pod-securitycontext-capabilities  -- ls -l
 /etc/hosts
 -rw-r--r--    1 1000     1000           228 Mar 17 07:12 /etc/hosts
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl  delete -f pod-securitycontext-capabilities.yaml
 ```
 
 范例: 使用 drop 指令删除特权
-
-```text
+```yaml
 #修改资源配置文件
 [root@master1 ~]#cat pod-securitycontext-capabilities.yaml
 apiVersion: v1
@@ -2529,7 +2125,7 @@ namespace: default
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 command: ["/bin/sh","-c"]
 args: ["/sbin/iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT -
@@ -2538,28 +2134,20 @@ securityContext:
 capabilities:
 add: ['NET_ADMIN']
 drop: ['CHOWN'] #添加此行
-```
 
-```text
 #应用配置
 [root@master1 ~]#kubectl apply -f  pod-securitycontext-capabilities.yaml
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl exec pod-securitycontext-capabilities   -- ls -l
 /etc/hosts
 -rw-r--r--    1 root     root           228 Mar 17 07:22 /etc/hosts
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-securitycontext-capabilities   -- chown
 1001:1001 /etc/hosts
 chown: /etc/hosts: Operation not permitted
 command terminated with exit code 1
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-securitycontext-capabilities   -- ls -l
 /etc/hosts
 -rw-r--r--    1 root     root           228 Mar 17 07:22 /etc/hosts
@@ -2569,7 +2157,6 @@ command terminated with exit code 1
 #### 3.5.2.3 内核参数
 
 默认情况下，Pod中的容器在启动的时候是具备了一定的特权用户权限的。比如 kube-proxy 会将pod启动时候的一些规则转换成对应的iptable或者ipvs规则,这就涉及到宿主机内核级别的操作。Pod 安全上下文级别默认只支持为数不多的内核安全参数,比如下面。
-
 ```text
 net.ipv4.ip_local_port_range
 net.ipv4.ip_unprivileged_port_start
@@ -2582,26 +2169,20 @@ kernel.shm_rmid_forced
 注意：以上只能Pod级别修改，不支持在container级别设置。
 
 格式如下:
-
 ```text
 KUBELET_EXTRA_ARGS='--allowed-unsafe-
 sysctls=net.core.somaxconn,net.ipv4.ip_nonlocal_bind'
 ```
 
 范例: Pod可以有自已独立的内核配置
-
-```text
+```bash
 [root@master1 ~]#sysctl net.ipv4.ip_unprivileged_port_start
 net.ipv4.ip_unprivileged_port_start = 1024
-```
 
-```text
 [root@master1 ~]#kubectl run myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 pod/myapp created
-```
 
-```text
 #默认Pod内核中net.ipv4.ip_unprivileged_port_start = 0
 [root@master1 ~]#kubectl exec -it myapp -- sh
 [root@myapp /]# sysctl net.ipv4.ip_unprivileged_port_start
@@ -2609,8 +2190,7 @@ net.ipv4.ip_unprivileged_port_start = 0
 ```
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-sysctl.yaml
 apiVersion: v1
 kind: Pod
@@ -2625,37 +2205,27 @@ value: "1"
 value: "60"
 #  - name: net.core.somaxconn
 #    value: "6666"
-```
 
-```text
 containers:
 - name: pod-sysctl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 securityContext:
 runAsUser: 1001
 runAsGroup: 1001
-```
 
-```text
 #参数说明:kernel.shm_rmid_forced 强制SHM空间和一个进程联系在一起，所以可以通过杀死进程来释
 放内存
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-sysctl   1/1     Running   0          4m13s   172.16.3.29   node1.wang.org
+pod-sysctl   1/1     Running   0          4m13s   172.16.3.29   node1.bowen.org
 <none>           <none>
-```
 
-```text
 [root@master1 ~]#curl 172.16.3.29
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-sysctl,
 ServerIP: 172.16.3.29!
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-sysctl -- cat /proc/sys/kernel/shm_rmid_forced
 1
 [root@master1 ~]#kubectl exec  pod-sysctl -- cat
@@ -2664,8 +2234,7 @@ ServerIP: 172.16.3.29!
 ```
 
 范例:
-
-```text
+```yaml
 #修改文件
 [root@master1 ~]#cat pod-sysctl.yml
 apiVersion: v1
@@ -2683,24 +2252,18 @@ value: "100"  #修改此行
 #    value: "6666"
 containers:
 - name: pod-sysctl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 #此容器使用
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1 #此容器使用
 80端口
 securityContext:
 runAsUser: 1001
 runAsGroup: 1001
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-sysctl.yml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME         READY   STATUS             RESTARTS     AGE
 pod-sysctl   0/1     CrashLoopBackOff   1 (5s ago)   7s
-```
 
-```text
 #查看日志,提示1001不是特权用户,不能使用100以下的端口运行pod-test容器的80端口导致权限不足
 [root@master1 ~]#kubectl logs pod-sysctl
 Traceback (most recent call last):
@@ -2729,9 +2292,7 @@ socketserver.TCPServer.server_bind(self)
 File "/usr/lib/python3.8/socketserver.py", line 466, in server_bind
 self.socket.bind(self.server_address)
 PermissionError: [Errno 13] Permission denied
-```
 
-```text
 #修改文件
 [root@master1 ~]#cat pod-sysctl.yml
 apiVersion: v1
@@ -2749,32 +2310,24 @@ value: "100"
 #    value: "6666"
 containers:
 - name: pod-sysctl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 #securityContext:   #注释三行
 #  runAsUser: 1001
 #  runAsGroup: 1001
-```
 
-```text
 #再次执行成功
 [root@master1 ~]#kubectl apply -f  pod-sysctl.yml
-```
 
-```text
 #验证成功
 [root@master1 ~]#kubectl exec pod-sysctl -- sysctl
 net.ipv4.ip_unprivileged_port_start
-```
 
-```text
 net.ipv4.ip_unprivileged_port_start = 100
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-sysctl   1/1     Running   0          3m40s   172.16.3.38   node1.wang.org
+pod-sysctl   1/1     Running   0          3m40s   172.16.3.38   node1.bowen.org
 <none>           <none>
 [root@master1 ~]#curl 172.16.3.38
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-sysctl,
@@ -2782,8 +2335,7 @@ ServerIP: 172.16.3.38!
 ```
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-sysctl.yml
 apiVersion: v1
 kind: Pod
@@ -2800,25 +2352,19 @@ value: "60"
 value: "6666"
 containers:
 - name: pod-sysctl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 securityContext:
 runAsUser: 1001
 runAsGroup: 1001
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-sysctl.yml
 pod/pod-sysctl created
-```
 
-```text
 #结果显示：默认情况下，普通用户是不允许修改命名空间里相关内核参数的
 [root@master1 ~]#kubectl get pod
 NAME         READY   STATUS            RESTARTS   AGE
 pod-sysctl   0/1     SysctlForbidden   0          7s
-```
 
-```text
 #显示内核参数net.core.somaxconn不在白名单中
 [root@master1 ~]#kubectl describe pod pod-sysctl
 Name:         pod-sysctl
@@ -2827,37 +2373,27 @@ Status:       Failed
 Reason:       SysctlForbidden
 Message:      Pod forbidden sysctl: "net.core.somaxconn" not whitelisted
 .....
-```
 
-```text
 #删除pod
 [root@master1 ~]#kubectl delete pod pod-sysctl
-```
 
-```text
 #修改所有worker节点的kubelet的配置文件(如果文件不存在的话，可以自己手工创建)
 [root@node1 ~]#vim /etc/default/kubelet
-```
 
-```text
 [root@node1 ~]#cat /etc/default/kubelet
 KUBELET_EXTRA_ARGS='--allowed-unsafe-sysctls=net.core.somaxconn'
 #参数说明：net.core.somaxconn 网卡入栈的最大全连接队列
-```
 
-```text
 #在所有的node角色节点上配置该文件，然后重启该服务
 [root@node1 ~]#systemctl restart kubelet
-```
 
-```text
 #再次运行
 [root@master1 ~]#kubectl apply -f  pod-sysctl.yml
 pod/pod-sysctl created
 [root@master1 ~]#kubectl get pod -o wide
 NAME         READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-sysctl   1/1     Running   0          1s    172.16.3.37   node1.wang.org
+pod-sysctl   1/1     Running   0          1s    172.16.3.37   node1.bowen.org
 <none>           <none>
 #验证结果
 [root@master1 ~]#curl 172.16.3.37
@@ -2870,8 +2406,7 @@ ServerIP: 172.16.3.37!
 #### 3.5.2.4 特权
 
 范例： Kube-proxy 的pod 添加特权
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod -n kube-system    kube-proxy-4qgmt  -o yaml
 |grep -A2    securityContext:
 securityContext:
@@ -2879,8 +2414,7 @@ privileged: true
 ```
 
 范例：
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod -n kube-system    kube-proxy-2c765 -o yaml |grep
 -A10     securityContext
 securityContext:
@@ -2889,8 +2423,7 @@ privileged: true
 ```
 
 范例
-
-```text
+```yaml
 [root@master1 ~]#cat  pod-privileged.yaml
 apiVersion: v1
 kind: Pod
@@ -2899,29 +2432,21 @@ name: pod-privileged-demo
 spec:
 initContainers:
 - name: set-sysctl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 command: ["sysctl","-w","vm.max_map_count=6666666"]
 #securityContext:
 #  privileged: true
 containers:
 - name: pod-privileged-demo
-```
 
-```text
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl apply -f pod-privileged.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                                      READY   STATUS       RESTARTS      AGE
 pod-privileged-demo                       0/1     Init:Error   0             33s
-```
 
-```text
 #修改
 [root@master1 ~]#vim pod-privileged.yaml
 apiVersion: v1
@@ -2931,26 +2456,20 @@ name: pod-privileged-demo
 spec:
 initContainers:
 - name: set-sysctl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 command: ["sysctl","-w","vm.max_map_count=6666666"]
 securityContext:         #添加特权
 privileged: true
 containers:
 - name: pod-privileged-demo
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl apply -f pod-privileged.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod pod-privileged-demo
 NAME                  READY   STATUS    RESTARTS   AGE
 pod-privileged-demo   1/1     Running   0          47s
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl exec pod-privileged-demo -- sysctl vm.max_map_count
 Defaulted container "pod-privileged-demo" out of: pod-privileged-demo, set-
@@ -2959,7 +2478,6 @@ vm.max_map_count = 6666666
 ```
 
 ## 3.6 Pod 服务质量 QoS
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/quality-service-
 pod/
@@ -3004,8 +2522,7 @@ oom_score_adj:-997
 ### 3.6.2 案例
 
 示例 : 高优先级
-
-```text
+```yaml
 [root@master1 ~]#cat pod-qos-guaranteed.yaml
 apiVersion: v1
 kind: Pod
@@ -3014,52 +2531,38 @@ name: pod-qos-guaranteed
 spec:
 containers:
 - name: pod-qos-guaranteed-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 resources:
 limits:
 memory: "200Mi"
-```
 
-```text
 cpu: "500m"
 requests:
 memory: "200Mi"
 cpu: "500m"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-qos-guaranteed.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                 READY   STATUS    RESTARTS   AGE
 pod-qos-guaranteed   1/1     Running   0          5s
-```
 
-```text
 [root@master1 ~]#kubectl describe pod pod-qos-guaranteed
 ....
 QoS Class:                   Guaranteed
 ......
-```
 
-```text
 #查出Pod运行的主机节点
 [root@master1 ~]#kubectl  get pod -o wide
 NAME                  READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-qos-guaranteed    1/1     Running   0          65s     10.244.2.26
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 [root@master1 pod]#kubectl exec -it pod-qos-guaranteed -- bash
 root@pod-limit-request:/# cat /proc/1/oom_score_adj
 -997
-```
 
-```text
 #在节点上查看进程的oom_score_adj
 [root@node3 ~]#ps aux|grep nginx
 root      145599  0.0  0.0  10656  5916 ?        Ss   15:30   0:00 nginx: master
@@ -3070,20 +2573,15 @@ systemd+  145638  0.0  0.0  11092  2500 ?        S    15:30   0:00 nginx: worker
 process
 root      146234  0.0  0.0   9568  2388 pts/0    S+   15:31   0:00 grep --
 color=auto nginx
-```
 
-```text
 [root@node3 ~]#cat /proc/145599/oom_score_adj
 -997
-```
 
-```text
 [root@master1 ~]#kubectl delete -f pod-qos-guaranteed.yaml
 ```
 
 示例: 中优先级
-
-```text
+```yaml
 [root@master1 ~]#cat pod-qos-burstable.yaml
 apiVersion: v1
 kind: Pod
@@ -3092,30 +2590,22 @@ name: pod-qos-burstable
 spec:
 containers:
 - name: pod-qos-burstable-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 resources:
 limits:
 memory: "200Mi"
-```
 
-```text
 cpu: "500m"
 requests:
 memory: "200Mi"
 cpu: "300m"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-qos-burstable.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                READY   STATUS    RESTARTS   AGE
 pod-qos-burstable   1/1     Running   0          63s
-```
 
-```text
 [root@master1 ~]#kubectl describe pod pod-qos-burstable
 .....
 QoS Class:                   Burstable
@@ -3123,8 +2613,7 @@ QoS Class:                   Burstable
 ```
 
 示例: 低优先级
-
-```text
+```yaml
 [root@master1 ~]#cat pod-qos-besteffort.yaml
 apiVersion: v1
 kind: Pod
@@ -3133,20 +2622,14 @@ name: pod-qos-besteffort
 spec:
 containers:
 - name: pod-qos-besteffort-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-qos-besteffort.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                 READY   STATUS    RESTARTS   AGE
 pod-qos-besteffort   1/1     Running   0          3s
-```
 
-```text
 [root@master1 ~]#kubectl describe pod pod-qos-besteffort
 ......
 QoS Class:                   BestEffort
@@ -3234,7 +2717,6 @@ Pod中的应用由主应用程序和一个Adapter容器组成，主要为从外�
 ![原 PDF 第 165 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-01bb27d0bd33ed6b.png)
 
 初始化init容器必须运行完成并成功后，主容器才能启动运行。如果有多个初始化容器,每个初始化容器都必须按定义顺序串行运行,并且全部成功退出后,主容器才能启动运行。
-
 ```text
 #执行 kubectl logs <pod_name>,可以看到如下提示
 Error from server (BadRequest): container "<container_name>" in pod "<pod_name>"
@@ -3242,55 +2724,28 @@ is waiting to start: PodInitializing
 ```
 
 属性信息：
-
 ```text
 kubectl explain pods.spec.initContainers
 ```
 
 **k8s-1.28版本后关于initcontainer容器和sidecar容器**
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pod.spec.initContainers.restartPolicy
 KIND:       Pod
 VERSION:    v1
-```
 
-```text
 FIELD: restartPolicy <string>
 ```
 
-```text
-DESCRIPTION:
-RestartPolicy defines the restart behavior of individual containers in a
-pod. This field may only be set for init containers, and the only allowed
-value is "Always". For non-init containers or when this field is not
-specified, the restart behavior is defined by the Pod's restart policy and
-the container type. Setting the RestartPolicy as "Always" for the init
-container will have the following effect: this init container will be
-continually restarted on exit until all regular containers have terminated.
-Once all regular containers have completed, all init containers with
-restartPolicy "Always" will be shut down. This lifecycle differs from normal
-init containers and is often referred to as a "sidecar" container. Although
-this init container still starts in the init container sequence, it does not
-wait for the container to complete before proceeding to the next init
-container. Instead, the next init container starts immediately after this
-init container is started, or after any startupProbe has successfully
-completed.
-```
 
-```text
-RestartPolicy 定义了 Pod 中各个容器的重启行为。此字段只能为 Init 容器设置，并且唯一允许的值
-为“Always”。对于非 Init 容器或未指定此字段的情况，重启行为由 Pod 的重启策略和容器类型决定。将
-Init 容器的 RestartPolicy 设置为“Always”将产生以下效果：此 Init 容器将在退出时持续重启，直
-到所有常规容器终止。所有常规容器完成后，所有 restartPolicy 为“Always”的 Init 容器都将被关
-闭。此生命周期与普通的 Init 容器不同，通常被称为“sidecar”容器。虽然此 Init 容器仍在 Init 容
-器序列中启动，但它不会等待容器完成后再继续执行下一个 Init 容器。相反，下一个 Init 容器会在此
-Init 容器启动后立即启动，或者在任何 startupProbe 成功完成后立即启动。
-```
+DESCRIPTION: RestartPolicy defines the restart behavior of individual containers in a pod. This field may only be set for init containers, and the only allowed value is "Always". For non-init containers or when this field is not specified, the restart behavior is defined by the Pod's restart policy and the container type. Setting the RestartPolicy as "Always" for the init container will have the following effect: this init container will be continually restarted on exit until all regular containers have terminated. Once all regular containers have completed, all init containers with restartPolicy "Always" will be shut down. This lifecycle differs from normal init containers and is often referred to as a "sidecar" container. Although this init container still starts in the init container sequence, it does not wait for the container to complete before proceeding to the next init container. Instead, the next init container starts immediately after this init container is started, or after any startupProbe has successfully completed.
+
+
+RestartPolicy 定义了 Pod 中各个容器的重启行为。此字段只能为 Init 容器设置，并且唯一允许的值为“Always”。对于非 Init 容器或未指定此字段的情况，重启行为由 Pod 的重启策略和容器类型决定。将 Init 容器的 RestartPolicy 设置为“Always”将产生以下效果：此 Init 容器将在退出时持续重启，直到所有常规容器终止。所有常规容器完成后，所有 restartPolicy 为“Always”的 Init 容器都将被关闭。此生命周期与普通的 Init 容器不同，通常被称为“sidecar”容器。虽然此 Init 容器仍在 Init 容器序列中启动，但它不会等待容器完成后再继续执行下一个 Init 容器。相反，下一个 Init 容器会在此 Init 容器启动后立即启动，或者在任何 startupProbe 成功完成后立即启动。
+
 
 范例:
-
-```text
+```yaml
 #通过init模式实现iptables规则的端口重定向
 [root@master1 ~]#cat pod-init-container.yaml
 apiVersion: v1
@@ -3301,7 +2756,7 @@ namespace: default
 spec:
 initContainers:
 - name: iptables-init
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 imagePullPolicy: IfNotPresent
 #restartPolicy: Always     #k8s-v1.28开始,此加项配置,则为sidecar容器,从而解决
 sidecar容器无法确定先于主容器启动
@@ -3309,15 +2764,13 @@ command: ['/bin/sh','-c']
 args: ['iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-
 port 80']
 securityContext:
-```
 
-```text
 capabilities:
 add:
 - NET_ADMIN
 containers:
 - name: demo
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 ports:
 - name: http
@@ -3326,70 +2779,49 @@ securityContext:  #添加下面四行，才能查看iptables规则
 capabilities:
 add:
 - NET_ADMIN
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  pod-init-container.yaml
-```
 
-```text
 #查看容器IP
 [root@master1 ~]#kubectl get pod init-container-demo  -o wide
 NAME                  READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-init-container   1/1     Running   0          53s   172.16.4.37
-node2.wang.org   <none>           <none>
-```
+node2.bowen.org   <none>           <none>
 
-```text
 #测试直接访问主容器
 [root@master1 ~]#curl 172.16.4.37
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: init-container-
 demo, ServerIP: 172.16.4.37!
-```
 
-```text
 #访问init容器指定的端口,实现间接访问主容器
 [root@master1 ~]#curl 172.16.4.37:8080
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: init-container-
 demo, ServerIP: 172.16.4.37!
-```
 
-```text
 [root@master1 pod]#kubectl exec -it pod-init-container  -- sh
 Defaulted container "demo" out of: demo, iptables-init (init)
 [root@pod-init-container /]# iptables -vnL -t nat
 Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
 pkts bytes target     prot opt in     out     source               destination
-```
 
-```text
 0     0 REDIRECT   tcp  --  *      *       0.0.0.0/0            0.0.0.0/0
 tcp dpt:9999 redir ports 80
-```
 
-```text
 Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
 pkts bytes target     prot opt in     out     source               destination
-```
 
-```text
 Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
 pkts bytes target     prot opt in     out     source               destination
-```
 
-```text
 Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
 pkts bytes target     prot opt in     out     source               destination
-```
 
-```text
 [root@pod-init-container /]#
 ```
 
 范例: Init 容器的Pod
-
-```text
+```yaml
 [root@master1 ~]#cat pod-init-test.yaml
 apiVersion: v1
 kind: Pod
@@ -3400,29 +2832,23 @@ app: init
 spec:
 containers:
 - name: busybox
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 command: ['sh', '-c', 'echo The app is running! && sleep 3600']
 initContainers:
 - name: init-myservice
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-#image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
+#image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 command: ['sh', '-c', 'until nslookup myservice; do echo waiting for
 myservice; sleep 2; done;']
-```
 
-```text
 #启动文件
 [root@master1 ~]#kubectl  apply  -f pod-init-test.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl  get pod init-pod
 NAME       READY   STATUS     RESTARTS   AGE
 init-pod   0/1     Init:0/1   0          14s
-```
 
-```text
 #查看状态描述
 [root@master1 ~]#kubectl describe pod init-pod
 Name:              init-pod
@@ -3449,36 +2875,26 @@ Type    Reason     Age   From               Message
 Normal  Scheduled  36s   default-scheduler  Successfully assigned default/init-
 pod to node2
 Normal  Pulling    35s   kubelet, node2     Pulling image "busybox"
-```
 
-```text
 Normal  Pulled     34s   kubelet, node2     Successfully pulled image
 "busybox"
 Normal  Created    33s   kubelet, node2     Created container init-myservice
 Normal  Started    33s   kubelet, node2     Started container init-myservice
 。
-```
 
-```text
 #查看pod中指定容器的日志效果
 [root@master1 ~]#kubectl logs init-pod -c init-myservice|head
 Server:     192.168.0.10
 Address:    192.168.0.10:53
-```
 
-```text
-** server can't find myservice.default.svc.wang.org: NXDOMAIN
-```
+** server can't find myservice.default.svc.bowen.org: NXDOMAIN
 
-```text
-*** Can't find myservice.svc.wang.org: No answer
-*** Can't find myservice.wang.org: No answer
-*** Can't find myservice.wang.com: No answer
-*** Can't find myservice.default.svc.wang.org: No answer
-*** Can't find myservice.svc.wang.org: No answer
-```
+*** Can't find myservice.svc.bowen.org: No answer
+*** Can't find myservice.bowen.org: No answer
+*** Can't find myservice.bowen.com: No answer
+*** Can't find myservice.default.svc.bowen.org: No answer
+*** Can't find myservice.svc.bowen.org: No answer
 
-```text
 #创建所需要的service
 [root@master1 ~]#vim pod-init-service.yaml
 apiVersion: v1
@@ -3490,15 +2906,11 @@ ports:
 - protocol: TCP
 port: 80
 targetPort: 9527
-```
 
-```text
 #启动文件
 [root@master1 ~]#kubectl apply  -f  pod-init-service.yaml
 service/myservice created
-```
 
-```text
 #过一会儿再查看pod效果
 [root@master1 ~]#kubectl  get pod init-pod
 NAME       READY   STATUS    RESTARTS   AGE
@@ -3511,19 +2923,16 @@ init-pod   1/1     Running   0          6m26s
 在一个pod内启动两个容器，访问B容器的时候，都需要经过A容器，只有通过A处理后的数据才会发送给B容器。在整个过程中，A容器就是B容器应用的代理服务器。
 
 范例：
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#wget
-http://www.wangxiaochun.com:8888/testdir/kubernetes/envoy.yaml
+http://www.bowen.com:8888/testdir/kubernetes/envoy.yaml
 [root@master1 ~]#cat envoy.yaml
 admin:
 access_log_path: /tmp/admin_access.log
 address:
 socket_address: { address: 0.0.0.0, port_value: 9901 }
-```
 
-```text
 static_resources:
 listeners:
 - name: listener_0
@@ -3545,9 +2954,7 @@ routes:
 route: { cluster: local_service }
 http_filters:
 - name: envoy.router
-```
 
-```text
 clusters:
 - name: local_service
 connect_timeout: 0.25s
@@ -3562,9 +2969,7 @@ address:
 socket_address:
 address: 127.0.0.1
 port_value: 8080
-```
 
-```text
 [root@master1 ~]#cat pod-sidecar-test.yaml
 apiVersion: v1
 kind: Pod
@@ -3574,46 +2979,36 @@ spec:
 containers:
 - name: proxy
 #image: envoyproxy/envoy-alpine:v1.14.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/envoy-alpine:v1.14.1
+image: registry.cn-beijing.aliyuncs.com/bowen/envoy-alpine:v1.14.1
 command: ['sh', '-c', 'sleep 5 && envoy -c /etc/envoy/envoy.yaml']
 lifecycle:
 postStart:
 exec:
 command: ["/bin/sh","-c","wget -O /etc/envoy/envoy.yaml
-http://www.wangxiaochun.com:8888/testdir/kubernetes/envoy.yaml"]
+http://www.bowen.com:8888/testdir/kubernetes/envoy.yaml"]
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 env:
-```
 
-```text
 - name: HOST
 value: "127.0.0.1"
 - name: PORT
 value: "8080"
-```
 
-```text
 #启动文件
 [root@master1 ~]#kubectl apply -f  pod-sidecar-test.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get pod sidecar-test  -o wide
 NAME           READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
-sidecar-test   2/2     Running   0          88s   172.16.3.46   node1.wang.org
+sidecar-test   2/2     Running   0          88s   172.16.3.46   node1.bowen.org
 <none>           <none>
-```
 
-```text
 [root@master1 ~]#curl  172.16.3.46
 kubernetes pod-test v0.1!! ClientIP: 127.0.0.1, ServerName: sidecar-test,
 ServerIP: 172.16.3.46!
-```
 
-```text
 [root@master1 ~]#curl -I  172.16.3.46
 HTTP/1.1 200 OK
 content-type: text/html; charset=utf-8
@@ -3623,9 +3018,7 @@ date: Wed, 17 Mar 2021 03:32:13 GMT
 x-envoy-upstream-service-time: 1
 #结果显示：这个结果是 x-envoy-upstream-service-time 响应的数据信息，而不是真正的pod-test
 容器
-```
 
-```text
 #获取大量的监控项
 [root@master1 ~]#curl 172.16.3.46:9901/help
 [root@master1 ~]#curl 172.16.3.46:9901/stats
@@ -3633,24 +3026,19 @@ x-envoy-upstream-service-time: 1
 ```
 
 #### 3.7.3.3 Ambassador 模式案例
-
-```text
+```yaml
 #查看kubectl proxy的用法
 [root@master1 ~]#kubectl proxy --help
 .....
 Usage:
 kubectl proxy [--port=PORT] [--www=static-dir] [--www-prefix=prefix] [--api-
 prefix=prefix] [options]
-```
 
-```text
 #前台运行proxy,默认监听127.0.0.1:8001
 [root@master1 ~]#kubectl proxy  --address=0.0.0.0
 Starting to serve on [::]:8001
 .....
-```
 
-```text
 #测试在master节点本机访问成功
 [root@master1 ~]curl -s  127.0.0.1:8001/api/v1/namespaces/default/pods
 {
@@ -3660,21 +3048,15 @@ Starting to serve on [::]:8001
 "resourceVersion": "1258001"
 },
 "items": [
-```
 
-```text
 {
 "metadata": {
 .....
-```
 
-```text
 #worker节点访问失败,权限不足
-[root@node1 ~]#curl -s  kubeapi.wang.org:8001/api/v1/namespaces/default/pods
+[root@node1 ~]#curl -s  kubeapi.bowen.org:8001/api/v1/namespaces/default/pods
 Forbidden
-```
 
-```text
 [root@master1 ~]#cat pod-ambassador-container.yaml
 apiVersion: v1
 kind: Pod
@@ -3683,7 +3065,7 @@ name: ambassador-container-demo
 spec:
 containers:
 - name: curl
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 command: ["sleep", "99999"]
 - name: ambassador
 image: bitnami/kubectl:latest
@@ -3696,20 +3078,14 @@ args:
 authority="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 - --token="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
 - --accept-paths='^.\*'
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-ambassador-container.yaml
-```
 
-```text
 #查看成功运行
 [root@master1 ~]#kubectl get pod ambassador-container-demo
 NAME                        READY   STATUS    RESTARTS   AGE
 ambassador-container-demo   2/2     Running   0          52s
-```
 
-```text
 #进入容器测试访问
 [root@master1 ~]#kubectl exec -it ambassador-container-demo  -c curl -- sh
 root@ambassador-container-demo # curl 127.0.0.1:8001/api/
@@ -3727,8 +3103,7 @@ root@ambassador-container-demo # curl 127.0.0.1:8001/api/
 ```
 
 #### 3.7.3.4 Adapter 模式案例
-
-```text
+```yaml
 [root@master1 ~]#cat pod-adapter-container.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -3782,35 +3157,25 @@ name: nginx-conf
 items:
 - key: default.conf
 path: default.conf
-```
 
-```text
 #应用
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-adapter-container.yaml
-```
 
-```text
 #查看容器的IP
 [root@master1 ~]#kubectl get pod adapter-container-demo -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP             NODE
 NOMINATED NODE   READINESS GATES
 adapter-container-demo   2/2     Running   0          54s   10.244.1.142
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #访问adapter容器
 [root@master1 ~]#curl 10.244.1.142:9113
 <!DOCTYPE html>
 <title>NGINX Exporter</title>
 <h1>NGINX Exporter</h1>
 <p><a href="/metrics">Metrics</a></p>
-```
 
-```text
 #查看/metrics
 [root@master1 ~]#curl 10.244.1.142:9113/metrics
 # HELP nginx_connections_accepted Accepted client connections

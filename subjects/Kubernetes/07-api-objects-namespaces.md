@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · API 资源对象、清单与命名空间'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -55,16 +56,13 @@ K8S资源还可以按适用范围分为:名称空间级别、集群级别、元�
 名称空间级别：仅在此名称中生效。举个例子，我们之前通过 kubeadm 去安装我们K8S 集群的时候，他会默认把所有组件放到 kube-system 这个名称空间下去运行，然后我们可以通过命令kubectl get pod 的时候会看到它获取不到，对应的我们系统一些 pod 的信息，原因是默认情况下该命令什么都不加的话相当于是kubectl get pod -n default ，但是我们的  K8S 本身组件他是放在我们的 kube-system 名称空间下的，所有这种情况我们会发现，在 kube-system 名称空间下的资源我们在其他名称空间中是看不见的。这就是典型的名称空间级别资源。集群级别：比如、role 等等，这都是集群级别的资源，不管在什么名称空间下去定义，在其他的名称空间下都能够看得到，其实他在定义的时候都没有去指定所谓的名称空间，也就意味着一旦经过定义以后在全集群中都能够被可见以及调用，这种级别呢我们就把它集群级别下的名称空间，并且把这种东西叫做集群级别的资源元数据型：负责提供一种指标，源数据类型它不像我们的名称空间级别和集群级别，其实它也可以归属在这两者之间，但是它又有自己的特点所以我们将他拿出来进行单独的分类。比如前面讲过的HPA 他就是可以通过我们的 CPU 进行平滑扩展，他就是典型的源数据型。通过我们的指标进行操作。
 
 范例: 查看资源类型
-
-```text
+```bash
 [root@master1 ~]#kubectl api-resources
 NAME                              SHORTNAMES   APIVERSION
 NAMESPACED   KIND
 bindings                                       v1
 true         Binding
-```
 
-```text
 componentstatuses                 cs           v1
 false        ComponentStatus
 configmaps                        cm           v1
@@ -123,9 +121,7 @@ selfsubjectaccessreviews                       authorization.k8s.io/v1
 false        SelfSubjectAccessReview
 selfsubjectrulesreviews                        authorization.k8s.io/v1
 false        SelfSubjectRulesReview
-```
 
-```text
 subjectaccessreviews                           authorization.k8s.io/v1
 false        SubjectAccessReview
 horizontalpodautoscalers          hpa          autoscaling/v2
@@ -177,17 +173,14 @@ false        StorageClass
 volumeattachments                              storage.k8s.io/v1
 false        VolumeAttachment
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl api-versions
 admissionregistration.k8s.io/v1
 apiextensions.k8s.io/v1
 apiregistration.k8s.io/v1
 apps/v1
 authentication.k8s.io/v1
-```
 
-```text
 authorization.k8s.io/v1
 autoscaling/v1
 autoscaling/v2
@@ -205,9 +198,7 @@ rbac.authorization.k8s.io/v1
 scheduling.k8s.io/v1
 storage.k8s.io/v1
 v1
-```
 
-```text
 [root@master1 ~]#kubectl api-resources --api-group=apps
 NAME                  SHORTNAMES   APIVERSION   NAMESPACED   KIND
 controllerrevisions                apps/v1      true         ControllerRevision
@@ -215,9 +206,7 @@ daemonsets            ds           apps/v1      true         DaemonSet
 deployments           deploy       apps/v1      true         Deployment
 replicasets           rs           apps/v1      true         ReplicaSet
 statefulsets          sts          apps/v1      true         StatefulSet
-```
 
-```text
 [root@master1 ~]#kubectl api-resources | awk '{print $1}'
 NAME
 bindings
@@ -249,9 +238,7 @@ statefulsets
 tokenreviews
 localsubjectaccessreviews
 selfsubjectaccessreviews
-```
 
-```text
 selfsubjectrulesreviews
 subjectaccessreviews
 horizontalpodautoscalers
@@ -278,14 +265,10 @@ csinodes
 csistoragecapacities
 storageclasses
 volumeattachments
-```
 
-```text
 [root@master1 ~]#kubectl api-resources | awk '{print $1}'|wc -l
 56
-```
 
-```text
 #查看所有资源
 [root@ubuntu2204 ~]#kubectl get all  -A
 NAMESPACE     NAME                                             READY   STATUS
@@ -312,9 +295,7 @@ kube-system   pod/calico-node-xbt4b                            1/1     Running
 2 (5h10m ago)   7h38m
 kube-system   pod/coredns-6db9bd4cd7-t5b4v                     1/1     Running
 1 (5h9m ago)    7h38m
-```
 
-```text
 kube-system   pod/dashboard-metrics-scraper-77b667b99d-dw4d9   1/1     Running
 1 (5h9m ago)    7h37m
 kube-system   pod/kubernetes-dashboard-74fb9f77fb-bhz2v        1/1     Running
@@ -333,9 +314,7 @@ kube-system   pod/node-local-dns-nmvwh                         1/1     Running
 1 (5h9m ago)    7h38m
 kube-system   pod/node-local-dns-wv8mx                         1/1     Running
 1 (5h10m ago)   7h38m
-```
 
-```text
 NAMESPACE     NAME                                TYPE        CLUSTER-IP
 EXTERNAL-IP   PORT(S)                  AGE
 default       service/kubernetes                  ClusterIP   10.68.0.1
@@ -354,18 +333,14 @@ kube-system   service/metrics-server              ClusterIP   10.68.196.91
 <none>        443/TCP                  7h38m
 kube-system   service/node-local-dns              ClusterIP   None
 <none>        9253/TCP                 7h38m
-```
 
-```text
 NAMESPACE     NAME                            DESIRED   CURRENT   READY   UP-TO-
 DATE   AVAILABLE   NODE SELECTOR            AGE
 kube-system   daemonset.apps/calico-node      6         6         6       6
 6           kubernetes.io/os=linux   7h38m
 kube-system   daemonset.apps/node-local-dns   6         6         6       6
 6           <none>                   7h38m
-```
 
-```text
 NAMESPACE     NAME                                        READY   UP-TO-DATE
 AVAILABLE   AGE
 default       deployment.apps/myapp                       3/3     3            3
@@ -378,14 +353,10 @@ kube-system   deployment.apps/dashboard-metrics-scraper   1/1     1            1
 7h37m
 kube-system   deployment.apps/kubernetes-dashboard        1/1     1            1
 7h37m
-```
 
-```text
 kube-system   deployment.apps/metrics-server              1/1     1            1
 7h38m
-```
 
-```text
 NAMESPACE     NAME                                                   DESIRED
 CURRENT   READY   AGE
 default       replicaset.apps/myapp-6f9c7b4668                       3         3
@@ -400,12 +371,13 @@ kube-system   replicaset.apps/kubernetes-dashboard-74fb9f77fb        1         1
 1       7h37m
 kube-system   replicaset.apps/metrics-server-dfb478476               1         1
 1       7h38m
+```
+```bash
 [root@ubuntu2204 ~]#
 ```
 
 范例：查看CRD
-
-```text
+```bash
 [root@master1 ~]#kubectl get crd
 NAME                                                  CREATED AT
 bgpconfigurations.crd.projectcalico.org               2023-07-22T12:10:37Z
@@ -468,16 +440,13 @@ Object 类：对象表示 K8s 系统上的持久化实体，Namespace、Deployme
 在 Kubernetes 系统中，所有的对象型资源都有一个独有的名称表示以实现其幂等的创建及获取操作。有的资源隶属于集群范畴，如 Namespace 和 PersistentVolume，而多数资源类型则受限于名称空间，如 Pod、Deployment 和 Service 等。名称空间级别的资源的 URL 路径中含有其所属空间的名称，这些资源对象在名称空间被删除时会被一并删除，这些资源的访问也受控于其所属的名称空间级别的授权。
 
 Kubernetes 将 API 分割为多个逻辑组合，称为API 群组，不同的群组支持单独启用或禁用，并可以再次分解。群组化管理的 API 使得其可以更轻松的进行扩展。当前 K8s 集群系统上的 API server 上的相关信息可以使用kubectl api-versions 获取。配置资源清单时会使用 API 群组：
-
-```text
+```bash
 #显示API群组,结果格式为: GROUP_NAME/VERSOIN,同一个组可以有多版本并存
 #GROUP_NAME：API群组名，如果省略表示属于core核心组
 #VERSION:v1,经过验证的稳定版本，可以生产环境使用,如:apps/v1
 #alpha:内测,可能包含错误，生产不建议使用
 #beta: 公测，存在变动的可能或者潜在的问题，生产不建议使用,如:autoscaling/v2beta2
-```
 
-```text
 [root@master1 ~]#kubectl api-versions
 admissionregistration.k8s.io/v1
 apiextensions.k8s.io/v1
@@ -503,9 +472,7 @@ scheduling.k8s.io/v1
 storage.k8s.io/v1
 storage.k8s.io/v1beta1
 v1
-```
 
-```text
 [root@master1 ~]#kubectl api-versions
 admissionregistration.k8s.io/v1
 apiextensions.k8s.io/v1
@@ -522,9 +489,7 @@ certificates.k8s.io/v1
 coordination.k8s.io/v1
 discovery.k8s.io/v1
 discovery.k8s.io/v1beta1
-```
 
-```text
 events.k8s.io/v1
 events.k8s.io/v1beta1
 flowcontrol.apiserver.k8s.io/v1beta1
@@ -538,9 +503,7 @@ scheduling.k8s.io/v1
 storage.k8s.io/v1
 storage.k8s.io/v1beta1
 v1
-```
 
-```text
 #每个资源都有自已的APIVERSION和是否属于名称空间
 [root@master1 ~]#kubectl api-resources
 NAME                              SHORTNAMES   APIVERSION
@@ -585,9 +548,7 @@ validatingwebhookconfigurations                admissionregistration.k8s.io/v1
 false        ValidatingWebhookConfiguration
 customresourcedefinitions         crd,crds     apiextensions.k8s.io/v1
 false        CustomResourceDefinition
-```
 
-```text
 apiservices                                    apiregistration.k8s.io/v1
 false        APIService
 controllerrevisions                            apps/v1
@@ -646,9 +607,7 @@ clusterroles                                   rbac.authorization.k8s.io/v1
 false        ClusterRole
 rolebindings                                   rbac.authorization.k8s.io/v1
 true         RoleBinding
-```
 
-```text
 roles                                          rbac.authorization.k8s.io/v1
 true         Role
 priorityclasses                   pc           scheduling.k8s.io/v1
@@ -662,15 +621,13 @@ true         CSIStorageCapacity
 storageclasses                    sc           storage.k8s.io/v1
 false        StorageClass
 volumeattachments
-```
 
-```text
 #Kubernetes-v1.24.3有57种资源
+```
+```bash
 [root@master1 ~]# kubectl api-resources  |wc -l
 57
-```
 
-```text
 #显示指定API群组的资源
 [root@master1 ~]#kubectl api-resources --api-group=apps
 NAME                  SHORTNAMES   APIVERSION   NAMESPACED   KIND
@@ -696,23 +653,16 @@ Object资源型对象对应的 API 群组可以归为以下两类：
 在资源的配置信息apiVersion 字段中引用时可以不用指定路径,如:"apiVersion: v1"。
 
 REST 路径为/api/v1
-
-```text
+```bash
 https://API_SERVER:PORT/api/v1/namespaces/<NS_NAME>/<RESOURCE_NANE>/<OBJECT_
 NAME>
-```
 
-```text
 #default名称空间下的mypod的Pod资源，URL路径直接访问:
 curl https://API_SERVER:PORT/api/vl/namespaces/default/pods/mypod
-```
 
-```text
 /api/v1/namespaces/<NAMESPACE>/pods/
 /api/v1/namespaces/<NAMESPACE>/pods/<POD_NAME>
-```
 
-```text
 #示例：
 kubectl get --raw="/api/v1/namespaces/default/pods/demoapp-78b49597cf-qkj4h"
 | jq
@@ -725,26 +675,20 @@ kubectl get --raw="/api/v1/namespaces/default/pods/demoapp-78b49597cf-qkj4h"
 其在 apiVersion 字段中引用的格式为:"apiVersion: $GROUP_NAME/$VERSION",如："apiVersion:apps/v1"。
 
 REST 路径为/apis/$GROUP_NAME/$VERSION , 如/apis/apps/v1
-
 ```text
 https://API_SERVER:HOST/apis/GROUP_NANE/VERSION/namespaces/<NS_MTNE>/<RESOUR
 CE_NAME>/<0B3ECT_NNE
-```
 
-```text
 /apis/<GROUP_NAME>/<VERSION>/<NAMESPACE>/default/deployments/
 /apis/<GROUP_NAME>/<VERSION>/<NAMESPACE>/default/deployments/<PODNAME>
-```
 
-```text
 #示例：
 kubectl get --raw="/apis/apps/v1/namespaces/kube-system/deployments/coredns"
 | jq
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#kubectl get --raw="/api/v1/namespaces/default" | jq
 {
 "kind": "Namespace",
@@ -780,9 +724,7 @@ kubectl get --raw="/apis/apps/v1/namespaces/kube-system/deployments/coredns"
 "kubernetes"
 ]
 },
-```
 
-```text
 "status": {
 "phase": "Active"
 }
@@ -790,8 +732,7 @@ kubectl get --raw="/apis/apps/v1/namespaces/kube-system/deployments/coredns"
 ```
 
 范例: 获取名为 apps 的 API 群组信息：
-
-```text
+```bash
 [root@master1 ~]#kubectl get --raw /apis/apps | jq
 {
 "kind": "APIGroup",
@@ -811,8 +752,7 @@ kubectl get --raw="/apis/apps/v1/namespaces/kube-system/deployments/coredns"
 ```
 
 范例: 获取所有的 Deployment 对象的列表
-
-```text
+```bash
 [root@master1 ~]#kubectl get --raw /apis/apps/v1/deployments | jq
 {
 "kind": "DeploymentList",
@@ -828,34 +768,27 @@ kubectl get --raw="/apis/apps/v1/namespaces/kube-system/deployments/coredns"
 ### 1.1.3 访问 Kubernetes REST API
 
 可以使用 curl 作为 http 客户端直接通过 API server 在集群上操作资源对象模拟请求和响应过程，只不过 kubeadm 部署的 k8s 集群默认只支持 HTTPS 协议访问接口，但是用户可以使用kubectl proxy 命令来在本地主机上为 API server 启动一个代理网关，由其支持使用 HTTP 进行通信。
-
-```text
+```yaml
 #需要提前获取TOKEN才能访问
 #清单文件
 [root@master1 ~]#cat securiy-sa-token-cluster-admin.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-name: wang
+name: bowen
 namespace: kube-system
-```
 
-```text
 ---
 apiVersion: v1
-```
 
-```text
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
-name: wang-secret
+name: bowen-secret
 namespace: kube-system
 annotations:
-kubernetes.io/service-account.name: "wang"
-```
+kubernetes.io/service-account.name: "bowen"
 
-```text
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -867,71 +800,48 @@ kind: ClusterRole
 name: cluster-admin
 subjects:
 - kind: ServiceAccount
-name: wang
+name: bowen
 namespace: kube-system
-```
 
-```text
 #生成资源
 [root@master1 ~]#kubectl apply -f securiy-sa-token-cluster-admin.yaml
-```
 
-```text
 #查看SA对应的TOKEN
-[root@master1 ~]#kubectl get secrets -n kube-system wang-secret -o yaml
-```
+[root@master1 ~]#kubectl get secrets -n kube-system bowen-secret -o yaml
 
-```text
 #对上面的TOKEN进行base64解码后生成TOKEN变量
 [root@master1 ~]#TOKEN=$(echo ZXlKaGJHY2lw==|base64 -d)
-```
 
-```text
 #利用上面生成的TOEKN才能访问
 curl -s  --cacert /etc/kubernetes/pki/ca.crt -H "Authorization: Bearer ${TOKEN}"
-https://kubeapi.wang.org:6443
-```
+https://kubeapi.bowen.org:6443
 
-```text
 #返回所有的API列表
-curl https://kubeapi.wang.org:6443
-```
+curl https://kubeapi.bowen.org:6443
 
-```text
 #分组API
-curl https://kubeapi.wang.org:6443/apis
-```
+curl https://kubeapi.bowen.org:6443/apis
 
-```text
 #API详细信息
-curl https://kubeapi.wang.org:6443/apis/autoscaling/v1
-```
+curl https://kubeapi.bowen.org:6443/apis/autoscaling/v1
 
-```text
 #API版本信息
-curl https://kubeapi.wang.org:6443/version
-```
+curl https://kubeapi.bowen.org:6443/version
 
-```text
 #指定具体版本号的API
-curl https://kubeapi.wang.org:6443/api/v1
-```
+curl https://kubeapi.bowen.org:6443/api/v1
 
-```text
 #对etcd的健康性检查,正常返回OK
-curl https://kubeapi.wang.org:6443/healthz/etcd
-```
+curl https://kubeapi.bowen.org:6443/healthz/etcd
 
-```text
 #获取指标数据
-curl https://kubeapi.wang.org:6443/metrics
+curl https://kubeapi.bowen.org:6443/metrics
 ```
 
 范例：kubernetes API 直接访问
-
-```text
+```yaml
 #需要提前获取TOKEN才能访问，此方式比较繁琐
-[root@master1 ~]#curl -sk  https://kubeapi.wang.org:6443
+[root@master1 ~]#curl -sk  https://kubeapi.bowen.org:6443
 {
 "kind": "Status",
 "apiVersion": "v1",
@@ -942,31 +852,25 @@ curl https://kubeapi.wang.org:6443/metrics
 "details": {},
 "code": 403
 }
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat securiy-sa-token-cluster-admin.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-name: wang
+name: bowen
 namespace: kube-system
-```
 
-```text
 ---
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
-name: wang-secret
+name: bowen-secret
 namespace: kube-system
 annotations:
-kubernetes.io/service-account.name: "wang"
-```
+kubernetes.io/service-account.name: "bowen"
 
-```text
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -978,32 +882,22 @@ kind: ClusterRole
 name: cluster-admin
 subjects:
 - kind: ServiceAccount
-name: wang
+name: bowen
 namespace: kube-system
-```
 
-```text
 #生成资源
 [root@master1 ~]#kubectl apply -f securiy-sa-token-cluster-admin.yaml
-```
 
-```text
 #查看SA对应的TOKEN
-[root@master1 ~]#kubectl get secrets -n kube-system wang-secret -o yaml
-```
+[root@master1 ~]#kubectl get secrets -n kube-system bowen-secret -o yaml
 
-```text
 #对上面的TOKEN进行base64解码后生成TOKEN变量
 [root@master1 ~]#TOKEN=$(echo ZXlKaGJHY2lw==|base64 -d)
-```
 
-```text
 [root@master1 ~]#curl -s  --cacert /etc/kubernetes/pki/ca.crt -H "Authorization:
-Bearer ${TOKEN}" https://kubeapi.wang.org:6443
+Bearer ${TOKEN}" https://kubeapi.bowen.org:6443
 {
-```
 
-```text
 "paths": [
 "/.well-known/openid-configuration",
 "/api",
@@ -1017,15 +911,12 @@ Bearer ${TOKEN}" https://kubeapi.wang.org:6443
 ```
 
 范例：用代理访问
-
-```text
+```bash
 #上面方式比较繁琐，启用代理可以更加方便访问API Server
 #前台启动一个代理
 [root@master1 ~]#kubectl proxy --port=8081
 Starting to serve on 127.0.0.1:8081
-```
 
-```text
 #在另一个终端执行下面
 #查看所有API列表
 [root@master1 ~]#curl -s  127.0.0.1:8081|less
@@ -1047,9 +938,7 @@ Starting to serve on 127.0.0.1:8081
 "/apis/auth.democrd.io",
 "/apis/auth.democrd.io/v1alpha1",
 ......
-```
 
-```text
 {
 "kind": "APIGroupList",
 "apiVersion": "v1",
@@ -1066,9 +955,7 @@ Starting to serve on 127.0.0.1:8081
 "groupVersion": "apiregistration.k8s.io/v1",
 "version": "v1"
 }
-```
 
-```text
 },
 {
 "name": "apps",
@@ -1096,15 +983,11 @@ Starting to serve on 127.0.0.1:8081
 }
 ]
 }
-```
 
-```text
 #使用 jq 命令(json 数据处理的命令行工具)处理结果：
 [root@master1 ~]#curl -s 127.0.0.1:8081/api/  | jq .kind
 "APIVersions"
-```
 
-```text
 [root@master1 ~]#curl -s 127.0.0.1:8081/api/  | jq .serverAddressByClientCIDRs
 [
 {
@@ -1112,9 +995,7 @@ Starting to serve on 127.0.0.1:8081
 "serverAddress": "10.0.0.103:6443"
 }
 ]
-```
 
-```text
 #查看某个 Namespace 资源情况
 [root@master1 ~]#curl -s  127.0.0.1:8081/api/v1/namespaces/default  | jq
 {
@@ -1133,9 +1014,7 @@ Starting to serve on 127.0.0.1:8081
 "manager": "kube-apiserver",
 "operation": "Update",
 "apiVersion": "v1",
-```
 
-```text
 "time": "2022-02-22T12:26:26Z",
 "fieldsType": "FieldsV1",
 "fieldsV1": {
@@ -1158,15 +1037,13 @@ Starting to serve on 127.0.0.1:8081
 "phase": "Active"
 }
 }
-```
 
-```text
 # kind字段
+```
+```bash
 [root@master1 ~]#curl -s  127.0.0.1:8081/api/v1/namespaces/default  | jq .kind
 "Namespace"
-```
 
-```text
 # apiVersion字段
 [root@master1 ~]#curl -s  127.0.0.1:8081/api/v1/namespaces/default  | jq
 .apiVersion
@@ -1198,14 +1075,10 @@ Starting to serve on 127.0.0.1:8081
 }
 }
 }
-```
 
-```text
 ]
 }
-```
 
-```text
 # spec字段
 [root@master1 ~]#curl -s  127.0.0.1:8081/api/v1/namespaces/default  | jq .spec
 {
@@ -1213,9 +1086,7 @@ Starting to serve on 127.0.0.1:8081
 "kubernetes"
 ]
 }
-```
 
-```text
 # status字段
 [root@master1 ~]#curl -s  127.0.0.1:8081/api/v1/namespaces/default  | jq .status
 {
@@ -1223,17 +1094,15 @@ Starting to serve on 127.0.0.1:8081
 }
 ```
 
-```text
-#如上面的属于 Namespace 类型的名为 default 的资源信息，其表现为一个 JSON 序列化的数据，
-Kubernetes 大多数资源对象的配置格式都为 JSON 格式，具有 apiVersion、kind、metadata、spec
-和status 五个一级字段。
-```
+
+#如上面的属于 Namespace 类型的名为 default 的资源信息，其表现为一个 JSON 序列化的数据，Kubernetes 大多数资源对象的配置格式都为 JSON 格式，具有 apiVersion、kind、metadata、spec 和status 五个一级字段。
+
 
 ### 1.1.4 Kubernetes API 设计理念
 
-```text
-https://www.kubernetes.org.cn/kubernetes设计理念
-```
+
+- <https://www.kubernetes.org.cn/kubernetes设计理念>
+
 
 **Kubernetes设计理念与分布式系统**
 
@@ -1302,29 +1171,20 @@ Kubernetes API 只接受及响应 JSON 格式的数据对象。同时，为了�
 YAML是一种对象描述性语言，它有两种基本样式：Maps和Lists。
 
 基本样式一：YAML Maps
-
-```text
+```yaml
 #就是一个键值对，键和值中间使用"冒号+空格"隔开。
 #格式1:
 key: value
-```
 
-```text
 #示例：
 app: mysql
-```
 
-```text
 #这种基本样式，还有一种变种形式，就是值的本身就是一个键值对，两层之间使用两个空格表示层级关系
 #格式2：
 key:
-```
 
-```text
 key：value
-```
 
-```text
 #示例：
 metadata:
 name: mysql
@@ -1332,18 +1192,8 @@ name: mysql
 
 基本样式二：YAML Lists
 
-```text
-其实这也是一种键值对，只不过它的值是一个列表形式。
-特点：
-1、键和冒号为一行，值为下一行
-2、键和值有层级关系，使用两个空格表示层级关系
-3、列表多元素之间是同级关系，使用 - 表示
-格式：
-key:
-- value1
-- value2
-- value3
-```
+
+其实这也是一种键值对，只不过它的值是一个列表形式。特点：1、键和冒号为一行，值为下一行 2、键和值有层级关系，使用两个空格表示层级关系 3、列表多元素之间是同级关系，使用 - 表示格式：key:- value1- value2- value3
 
 ```text
 #示例：
@@ -1376,8 +1226,7 @@ K8s 系统上的绝大多数资源都是由其使用者所创建的。创建时�
 几乎所有的资源，apiVersion、kind 和 metadata 字段的功能基本相同。但是 spec字段则可能有很大的不同。spec 用于规定资源的期望状态，而资源的嵌套属性是有很大差别的。status字段则记录活动对象的当前状态，其要与 spec 中定义的状态相同，或者处于正转换为与其相同的过程中。用户可以使用kubectl get TYPE/NAME -o yaml/json 命令来获取任何一个对象的yaml 或者 json 格式的配置清单。
 
 如获取名称空间类型 kube-system 的配置清单：
-
-```text
+```yaml
 [root@master1 ~]#kubectl get namespace kube-system -o yaml
 apiVersion: v1
 kind: Namespace
@@ -1393,9 +1242,7 @@ finalizers:
 - kubernetes
 status:
 phase: Active
-```
 
-```text
 [root@master1 ~]#kubectl get namespace kube-system -o json
 {
 "apiVersion": "v1",
@@ -1435,8 +1282,7 @@ kind：资源类型,kubernetes的专用资源对象。
 查看命令： kubectl api-resources  [--api-group=]，可以看到当前共有50+种资源对象和对应的APIVERSION 版本信息
 
 范例: 查看API版本
-
-```text
+```bash
 [root@master1 ~]#kubectl api-versions
 admissionregistration.k8s.io/v1
 apiextensions.k8s.io/v1
@@ -1464,8 +1310,7 @@ v1
 ```
 
 范例: 查看资源类型
-
-```text
+```bash
 [root@master1 ~]#kubectl api-resources
 NAME                              SHORTNAMES   APIVERSION
 NAMESPACED   KIND
@@ -1491,9 +1336,7 @@ persistentvolumes                 pv           v1
 false        PersistentVolume
 pods                              po           v1
 true         Pod
-```
 
-```text
 podtemplates                                   v1
 true         PodTemplate
 replicationcontrollers            rc           v1
@@ -1552,9 +1395,7 @@ flowschemas
 flowcontrol.apiserver.k8s.io/v1beta3   false        FlowSchema
 prioritylevelconfigurations
 flowcontrol.apiserver.k8s.io/v1beta3   false        PriorityLevelConfiguration
-```
 
-```text
 ingressclasses                                 networking.k8s.io/v1
 false        IngressClass
 ingresses                         ing          networking.k8s.io/v1
@@ -1585,9 +1426,7 @@ storageclasses                    sc           storage.k8s.io/v1
 false        StorageClass
 volumeattachments                              storage.k8s.io/v1
 false        VolumeAttachment
-```
 
-```text
 #查看指定API Group的资源
 [root@ubuntu2204 ~]#kubectl api-resources --api-group apps
 NAME                  SHORTNAMES   APIVERSION   NAMESPACED   KIND
@@ -1596,9 +1435,7 @@ daemonsets            ds           apps/v1      true         DaemonSet
 deployments           deploy       apps/v1      true         Deployment
 replicasets           rs           apps/v1      true         ReplicaSet
 statefulsets          sts          apps/v1      true         StatefulSet
-```
 
-```text
 [root@master1 ~]#kubectl api-resources --api-group=storage.k8s.io
 NAME                   SHORTNAMES   APIVERSION          NAMESPACED   KIND
 csidrivers                          storage.k8s.io/v1   false        CSIDriver
@@ -1644,32 +1481,27 @@ Master 节点的 controller manager 通过相应的控制器组件动态管理�
 注意：数据类的资源对象无spec, Status 字段，比如：configmaps，secrets ， endpoints 等。
 
 注意：字段名一般为小驼峰命名法，字段值为大驼峰命名法。
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pod.spec.containers.imagePullPolicy
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    imagePullPolicy <string>
 ```
 
-```text
-DESCRIPTION:
-Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always
-if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated.
-More info:
-https://kubernetes.io/docs/concepts/containers/images#updating-images
-```
+
+DESCRIPTION: Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated. More info:
+
+<https://kubernetes.io/docs/concepts/containers/images#updating-images>
+
 
 ### 1.2.6 资源配置清单格式文档帮助
 
 **官方帮助**
 
-```text
-https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/
-```
+
+- <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/>
+
 
 通过 kubectl explain 查看帮助生成新的清单文件
 
@@ -1678,14 +1510,12 @@ https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/
 可以使用kubectl api-resources 查看哪些资源可以使用 explain 来获取文档帮助。
 
 格式
-
 ```text
 kubectl explain TYPE_NAME [--api-verion=GROUP_NAME/VERSION]
 ```
 
 范例：
-
-```text
+```bash
 [root@master1 ~]# kubectl api-resources | awk '{print $1}'
 NAME
 bindings
@@ -1708,9 +1538,7 @@ services
 mutatingwebhookconfigurations
 validatingwebhookconfigurations
 customresourcedefinitions
-```
 
-```text
 apiservices
 controllerrevisions
 daemonsets
@@ -1750,22 +1578,17 @@ volumeattachments
 ```
 
 kubectl explain 可以根据给出的对象类型或者相应的嵌套字段来显示该字段所接受的下一级字段相关文档。
-
-```text
+```bash
 #查看 Pod 资源的一级字段文档帮助,下面两种方式功能相同
 [root@master1 ~]#kubectl explain pods
 [root@master1 ~]#kubectl explain pods.
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 DESCRIPTION:
 Pod is a collection of containers that can run on a host. This resource is
 created by clients and scheduled onto hosts.
-```
 
-```text
 FIELDS:  # pods可以接受的二级字段
 apiVersion   <string>
 ...
@@ -1773,9 +1596,7 @@ kind <string>
 ...
 metadata     <Object>
 ...
-```
 
-```text
 spec <Object>
 ...
 status       <Object>
@@ -1783,28 +1604,23 @@ status       <Object>
 ```
 
 需要了解某一级字段表示的对象之下级对象字段，则只需要使用一个英文的句点指定其下级字段的对象名称即可。
-
-```text
+```bash
 #查看pods的指定的字段的说明
 [root@master1 ~]#kubectl explain pod.apiVersion
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    apiVersion <string>
 ```
 
-```text
-DESCRIPTION:
-APIVersion defines the versioned schema of this representation of an
-object. Servers should convert recognized schemas to the latest internal
-value, and may reject unrecognized values. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#resources
-```
 
-```text
+DESCRIPTION: APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
+conventions.md#resources
+
+```bash
 # pods.spec字段下可接受下面的字段
 [root@master1 ~]#kubectl explain pods.spec | grep -E "^ {,3}[a-z]"
 activeDeadlineSeconds    <integer>
@@ -1816,28 +1632,21 @@ dnsPolicy    <string>
 enableServiceLinks   <boolean>
 ephemeralContainers  <[]Object>
 .....
-```
 
-```text
 #依次查看编写资源清单所需的字段及其所需的数据类型
 [root@master1 ~]# kubectl explain pods.spec.containers.ports.containerPort
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    containerPort <integer>
-```
 
-```text
 DESCRIPTION:
 Number of port to expose on the pod's IP address. This must be a valid port
 number, 0 < x < 65536.
 ```
 
 范例：查看不同版本的资源
-
-```text
+```bash
 [root@ubuntu2204 ~]#kubectl api-versions
 admissionregistration.k8s.io/v1
 apiextensions.k8s.io/v1
@@ -1846,9 +1655,7 @@ apps/v1
 authentication.k8s.io/v1
 authorization.k8s.io/v1
 autoscaling/v1
-```
 
-```text
 autoscaling/v2
 batch/v1
 certificates.k8s.io/v1
@@ -1864,99 +1671,71 @@ rbac.authorization.k8s.io/v1
 scheduling.k8s.io/v1
 storage.k8s.io/v1
 v1
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl api-resources  |grep hpa
 horizontalpodautoscalers          hpa          autoscaling/v2
 true         HorizontalPodAutoscaler
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl explain hpa --api-version=autoscaling/v1
 GROUP:      autoscaling
 KIND:       HorizontalPodAutoscaler
 VERSION:    v1
-```
 
-```text
 DESCRIPTION:
 configuration of a horizontal pod autoscaler.
 ```
 
-```text
-FIELDS:
-apiVersion    <string>
-APIVersion defines the versioned schema of this representation of an object.
-Servers should convert recognized schemas to the latest internal value, and
-may reject unrecognized values. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+
+FIELDS: apiVersion    <string>APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#resources
-```
 
-```text
-kind  <string>
-Kind is a string value representing the REST resource this object
-represents. Servers may infer this from the endpoint the client submits
-requests to. Cannot be updated. In CamelCase. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+
+kind  <string>Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#types-kinds
-```
 
-```text
+```bash
 metadata  <ObjectMeta>
 Standard object metadata. More info:
 https://git.k8s.io/community/contributors/devel/sig-architecture/api-
 conventions.md#metadata
-```
 
-```text
 spec  <HorizontalPodAutoscalerSpec>
 spec defines the behaviour of autoscaler. More info:
 https://git.k8s.io/community/contributors/devel/sig-architecture/api-
 conventions.md#spec-and-status.
-```
 
-```text
 status    <HorizontalPodAutoscalerStatus>
 status is the current information about the autoscaler.
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl explain hpa --api-version=autoscaling/v2
-```
 
-```text
 GROUP:      autoscaling
 KIND:       HorizontalPodAutoscaler
 VERSION:    v2
 ```
 
-```text
-DESCRIPTION:
-HorizontalPodAutoscaler is the configuration for a horizontal pod
-autoscaler, which automatically manages the replica count of any resource
-implementing the scale subresource based on the metrics specified.
-```
 
-```text
-FIELDS:
-apiVersion    <string>
-APIVersion defines the versioned schema of this representation of an object.
-Servers should convert recognized schemas to the latest internal value, and
-may reject unrecognized values. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+DESCRIPTION: HorizontalPodAutoscaler is the configuration for a horizontal pod autoscaler, which automatically manages the replica count of any resource implementing the scale subresource based on the metrics specified.
+
+
+FIELDS: apiVersion    <string>APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#resources
-```
 
-```text
-kind  <string>
-Kind is a string value representing the REST resource this object
-represents. Servers may infer this from the endpoint the client submits
-requests to. Cannot be updated. In CamelCase. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+
+kind  <string>Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#types-kinds
-```
 
 ```text
 metadata  <ObjectMeta>
@@ -1965,12 +1744,12 @@ https://git.k8s.io/community/contributors/devel/sig-architecture/api-
 conventions.md#metadata
 ```
 
-```text
-spec  <HorizontalPodAutoscalerSpec>
-spec is the specification for the behaviour of the autoscaler. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+
+spec  <HorizontalPodAutoscalerSpec>spec is the specification for the behaviour of the autoscaler. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#spec-and-status.
-```
 
 ```text
 status    <HorizontalPodAutoscalerStatus>
@@ -1980,8 +1759,7 @@ status is the current information about the autoscaler.
 ## 1.3 创建资源清单文件
 
 ### 1.3.1 利用dry-run模拟运行指令式命令生成清单文件
-
-```text
+```yaml
 [root@master1 ~]#kubectl create namespace namespace-test --dry-run=client -o
 yaml
 apiVersion: v1
@@ -1991,9 +1769,7 @@ creationTimestamp: null
 name: namespace-test
 spec: {}
 status: {}
-```
 
-```text
 #生成文件
 [root@master1 ~]#kubectl create namespace namespace-test --dry-run=client -o yaml
 > namespace-test.yaml
@@ -2005,20 +1781,17 @@ status: {}
 每次kubectl explain查看帮助过于繁琐,可以根据当前系统已有的活动资源来导出资源清单模板，基于此模版再做修改可以更快速的使用资源。
 
 格式
-
-```text
+```bash
 kubectl get TYPE NAME -o yaml  > /path/export-resourcelist.yaml
 kubectl get TYPE/NAME -o yaml  > /path/export-resourcelist.yaml
 ```
 
 范例: 导出指定资源的模版文件
-
-```text
+```bash
 [root@master1 ~]#kubectl get pods pod-test1 -o yaml   > pod-test1.yaml
 ```
 
 ### 1.3.3 将 Docker Compose 文件转换为 Kubernetes 资源
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/translate-compose-
 kubernetes/
@@ -2032,15 +1805,14 @@ Kompose 官网 http://kompose.io。
 
 #### 1.3.4.1 安装 Visual Studio Code
 
-```text
-https://code.visualstudio.com/download
-https://visualstudio.microsoft.com/zh-hans/
-```
+
+- <https://code.visualstudio.com/download>
+- <https://visualstudio.microsoft.com/zh-hans/>
+
 
 ![原 PDF 第 37 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-391d502cf3ab139c.png)
 
 #### 1.3.4.2 安装扩展  YAML (redhat)
-
 ```text
 YAML
 #版本: v1.15.0
@@ -2049,7 +1821,6 @@ YAML
 ![原 PDF 第 38 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-62949d5220a4de4a.png)
 
 #### 1.3.4.3 安装扩展 Kubernetes Templates
-
 ```text
 Kubernetes Templates
 #版本: v1.3.1
@@ -2096,8 +1867,7 @@ kubectl 命令可分为三类命令：
 可直接引用目录下的所有配置清单文件，也可直接作用于单个配置文件。
 
 声明式对象配置并不直接指明要进行的对象管理操作，而是提供配置清单文件给 Kubernetes 系统，并委托系统跟踪活动对象的状态变动。资源对象的创建、删除及修改操作全部通过命令kubectl apply/patch等来完成，并且每次操作时，提供给命令的配置信息都将保存于对象的注释信息(kubectl.kubernetes.io/last-applied-configuration)中，并且通过对比检查活动对象的当前状态、注解中的配置信息和资源清单中的配置三方的变更来实现仅修改变动字段的高级补丁机制。
-
-```text
+```bash
 kubectl apply -f /path/file -f ..... #加载指定文件
 kubectl apply -f /path  #加载指定目录下的所有以.yaml,.yml,.json后缀的文件
 kubectl apply -f URL    #加载URL的文件
@@ -2111,9 +1881,9 @@ kubectl apply -f URL    #加载URL的文件
 
 ## 2.1 名称空间说明
 
-```text
-https://kubernetes.io/docs/tasks/administer-cluster/namespaces/
-```
+
+- <https://kubernetes.io/docs/tasks/administer-cluster/namespaces/>
+
 
 ![原 PDF 第 41 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-79049a2479b70e06.png)
 
@@ -2188,8 +1958,7 @@ kubernetes的名称空间, 用户根据需要可以自行创建删除,属于用�
 查看某资源时要指明其所属的名称空间，使用-n 或--namespace 选项指定名称空间,如果不指定默认查看default名称空间中资源。
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#kubectl get namespaces
 NAME                   STATUS   AGE
 default                Active   6d18h
@@ -2197,17 +1966,13 @@ kube-node-lease        Active   6d18h
 kube-public            Active   6d18h
 kube-system            Active   6d18h
 kubernetes-dashboard   Active   5d1h
-```
 
-```text
 [root@master1 ~]#kubectl get ns -o name
 namespace/default
 namespace/kube-node-lease
 namespace/kube-public
 namespace/kube-system
-```
 
-```text
 [root@master1 ~]#kubectl get ns default  -o yaml
 apiVersion: v1
 kind: Namespace
@@ -2223,18 +1988,14 @@ finalizers:
 - kubernetes
 status:
 phase: Active
-```
 
-```text
 [root@master1 ~]#kubectl get ns default  -o json
 {
 "apiVersion": "v1",
 "kind": "Namespace",
 "metadata": {
 "creationTimestamp": "2024-04-11T02:15:56Z",
-```
 
-```text
 "labels": {
 "kubernetes.io/metadata.name": "default"
 },
@@ -2251,47 +2012,33 @@ phase: Active
 "phase": "Active"
 }
 }
-```
 
-```text
 #查看指定信息
 [root@master1 ~]#kubectl get ns default  -o jsonpath={.metadata.name}
 default
-```
 
-```text
 [root@master1 ~]#kubectl get ns default  -o jsonpath={.apiVersion}
 v1
-```
 
-```text
 #查看当前名称空间的资源
 [root@ubuntu2204 ~]#kubectl get all
 NAME                         READY   STATUS    RESTARTS        AGE
 pod/myapp-6f9c7b4668-6vjv6   1/1     Running   1 (5h10m ago)   7h34m
 pod/myapp-6f9c7b4668-725r9   1/1     Running   1 (5h10m ago)   7h34m
 pod/myapp-6f9c7b4668-tcczj   1/1     Running   1 (5h10m ago)   7h34m
-```
 
-```text
 NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
 service/kubernetes   ClusterIP   10.68.0.1     <none>        443/TCP
 7h42m
 service/myapp        NodePort    10.68.78.97   <none>        80:31890/TCP
 5h18m
-```
 
-```text
 NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/myapp   3/3     3            3           7h34m
-```
 
-```text
 NAME                               DESIRED   CURRENT   READY   AGE
 replicaset.apps/myapp-6f9c7b4668   3         3         3       7h34m
-```
 
-```text
 #查看指定名称空间的资源
 [root@ubuntu2204 ~]#kubectl get all -n kube-system
 NAME                                             READY   STATUS    RESTARTS
@@ -2306,9 +2053,7 @@ pod/calico-node-fkdvk                            1/1     Running   2 (5h11m ago)
 7h41m
 pod/calico-node-g78b5                            1/1     Running   2 (5h13m ago)
 7h41m
-```
 
-```text
 pod/calico-node-twx6t                            1/1     Running   3 (5h13m ago)
 7h41m
 pod/calico-node-xbt4b                            1/1     Running   2 (5h12m ago)
@@ -2333,9 +2078,7 @@ pod/node-local-dns-nmvwh                         1/1     Running   1 (5h11m ago)
 7h40m
 pod/node-local-dns-wv8mx                         1/1     Running   1 (5h13m ago)
 7h40m
-```
 
-```text
 NAME                                TYPE        CLUSTER-IP      EXTERNAL-IP
 PORT(S)                  AGE
 service/dashboard-metrics-scraper   ClusterIP   10.68.54.201    <none>
@@ -2350,18 +2093,14 @@ service/metrics-server              ClusterIP   10.68.196.91    <none>
 443/TCP                  7h40m
 service/node-local-dns              ClusterIP   None            <none>
 9253/TCP                 7h40m
-```
 
-```text
 NAME                            DESIRED   CURRENT   READY   UP-TO-DATE
 AVAILABLE   NODE SELECTOR            AGE
 daemonset.apps/calico-node      6         6         6       6            6
 kubernetes.io/os=linux   7h41m
 daemonset.apps/node-local-dns   6         6         6       6            6
 <none>                   7h40m
-```
 
-```text
 NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/calico-kube-controllers     1/1     1            1
 7h41m
@@ -2373,9 +2112,7 @@ deployment.apps/kubernetes-dashboard        1/1     1            1
 7h40m
 deployment.apps/metrics-server              1/1     1            1
 7h40m
-```
 
-```text
 NAME                                                   DESIRED   CURRENT   READY
 AGE
 replicaset.apps/calico-kube-controllers-5994f46b69     1         1         1
@@ -2391,69 +2128,58 @@ replicaset.apps/metrics-server-dfb478476               1         1         1
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#kubectl get lease  -n kube-node-lease
 NAME               HOLDER             AGE
-master1.wang.org   master1.wang.org   69d
-master2.wang.org   master2.wang.org   69d
-master3.wang.org   master3.wang.org   69d
-node1.wang.org     node1.wang.org     69d
-node2.wang.org     node2.wang.org     69d
-node3.wang.org     node3.wang.org     69d
-```
+master1.bowen.org   master1.bowen.org   69d
+master2.bowen.org   master2.bowen.org   69d
+master3.bowen.org   master3.bowen.org   69d
+node1.bowen.org     node1.bowen.org     69d
+node2.bowen.org     node2.bowen.org     69d
+node3.bowen.org     node3.bowen.org     69d
 
-```text
 #查看所有名称空间
 [root@master1 ~]#kubectl get lease  -A
 NAMESPACE         NAME                                        HOLDER
 AGE
 ingress-nginx     ingress-nginx-leader                        ingress-nginx-
 controller-56f8b4f667-kvrff                                        41d
-kube-node-lease   master1.wang.org                            master1.wang.org
+kube-node-lease   master1.bowen.org                            master1.bowen.org
 69d
-kube-node-lease   node1.wang.org                              node1.wang.org
+kube-node-lease   node1.bowen.org                              node1.bowen.org
 69d
-kube-node-lease   node2.wang.org                              node2.wang.org
+kube-node-lease   node2.bowen.org                              node2.bowen.org
 69d
-kube-node-lease   node3.wang.org                              node3.wang.org
+kube-node-lease   node3.bowen.org                              node3.bowen.org
 69d
 kube-system       kube-apiserver-wcrnq4ikkdbtpjm6szoyymu3lm   kube-apiserver-
 wcrnq4ikkdbtpjm6szoyymu3lm_1bead4d0-d911-44ae-ac5d-7d3180325ae9   14d
 kube-system       kube-controller-manager
-master1.wang.org_9d4ec997-cc1d-415f-a60e-ea8c7a16f86b
+master1.bowen.org_9d4ec997-cc1d-415f-a60e-ea8c7a16f86b
 69d
 kube-system       kube-scheduler
-master1.wang.org_be63fc1b-ce8c-462f-b9f9-a59f5eeccaa7
+master1.bowen.org_be63fc1b-ce8c-462f-b9f9-a59f5eeccaa7
 69d
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#kubectl describe namespace default
 Name:         default
 Labels:       kubernetes.io/metadata.name=default
 Annotations:  <none>
 Status:       Active
-```
 
-```text
 No resource quota.
-```
 
-```text
 No LimitRange resource.
 ```
 
 范例:
-
-```text
+```bash
 #只查看指定kube-system名称空间的pod
 [root@master1 ~]#kubectl get pod -n kube-system
-```
 
-```text
 #查看所有名称空间的pod
 [root@master1 ~]#kubectl get pod -A
 [root@master1 ~]#kubectl get pod --all-namespaces
@@ -2464,13 +2190,10 @@ No LimitRange resource.
 ### 2.3.1 指令式命令创建
 
 使用指令式命令kubectl create 可以直接创建名称空间，只需指定名称空间名称。
-
-```text
+```bash
 [root@master1 ~]#kubectl create namespace namespace-test1
 namespace/namespace-test1 created
-```
 
-```text
 [root@master1 ~]#kubectl get namespace namespace-test1
 NAME              STATUS   AGE
 namespace-test1   Active   4s
@@ -2483,16 +2206,13 @@ namespace-test1   Active   4s
 kubectl create  -f </path/to/namespace-obj.yaml 实现创建
 
 此方式生产不建议使用,执行此命令需要指定的namespace不存在。
-
-```text
+```yaml
 [root@master1 ~]#cat namespace-test2.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
 name: namespace-test2
-```
 
-```text
 [root@master1 ~]#kubectl create  -f namespace-test2.yaml
 namespace/namespace-test1 created
 ```
@@ -2502,29 +2222,23 @@ namespace/namespace-test1 created
 Namespace 是 Kubernetes API 的标准资源类型之一，其配置主要有 kind、apiVolume、metadata 和spec 等一级字段组成。使用kubectl create/apply -f /path/to/namespace-obj.yaml 命令就可以创建名称空间资源。
 
 范例: 方法1
-
-```text
+```yaml
 [root@master1 ~]#cat namespace-test2.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
 name: namespace-test2
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  namespace-test2.yaml
 namespace/namespace-test1 created
-```
 
-```text
 [root@master1 ~]#kubectl get namespace namespace-test2
 NAME              STATUS   AGE
 namespace-test2   Active   4m12s
 ```
 
 范例: 方法2
-
-```text
+```yaml
 [root@ubuntu2204 ~]#kubectl get ns default -o yaml > default-ns.yaml
 [root@ubuntu2204 ~]#vim default-ns.yaml
 [root@ubuntu2204 ~]#cat default-ns.yaml
@@ -2532,9 +2246,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
 name: demo
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl apply -f default-ns.yaml
 namespace/demo created
 [root@ubuntu2204 ~]#kubectl get ns demo
@@ -2543,13 +2255,10 @@ demo   Active   7s
 ```
 
 范例: 方法3
-
-```text
+```yaml
 [root@ubuntu2204 ~]#kubectl create ns stage --dry-run=client  -o yaml > stage-
 ns.yaml
-```
 
-```text
 [root@ubuntu2204 ~]#cat stage-ns.yaml
 apiVersion: v1
 kind: Namespace
@@ -2560,36 +2269,28 @@ spec: {}
 status: {}
 [root@ubuntu2204 ~]#kubectl apply -f stage-ns.yaml
 namespace/stage created
-```
 
-```text
 [root@ubuntu2204 ~]#kubectl get ns stage
 NAME    STATUS   AGE
-```
 
-```text
 stage   Active   6s
 ```
 
 ## 2.4 删除 Namespace 资源
 
 注意: 删除 Namespace 会级联删除此名称空间的所有资源,非常危险。
-
-```text
+```bash
 #方法1
 [root@master1 ~]#kubectl delete namespaces namespace-test1
 namespace "namespace-test1" deleted
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl  delete -f  namespace-test2.yaml
 namespace "namespace-test2" deleted
 ```
 
 范例：
-
-```text
+```bash
 #无法删除内置名称空间
 [root@master1 ~]#kubectl delete ns default  kube-public kube-system
 Error from server (Forbidden): namespaces "default" is forbidden: this namespace
@@ -2601,40 +2302,27 @@ namespace may not be deleted
 ```
 
 范例: 删除名称空间会级联删除此名称空间下面的所有资源
-
-```text
+```bash
 [root@master1 ~]#kubectl create ns test
-```
 
-```text
 [root@master1 ~]#kubectl create -n test deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 
-```text
 [root@master1 ~]#kubectl get -n test all
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/myapp-7dbd45d496-7hk7b   1/1     Running   0          11s
 pod/myapp-7dbd45d496-c92hq   1/1     Running   0          11s
 pod/myapp-7dbd45d496-vrcm6   1/1     Running   0          11s
-```
 
-```text
 NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/myapp   3/3     3            3           11s
-```
 
-```text
 NAME                               DESIRED   CURRENT   READY   AGE
 replicaset.apps/myapp-7dbd45d496   3         3         3       11s
-```
 
-```text
 #删除名称空间
 [root@master1 ~]#kubectl delete  ns test
-```
 
-```text
 #所有此名称空间下的资源都被删除
 [root@master1 ~]#kubectl get -n test all
 No resources found in test namespace.
@@ -2649,8 +2337,7 @@ No resources found in test namespace.
 kubectl delete TYPE RESOURCE -n删除指定名称空间内的指定资源。kubectl delete TYPE --all -n删除指定名称空间内的指定类型的所有资源。kubectl delete all -n删除指定名称空间内的所有资源。kubectl delete all --all删除所有名称空间中的所有资源。
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#kubectl delete svc,deployment --all -n demo
 ```
 

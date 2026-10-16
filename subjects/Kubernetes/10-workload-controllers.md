@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 控制器、标签与 Deployment'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -37,9 +38,9 @@ Kubernetes默认就提供的实现基础型、核心型的控制器。Controller
 
 ## 1.2 控制原理
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/architecture/controller/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/architecture/controller/>
+
 
 在机器人技术和自动化领域，控制回路（Control Loop）是一个非终止回路，用于调节系统状态。
 
@@ -87,9 +88,9 @@ Controller根据Spec，控制Systems生成当前实际Status Controller借助于
 
 ## 1.3 工作负载资源
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/>
+
 
 工作负载是在 Kubernetes 上运行的应用程序。在 Kubernetes 中，无论你的负载是由单个组件还是由多个一同工作的组件构成，你都可以在一组 Pod中运行它。Kubernetes Pod 遵循预定义的生命周期。 例如，当在你的集群中运行了某个 Pod，但是 Pod 所在的节点出现致命错误时， 所有该节点上的 Pod 的状态都会变成失败。Kubernetes 将这类失败视为最终状态： 即使该节点后来恢复正常运行，你也需要创建新的 Pod 以恢复应用。
 
@@ -144,7 +145,6 @@ StatefulSet
 ![原 PDF 第 7 页插图](assets/Kubernetes工作负载/img-b8ebed631c0d2c2f.png)
 
 **节点控制器和Worker节点**
-
 ```text
 https://www.waytoeasylearn.com/learn/kube-controller-manager/
 https://kubernetes.io/docs/reference/command-line-tools-reference/kube-
@@ -161,9 +161,9 @@ controller-manager/
 
 ### 2.1.1 标签说明
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/labels/>
+
 
 Kubernetes通过标签来管理对应或者相关联的各种资源对象，Label是kubernetes中的核心概念之一。Label 不是一个独立的API 资源类型,但Label对象可以关联到各种资源对象上。通过对Label的管理从而达到对相同Label的资源进行分组管理、分配、调度、配置、部署等。标签Label 是可以附加在任何资源对象上的键值型元数据,即Label本质上是一个key/value键值对，其中key与value由用户自己指定。
 
@@ -192,94 +192,61 @@ kubectl label 命令可管理对象的标签。
 #### 2.1.2.1 命令行方法
 
 管理标签：
-
-```text
+```bash
 #添加标签
 kubectl label 资源类型 资源名称 label_name=label_value [label_name=label_value] ...
-```
 
-```text
 #修改标签
 kubectl label 资源类型 资源名称 label_name=label_value [label_name=label_value] ...
 --overwrite[=true]
-```
 
-```text
 #删除标签
 kubectl label 资源类型 资源名称 label_name- [label_name-] ...
 ```
 
-```text
-#参数说明
-同时增加多个标签，只需要在后面多写几个就可以了，使用空格隔开
-默认情况下，已存在的标签是不能修改的，使用 --overwrite=true 表示强制覆盖
-label_name=label_value样式写成 label_name-  即表示删除label
-```
+
+#参数说明同时增加多个标签，只需要在后面多写几个就可以了，使用空格隔开默认情况下，已存在的标签是不能修改的，使用 --overwrite=true 表示强制覆盖 label_name=label_value样式写成 label_name-  即表示删除label
+
 
 查看标签和指定标签的资源：
-
-```text
+```bash
 #查看所有标签
-```
 
-```text
 kubectl get 资源类型 [资源名称] --show-labels
 #示例:
 kubectl get pods --show-labels
-```
 
-```text
 #查看指定标签的资源
 kubectl get pods -l label_name[=label_value]
 ```
 
-```text
-#参数：
--l #指定标签条件，获取指定资源对象，=表示匹配，!= 表示不匹配, 如果后面的选择标签有多个的话，使
-用逗号隔开
-#如果针对标签的值进行范围过滤的话，可以使用如下格式：
--l 'label_name in (value1, value2, value3, ...)'      #包括其中一个label
--l 'label_name notin (value1, value2, value3, ...)'   #不包括其中任何一个label的值或
-者没有label_name
-#是否存在label的判断
--l 'label_name'    #存在label
--l '!label_name'   #不存在label,注意使用单引号.不支持双引号
-```
+
+#参数：-l #指定标签条件，获取指定资源对象，=表示匹配，!= 表示不匹配, 如果后面的选择标签有多个的话，使用逗号隔开#如果针对标签的值进行范围过滤的话，可以使用如下格式：-l 'label_name in (value1, value2, value3, ...)'      #包括其中一个label-l 'label_name notin (value1, value2, value3, ...)'   #不包括其中任何一个label的值或者没有label_name#是否存在label的判断-l 'label_name'    #存在label-l '!label_name'   #不存在label,注意使用单引号.不支持双引号
+
 
 范例: 命令行方式
-
-```text
+```bash
 #创建一个有label的自主式pod
-[root@master1 ~]#kubectl run pod-label-nginx --image=wangxiaochun/nginx:1.20.0 -l
+[root@master1 ~]#kubectl run pod-label-nginx --image=bowen/nginx:1.20.0 -l
 "app=nginx,env=prod"
-```
 
-```text
 [root@master1 ~]#kubectl get pod --show-labels
 NAME              READY   STATUS    RESTARTS   AGE   LABELS
 pod-label-nginx   1/1     Running   0          4s    app=nginx,env=prod
-```
 
-```text
 #添加新label
 [root@master1 ~]# kubectl label pod pod-label-nginx release=1.20.0 role=web
 pod/pod-label-nginx labeled
-```
 
-```text
 [root@master1 ~]#kubectl get pod --show-labels
 NAME              READY   STATUS    RESTARTS   AGE   LABELS
 pod-label-nginx   1/1     Running   0          80s
 app=nginx,,env=prodrelease=1.20.0,role=web
-```
 
-```text
 #修改label
 [root@master1 ~]#kubectl label pod pod-label-nginx role=proxy
 error: 'role' already has a value (web), and --overwrite is false
-```
 
-```text
 #修改label,需要加 --overwrite 选项
 [root@master1 ~]#kubectl label pod pod-label-nginx role=proxy --overwrite
 pod/pod-label-nginx labeled
@@ -287,30 +254,24 @@ pod/pod-label-nginx labeled
 NAME              READY   STATUS    RESTARTS   AGE     LABELS
 pod-label-nginx   1/1     Running   0          2m40s
 app=nginx,env=prod,release=1.20.0,role=proxy
-```
 
-```text
 #删除label
 [root@master1 ~]#kubectl label pod pod-label-nginx role- release-
 pod/pod-label-nginx labeled
 [root@master1 ~]#kubectl get pod --show-labels
 NAME              READY   STATUS    RESTARTS   AGE     LABELS
 pod-label-nginx   1/1     Running   0          2m55s   app=nginx,env=prod
-```
 
-```text
 #查看
 [root@master1 pod]#kubectl get node -l node-role.kubernetes.io/control-plane
 NAME               STATUS   ROLES           AGE     VERSION
-master1.wang.org   Ready    control-plane   4d19h   v1.32.0
-```
+master1.bowen.org   Ready    control-plane   4d19h   v1.32.0
 
-```text
 [root@master1 pod]#kubectl get node -l '!node-role.kubernetes.io/control-plane'
 NAME             STATUS   ROLES    AGE     VERSION
-node1.wang.org   Ready    <none>   4d19h   v1.32.0
-node2.wang.org   Ready    <none>   4d19h   v1.32.0
-node3.wang.org   Ready    <none>   4d19h   v1.32.0
+node1.bowen.org   Ready    <none>   4d19h   v1.32.0
+node2.bowen.org   Ready    <none>   4d19h   v1.32.0
+node3.bowen.org   Ready    <none>   4d19h   v1.32.0
 ```
 
 #### 2.1.2.2 yaml方法
@@ -324,23 +285,19 @@ node3.wang.org   Ready    <none>   4d19h   v1.32.0
 初始化Pod资源对象应用时候，在资源对象的元数据metadata属性下添加一条Labels配置：
 
 在特定的属性后面按照指定方式增加内容即可，格式如下：
-
-```text
+```yaml
 metadata:
 labels:
 key1: value1
 key2: value2
 .....
-```
 
-```text
 #注意：labels复数
 value1 如果是数字，需要用双引号引起来
 ```
 
 示例: 资源文件方式
-
-```text
+```yaml
 #Label在之前的Pod的资源文件中定义,标签的内容是：app: nginx和 version: v1.20.0
 [root@master1 ~]#cat pod-label-nginx.yaml
 apiVersion: v1
@@ -353,38 +310,26 @@ version: v1.20.0
 spec:
 containers:
 - name: pod-label-nginx-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 
-```text
 [root@master1 ~]#kubectl apply  -f pod-label-nginx.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod --show-labels
 NAME               READY   STATUS    RESTARTS   AGE   LABELS
 pod-label-nginx    1/1     Running   0          8s    app=nginx,version=v1.20.0
-```
 
-```text
 #添加新label
 [root@master1 ~]#kubectl label pod pod-nginx  arch=frontend role=proxy
-```
 
-```text
 [root@master1 ~]#kubectl get pod --show-labels
 NAME        READY   STATUS    RESTARTS   AGE     LABELS
 pod-label-nginx    1/1     Running   0          2m39s
 app=nginx,arch=frontend,role=proxy,version=v1.20.0
-```
 
-```text
 #修改label,不能直接修改
 [root@master1 ~]#kubectl label pod pod-nginx arch=backend
 error: 'arch' already has a value (frontend), and --overwrite is false
-```
 
-```text
 #修改Label,必须加--overwrite选项才可以
 [root@master1 ~]#kubectl label pod pod-nginx arch=backend --overwrite
 pod/pod-nginx labeled
@@ -392,9 +337,7 @@ pod/pod-nginx labeled
 NAME        READY   STATUS    RESTARTS   AGE     LABELS
 pod-label-nginx    1/1     Running   0          7m37s
 app=nginx,arch=backend,role=proxy,version=v1.20.0
-```
 
-```text
 #删除label
 [root@master1 ~]#kubectl label pod pod-nginx arch- role-
 pod/pod-nginx labeled
@@ -407,7 +350,6 @@ app=nginx,version=v1.20.0
 ## 2.2 标签选择器 Label Selector
 
 ### 2.2.1 标签选择器说明
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-
 objects/labels/#label-selectors
@@ -433,21 +375,13 @@ Label Selector跟Label一样，不能单独定义，必须附加在一些资源�
 
 **等值和不等值**
 
-```text
-#等值：
-name = nginx                            #匹配所有具有标签 name = nginx 的资源对象
-name == nginx                           #同上
-name                                    #表示匹配存在name标签的资源对象
-```
 
-```text
-#不等值
-!name                                  #表示匹配不存在name标签的资源对象
-name != nginx                          #匹配所有没有name标签或者标签name的值不等于
-nginx的资源对象
-```
+#等值：name = nginx                            #匹配所有具有标签 name = nginx 的资源对象 name == nginx                           #同上 name                                    #表示匹配存在name标签的资源对象
 
-```text
+
+#不等值!name                                  #表示匹配不存在name标签的资源对象 name != nginx                          #匹配所有没有name标签或者标签name的值不等于 nginx的资源对象
+
+```yaml
 #示例:基于等值的标签要求的一种使用场景是 Pod 要指定节点选择标准。
 #例如，下面的示例 Pod 选择带有标签 "accelerator=nvidia-tesla-p100"。
 apiVersion: v1
@@ -463,9 +397,7 @@ limits:
 nvidia.com/gpu: 1
 nodeSelector:
 accelerator: nvidia-tesla-p100
-```
 
-```text
 #示例
 apiVersion: v1
 kind: Service
@@ -485,47 +417,35 @@ targetPort: 80
 
 集合
 
-```text
-#示例：
-env in (dev, test)                      #匹配所有具有标签 env = dev 或者 env = test
-的资源对象
-name notin (frontend,backent)           #匹配所有不具有标签name=frontend或者
-name=backend或者没有name标签的资源对象
-```
+
+#示例：env in (dev, test)                      #匹配所有具有标签 env = dev 或者 env = test 的资源对象 name notin (frontend,backent)           #匹配所有不具有标签name=frontend或者 name=backend或者没有name标签的资源对象
+
 
 后续Kubernetes 的集合表达式又增加了两种新的写法：匹配标签、匹配表达式。
 
 **匹配标签 matchLabels**
-
 ```text
 #匹配标签：
 matchLabels:
 name: nginx
 app: myapp
 #当 matchLabels 中有多个标签时，它们之间的关系是逻辑与（AND）关系
-```
 
-```text
 #如下所示：
 matchLabels:
 app: frontend
 environment: production
-```
 
-```text
 #那么只有那些标签中同时包含 app=frontend 和 environment=production 的资源才会被选中。
 ```
 
 **匹配表达式 matchExpressions**
-
 ```text
 #匹配表达式：
 matchExpressions:
 - {key: name, operator: NotIn, values: [frontend,backend]}
 #当 matchExpressions 中包含多个标签表达式时，它们之间的关系是逻辑与（AND）关系。
-```
 
-```text
 #常见的operator操作属性值有：
 In、NotIn、Exists、NotExists等
 Exists和NotExist时，values必须为空，即 { key: environment, opetator:
@@ -533,22 +453,9 @@ Exists,values:}
 #注意：这些表达式一般应用在RS、RC、Deployment等其它管理对象中。
 ```
 
-```text
-#示例
-matchExpressions:
-- key: environment
-operator: In
-values:
-- production
-- staging
-- key: app
-operator: NotIn
-values:
-- test
-#那么只有那些标签满足以下两个条件的资源才会被选中：
-- 标签中 environment 的值是 production 或 staging
-- 标签中 app 的值不是 test
-```
+
+#示例 matchExpressions:- key: environment operator: In values:- production- staging- key: app operator: NotIn values:- test#那么只有那些标签满足以下两个条件的资源才会被选中：- 标签中 environment 的值是 production 或 staging- 标签中 app 的值不是 test
+
 
 ### 2.2.2 标签选择器操作方式
 
@@ -559,21 +466,17 @@ values:
 #### 2.2.2.1 命令方式
 
 格式
-
-```text
+```bash
 #多个SELECTOR表示并且的关系
 kubectl get TYPE -l SELECTOR1[,SELECTOR2,...]
 kubectl get TYPE -l SELECTOR1 [-l SELECTOR2] ...
-```
 
-```text
 #额外针对指定的每一个标签单独一列来显示对应的值
 kubectl get TYPE -L label_name
 ```
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat controller-deployment-test.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -591,14 +494,10 @@ app: rs-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl apply -f controller-deployment-test.yaml
-```
 
-```text
 #查看检签
 [root@master1 ~]#kubectl get pod --show-labels
 NAME                               READY   STATUS    RESTARTS   AGE   LABELS
@@ -608,14 +507,10 @@ deployment-test-6fb8cd677f-7d4c7   1/1     Running   0          8s    app=rs-
 test,pod-template-hash=6fb8cd677f
 deployment-test-6fb8cd677f-gbc7k   1/1     Running   0          8s    app=rs-
 test,pod-template-hash=6fb8cd677f
-```
 
-```text
 #打标签
 [root@master1 ~]#kubectl label pod deployment-test-6fb8cd677f-5sp7x version=0.1
-```
 
-```text
 #查看标签
 [root@master1 ~]#kubectl get pod --show-labels
 NAME                               READY   STATUS    RESTARTS   AGE   LABELS
@@ -625,21 +520,15 @@ deployment-test-6fb8cd677f-7d4c7   1/1     Running   0          66s   app=rs-
 test,pod-template-hash=6fb8cd677f
 deployment-test-6fb8cd677f-gbc7k   1/1     Running   0          66s   app=rs-
 test,pod-template-hash=6fb8cd677f
-```
 
-```text
 #查看有app标签的pod
 [root@master1 ~]#kubectl get pod -l app
-```
 
-```text
 #标签等值过滤
 [root@master1 ~]#kubectl get pod -l app=rs-test,version=0.1
 NAME                               READY   STATUS    RESTARTS   AGE
 deployment-test-6fb8cd677f-5sp7x   1/1     Running   0          92s
-```
 
-```text
 #标签不等值过滤
 [root@master1 ~]#kubectl get pod -l app=rs-test,version!=0.1
 NAME                               READY   STATUS    RESTARTS   AGE
@@ -648,48 +537,37 @@ deployment-test-6fb8cd677f-gbc7k   1/1     Running   0          96s
 ```
 
 范例:
-
-```text
-[root@master1 ~]#kubectl run pod-label-nginx1 --image=wangxiaochun/nginx:1.20.0 -
+```bash
+[root@master1 ~]#kubectl run pod-label-nginx1 --image=bowen/nginx:1.20.0 -
 l "app=nginx,env=prod"
-[root@master1 ~]#kubectl run pod-label-nginx2 --image=wangxiaochun/nginx:1.20.0 -
+[root@master1 ~]#kubectl run pod-label-nginx2 --image=bowen/nginx:1.20.0 -
 l "app=web,env=prod"
-[root@master1 ~]#kubectl run pod-label-nginx3 --image=wangxiaochun/nginx:1.20.0 -
+[root@master1 ~]#kubectl run pod-label-nginx3 --image=bowen/nginx:1.20.0 -
 l "role=proxy"
-```
 
-```text
 #等值过滤
 [root@master1 ~]#kubectl get pod  -l env=prod --show-labels
 NAME               READY   STATUS    RESTARTS   AGE     LABELS
 pod-label-nginx1   1/1     Running   0          3m20s   app=nginx,env=prod
 pod-label-nginx2   1/1     Running   0          28s     app=web,env=prod
-```
 
-```text
 #不等值过滤
 [root@master1 ~]#kubectl get pod  -l app!=nginx --show-labels
 NAME               READY   STATUS    RESTARTS   AGE   LABELS
 pod-label-nginx2   1/1     Running   0          95s   app=web,env=prod
-```
 
-```text
 #没有applabel的pod
 #注意：为了避免shell解析，这里需要添加单引号
 [root@master1 ~]#kubectl get pod --show-labels  -l '!app'
 NAME               READY   STATUS    RESTARTS   AGE   LABELS
 pod-label-nginx3   1/1     Running   0          29s   role=proxy
-```
 
-```text
 #集合过滤,多条件并集
 [root@master1 ~]#kubectl get pod --show-labels  -l 'app in (web,nginx)'
 NAME               READY   STATUS    RESTARTS   AGE     LABELS
 pod-label-nginx1   1/1     Running   0          10m     app=nginx,env=prod
 pod-label-nginx2   1/1     Running   0          7m32s   app=web,env=prod
-```
 
-```text
 [root@master1 ~]#kubectl get po -A -l 'k8s-app in (kube-dns,kuberenets-
 dashboard)' --show-labels
 NAMESPACE     NAME                      READY   STATUS    RESTARTS       AGE
@@ -698,27 +576,20 @@ kube-system   coredns-c676cc86f-8tp94   1/1     Running   12 (13h ago)   13d
 k8s-app=kube-dns,pod-template-hash=c676cc86f
 kube-system   coredns-c676cc86f-bt6p4   1/1     Running   13 (13h ago)   13d
 k8s-app=kube-dns,pod-template-hash=c676cc86f
-```
 
-```text
 #多条件取反
 [root@master1 ~]#kubectl get pod --show-labels  -l 'app notin (web,nginx)'
 NAME               READY   STATUS    RESTARTS   AGE     LABELS
-```
 
-```text
 pod-label-nginx3   1/1     Running   0          5m40s   role=proxy
 ```
 
 #### 2.2.2.2 配置文件
-
-```text
+```yaml
 #基于等值,多个为与关系
 selector:
 component: redis
-```
 
-```text
 #基于集合
 selector:
 matchLabels:
@@ -729,27 +600,22 @@ matchExpressions:
 ```
 
 示例: 以service资源对象的创建为例
-
-```text
+```yaml
 #准备多个后端pod对象
-[root@master1 ~]#kubectl run nginx-test1 --image=wangxiaochun/pod-test:v0.1 --
+[root@master1 ~]#kubectl run nginx-test1 --image=bowen/pod-test:v0.1 --
 labels="app=nginx"
-[root@master1 ~]#kubectl run nginx-test2 --image=wangxiaochun/pod-test:v0.1 --
+[root@master1 ~]#kubectl run nginx-test2 --image=bowen/pod-test:v0.1 --
 labels="app=nginx"
-[root@master1 ~]#kubectl run nginx-test3 --image=wangxiaochun/pod-test:v0.1 --
+[root@master1 ~]#kubectl run nginx-test3 --image=bowen/pod-test:v0.1 --
 labels="app=nginx1"
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get pod --show-labels -o wide
 NAME          READY   STATUS    RESTARTS   AGE   IP            ... LABELS
 nginx-test1   1/1     Running   0          12s   172.16.3.67   ... app=nginx
 nginx-test2   1/1     Running   0          12s   172.16.1.25   ... app=nginx
 nginx-test3   1/1     Running   0          11s   172.16.2.25   ... app=nginx1
-```
 
-```text
 #创建service
 [root@master1 ~]#cat service-label.yaml
 kind: Service
@@ -764,29 +630,21 @@ ports:
 protocol: TCP
 port: 80
 targetPort: 80
-```
 
-```text
 #创建service对象
 [root@master1 ~]#kubectl apply -f service-label.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME              READY   STATUS    RESTARTS   AGE
 pod/nginx-test1   1/1     Running   0          4m30s
 pod/nginx-test2   1/1     Running   0          4m30s
 pod/nginx-test3   1/1     Running   0          4m29s
-```
 
-```text
 NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes      ClusterIP   192.168.0.1      <none>        443/TCP
 108s
 service/service-label   ClusterIP   192.168.50.195   <none>        80/TCP    19s
-```
 
-```text
 #结果显示：service 自动关联了两个Endpoints
 [root@master1 ~]#kubectl describe svc service-label
 Name:              service-label
@@ -804,9 +662,7 @@ TargetPort:        80/TCP
 Endpoints:         172.16.1.25:80,172.16.3.67:80
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 #随机访问service的地址：
 [root@master1 ~]#curl 192.168.50.195
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: nginx-test1,
@@ -854,8 +710,7 @@ replicas-副本数量selector-标签选择器template-容器模板文件。
 注意: RC中spec.template.metadata.labels 的属性必须跟Pod资源对象的metadata.labels属性一致。
 
 示例
-
-```text
+```yaml
 #RC资源对象定义文件，遵循资源对象定义文件的格式，只不过spec期望的部分是RC的主要内容,由RC自动控
 制Pod资源对象的预期状态效果：运行2个nginx容器，运行的容器携带两个标签，运行容器的模板文件在
 sepc.template.spec部分
@@ -873,43 +728,31 @@ app: nginx
 template:
 metadata:
 labels:
-```
 
-```text
 app: nginx
 spec:
 containers:
 - name: nginx-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 
-```text
 #创建RC
 [root@master1 ~]#kubectl apply  -f controller-rc.yaml
 replicationcontroller/controller-rc created
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl get pod --show-labels
 NAME                  READY   STATUS    RESTARTS   AGE     LABELS
 controller-rc-qqcsr   1/1     Running   0          3m19s   app=nginx
 controller-rc-xg4px   1/1     Running   0          3m19s   app=nginx
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME                      READY   STATUS    RESTARTS   AGE
 pod/controller-rc-qqcsr   1/1     Running   0          2s
 pod/controller-rc-xg4px   1/1     Running   0          2s
-```
 
-```text
 NAME                                  DESIRED   CURRENT   READY   AGE
 replicationcontroller/controller-rc   2         2         2       2s
-```
 
-```text
 #删除pod,自动再生成
 [root@master1 ~]#kubectl delete pod controller-rc-qqcsr
 pod "controller-rc-qqcsr" deleted
@@ -917,59 +760,45 @@ pod "controller-rc-qqcsr" deleted
 NAME                  READY   STATUS    RESTARTS   AGE    IP            NODE
 NOMINATED NODE   READINESS GATES   LABELS
 controller-rc-9tfm8   1/1     Running   0          6s     172.16.1.26
-node2.wang.org   <none>           <none>            app=nginx
+node2.bowen.org   <none>           <none>            app=nginx
 controller-rc-xg4px   1/1     Running   0          5m3s   172.16.2.28
-node3.wang.org   <none>           <none>            app=nginx
-```
+node3.bowen.org   <none>           <none>            app=nginx
 
-```text
 #扩容和缩容
 kubectl scale replicationcontroller --replicas=3 controller-rc
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl get pod -o wide
 NAME                  READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
 controller-rc-9tfm8   1/1     Running   0          97s     172.16.1.26
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 controller-rc-wrlxr   1/1     Running   0          12s     172.16.3.69
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 controller-rc-xg4px   1/1     Running   0          6m34s   172.16.2.28
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #关闭node3节点,观察pod是否变化
 [root@node3 ~]#poweroff
 [root@master1 ~]#kubectl get pod -o wide
 NAME                  READY   STATUS    RESTARTS        AGE     IP
 NODE               NOMINATED NODE   READINESS GATES
 controller-rc-9tfm8   1/1     Running   0               8m17s   172.16.1.26
-node2.wang.org   <none>           <none>
-```
+node2.bowen.org   <none>           <none>
 
-```text
 controller-rc-wrlxr   1/1     Running   0               6m52s   172.16.3.69
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 controller-rc-xg4px   1/1     Running   1 (5m22s ago)   13m     172.16.2.29
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #删除RC会自动删除相关的pod
 [root@master1 ~]#kubectl delete rc controller-rc
-```
 
-```text
 #因为node3关机无法删除上面的pod
 [root@master1 ~]#kubectl get pod
 NAME                  READY   STATUS        RESTARTS        AGE
 controller-rc-xg4px   1/1     Terminating   1 (6m41s ago)   14m
-```
 
-```text
 #node3启动后,再观察
 [root@master1 ~]#kubectl get pod
 No resources found in default namespace.
@@ -979,9 +808,9 @@ No resources found in default namespace.
 
 ### 2.4.1 Replica Set 工作机制
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicaset/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicaset/>
+
 
 Replica Set 是Pod 最常用的控制器。
 
@@ -1018,8 +847,7 @@ RS可以实现应用的部署，扩缩容和卸载，但一般很少单独使用
 ### 2.4.2 Replica Set 基础管理
 
 #### 2.4.2.1 Replica Set 基础管理说明
-
-```text
+```yaml
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
@@ -1036,9 +864,7 @@ matchExpressions <[]Object>     # 标签选择器表达式列表，多个列表�
 matchLabels <map[string]string> # map格式的标签选择器
 template:                         # Pod模板对象
 metadata:                       # Pod对象元数据
-```
 
-```text
 labels:                       # 由模板创建出的Pod对象所拥有的标签，必须要能够匹配前
 面定义的标签选择器selector
 spec:                           # Pod规范，格式同自主式Pod,但无需apiVersion,kind
@@ -1048,27 +874,21 @@ spec:                           # Pod规范，格式同自主式Pod,但无需api
 ```
 
 **扩容和缩容**
-
-```text
+```bash
 #基于对象调整副本数：
 kubectl scale --replicas=5 rs/rs_name
 kubectl scale --replicas=5 rs rs_name
-```
 
-```text
 #基于文件调整副本数：
 kubectl scale --replicas=3 -f rs_name.yaml
 ```
 
 **更新镜像**
-
-```text
+```bash
 kubectl set image (-f FILENAME | TYPE NAME) CONTAINER_NAME_1=CONTAINER_IMAGE_1
 ... CONTAINER_NAME_N=CONTAINER_IMAGE_N
 kubectl set image 资源类型/资源名称 容器名1=容器镜像1 ... 容器名N=容器镜像N
-```
 
-```text
 #注意:更新镜像，Pod不会自动更新。原因是RC和RS都是删除式更新，即只有手动删除老的Pod，新生成的
 pod才会使用新的模板信息,而Deployment是自动式更新,所以Deployment更加高级
 ```
@@ -1076,8 +896,7 @@ pod才会使用新的模板信息,而Deployment是自动式更新,所以Deployme
 #### 2.4.2.2 Replica Set 资源清单文件示例
 
 示例:  创建资源对象
-
-```text
+```yaml
 [root@master1 ~]#cat controller-replicaset.yaml
 apiVersion: apps/v1
 kind: ReplicaSet
@@ -1100,33 +919,23 @@ version: v1.0
 spec:
 containers:
 - name: rs-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply  -f controller-replicaset.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME                                   READY   STATUS    RESTARTS   AGE
 pod/controller-replicaset-test-c87m5   1/1     Running   0          7s
 pod/controller-replicaset-test-p8bxx   1/1     Running   0          7s
 pod/controller-replicaset-test-q8zj7   1/1     Running   0          7s
-```
 
-```text
 NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   192.168.0.1   <none>        443/TCP   9h
-```
 
-```text
 NAME                                         DESIRED   CURRENT   READY   AGE
 replicaset.apps/controller-replicaset-test   3         3         3       8s
-```
 
-```text
 #查看Pod，可以看到和自由式Pod不同的信息
 [root@master1 ~]#kubectl get pod controller-replicaset-test-c87m5 -o yaml|grep -
 A4 ownerReferences
@@ -1140,34 +949,25 @@ kind: ReplicaSet
 ```
 
 示例: 扩容和缩容
-
-```text
+```yaml
 [root@master1 ~]#kubectl get all
 NAME                                   READY   STATUS    RESTARTS   AGE
 pod/controller-replicaset-test-c87m5   1/1     Running   0          7s
 pod/controller-replicaset-test-p8bxx   1/1     Running   0          7s
 pod/controller-replicaset-test-q8zj7   1/1     Running   0          7s
-```
 
-```text
 #删除一个Pod
 [root@master1 ~]#kubectl delete pod controller-replicaset-test-c87m5
-```
 
-```text
 #自动创建一个新的Pod代替
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS   AGE
 controller-replicaset-test-6cpfp   1/1     Running   0          34s
 controller-replicaset-test-p8bxx   1/1     Running   0          10m
 controller-replicaset-test-q8zj7   1/1     Running   0          10m
-```
 
-```text
 #可以看到：删除一个Pod，RC又创建了一个Pod，证明Replication Controller的作用
-```
 
-```text
 #扩容：调整pod副本数量更多
 #方法1:修改清单文件
 [root@master1 ~]#vi controller-replicaset.yaml
@@ -1182,9 +982,7 @@ selector:
 matchLabels:
 app: rs-test
 release: stable
-```
 
-```text
 version: v1.0
 template:
 metadata:
@@ -1195,21 +993,15 @@ version: v1.0
 spec:
 containers:
 - name: rs-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply  -f controller-replicaset.yaml
-```
 
-```text
 #方法2：命令式
 [root@master1 ~]#kubectl scale --replicas=4 rs/controller-replicaset-test
 replicaset.apps/controller-replicaset-test scaled
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS   AGE
@@ -1217,9 +1009,7 @@ controller-replicaset-test-6cpfp   1/1     Running   0          6m45s
 controller-replicaset-test-p8bxx   1/1     Running   0          16m
 controller-replicaset-test-q8zj7   1/1     Running   0          16m
 controller-replicaset-test-z6t5v   1/1     Running   0          1s # 这个是新增加的
-```
 
-```text
 #缩容：缩小Pod数量
 #方法1：清单文件
 [root@master1 ~]#vi controller-replicaset.yaml
@@ -1244,20 +1034,14 @@ version: v1.0
 spec:
 containers:
 - name: rs-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply  -f controller-replicaset.yaml
-```
 
-```text
 #方法2：命令法
 [root@master1 ~]#kubectl scale --replicas=1 -f controller-replicaset.yaml
-```
 
-```text
 #看到在中止三个pod
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS        RESTARTS   AGE
@@ -1265,9 +1049,7 @@ controller-replicaset-test-6cpfp   1/1     Terminating   0          6m55s
 controller-replicaset-test-p8bxx   1/1     Terminating   0          17m
 controller-replicaset-test-q8zj7   1/1     Running       0          17m
 controller-replicaset-test-z6t5v   1/1     Terminating   0          11s
-```
 
-```text
 #最终只有一个
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS   AGE
@@ -1275,8 +1057,7 @@ controller-replicaset-test-q8zj7   1/1     Running   0          19m
 ```
 
 示例: 更新Pod镜像的版本
-
-```text
+```yaml
 #升级镜像版本
 #方法1：清单文件
 [root@master1 ~]#vi controller-replicaset.yaml
@@ -1301,61 +1082,45 @@ version: v1.0
 spec:
 containers:
 - name: rs-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2  #修改
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2  #修改
 此行
-```
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply  -f controller-replicaset.yaml
-```
 
-```text
 #方法2：命令法
 [root@master1 ~]#kubectl set image replicaset/controller-replicaset-test rs-
-test=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+test=registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 replicaset.apps/controller-replicaset-test image updated
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                               READY   STATUS    RESTARTS   AGE   IP
 NODE               NOMINATED NODE   READINESS GATES
 controller-replicaset-test-q8zj7   1/1     Running   0          27m
-172.16.1.29   node2.wang.org   <none>           <none>
-```
+172.16.1.29   node2.bowen.org   <none>           <none>
 
-```text
 #验证版本仍为旧版本
 [root@master1 ~]#curl 172.16.1.29
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: controller-
 replicaset-test-q8zj7, ServerIP: 172.16.1.29!
 #结果显示:虽然镜像的模板信息更新了，但是pod的并没有升级镜像
-```
 
-```text
 #手动删除pod
 [root@master1 ~]#kubectl delete pod  controller-replicaset-test-q8zj7
 pod "controller-replicaset-test-q8zj7" deleted
-```
 
-```text
 #自动重新生成新pod
 [root@master1 ~]#kubectl get pod -o wide
 NAME                               READY   STATUS    RESTARTS   AGE     IP
 NODE               NOMINATED NODE   READINESS GATES
 controller-replicaset-test-9r8kf   1/1     Running   0          2m58s
-172.16.2.36   node3.wang.org   <none>           <none>
-```
+172.16.2.36   node3.bowen.org   <none>           <none>
 
-```text
 #验证版本更新
 [root@master1 ~]#curl 172.16.2.36
 kubernetes pod-test v0.2!! ClientIP: 172.16.0.0, ServerName: controller-
 replicaset-test-9r8kf, ServerIP: 172.16.2.36!
-```
 
-```text
 #结果显示：更新镜像后，需要通过手动删除Pod，最终才能RS实现pod的镜像更新
 ```
 
@@ -1365,9 +1130,9 @@ replicaset-test-9r8kf, ServerIP: 172.16.2.36!
 
 **版本发布(更新)类型**
 
-```text
-https://www.cnblogs.com/hunternet/p/14306105.html
-```
+
+- <https://www.cnblogs.com/hunternet/p/14306105.html>
+
 
 直接发布
 
@@ -1424,8 +1189,7 @@ https://www.cnblogs.com/hunternet/p/14306105.html
 ##### 2.4.3.2.1 滚动发布
 
 示例: 滚动发布
-
-```text
+```yaml
 #准备service
 [root@master1 ~]#cat svc-controller-replicaset.yaml
 apiVersion: v1
@@ -1441,18 +1205,14 @@ ports:
 port: 80
 protocol: TCP
 targetPort: 80
-```
 
-```text
 #准备旧版本的replicaset清单文件
 [root@master1 ~]#cat controller-replicaset-1.yaml
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
 name: replicaset-test-1
-```
 
-```text
 spec:
 minReadySeconds: 0
 replicas: 3
@@ -1470,10 +1230,8 @@ version: v0.1
 spec:
 containers:
 - name: rs-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #准备新版本的replicaset清单文件
 [root@master1 ~]#cat controller-replicaset-2.yaml
 apiVersion: apps/v1
@@ -1497,39 +1255,25 @@ version: v0.2
 spec:
 containers:
 - name: rs-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 
-```text
 #先创建service
 [root@master1 ~]#kubectl apply -f svc-controller-replicaset.yaml
-```
 
-```text
 #开启测试pod访问service,持续观察结果
-[root@master1 ~]#kubectl run pod-$RANDOM --image=wangxiaochun/admin-box:v0.1 -it
+[root@master1 ~]#kubectl run pod-$RANDOM --image=bowen/admin-box:v0.1 -it
 --rm --command -- /bin/bash
-```
 
-```text
 [root@pod-3723 /]$  while true; do curl --connect-timeout 1 svc-replicaset-blue-
 green.default.svc; sleep 1;done
-```
 
-```text
 #执行旧版本的RS清单文件,生成旧版本的pod
 [root@master1 ~]#kubectl apply -f yaml/controller-replicaset-1.yaml
-```
 
-```text
 #执行新版本的RS清单文件,生成新版本的pod,但由于指定的replicas为0,所以没有新版的pod生成
-```
 
-```text
 [root@master1 ~]#kubectl apply -f yaml/controller-replicaset-2.yaml
-```
 
-```text
 #可以观察到下面显示
 [root@master1 ~]#kubectl get all
 NAME                        READY   STATUS    RESTARTS   AGE
@@ -1537,40 +1281,27 @@ pod/pod-22090                 1/1     Running   0          7m39s
 pod/replicaset-test-1-624cr   1/1     Running   0          2s
 pod/replicaset-test-1-cc6tq   1/1     Running   0          2s
 pod/replicaset-test-1-k8tm5   1/1     Running   0          2s
-```
 
-```text
 NAME                     TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)
 AGE
 service/kubernetes       ClusterIP   192.168.0.1       <none>        443/TCP
 12h
 service/svc-replicaset   ClusterIP   192.168.201.247   <none>        80/TCP
 26m
-```
 
-```text
 NAME                                DESIRED   CURRENT   READY   AGE
 replicaset.apps/replicaset-test-1   3         3         3       2s
 replicaset.apps/replicaset-test-2   0         0         0       8s
 ```
 
-```text
-#可以观察到下面显示
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-g7r9x, ServerIP: 172.16.1.32!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-bwmp6, ServerIP: 172.16.3.79!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-pbgt8, ServerIP: 172.16.2.40!
-```
 
-```text
+#可以观察到下面显示 kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-g7r9x, ServerIP: 172.16.1.32! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-bwmp6, ServerIP: 172.16.3.79! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-pbgt8, ServerIP: 172.16.2.40!
+
+```bash
 #对旧版的RS缩容,对新版本的RS扩容
 [root@master1 ~]#kubectl scale --replicas=2 rs/replicaset-test-1;kubectl scale --
 replicas=1 rs/replicaset-test-2
-```
 
-```text
 #观察结果
 [root@master1 ~]#kubectl get pod --show-labels
 NAME                      READY   STATUS    RESTARTS   AGE     LABELS
@@ -1583,30 +1314,15 @@ replicaset-test-1-pbgt8     1/1     Running   0          6m27s   app=rs-
 test,release=stable,version=v0.1
 ```
 
-```text
-#持续观察访问,注意基本旧新版比例
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-g7r9x, ServerIP: 172.16.1.32!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-g7r9x, ServerIP: 172.16.1.32!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-g7r9x, ServerIP: 172.16.1.32!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-g7r9x, ServerIP: 172.16.1.32!
-```
 
-```text
+#持续观察访问,注意基本旧新版比例 kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-g7r9x, ServerIP: 172.16.1.32! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-g7r9x, ServerIP: 172.16.1.32! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-g7r9x, ServerIP: 172.16.1.32! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-g7r9x, ServerIP: 172.16.1.32!
+
+```bash
 #再次对旧版的RS缩容,对新版本的RS扩容
-```
 
-```text
 [root@master1 ~]#kubectl scale --replicas=1 rs/replicaset-test-1;kubectl scale --
 replicas=2 rs/replicaset-test-2
-```
 
-```text
 #观察结果
 [root@master1 ~]#kubectl get pod --show-labels
 NAME                      READY   STATUS    RESTARTS   AGE     LABELS
@@ -1619,29 +1335,14 @@ replicaset-test-1-pbgt8   1/1     Running   0          9m32s   app=rs-
 test,release=stable,version=v0.1
 ```
 
-```text
-#持续观察访问,注意基本旧新版比例
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-pq6p6, ServerIP: 172.16.3.81!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-pbgt8, ServerIP: 172.16.2.40!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-
-pbgt8, ServerIP: 172.16.2.40!
-```
 
-```text
+#持续观察访问,注意基本旧新版比例 kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-pq6p6, ServerIP: 172.16.3.81! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-pbgt8, ServerIP: 172.16.2.40! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80! kubernetes pod-test v0.1!! ClientIP: 172.16.2.39, ServerName: replicaset-test-pbgt8, ServerIP: 172.16.2.40!
+
+```bash
 #最后一次对旧版的RS缩容为0,对新版本的RS扩容到3
 [root@master1 ~]#kubectl scale --replicas=0 rs/replicaset-test;kubectl scale --
 replicas=3 rs/replicaset-test-2
-```
 
-```text
 #观察结果
 [root@master1 ~]#kubectl get pod --show-labels
 NAME                      READY   STATUS    RESTARTS   AGE     LABELS
@@ -1654,38 +1355,15 @@ replicaset-test-2-r8kcl   1/1     Running   0          5m27s   app=rs-
 test,release=stable,version=v0.2
 ```
 
-```text
-#持续观察结果都升级为新版
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-4xdsq, ServerIP: 172.16.1.33!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-4xdsq, ServerIP: 172.16.1.33!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-pq6p6, ServerIP: 172.16.3.81!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-4xdsq, ServerIP: 172.16.1.33!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-pq6p6, ServerIP: 172.16.3.81!
-```
 
-```text
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-pq6p6, ServerIP: 172.16.3.81!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-pq6p6, ServerIP: 172.16.3.81!
-kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-
-r8kcl, ServerIP: 172.16.3.80!
-```
+#持续观察结果都升级为新版 kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-4xdsq, ServerIP: 172.16.1.33! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-4xdsq, ServerIP: 172.16.1.33! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-pq6p6, ServerIP: 172.16.3.81! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-4xdsq, ServerIP: 172.16.1.33! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-pq6p6, ServerIP: 172.16.3.81!
 
-```text
+
+kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-pq6p6, ServerIP: 172.16.3.81! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-pq6p6, ServerIP: 172.16.3.81! kubernetes pod-test v0.2!! ClientIP: 172.16.2.39, ServerName: replicaset-test-2-r8kcl, ServerIP: 172.16.3.80!
+
+```bash
 #最终实现了滚动升级,但这种手动的方式的滚动更新很麻烦
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f controller-replicaset-1.yaml -f controller-
 replicaset-2.yaml -f svc-controller-replicaset.yaml
@@ -1694,8 +1372,7 @@ replicaset-2.yaml -f svc-controller-replicaset.yaml
 ##### 2.4.3.2.2 蓝绿发布
 
 示例: 蓝绿发布
-
-```text
+```yaml
 #由于之前两个配置文件来回更新的话，导致操作繁琐，这次我们采用环境变量的方式来进行操作。
 [root@master1 ~]#cat controller-replicaset-blue-green.yaml
 apiVersion: v1
@@ -1734,44 +1411,29 @@ ctr: rs-${DEPLOY}
 version: ${VERSION}
 spec:
 containers:
-```
 
-```text
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:${VERSION}
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:${VERSION}
 
-```text
 #开启测试pod访问service,观察结果
 [root@master1 ~]#kubectl run pod-$RANDOM --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --command -- /bin/bash
 [root@pod-3723 /]$ while true; do curl --connect-timeout 1 svc-replicaset-blue-
 green.default.svc; sleep 1;done
-```
 
-```text
 #蓝色发布旧版本
 [root@master1 ~]#DEPLOY=blue VERSION=v0.1 envsubst < controller-replicaset-blue-
 green.yaml | kubectl apply -f -
 ```
 
-```text
-#可以观察到出下面显示
-kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-cwdf6,
-ServerIP: 172.16.2.38!
-kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-2xwhl,
-ServerIP: 172.16.3.77!
-kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-2xwhl,
-ServerIP: 172.16.3.77!
-```
 
-```text
+#可以观察到出下面显示 kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-cwdf6, ServerIP: 172.16.2.38! kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-2xwhl, ServerIP: 172.16.3.77! kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-2xwhl, ServerIP: 172.16.3.77!
+
+```bash
 #绿色发布新版本
 [root@master1 ~]#DEPLOY=green VERSION=v0.2 envsubst < controller-replicaset-blue-
 green.yaml | kubectl apply -f -
-```
 
-```text
 #可以观察到以下结果
 kubernetes pod-test v0.1!! ClientIP: 172.16.1.30, ServerName: rs-blue-cwdf6,
 ServerIP: 172.16.2.38!
@@ -1785,9 +1447,7 @@ kubernetes pod-test v0.2!! ClientIP: 172.16.1.30, ServerName: rs-green-lvvqs,
 ServerIP: 172.16.3.78!
 #结果显示：进行蓝绿部署时，必须等到所有新的版本更新完毕后，再开放新的service，否则就会导致服务
 中断的效果
-```
 
-```text
 #回滚
 [root@master1 ~]#DEPLOY=blue VERSION=v0.1 envsubst < controller-replicaset-blue-
 green.yaml | kubectl apply -f -
@@ -1799,9 +1459,9 @@ green.yaml | kubectl apply -f -
 
 #### 2.5.1.1 Deployment 介绍
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/deployment/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/deployment/>
+
 
 Deployment资源对象一般用于部署无状态服务,比如 java应用，Web等，这也是最常用的控制器。可以管理多个副本的Pod, 实现无缝迁移、自动扩容缩容、自动灾难恢复、一键回滚等功能。Deployment资源对象在作用、文件定义格式、具体操作等方面都可以看做RC的一次升级。Deployment相对于RC或RS的主要升级是:支持动态更新，回滚及滚动发布策略,其它功能几乎一样。Deployment资源对象在内部使用Replica Set来实现Pod的自动化编排。通过Deployment 可以随时知道当前Pod的"部署"进度，即Pod创建--调度--绑定Node--在目标Node上启动容器。Deployment的使用场景非常多,基本上只要是涉及到Pod资源对象的自动化管理都是它的应用场景。
 
@@ -1824,8 +1484,7 @@ Deployment的定义与Replica Set的定义类似，除了API声明与Kind类型�
 ![原 PDF 第 37 页插图](assets/Kubernetes工作负载/img-4737d91f724f1542.png)
 
 注意：Deployment对滚动更新多了一些更新策略的功能。
-
-```text
+```yaml
 apiVersion: apps/v1             # API群组及版本
 kind: Deployment                # 资源类型特有标识
 metadata:
@@ -1842,9 +1501,7 @@ app: <string>             # 标签信息一旦创建不能再修改,必须和下
 template.labels相同
 template <object>             # Pod模板对象，此template的hash值将做为对应Replica
 Set的名称，从而实现滚动更新和回滚等
-```
 
-```text
 revisionHistoryLimit <integer># 滚动更新历史记录数量，默认为10,如果为0表示不保留历史数
 据
 strategy <Object>             # 滚动更新策略
@@ -1865,40 +1522,30 @@ paused <boolean>              # 是否暂停部署过程
 创建两种方式
 
 **命令行创建对象**
-
 ```text
 kubectl create deployment NAME --image=image -- [COMMAND] [args...]
 [options]
 ```
 
 示例:
-
-```text
+```bash
 #创建命令
 [root@master1 ~]#kubectl create deployment deployment-pod-test --
-image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
-```
+image=registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get all
 NAME                                       READY   STATUS    RESTARTS   AGE
 pod/deployment-pod-test-64b54c98bb-6cm4m   1/1     Running   0          20s
 pod/deployment-pod-test-64b54c98bb-shts6   1/1     Running   0          20s
 pod/deployment-pod-test-64b54c98bb-sp5qj   1/1     Running   0          20s
-```
 
-```text
 NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/deployment-pod-test   3/3     3            3           20s
-```
 
-```text
 NAME                                             DESIRED   CURRENT   READY   AGE
 replicaset.apps/deployment-pod-test-64b54c98bb   3         3         3       20s
-```
 
-```text
 #注意:创建deployment会自动创建相应的RS和POD
 #RS的名称=deployment名称+template_hash值
 #Pod的名称=deployment名称+replcaset_id+pod_id
@@ -1907,8 +1554,7 @@ replicaset.apps/deployment-pod-test-64b54c98bb   3         3         3       20s
 资源定义文件创建对象
 
 示例:
-
-```text
+```yaml
 [root@master1 ~]#cat controller-deployment-test.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1926,69 +1572,48 @@ app: rs-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #应用资源定义文件
 [root@master1 ~]#kubectl apply  -f controller-deployment-test.yaml
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl get all
 NAME                                   READY   STATUS    RESTARTS   AGE
 pod/deployment-test-6c47988884-6rcfp   1/1     Running   0          8s
 pod/deployment-test-6c47988884-7cwhp   1/1     Running   0          8s
 pod/deployment-test-6c47988884-l2nk8   1/1     Running   0          8s
-```
 
-```text
 NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   192.168.0.1   <none>        443/TCP   13h
-```
 
-```text
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/deployment-test   3/3     3            3           8s
-```
 
-```text
 NAME                                         DESIRED   CURRENT   READY   AGE
 replicaset.apps/deployment-test-6c47988884   3         3         3       8s
-```
 
-```text
 [root@master1 ~]#kubectl get deployments.apps
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment-test   3/3     3            3           52s
-```
 
-```text
 #自动生成RS
 [root@master1 ~]#kubectl get rs
 NAME                         DESIRED   CURRENT   READY   AGE
-```
 
-```text
 deployment-test-6c47988884   3         3         3       73s
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS   AGE
 deployment-test-6c47988884-6rcfp   1/1     Running   0          95s
 deployment-test-6c47988884-7cwhp   1/1     Running   0          95s
 deployment-test-6c47988884-l2nk8   1/1     Running   0          95s
-```
 
-```text
 #注意:Pod名=Deployment名+RS名的随机字符+Pod名的随机字符,如下图所示
 ```
 
 ![原 PDF 第 40 页插图](assets/Kubernetes工作负载/img-a053b9d6e9ceed0c.png)
-
-```text
+```bash
 #查看 deployment的详细过程
 [root@master1 ~]#kubectl describe deployment deployment-test
 Name:                   deployment-test
@@ -2006,7 +1631,7 @@ Pod Template:
 Labels:  app=rs-test
 Containers:
 pod-test:
-Image:        wangxiaochun/pod-test:v0.1
+Image:        bowen/pod-test:v0.1
 Port:         <none>
 Host Port:    <none>
 Environment:  <none>
@@ -2024,20 +1649,14 @@ Type    Reason             Age   From                   Message
 ----    ------             ----  ----                   -------
 Normal  ScalingReplicaSet  4m3s  deployment-controller  Scaled up replica set
 deployment-test-6c47988884 to 3
-```
 
-```text
 #将pod的80端口利用service发布出来
 [root@master1 ~]#kubectl expose  deployment deployment-test --port=80
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME              TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)   AGE
 deployment-test   ClusterIP   192.168.141.236   <none>        80/TCP    5s
-```
 
-```text
 #访问service的IP,可以看到随机访问到三个pod
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-test-
@@ -2048,11 +1667,9 @@ kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 6c47988884-l2nk8, ServerIP: 172.16.1.37!
-```
 
-```text
 #创建一个Pod,从pod访问service
-[root@master1 ~]#kubectl run pod-$RANDOM --image=wangxiaochun/admin-box:v0.1 -it
+[root@master1 ~]#kubectl run pod-$RANDOM --image=bowen/admin-box:v0.1 -it
 --rm --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 [root@pod-23783 /]$ while true; do curl deployment-test;sleep 1;done
@@ -2071,14 +1688,11 @@ kubernetes pod-test v0.1!! ClientIP: 172.16.2.45, ServerName: deployment-test-
 ##### 2.5.2.2.1 命令说明
 
 基于deployment调整Pod有两种方法：
-
-```text
+```bash
 #基于资源对象调整：
 kubectl scale [--current-replicas=<当前副本数>] --replicas=<新副本数>
 deployment/deploy_name
-```
 
-```text
 #基于资源文件调整:
 kubectl scale --replicas=<新副本数> -f deploy_name.yaml
 ```
@@ -2086,25 +1700,18 @@ kubectl scale --replicas=<新副本数> -f deploy_name.yaml
 ##### 2.5.2.2.2 案例
 
 范例: 基于资源对象扩充Pod数量
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS   AGE
 deployment-test-6c47988884-6rcfp   1/1     Running   0          20m
 deployment-test-6c47988884-7cwhp   1/1     Running   0          20m
 deployment-test-6c47988884-l2nk8   1/1     Running   0          20m
-```
 
-```text
 [root@master1 ~]#kubectl scale  --replicas=5 deployment/deployment-test
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS   AGE
-```
 
-```text
 deployment-test-6c47988884-6rcfp   1/1     Running   0          20m
 deployment-test-6c47988884-7cwhp   1/1     Running   0          20m
 deployment-test-6c47988884-clgbd   1/1     Running   0          1s
@@ -2113,34 +1720,25 @@ deployment-test-6c47988884-l2nk8   1/1     Running   0          20m
 ```
 
 范例
-
-```text
+```bash
 #查看帮助
 [root@master1 ~]#kubectl help scale
 Set a new size for a deployment, replica set, replication controller, or
 stateful set.
-```
 
-```text
 #查看当前Pod
 [root@master1 ~]#kubectl get deployments.apps
 NAME    READY   UP-TO-DATE   AVAILABLE   AGE
 nginx   1/1     1            1           16m
-```
 
-```text
 [root@master1 ~]#kubectl get pods
 NAME                     READY   STATUS    RESTARTS   AGE
 nginx-6799fc88d8-fcndt   1/1     Running   0          16m
-```
 
-```text
 #pod的扩容
 [root@master1 ~]#kubectl scale --replicas=3 deployment/nginx
 deployment.apps/nginx scaled
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl get deployments.apps  #全称
 [root@master1 ~]#kubectl get deploy            #缩写
@@ -2150,36 +1748,29 @@ nginx   1/3     3
 NAME                     READY   STATUS    RESTARTS   AGE     IP           NODE
 NOMINATED NODE   READINESS GATES
 nginx-6799fc88d8-8rwcl   1/1     Running   0          3m49s   172.16.1.5
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 nginx-6799fc88d8-b82ck   1/1     Running   0          3m49s   172.16.2.7
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 nginx-6799fc88d8-fcndt   1/1     Running   0          22m     172.16.3.4
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #pod的容量收缩
 [root@master1 ~]#kubectl scale --replicas=1 deployment nginx
-```
 
-```text
 [root@master1 ~]#kubectl get deploy
 NAME    READY   UP-TO-DATE   AVAILABLE   AGE
 nginx   1/1     1            1           33m
 ```
 
 示例: 基于资源文件调整Pod数量
-
-```text
+```yaml
 [root@master1 ~]#cat controller-deployment-test.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
 name: deployment-test
 spec:
-```
 
-```text
 replicas: 3
 selector:
 matchLabels:
@@ -2191,10 +1782,8 @@ app: rs-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #缩容
 [root@master1 ~]#kubectl scale  --replicas=1 -f controller-deployment-test.yaml
 [root@master1 ~]#kubectl get pod
@@ -2205,26 +1794,19 @@ deployment-test-6c47988884-7cwhp   1/1     Running   0          25m
 #### 2.5.2.3  Deployment 动态更新和回滚
 
 ##### 2.5.2.3.1 命令简介
-
-```text
+```bash
 #更新命令1：
 kubectl set SUBCOMMAND [options] 资源类型 资源名称
 SUBCOMMAND：子命令,常用的子命令就是image
-```
 
-```text
 #参数详解：
 --record=true       #更改时，会将信息增加到历史记录中,k8s-v1.32.0不再支持
-```
 
-```text
 #更新命令2：
 kubectl patch (-f FILENAME | TYPE NAME) -p PATCH [options]
 #参数详解：
 --patch=''      #设定对象属性内容
-```
 
-```text
 #回滚命令：
 kubectl rollout SUBCOMMAND [options] 资源类型 资源名称
 SUBCOMMAND 子命令：
@@ -2242,137 +1824,92 @@ undo        #撤销上一次的 rollout
 ##### 2.5.2.3.2 案例
 
 范例：Pod的版本更新帮助
-
-```text
+```sql
 [root@master1 ~]#kubectl help set image
 Update existing container image(s) of resources.
-```
 
-```text
 Possible resources include (case insensitive):
-```
 
-```text
 pod (po), replicationcontroller (rc), deployment (deploy), daemonset (ds),
 statefulset (sts), cronjob (cj), replicaset
 (rs)
-```
 
-```text
 Examples:
 # Set a deployment's nginx container image to 'nginx:1.9.1', and its busybox
 container image to 'busybox'
 kubectl set image deployment/nginx busybox=busybox nginx=nginx:1.9.1
-```
 
-```text
 # Update all deployments' and rc's nginx container's image to 'nginx:1.9.1'
 kubectl set image deployments,rc nginx=nginx:1.9.1 --all
-```
 
-```text
 # Update image of all containers of daemonset abc to 'nginx:1.9.1'
 kubectl set image daemonset abc *=nginx:1.9.1
-```
 
-```text
 # Print result (in yaml format) of updating nginx container image from local
 file, without hitting the server
 kubectl set image -f path/to/file.yaml nginx=nginx:1.9.1 --local -o yaml
-```
 
-```text
 Options:
 --all=false:
 Select all resources, in the namespace of the specified resource types
 ```
 
-```text
---allow-missing-template-keys=true:
-If true, ignore any errors in templates when a field or map key is missing
-in the template. Only applies to
-golang and jsonpath output formats.
-```
 
-```text
---dry-run='none':
-Must be "none", "server", or "client". If client strategy, only print the
-object that would be sent, without
-sending it. If server strategy, submit server-side request without persisting
-the resource.
-```
+--allow-missing-template-keys=true: If true, ignore any errors in templates when a field or map key is missing in the template. Only applies to golang and jsonpath output formats.
+
+
+--dry-run='none': Must be "none", "server", or "client". If client strategy, only print the object that would be sent, without sending it. If server strategy, submit server-side request without persisting the resource.
 
 ```text
 --field-manager='kubectl-set':
 Name of the manager used to track field ownership.
-```
 
-```text
 -f, --filename=[]:
 Filename, directory, or URL to files identifying the resource to get from a
 server.
-```
 
-```text
 -k, --kustomize='':
 Process the kustomization directory. This flag can't be used together with -
 f or -R.
-```
 
-```text
 --local=false:
 If true, set image will NOT contact api-server but run locally.
-```
 
-```text
 -o, --output='':
 Output format. One of: (json, yaml, name, go-template, go-template-file,
 template, templatefile, jsonpath,
 jsonpath-as-json, jsonpath-file).
-```
 
-```text
 -R, --recursive=false:
 Process the directory used in -f, --filename recursively. Useful when you
 want to manage related manifests
 organized within the same directory.
-```
 
-```text
 -l, --selector='':
 Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l
 key1=value1,key2=value2). Matching
 objects must satisfy all of the specified label constraints.
-```
 
-```text
 --show-managed-fields=false:
 If true, keep the managedFields when printing objects in JSON or YAML
 format.
-```
 
-```text
 --template='':
 Template string or path to template file to use when -o=go-template, -o=go-
 template-file. The template format
 is golang templates [http://golang.org/pkg/text/template/#pkg-overview].
-```
 
-```text
 Usage:
 kubectl set image (-f FILENAME | TYPE NAME) CONTAINER_NAME_1=CONTAINER_IMAGE_1
 ... CONTAINER_NAME_N=CONTAINER_IMAGE_N
 [options]
-```
 
-```text
 Use "kubectl options" for a list of global command-line options (applies to all
 commands).
 ```
 
 范例：
-
-```text
+```bash
 [root@master1 pod]#kubectl rollout history deployment myapp
 deployment.apps/myapp
 REVISION  CHANGE-CAUSE
@@ -2380,10 +1917,8 @@ REVISION  CHANGE-CAUSE
 2         <none>
 3         <none>
 4         kubectl set image deploy myapp pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.4 --record=true
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.4 --record=true
 
-```text
 [root@master1 pod]#kubectl rollout history deployment myapp --revision=1
 deployment.apps/myapp with revision #1
 Pod Template:
@@ -2391,7 +1926,7 @@ Labels:   app=myapp
 pod-template-hash=74f686cb98
 Containers:
 pod-test:
-Image:  registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+Image:  registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 Port:   <none>
 Host Port:  <none>
 Environment:    <none>
@@ -2402,51 +1937,38 @@ Tolerations:  <none>
 ```
 
 范例: 命令式更新和回滚
-
-```text
+```bash
 #创建deployment
 #--record=true 此
 [root@master1 ~]#kubectl create deployment nginx --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.18.0 --record=true
-```
+beijing.aliyuncs.com/bowen/nginx:1.18.0 --record=true
 
-```text
 [root@master1 ~]#kubectl get deployments.apps
 NAME    READY   UP-TO-DATE   AVAILABLE   AGE
 nginx   1/1     1            1           10s
-```
 
-```text
 #查看rs
 [root@master1 ~]#kubectl get rs
 NAME               DESIRED   CURRENT   READY   AGE
 nginx-68d5d56847   1         1         1       19s
-```
 
-```text
 #修改版本两种格式
 [root@master1 ~]#kubectl set image deployment/nginx nginx='registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0' --record=true
+beijing.aliyuncs.com/bowen/nginx:1.20.0' --record=true
 [root@master1 ~]#kubectl set image deployment nginx nginx='registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0' --record=true
-```
+beijing.aliyuncs.com/bowen/nginx:1.20.0' --record=true
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                     READY   STATUS              RESTARTS   AGE
 nginx-68d5d56847-5fcl4   1/1     Running             0          2m49s
 nginx-79d97874f6-sdwcq   0/1     ContainerCreating   0          5s
-```
 
-```text
 #可以看到两个对应的rs版本
 [root@master1 ~]#kubectl get rs
 NAME               DESIRED   CURRENT   READY   AGE
 nginx-68d5d56847   0         0         0       3m
 nginx-79d97874f6   1         1         1       10s
-```
 
-```text
 [root@master1 ~]#kubectl get rs -o wide
 NAME               DESIRED   CURRENT   READY   AGE     CONTAINERS   IMAGES
 SELECTOR
@@ -2454,53 +1976,40 @@ nginx-68d5d56847   0         0         0       13m     nginx        nginx:1.18.0
 app=nginx,pod-template-hash=68d5d56847
 nginx-79d97874f6   0         0         0       12m     nginx        nginx:1.20.0
 app=nginx,pod-template-hash=79d97874f6
-```
 
-```text
 #验证版本更新
 [root@master1 ~]#kubectl exec -it nginx-79d97874f6-sdwcq -- /bin/bash
 root@nginx-79d97874f6-sdwcq:/# nginx -v
 nginx version: nginx/1.20.0
-```
 
-```text
 #查看版本更新状态和历史
 [root@master1 ~]#kubectl rollout history deployment nginx
 deployment.apps/nginx
 REVISION  CHANGE-CAUSE
 1         <none>
 2         kubectl set image deployment/nginx nginx=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 --record=true
-```
+beijing.aliyuncs.com/bowen/nginx:1.20.0 --record=true
 
-```text
 #撤销/回退上次的更改,注意:只能回退一次
 [root@master1 ~]#kubectl rollout undo deployment nginx
 [root@master1 ~]#kubectl rollout history deployment nginx
-```
 
-```text
 #回退至指定版本
 [root@master1 ~]#kubectl rollout undo --to-revision=2 deployment nginx
-```
 
-```text
 [root@master1 ~]#kubectl rollout history deployment nginx
 deployment.apps/nginx
 REVISION  CHANGE-CAUSE
-```
 
-```text
 1         <none>
 4         kubectl set image deployment/nginx nginx=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 --record=true
+beijing.aliyuncs.com/bowen/nginx:1.20.0 --record=true
 5         kubectl set image deployment/nginx nginx=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.18.0 --record=true
+beijing.aliyuncs.com/bowen/nginx:1.18.0 --record=true
 ```
 
 范例:  基于声明清单文件实现升级和降级
-
-```text
+```yaml
 [root@master1 ~]#cat controller-deployment-test.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -2518,31 +2027,23 @@ app: rs-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME              TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)   AGE
 deployment-test   ClusterIP   192.168.141.236   <none>        80/TCP    23m
-```
 
-```text
 #查看当前版本
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 6c47988884-7cwhp, ServerIP: 172.16.2.44!
-```
 
-```text
 #升级版本
 #方法1
 [root@master1 ~]#kubectl set image deployment deployment-test pod-
-test='registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2' --record=true
-#注意：pod-test是容器名称，wangxiaochun/pod-test:v0.2是 image的属性值。
-```
+test='registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2' --record=true
+#注意：pod-test是容器名称，bowen/pod-test:v0.2是 image的属性值。
 
-```text
 #方法2
 [root@master1 ~]#vim controller-deployment-test.yaml
 apiVersion: apps/v1
@@ -2558,52 +2059,38 @@ template:
 metadata:
 labels:
 app: rs-test
-```
 
-```text
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 #修改此
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2 #修改此
 行版本
-```
 
-```text
 #应用并观察
 root@master1 ~]#kubectl apply -f controller-deployment-test.yaml ; kubectl
 rollout status -f controller-deployment-test.yaml
-```
 
-```text
 #验证版本升级
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.2!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 8fb899745-dk62n, ServerIP: 172.16.1.39!
-```
 
-```text
 #查看更新状态
 [root@master1 ~]#kubectl rollout status deployment deployment-test
 deployment "deployment-test" successfully rolled out
-```
 
-```text
 #查看历史
 #方法1
 [root@master1 ~]#kubectl rollout history -f controller-deployment-test.yaml
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl rollout history deployment deployment-test
 deployment.apps/deployment-test
 REVISION  CHANGE-CAUSE
 1         <none>
 2         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record=true
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record=true
 
-```text
 #查看指定版本的详细信息
 [root@master1 ~]#kubectl rollout  history deployment deployment-test --
 revision=1
@@ -2613,232 +2100,164 @@ Labels:   app=deployment-test
 pod-template-hash=5b8795b9bc
 Containers:
 pod-test:
-Image:  registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+Image:  registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 Port:   <none>
 Host Port:  <none>
 Environment:    <none>
 Mounts: <none>
 Volumes:  <none>
-```
 
-```text
 #降级版本
 #修改清单文件或通过下面命令实现
 [root@master1 ~]#kubectl set image deployment/deployment-test pod-
-test='registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1' --record=true
+test='registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1' --record=true
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl rollout history deployment deployment-test
 deployment.apps/deployment-test
 REVISION  CHANGE-CAUSE
 2         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record=true
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record=true
 
-```text
 3         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --record=true
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --record=true
 
-```text
 [root@master1 ~]#kubectl rollout status deployment deployment-test
 deployment "deployment-test" successfully rolled out
-```
 
-```text
 #确认版本降级
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 6c47988884-rjpx5, ServerIP: 172.16.2.46!
-```
 
-```text
 #回滚上一个操作
 [root@master1 ~]#kubectl rollout undo deployment deployment-test
 deployment.apps/deployment-test rolled back
-```
 
-```text
 #确认回滚
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.2!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 8fb899745-jp7kg, ServerIP: 172.16.3.87!
-```
 
-```text
 #查看回滚历史
 [root@master1 ~]#kubectl rollout history deployment deployment-test
 deployment.apps/deployment-test
 REVISION  CHANGE-CAUSE
 3         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --record=true
 4         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record=true
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record=true
 
-```text
 #扩容
 [root@master1 ~]#kubectl scale  --replicas=3 deployment deployment-test
-```
 
-```text
 #更改1个后，就暂停，查看效果
 [root@master1 ~]#kubectl set image deployment/deployment-test pod-
-test='registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2' --record=true
+test='registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2' --record=true
 && kubectl rollout pause deployment deployment-test
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl rollout status deployment deployment-test
 Waiting for deployment "deployment-test" rollout to finish: 0 out of 3 new
 replicas have been updated...
 #显示卡住不动
-```
 
-```text
 #新开一个连接查看状态
 [root@master1 ~]#kubectl rollout history deployment deployment-test
 deployment.apps/deployment-test
 REVISION  CHANGE-CAUSE
 3         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --record=true
 4         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record=true
 5         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 --record=true
-```
+beijing.aliyuncs.com/bowen/nginx:1.20.0 --record=true
 
-```text
 #继续更新
 [root@master1 ~]#kubectl rollout resume deployment deployment-test
 deployment.apps/deployment-test resumed
-```
 
-```text
 #观察状态
 [root@master1 ~]#kubectl rollout status deployment deployment-test
 Waiting for deployment "deployment-test" rollout to finish: 0 out of 3 new
 replicas have been updated...
 ```
 
-```text
-Waiting for deployment spec update to be observed...
-Waiting for deployment spec update to be observed...
-Waiting for deployment spec update to be observed...
-Waiting for deployment "deployment-test" rollout to finish: 0 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 1 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 1 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 1 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 2 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 2 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 2 out of 3 new
-replicas have been updated...
-Waiting for deployment "deployment-test" rollout to finish: 1 old replicas are
-pending termination...
-Waiting for deployment "deployment-test" rollout to finish: 1 old replicas are
-pending termination...
-deployment "deployment-test" successfully rolled out
-```
 
-```text
+Waiting for deployment spec update to be observed... Waiting for deployment spec update to be observed... Waiting for deployment spec update to be observed... Waiting for deployment "deployment-test" rollout to finish: 0 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 1 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 1 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 1 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 2 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 2 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 2 out of 3 new replicas have been updated... Waiting for deployment "deployment-test" rollout to finish: 1 old replicas are pending termination... Waiting for deployment "deployment-test" rollout to finish: 1 old replicas are pending termination... deployment "deployment-test" successfully rolled out
+
+```bash
 #查看历史
 [root@master1 ~]#kubectl rollout history deployment deployment-test
 deployment.apps/deployment-test
 REVISION  CHANGE-CAUSE
 3         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --record=true
 4         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record=true
 5         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 --record=true
+beijing.aliyuncs.com/bowen/nginx:1.20.0 --record=true
 6         kubectl set image deployment/deployment-test pod-test=registry.cn-
 beijing.aliyuncs.com/nginx:1.18.0 --record=true
-```
 
-```text
 #再次回退至版地本3
 [root@master1 ~]#kubectl rollout undo deployment deployment-test --to-revision=3
 deployment.apps/deployment-test rolled back
-```
 
-```text
 #验证结果
 [root@master1 ~]#curl 192.168.141.236
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-test-
 6c47988884-mw8zh, ServerIP: 172.16.2.51!
-```
 
-```text
 #查看历史
 [root@master1 ~]#kubectl rollout history deployment deployment-test
 deployment.apps/deployment-test
 REVISION  CHANGE-CAUSE
 4         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record=true
 5         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 --record=true
-```
+beijing.aliyuncs.com/bowen/nginx:1.20.0 --record=true
 
-```text
 6         kubectl set image deployment/deployment-test pod-test=registry.cn-
 beijing.aliyuncs.com/nginx:1.18.0 --record=true
 7         kubectl set image deployment/deployment-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --record=true
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --record=true
 #结果显示：将原来的3号变成7号位置，重新执行了一遍，原来的3号就没有了
 ```
 
 范例: 批量多次更新合并为一次更新
 
 默认只更改一次就会触发重新生成新Pod可能会影响业务的稳定,可以将多次批量更新合并为只触发一次重新创建Pod,从而保证业务的稳定。
-
-```text
+```bash
 #暂停更新
 [root@master1 ~]#kubectl rollout pause deployment pod-test
-```
 
-```text
 #第一次更改
 [root@master1 ~]#kubectl set image  deploy pod-test pod-test=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --record
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --record
 
-```text
 #查看没有更新
 [root@master1 ~]#kubectl get pod
 NAME                        READY   STATUS        RESTARTS   AGE
 pod-test-5b8795b9bc-2n4tx   0/1     Running       0          3h40m
 pod-test-5b8795b9bc-kjt9c   0/1     Running       0          3h40m
-```
 
-```text
 #第二次更改
 [root@master1 ~]#kubectl set resources deploy pod-test -c pod-test --
 limits=cpu=200m,memory=128Mi --requests=cpu=100m,memory=64Mi
-```
 
-```text
 #查看没有更新
 [root@master1 ~]#kubectl get pod
 NAME                        READY   STATUS             RESTARTS   AGE
 pod-test-5b8795b9bc-2n4tx   0/1     Running       0          3h40m
 pod-test-5b8795b9bc-kjt9c   0/1     Running       0          3h40m
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get deployments.apps pod-test -oyaml
 ......
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 imagePullPolicy: IfNotPresent
 name: pod-test
 resources:
@@ -2848,26 +2267,18 @@ memory: 128Mi
 requests:
 cpu: 100m
 memory: 64Mi
-```
 
-```text
 #恢复批量更新
 [root@master1 ~]#kubectl rollout resume  deployment pod-test
-```
 
-```text
 #查看更新
 [root@master1 ~]#kubectl get pod
 NAME                        READY   STATUS              RESTARTS   AGE
 pod-test-5b8795b9bc-2n4tx   0/1     Running             0          3h43m
-```
 
-```text
 pod-test-5b8795b9bc-kjt9c   0/1     Running             0          3h43m
 pod-test-7898f44799-p99xn   0/1     ContainerCreating   0          6s
-```
 
-```text
 [root@master1 ~]#kubectl get rs
 NAME                  DESIRED   CURRENT   READY   AGE
 pod-test-5b8795b9bc   2         2         0       3h44m
@@ -2907,38 +2318,29 @@ podTemplate的hash码变动，即仅podTemplate的配置变动才会导致hash�
 要实现流量路由比例的控制，就需要使用更高级的工具比如: Ingress 才能实现。
 
 **属性解析**
-
-```text
+```bash
 kubectl explain deployment.spec
 revisionHistoryLimit <integer>
 The number of old ReplicaSets to retain to allow rollback. This is a pointer
 to distinguish between explicit zero and not specified. Defaults to 10.
-```
 
-```text
 kubectl explain deployment.spec.strategy
 type <string>       #主要有两种类型："Recreate"、"RollingUpdate-默认"
 Recreate            #重建,先删除旧Pod,再创建新Pod,比如可以防止端口冲突
-```
 
-```text
 kubectl explain deployment.spec.strategy.rollingUpdate
 rollingUpdate        <Object>
 maxSurge        <string> #更新时允许超过期望值的最大Pod数量或百分比,默认为25%,如果为0,
 表示先减再加，此时maxUnavaible不能为0
 maxUnavailable  <string> #更新时允许最大多少个或百分比的Pod不可用,默认为25%,如果为0,表
 示先加后减，此时maxSurge不能为0
-```
 
-```text
 #如果maxSurge为正整数, maxUnavailabel为0,表示先添加新版本的Pod,再删除旧版本的Pod，即先加再
 减
 #如果maxSurge为0, maxUnavaiLabel为正整数,表示先删除旧版本的Pod,再添加新版本的Pod，即先减再
 加
 #如果maxSurge为100%，maxUnavaiLabel为100%，实现蓝绿发布，注意：资源要足够
-```
 
-```text
 #缺点:
 ```
 
@@ -2965,7 +2367,6 @@ maxUnavailable
 ![原 PDF 第 54 页插图](assets/Kubernetes工作负载/img-b8e1c3199b533fb3.jpeg)
 
 **资源清单文件基本样式**
-
 ```text
 #基本属性样式：
 minReadySeconds: 5
@@ -2977,8 +2378,7 @@ maxUnavaiLabel: 1
 ```
 
 ##### 2.5.2.4.2  案例: 滚动更新
-
-```text
+```yaml
 [root@master1 ~]#cat  controller-deployment-rollupdate.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -2996,7 +2396,7 @@ app: pod-test
 spec:
 containers:
 - name: pod-rolling-update
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 minReadySeconds: 5
 strategy:
 type: RollingUpdate
@@ -3006,25 +2406,16 @@ maxUnavailable: 1
 #属性解析：
 ```
 
-```text
-minReadySeconds: 5  #表示在更新的时候，需要先等待5秒，而不是一旦发生变化就滚动更新
-maxSurge: 1         #定义了在更新期间允许超过期望数量的 Pod 实例,此处表示允许超过期望数量的
-一个额外的 Pod 实例。
-maxUnavaiLabel: 1   #定义了在更新期间允许不可用的最大 Pod 数量。此处表示在更新期间允许最多一
-个 Pod 不可用。
-```
 
-```text
+minReadySeconds: 5  #表示在更新的时候，需要先等待5秒，而不是一旦发生变化就滚动更新 maxSurge: 1         #定义了在更新期间允许超过期望数量的 Pod 实例,此处表示允许超过期望数量的一个额外的 Pod 实例。maxUnavaiLabel: 1   #定义了在更新期间允许不可用的最大 Pod 数量。此处表示在更新期间允许最多一个 Pod 不可用。
+
+```sql
 [root@master1 ~]#kubectl apply -f controller-deployment-rollupdate.yaml
-```
 
-```text
 #创建service
 [root@master1 ~]#kubectl expose  deployment deployment-rolling-update --port=80
 service/deployment-rolling-update exposed
-```
 
-```text
 #观察状态
 [root@master1 ~]#kubectl get all
 NAME                                             READY   STATUS    RESTARTS
@@ -3041,28 +2432,20 @@ pod/deployment-rolling-update-5df8565bb7-sxwcx   1/1     Running   0
 65s
 pod/deployment-rolling-update-5df8565bb7-z52gx   1/1     Running   0
 65s
-```
 
-```text
 NAME                                TYPE        CLUSTER-IP       EXTERNAL-IP
 PORT(S)   AGE
 service/deployment-rolling-update   ClusterIP   192.168.78.161   <none>
 80/TCP    3s
-```
 
-```text
 NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/deployment-rolling-update   6/6     6            6           66s
-```
 
-```text
 NAME                                                   DESIRED   CURRENT   READY
 AGE
 replicaset.apps/deployment-rolling-update-5df8565bb7   6         6         6
 66s
-```
 
-```text
 #观察版本变化
 [root@master1 ~]#curl 192.168.78.161
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-rolling-
@@ -3076,26 +2459,18 @@ update-5df8565bb7-fbt9x, ServerIP: 172.16.1.44!
 [root@master1 ~]#curl 192.168.78.161
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: deployment-rolling-
 update-5df8565bb7-z52gx, ServerIP: 172.16.3.90!
-```
 
-```text
 #更新镜像,也可以直接修改controller-deployment-rollupdate.yaml中的image实现
-```
 
-```text
 [root@master1 ~]#kubectl set image deployment deployment-rolling-update  pod-
-rolling-update='registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2' --
+rolling-update='registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2' --
 record=true
-```
 
-```text
 #跟踪查看状态
 [root@master1 ~]#kubectl rollout status deployment deployment-rolling-update
 Waiting for deployment "deployment-rolling-update" rollout to finish: 4 out of 6
 new replicas have been updated...
-```
 
-```text
 [root@master1 ~]#kubectl get pod -w
 NAME                                         READY   STATUS        RESTARTS
 AGE
@@ -3135,21 +2510,16 @@ deployment-rolling-update-5df8565bb7-kq72t   0/1     Terminating   0
 5m3s
 deployment-rolling-update-5df8565bb7-kq72t   0/1     Terminating   0
 5m3s
-```
 
-```text
 #观察版本变化
 [root@master1 ~]#curl 192.168.78.161
-```
 
-```text
 #问题：更新后的原有的旧版pod是否还是在原来的node节点上呢？原生的kubernetes是没有这个功能，需
 要你根据实际的调度策略来实现，或者利用相关的云平台来实现
 ```
 
 ##### 2.5.2.4.3  案例：金丝雀发布
-
-```text
+```yaml
 [root@master1 ~]#cat controller-deployment-rollupdate-canary.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -3167,7 +2537,7 @@ app: pod-test
 spec:
 containers:
 - name: pod-rolling-update-canary
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 strategy:
 type: RollingUpdate
 rollingUpdate:
@@ -3190,30 +2560,22 @@ selector:
 app: pod-test
 type: ClusterIP
 [root@master1 ~]#kubectl apply -f controller-deployment-rollupdate-canary.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get svc,deployments.apps
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   41d
 service/pod-test     ClusterIP   10.101.101.57   <none>        80/TCP    86s
-```
 
-```text
 NAME                                               READY   UP-TO-DATE   AVAILABLE
 AGE
 deployment.apps/deployment-rolling-update-canary   3/3     3            3
 86s
-```
 
-```text
 #当前状态
 [root@master1 ~]#kubectl get pod
 NAME                                                READY   STATUS    RESTARTS
 AGE
-```
 
-```text
 deployment-rolling-update-canary-65c878c6b9-2vfmt   1/1     Running   0
 4m54s
 deployment-rolling-update-canary-65c878c6b9-b2559   1/1     Running   0
@@ -3223,21 +2585,15 @@ deployment-rolling-update-canary-65c878c6b9-ll9dv   1/1     Running   0
 [root@master1 ~]#kubectl get rs
 NAME                                          DESIRED   CURRENT   READY   AGE
 deployment-rolling-update-canary-65c878c6b9   3         3         3       5m7s
-```
 
-```text
 #升级版本
 [root@master1 ~]#sed -i 's/pod-test:v0.1/pod-test:v0.2/' controller-deployment-
 rollupdate-canary.yaml
-```
 
-```text
 #金丝雀发布
 [root@master1 ~]#kubectl apply -f controller-deployment-rollupdate-canary.yaml &&
 kubectl rollout pause deployment deployment-rolling-update-canary
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get rs
 NAME                                          DESIRED   CURRENT   READY   AGE
@@ -3254,16 +2610,12 @@ deployment-rolling-update-canary-65c878c6b9-b2559   1/1     Running   0
 6m1s
 deployment-rolling-update-canary-65c878c6b9-ll9dv   1/1     Running   0
 6m1s
-```
 
-```text
 [root@master1 ~]#kubectl rollout status deployment deployment-rolling-update-
 canary
 Waiting for deployment "deployment-rolling-update-canary" rollout to finish: 1
 out of 3 new replicas have been updated...
-```
 
-```text
 #观察版本变化
 [root@master1 ~]#while true;do curl 10.101.101.57;sleep 1;done
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
@@ -3284,52 +2636,34 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
 update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156!
 ```
 
-```text
-kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-canary-6568bf4bbd-xbz6q, ServerIP: 10.244.1.157!
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156!
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156!
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156!
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156!
-kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-canary-6568bf4bbd-xbz6q, ServerIP: 10.244.1.157!
-```
 
-```text
+kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-canary-6568bf4bbd-xbz6q, ServerIP: 10.244.1.157! kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156! kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156! kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156! kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-canary-65c878c6b9-b2559, ServerIP: 10.244.1.156! kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-canary-6568bf4bbd-xbz6q, ServerIP: 10.244.1.157!
+
+```sql
 #等待观察一段时间，如果确信没有问题，继续完成一部分更新
 [root@master1 ~]#kubectl rollout resume deployment deployment-rolling-update-
 canary && kubectl rollout pause deployment deployment-rolling-update-canary
 deployment.apps/deployment-rolling-update-canary resumed
-```
 
-```text
 [root@master1 ~]#kubectl get rs,deployments.apps -o wide
 NAME                                                          DESIRED   CURRENT
 READY   AGE     CONTAINERS                  IMAGES
 SELECTOR
 replicaset.apps/deployment-rolling-update-canary-6568bf4bbd   3         3
 3       7m43s   pod-rolling-update-canary   registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2   app=pod-test,pod-template-
+beijing.aliyuncs.com/bowen/pod-test:v0.2   app=pod-test,pod-template-
 hash=6568bf4bbd
 replicaset.apps/deployment-rolling-update-canary-65c878c6b9   0         0
 0       13m     pod-rolling-update-canary   registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1   app=pod-test,pod-template-
+beijing.aliyuncs.com/bowen/pod-test:v0.1   app=pod-test,pod-template-
 hash=65c878c6b9
-```
 
-```text
 NAME                                               READY   UP-TO-DATE   AVAILABLE
 AGE   CONTAINERS                  IMAGES                       SELECTOR
 deployment.apps/deployment-rolling-update-canary   3/3     3            3
 13m   pod-rolling-update-canary   registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2   app=pod-test
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2   app=pod-test
 
-```text
 [root@master1 ~]#kubectl rollout status deployment deployment-rolling-update-
 canary
 Waiting for deployment "deployment-rolling-update-canary" rollout to finish: 1
@@ -3351,9 +2685,7 @@ old replicas are pending termination...
 Waiting for deployment "deployment-rolling-update-canary" rollout to finish: 1
 old replicas are pending termination...
 deployment "deployment-rolling-update-canary" successfully rolled out
-```
 
-```text
 [root@master1 ~]#while true;do curl 10.101.101.57;sleep 1;done
 kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
 update-canary-6568bf4bbd-xbz6q, ServerIP: 10.244.1.157!
@@ -3361,16 +2693,13 @@ kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
 update-canary-6568bf4bbd-7b4zm, ServerIP: 10.244.2.162!
 kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
 update-canary-6568bf4bbd-7rd65, ServerIP: 10.244.3.78!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f controller-deployment-rollupdate-canary.yaml
 ```
 
 ##### 2.5.2.4.4  案例：蓝绿发布
-
-```text
+```yaml
 [root@master1 ~]#cat controller-deployment-rollupdate-bluegreen.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -3388,7 +2717,7 @@ app: pod-test
 spec:
 containers:
 - name: pod-rolling-update-bluegreen
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 strategy:
 type: RollingUpdate
 rollingUpdate:
@@ -3410,44 +2739,32 @@ targetPort: 80
 selector:
 app: pod-test
 type: ClusterIP
-```
 
-```text
 [root@master1 ~]#kubectl apply -f controller-deployment-rollupdate-
 bluegreen.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get svc,deployments.apps
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   41d
 service/pod-test     ClusterIP   10.110.60.246   <none>        80/TCP    4s
-```
 
-```text
 NAME                                                  READY   UP-TO-DATE
 AVAILABLE   AGE
 deployment.apps/deployment-rolling-update-bluegreen   3/3     3            3
 4s
-```
 
-```text
 #方法1：修改版本
 [root@master1 ~]#sed -i.bak 's/pod-test:v0.1/pod-test:v0.2/' controller-
 deployment-rollupdate-bluegreen.yaml
 [root@master1 ~]#kubectl apply -f controller-deployment-rollupdate-
 bluegreen.yaml
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl set image deployments deployment-rolling-update-
 bluegreen pod-rolling-update-bluegreen=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2
 
-```text
 #方法3：
 [root@master1 ~]#kubectl  rollout  history deployment deployment-rolling-update-
 bluegreen
@@ -3458,15 +2775,11 @@ REVISION  CHANGE-CAUSE
 [root@master1 ~]#kubectl rollout undo deployment deployment-rolling-update-
 bluegreen
 deployment.apps/deployment-rolling-update-bluegreen rolled back
-```
 
-```text
 #方法4：
 [root@master1 ~]#kubectl edit deployments.apps deployment-rolling-update-
 bluegreen
-```
 
-```text
 #观察结果
 [root@master1 ~]#while true;do curl 10.110.60.246;sleep 1;done
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
@@ -3489,42 +2802,31 @@ kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
 update-bluegreen-78ffdb4847-bjqzm, ServerIP: 10.244.3.86!
 ```
 
-```text
-kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-bluegreen-78ffdb4847-vwlpw, ServerIP: 10.244.2.170!
-kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-
-update-bluegreen-78ffdb4847-qqbws, ServerIP: 10.244.1.165!
-```
 
-```text
+kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-bluegreen-78ffdb4847-vwlpw, ServerIP: 10.244.2.170! kubernetes pod-test v0.2!! ClientIP: 10.244.0.0, ServerName: deployment-rolling-update-bluegreen-78ffdb4847-qqbws, ServerIP: 10.244.1.165!
+
+```bash
 #环境清理
 [root@master1 ~]#kubectl delete -f controller-deployment-rollupdate-
 bluegreen.yaml
 ```
 
 范例: 打补丁
-
-```text
+```bash
 #修改副本数量
 [root@master1 ~]#kubectl patch deployment deployment-test -p '{"spec":
 {"replicas":2}}'
 deployment.apps/deployment-test patched
-```
 
-```text
 #查看当前滚动更新策略
 [root@master1 ~]#kubectl describe deployments deployment-test |grep
 RollingUpdateStrategy
 RollingUpdateStrategy:  25% max unavailable, 25% max surge
-```
 
-```text
 #修改滚动更新策略
 [root@master1 ~]#kubectl  patch deployment deployment-test -p '{"spec":
 {"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavaiLabel":0}}}}'
-```
 
-```text
 #验证滚动更新策略
 [root@master1 ~]#kubectl describe deployments deployment-test |grep
 RollingUpdateStrategy

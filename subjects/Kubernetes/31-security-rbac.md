@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 授权机制与 RBAC'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -36,8 +37,7 @@ syntax_highlight: true
 **配置方法**
 
 在kube-apiserver上使用 --authorization-mode 选项进行定义多个模块彼此间以逗号分隔。
-
-```text
+```yaml
 [root@master1 ~]#cat /etc/kubernetes/manifests/kube-apiserver.yaml
 apiVersion: v1
 kind: Pod
@@ -54,9 +54,7 @@ namespace: kube-system
 spec:
 containers:
 - command:
-```
 
-```text
 - kube-apiserver
 - --advertise-address=10.0.0.101
 - --allow-privileged=true
@@ -115,9 +113,7 @@ requests:
 cpu: 250m
 startupProbe:
 failureThreshold: 24
-```
 
-```text
 httpGet:
 host: 10.0.0.101
 path: /livez
@@ -176,26 +172,23 @@ path: /usr/share/ca-certificates
 type: DirectoryOrCreate
 name: usr-share-ca-certificates
 status: {}
-```
 
-```text
 [root@master1 ~]#
 ```
 
 ## 3.2 RBAC 机制
 
-```text
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authorization/
-https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/
-```
+
+- <https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/authorization/>
+- <https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/>
+
 
 RBAC (Role-based access control) 基于角色Role的访问控制使用rbac.authorization.k8s.io API Group来实现授权决策。允许管理员通过 Kubernetes API 动态配置策略。
 
 要启用RBAC，需要在 apiserver 中添加参数--authorization-mode=RBAC
 
 kubeadm安装的集群默认开启了RBAC，可以通过查看 Master 节点上 apiserver 的静态Pod定义文件：
-
-```text
+```bash
 [root@master1 ~]#cat /etc/kubernetes/manifests/kube-apiserver.yaml
 ...
 - --authorization-mode=Node,RBAC
@@ -335,18 +328,14 @@ RoleBinding
 同样的操作，站在ClusterRole的角度，我们可以理解为，用户得到的权限仅是ClusterRole的权限在Rolebinding所属的名称空间上的一个子集，也就是所谓的"权限降级"。
 
 场景1：多个namespace中的role角色都一致，如果都使用内部的RoleBinding，每个namespace都必须单独创建role，而使用ClusterRole，只需要一个就可以了，大大的减轻批量使用namespace中的RoleBinding 操作。场景2：公司对A用户要提升权限，但是，由于A处于考察期，那么暂时给他分配一个区域，测试一下效果。生活中的场景，提升张三为公司副总裁，但是由于是试用期，所以加了一个限制:只临时主管销售范围的副总裁。
-
 ```text
 ClusterRoleBinding:
 Subject --> ClusterRole #授权Subject集群范围内的资源操作权限
 ```
 
-```text
-RoleBinding:
-Subject --> Role        #授权Subject具有Role和RoleBinding所在的名称空间内的资源操作权限
-Subject --> ClusterRole #授权Subject具有RoleBinding所在的名称空间内的资源操作权限,即
-ClusterRole和 RoleBinding 二者的交集
-```
+
+RoleBinding: Subject --> Role        #授权Subject具有Role和RoleBinding所在的名称空间内的资源操作权限 Subject --> ClusterRole #授权Subject具有RoleBinding所在的名称空间内的资源操作权限,即 ClusterRole和 RoleBinding 二者的交集
+
 
 Namespace、Subject、Role和RoleBinding之间的关系
 
@@ -392,8 +381,7 @@ Namespace、Subject、Role和RoleBinding之间的关系
 - **view**：可只读访问 Namespace 内的大多数对象，但不包括 Role、RoleBinding 和 Secret。
 
 范例: 查看默认role 和 clusterrole
-
-```text
+```bash
 [root@master1 ~]#kubectl get role -A
 NAMESPACE     NAME                                             CREATED AT
 kube-public   kubeadm:bootstrap-signer-clusterinfo             2021-08-
@@ -404,9 +392,7 @@ kube-system   extension-apiserver-authentication-reader        2021-08-
 21T01:07:21Z
 kube-system   kube-proxy                                       2021-08-
 21T01:07:30Z
-```
 
-```text
 kube-system   kubeadm:kubeadm-certs                            2021-08-
 21T01:07:29Z
 kube-system   kubeadm:kubelet-config                           2021-08-
@@ -423,9 +409,7 @@ kube-system   system:controller:cloud-provider                 2021-08-
 21T01:07:21Z
 kube-system   system:controller:token-cleaner                  2021-08-
 21T01:07:21Z
-```
 
-```text
 [root@master1 ~]#kubectl get clusterrole
 NAME                                                                   CREATED
 AT
@@ -467,9 +451,7 @@ system:controller:attachdetach-controller                              2021-08-
 21T01:07:21Z
 system:controller:certificate-controller                               2021-08-
 21T01:07:21Z
-```
 
-```text
 system:controller:clusterrole-aggregation-controller                   2021-08-
 21T01:07:21Z
 system:controller:cronjob-controller                                   2021-08-
@@ -528,9 +510,7 @@ system:controller:ttl-after-finished-controller                        2021-08-
 21T01:07:21Z
 system:controller:ttl-controller                                       2021-08-
 21T01:07:21Z
-```
 
-```text
 system:coredns                                                         2021-08-
 21T01:07:30Z
 system:discovery                                                       2021-08-
@@ -570,8 +550,7 @@ view                                                                   2021-08-
 ```
 
 范例：查看内置的 rolebinding和clusterrolebinding
-
-```text
+```bash
 [root@master1 ~]#kubectl get rolebindings -A
 NAMESPACE              NAME                                                ROLE
 AGE
@@ -589,9 +568,7 @@ kube-system            kubeadm:kubeadm-certs
 Role/kubeadm:kubeadm-certs                            44d
 kube-system            kubeadm:kubelet-config
 Role/kubeadm:kubelet-config                           44d
-```
 
-```text
 kube-system            kubeadm:nodes-kubeadm-config
 Role/kubeadm:nodes-kubeadm-config                     44d
 kube-system            system::extension-apiserver-authentication-reader
@@ -608,9 +585,7 @@ kube-system            system:controller:token-cleaner
 Role/system:controller:token-cleaner                  44d
 kubernetes-dashboard   kubernetes-dashboard
 Role/kubernetes-dashboard                             16d
-```
 
-```text
 [root@master1 ~]#kubectl get clusterrolebindings.rbac.authorization.k8s.io
 NAME                                                   ROLE
 AGE
@@ -650,9 +625,7 @@ ClusterRole/system:controller:clusterrole-aggregation-controller
 system:controller:cronjob-controller
 ClusterRole/system:controller:cronjob-controller
 44d
-```
 
-```text
 system:controller:daemon-set-controller
 ClusterRole/system:controller:daemon-set-controller
 44d
@@ -710,9 +683,7 @@ ClusterRole/system:controller:replicaset-controller
 system:controller:replication-controller
 ClusterRole/system:controller:replication-controller
 44d
-```
 
-```text
 system:controller:resourcequota-controller
 ClusterRole/system:controller:resourcequota-controller
 44d
@@ -765,25 +736,20 @@ scheduler                                                44d
 ```
 
 范例: 查看交互式用户授权目的的常见角色内置role
-
-```text
+```yaml
 #可以通过clusterrole 资源来查看cluster-admin的所有权限信息
 [root@master1 ~]#kubectl describe clusterrole cluster-admin
 Name:         cluster-admin
 Labels:       kubernetes.io/bootstrapping=rbac-defaults
 Annotations:  rbac.authorization.kubernetes.io/autoupdate: true
-```
 
-```text
 PolicyRule:
 Resources  Non-Resource URLs  Resource Names  Verbs
 ---------  -----------------  --------------  -----
 *.*        []                 []              [*]
 [*]                []              [*]
 #结果显示：对于cluster-admin来说，它拥有所有资源在所有空间的所有权限。
-```
 
-```text
 #查看cluster-admin角色
 [root@master1 ~]#kubectl get clusterrole cluster-admin -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -808,9 +774,7 @@ verbs:
 - '*'
 verbs:
 - '*'
-```
 
-```text
 #查看role角色cluster-admin同名的clusterrolebinding
 [root@master1 ~]#kubectl get clusterrolebinding  cluster-admin -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -832,15 +796,11 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: Group
 name: system:masters        #对组system:masters进行角色绑定
-```
 
-```text
 [root@master1 ~]#kubectl get clusterrole admin -o yaml
 aggregationRule:
 clusterRoleSelectors:
-```
 
-```text
 - matchLabels:
 rbac.authorization.k8s.io/aggregate-to-admin: "true"
 apiVersion: rbac.authorization.k8s.io/v1
@@ -877,8 +837,7 @@ verbs:
 - apiGroups:
 ......
 ```
-
-```text
+```yaml
 [root@master1 ~]#kubectl get clusterrole edit -o yaml
 aggregationRule:
 clusterRoleSelectors:
@@ -900,9 +859,7 @@ rules:
 - apiGroups:
 - ""
 resources:
-```
 
-```text
 - pods/attach
 - pods/exec
 - pods/portforward
@@ -910,9 +867,7 @@ resources:
 - secrets
 - services/proxy
 .....
-```
 
-```text
 [root@master1 ~]#kubectl get clusterrole view -o yaml
 aggregationRule:
 clusterRoleSelectors:
@@ -949,8 +904,7 @@ verbs:
 ```
 
 范例：cluster-admin 绑定关系
-
-```text
+```yaml
 #在集群中有一个名为cluster-admin的clusterrolebindings，该资源将组system:masters绑定到一
 个权限列表中(即clusterrole)。
 [root@master1 ~]#kubectl describe clusterrolebindings cluster-admin
@@ -964,9 +918,7 @@ Subjects:
 Kind   Name            Namespace
 ----   ----            ---------
 Group  system:masters
-```
 
-```text
 [root@master1 ~]#kubectl get clusterrolebindings cluster-admin -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -985,15 +937,13 @@ name: system:masters
 ## 3.3 Role 和 RoleBinding 组合实现
 
 ### 3.3.1 创建 Role
-
 ```text
 https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-
 create-role
 ```
 
 **属性解析**
-
-```text
+```bash
 #因为角色由于级别不一样，作用的范围也不同，Role的属性，可以使用 kubectl explain role 的方式
 来查看
 [root@master1 ~]#kubectl explain role.rules
@@ -1008,11 +958,8 @@ resources             <[]string>
 verbs                 <[]string> -required-
 ```
 
-```text
-#结果显示：
-对于role来说，其核心的内容主要是rules的权限规则
-在这么多rules属性中，最重要的是verbs就是权限条目，而且所有的属性都是可以以列表的形式累加存在
-```
+
+#结果显示：对于role来说，其核心的内容主要是rules的权限规则在这么多rules属性中，最重要的是verbs就是权限条目，而且所有的属性都是可以以列表的形式累加存在
 
 ```text
 #命令式命令
@@ -1021,21 +968,16 @@ resource-name=resourcename]
 verb：#允许在资源上使用的操作（verb）列表
 resources.group/subresource：#操作可施加的目标资源类型或子资源列表
 resourcename：#特定的资源对象列表，可选
-```
 
-```text
 #关于api组的信息参照https://kubernetes.io/docs/reference/#api-reference
 ```
 
 范例：查看系统内置 role
-
-```text
+```yaml
 [root@master1 ~]#kubectl get role -A
 NAMESPACE              NAME                                             CREATED
 AT
-```
 
-```text
 ingress-nginx          ingress-nginx                                    2021-04-
 02T09:47:23Z
 ingress-nginx          ingress-nginx-admission                          2021-04-
@@ -1066,9 +1008,7 @@ kube-system            system:controller:token-cleaner                  2021-03-
 04T15:36:34Z
 kubernetes-dashboard   kubernetes-dashboard                             2021-04-
 02T00:09:10Z
-```
 
-```text
 [root@master1 ~]#kubectl get role -n kube-system   kubeadm:kubelet-config -o
 yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1091,15 +1031,12 @@ verbs:
 ```
 
 范例：命令创建 role
-
-```text
+```yaml
 #创建一个对所有pod,service,deployment具有get、list权限的role的资源定义文件格式
 [root@master1 ~]# kubectl create role pods-viewer --verb=get,list,watch --
 resource=pods,services,deployments --dry-run=client -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
-```
 
-```text
 kind: Role
 metadata:
 creationTimestamp: null       #时间信息
@@ -1122,9 +1059,7 @@ verbs:
 - get
 - list
 - watch
-```
 
-```text
 #结果显示：
 #role必备的rules主要有三部分组成：apiGroup、resources、verbs
 apiGroups   #设定包含资源的api组，如果是多个，表示只要属于api组范围中的任意资源都可以操作
@@ -1133,8 +1068,7 @@ verbs       #针对具体资源对象的一些具体操作
 ```
 
 范例:  清单文件创建 role
-
-```text
+```yaml
 #按照上面的role格式，准备一个role资源文件,允许用户操作 Deployment、Pod、RS 的所有权限
 [root@master1 ~]#cat security-role-myrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1145,30 +1079,22 @@ rules:
 - apiGroups: ["", "extensions", "apps"]
 resources: ["pods", "deployments", "replicasets"]
 verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-```
 
-```text
 #属性解析：
 #Pod属于 core 的 API Group，在YAML中用空字符就可以
 #Deployment 属于 apps 的 API Group
 #ReplicaSets属于extensions的 API Group
 #所以 rules 下面的 apiGroups 的内容：["", "extensions", "apps"]
 #verbs是可以对这些资源对象执行的操作，如果是所有动作，也可以使用["*"]来代替。
-```
 
-```text
 #初始化实例对象
 [root@master1 ~]#kubectl apply  -f  security-role-myrole.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl  get role
 NAME     CREATED AT
 myrole   2021-03-31T14:48:43Z
-```
 
-```text
 [root@master1 ~]#kubectl  describe role myrole
 Name:         myrole
 Labels:       <none>
@@ -1197,8 +1123,7 @@ create update patch delete]
 ```
 
 范例：
-
-```text
+```yaml
 [root@master1 ~]#cat security-role-demo.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -1210,39 +1135,27 @@ rules:
 resources: ["pods/exec"]   #exec表示进入Pod终端的权限，必须给create权限才能创建终端进
 入Pod
 verbs: ["*"]
-```
 
-```text
 - apiGroups: [""]
 resources: ["pods"]
 verbs: ["get", "list", "watch"]   #只能查看，由于没有给create和delete权限，所以无法创
 建和删除Pod
-```
 
-```text
 - apiGroups: ["apps/v1"]
 resources: ["deployments"]
 verbs: ["get","list","watch","create","update","patch","delete"]
-```
 
-```text
 - apiGroups: [""]
 resources: ["services"]
 verbs: ["get","list","watch","create","update","patch","delete"]
-```
 
-```text
 [root@master1 ~]#kubectl apply -f security-role-demo.yaml
 role.rbac.authorization.k8s.io/demo-role created
-```
 
-```text
 [root@master1 ~]#kubectl get role demo-role
 NAME        CREATED AT
 demo-role   2021-07-23T08:54:25Z
-```
 
-```text
 [root@master1 ~]#kubectl describe role demo-role
 Name:         demo-role
 Labels:       <none>
@@ -1256,9 +1169,7 @@ update patch delete]
 deployments.apps/v1  []                 []              [get list watch create
 update patch delete]
 pods                 []                 []              [get list watch]
-```
 
-```text
 [root@master1 ~]#kubectl get role demo-role -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -1298,9 +1209,7 @@ verbs:
 resources:
 - deployments
 verbs:
-```
 
-```text
 - get
 - list
 - watch
@@ -1320,9 +1229,7 @@ verbs:
 - update
 - patch
 - delete
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete  -f security-role-demo.yaml
 ```
@@ -1330,7 +1237,6 @@ verbs:
 ### 3.3.2 角色绑定 rolebinding
 
 #### 3.3.2.1  rolebinding 说明
-
 ```text
 https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#role-binding-
 examples说明
@@ -1357,8 +1263,7 @@ RoleBinding 示例
 下面示例是 RoleBinding 中的片段，仅展示其 subjects 的部分。
 
 对于名称为 alice@example.com 的用户：
-
-```text
+```yaml
 subjects:
 - kind: User
 name: "alice@example.com"
@@ -1366,8 +1271,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 对于名称为 frontend-admins 的用户组：
-
-```text
+```yaml
 subjects:
 - kind: Group
 name: "frontend-admins"
@@ -1375,8 +1279,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 对于 kube-system 名字空间中的默认服务账户：
-
-```text
+```yaml
 subjects:
 - kind: ServiceAccount
 name: default
@@ -1384,8 +1287,7 @@ namespace: kube-system
 ```
 
 对于 "qa" 名称空间中的所有服务账户：
-
-```text
+```yaml
 subjects:
 - kind: Group
 name: system:serviceaccounts:qa
@@ -1393,8 +1295,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 对于在任何名字空间中的服务账户：
-
-```text
+```yaml
 subjects:
 - kind: Group
 name: system:serviceaccounts
@@ -1402,8 +1303,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 对于所有已经过身份认证的用户：
-
-```text
+```yaml
 subjects:
 - kind: Group
 name: system:authenticated
@@ -1411,8 +1311,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 对于所有未通过身份认证的用户：
-
-```text
+```yaml
 subjects:
 - kind: Group
 name: system:unauthenticated
@@ -1420,8 +1319,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 对于所有用户：
-
-```text
+```yaml
 subjects:
 - kind: Group
 name: system:authenticated
@@ -1432,8 +1330,7 @@ apiGroup: rbac.authorization.k8s.io
 ```
 
 范例: 查看内置rolebindings
-
-```text
+```bash
 [root@master1 ~]#kubectl get rolebindings -A
 NAMESPACE       NAME                                                ROLE
 AGE
@@ -1472,8 +1369,7 @@ Role/system:controller:token-cleaner                  91d
 #### 3.3.2.2 UA 绑定
 
 **用户绑定属性简介**
-
-```text
+```bash
 #查看rolebinding的属性信息
 #] kubectl explain rolebinding
 apiVersion   <string>
@@ -1481,25 +1377,17 @@ kind <string>
 metadata     <Object>
 roleRef      <Object> -required-
 subjects     <[]Object>
-```
 
-```text
 #结果显示：对于角色绑定来说，主要涉及到两点：subject和对应的role权限列表，其中roleRef是必选
 项。
-```
 
-```text
 #命令式命令：
 kubectl create rolebinding NAME --clusterrole=NAME|--role=NAME [--user=username]
 [--group=groupname] [--namespace=namespace_name]
-```
 
-```text
 #可以绑定到Role，也可以绑定到ClusterRole，后者会将ClusterRole的权限缩减至当前名称空间之内
 #Subject可以是User、Group或者ServiceAccount
-```
 
-```text
 #示例：将用户tom绑定至角色pods-viewer之上,注意：pods-viewer和tom-attachto-pods-viewer都
 要求在default名称空间中
 kubectl create rolebinding tom-attachto-pods-viewer --role=pods-viewer --
@@ -1508,16 +1396,15 @@ user=tom --namespace=default
 ```
 
 范例: 配置文件
-
-```text
-#以pod-sa-admin或者wang的subject来与myrole进行一次模拟绑定查看属性效果
-[root@master1 ~]#kubectl create rolebinding wang-myrole --role=myrole --user=wang
+```yaml
+#以pod-sa-admin或者bowen的subject来与myrole进行一次模拟绑定查看属性效果
+[root@master1 ~]#kubectl create rolebinding bowen-myrole --role=myrole --user=bowen
 -o yaml --dry-run
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
 creationTimestamp: null
-name: wang-myrole
+name: bowen-myrole
 roleRef:
 apiGroup: rbac.authorization.k8s.io
 kind: Role
@@ -1525,21 +1412,17 @@ name: myrole
 subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: User
-name: wang
-```
+name: bowen
 
-```text
 #创建配置文件
-[root@master1 ~]#kubectl create rolebinding wang-myrole --role=myrole --user=wang
+[root@master1 ~]#kubectl create rolebinding bowen-myrole --role=myrole --user=bowen
 -o yaml --dry-run > /data/kubernetes/yaml/security-rolebinding.yaml
-```
 
-```text
 [root@master1 ~]#cat security-rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-name: wang-myrole
+name: bowen-myrole
 roleRef:
 apiGroup: rbac.authorization.k8s.io
 kind: Role
@@ -1547,49 +1430,36 @@ name: myrole
 subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: User
-name: wang
-```
+name: bowen
 
-```text
-#基于wang的token测试访问
+#基于bowen的token测试访问
 [root@master1 ~]#cat /etc/kubernetes/auth/token.csv
-BOOTSTRAP_TOKEN,wang,1001,kubeadm:ops
-```
+BOOTSTRAP_TOKEN,bowen,1001,kubeadm:ops
 
-```text
 BOOTSTRAP_TOKEN,test,1002,dev
-```
 
-```text
 [root@master1 ~]#TOKEN="BOOTSTRAP_TOKEN"
 [root@master1 ~]#curl -k -H "Authorization: Bearer $TOKEN"
-https://kubeapi.wang.org:6443/api/v1/namespaces/default/pods/
+https://kubeapi.bowen.org:6443/api/v1/namespaces/default/pods/
 ```
 
 范例:
-
-```text
+```bash
 #创建rolebinding
 [root@master1 ~]#kubectl create rolebinding myrolebinding --role=myrole --
-user=wang
+user=bowen
 #或者
 [root@master1 ~]#kubectl apply -f security-rolebinding.yaml
-```
 
-```text
 #注意：如果是多个用户，可以多来几个 --user=subject 彼此间使用空格隔开即可
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get rolebindings
 NAME          ROLE          AGE
-wang-myrole   Role/myrole   15s
-```
+bowen-myrole   Role/myrole   15s
 
-```text
-[root@master1 ~]#kubectl describe rolebindings. wang-myrole
-Name:         wang-myrole
+[root@master1 ~]#kubectl describe rolebindings. bowen-myrole
+Name:         bowen-myrole
 Labels:       <none>
 Annotations:  <none>
 Role:
@@ -1598,49 +1468,35 @@ Name:  myrole
 Subjects:
 Kind  Name  Namespace
 ----  ----  ---------
-User  wang
-```
+User  bowen
 
-```text
-#wang 已经加入到 myrolebinding 角色绑定组中,这里的namespace没有写，表示默认的default命名
+#bowen 已经加入到 myrolebinding 角色绑定组中,这里的namespace没有写，表示默认的default命名
 空间
-```
 
-```text
 #查看当前namespace中资源效果
-[root@master1 ~]#kubectl get pod --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl get pod --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
 NAME       READY   STATUS    RESTARTS       AGE
 pod-test   1/1     Running   1 (125m ago)   2d2h
-```
 
-```text
-#注意：我们在创建wang的时候没有指定命名空间，表示默认的default
-```
+#注意：我们在创建bowen的时候没有指定命名空间，表示默认的default
 
-```text
 #查看default命名空间中，非pod、deployment、rs之外的资源
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
 default-token-mbnrx   kubernetes.io/service-account-token   3      2d2h
-```
 
-```text
-[root@master1 ~]#kubectl get secrets --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): secrets is forbidden: User "wang" cannot list
+[root@master1 ~]#kubectl get secrets --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): secrets is forbidden: User "bowen" cannot list
 resource "secrets" in API group "" in the namespace "default"
 #结果显示：在我们role之外的内容我们都没有权限查看
-```
 
-```text
 #查看非当前namespace中的资源
-```
 
-```text
-[root@master1 ~]#kubectl get pod -n kube-system --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+[root@master1 ~]#kubectl get pod -n kube-system --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "kube-system"
 #结果显示：在当前role权限范围内容，其它namespace中的资源，我们生效不了，因为role只是针对某个
 具体的ns
@@ -1651,26 +1507,19 @@ resource "pods" in API group "" in the namespace "kube-system"
 注意：SA可以跨名称空间进行授权，比如:名称空间A的SA帐号可以绑定授权给名称空间B的角色，甚至对所有名称空间授权。
 
 **命令格式**
-
-```text
+```bash
 #查看SA的角色绑定格式
 kubectl create rolebinding NAME --role=NAME [--
 serviceaccount=namespace:serviceaccountname] [--namespace=namespace_name]
 #属性解析：在基于服务账号进行关联的时候，需要关注一下该SA所属的namespace信息。
-```
 
-```text
 #验证权限
-```
 
-```text
 #方法1：在Pod内执行
 kubectl exec -it pod -- sh
 cd /run/secrets/kubernetes.io/serviceaccount
 TOKEN=$(cat token)
-```
 
-```text
 curl --cacert /etc/kubernetes/pki/ca.crt -H "Authorization: Bearer ${TOKEN}"
 https://kubernetes.default/api/v1/pod/namespaces/{namespace}
 curl -k -H "Authorization: Bearer ${ToKEN}" https://kubernetes.
@@ -1679,31 +1528,24 @@ curl -k -H "Authorization: Bearer ${ToKEN}" https://kubernetes.
 <namespace>/api/v1/namespaces/<namespace>/pods/<pod_name>
 curl -k -H "Authorization: Bearer ${ToKEN}" https://kubernetes.
 <namespace>/apis/apps/v1/namespaces/<namespace>/deployments
-```
 
-```text
 #方法2：在集群节点上执行
 kubectl --insecure-skip-tls-verify  --token=${TOKEN} -s
-https://kubeapi.wang.org:6443 get pod
+https://kubeapi.bowen.org:6443 get pod
 kubectl --insecure-skip-tls-verify  --token=${TOKEN} -s
-https://kubeapi.wang.org:6443 get pods -n <namespace>
-```
+https://kubeapi.bowen.org:6443 get pods -n <namespace>
 
-```text
 #方法3：在集群节点上执行
 curl -s -H "Authorization: Bearer $TOKEN"  --cacert /etc/kubernetes/pki/ca.crt
 https://API_SERVER:6443/api/v1/namespaces/default/pods/
 ```
 
 范例:
-
 ```text
 #自建的sa是admin而且是属于default空间，先将admin和myrole进行绑定，查看一下效果
 kubectl create rolebinding myrolebinding1 --role=myrole --
 serviceaccount=default:admin
-```
 
-```text
 #检查效果
 ]# kubectl describe rolebindings myrolebinding1
 Name:         myrolebinding1
@@ -1712,9 +1554,7 @@ Subjects:
 Kind            Name   Namespace
 ----            ----   ---------
 ServiceAccount  admin  default
-```
 
-```text
 #结果显示:admin加入到了myrolebinding1的绑定组中，而且显示了特定的命名空间
 ```
 
@@ -1723,8 +1563,7 @@ ServiceAccount  admin  default
 范例: 实现 Jenkins的权限
 
 运行Kubernetes上的Jenkins，为能够动态创建jenkins-slave相关的Pod，需要对运行该Pod对应的ServiceAccount进行认证和授权。
-
-```text
+```yaml
 #创建ROle
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -1747,9 +1586,7 @@ verbs: ["watch"]
 - apiGroups: [""]
 resources: ["secrets"]
 verbs: ["get"]
-```
 
-```text
 ---
 #创建 SA
 apiVersion: v1
@@ -1757,15 +1594,11 @@ kind: ServiceAccount
 metadata:
 name: jenkins-master
 namespace: jenkins
-```
 
-```text
 ---
 #角色绑定
 apiVersion: rbac.authorization.k8s.io/v1
-```
 
-```text
 kind: RoleBinding
 metadata:
 name: jenkins-master
@@ -1785,15 +1618,13 @@ namespace: jenkins
 cluster级别的实践主要涉及到clusterRole和ClusterRoleBinding之间的操作，即可以操作集群内所有namespace空间的资源。
 
 ### 3.4.1 创建 clusterrole
-
 ```text
 https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#kubectl-
 create-clusterrole
 ```
 
 说明
-
-```text
+```yaml
 #] kubectl explain clusterrole
 aggregationRule      <Object>   #可以实现role的嵌套关系
 apiVersion <string>
@@ -1805,14 +1636,10 @@ nonResourceURLs         <[]string>
 resourceNames           <[]string>
 resources               <[]string>
 verbs                   <[]string> -required-
-```
 
-```text
 #结果显示：clusterrole相对于role的属性多了一个集中控制器的属性aggregationRule，而这是一个可
 选的属性
-```
 
-```text
 #查看配置格式
 ]# kubectl create clusterrole myclusterrole --verb=get,list --resource=pods -o
 yaml --dry-run=client
@@ -1829,15 +1656,12 @@ resources:
 verbs:
 - get
 - list
-```
 
-```text
 #结果显示：单从模板的资源配置样式来说，其配置信息与role的配置信息几乎一样。
 ```
 
 范例: 查看内置 Clusterrole
-
-```text
+```bash
 [root@master1 ~]#kubectl get clusterrole
 NAME                                                                   CREATED
 AT
@@ -1891,9 +1715,7 @@ system:controller:certificate-controller                               2023-03-
 07T04:30:21Z
 system:controller:clusterrole-aggregation-controller                   2023-03-
 07T04:30:21Z
-```
 
-```text
 system:controller:cronjob-controller                                   2023-03-
 07T04:30:21Z
 system:controller:daemon-set-controller                                2023-03-
@@ -1952,9 +1774,7 @@ system:controller:ttl-controller                                       2023-03-
 07T04:30:21Z
 system:coredns                                                         2023-03-
 07T04:30:23Z
-```
 
-```text
 system:discovery                                                       2023-03-
 07T04:30:21Z
 system:heapster                                                        2023-03-
@@ -1994,32 +1814,25 @@ view                                                                   2023-03-
 ```
 
 ### 3.4.2 角色绑定 clusterrolebinding
-
-```text
+```yaml
 #命令格式
 kubectl create clusterrolebinding NAME --clusterrole=NAME [--user=username] [--
 group=groupname]
 [--serviceaccount=namespace:serviceaccountname] [--dry-run=server|client|none]
 [options]
-```
 
-```text
 #属性解析:对于clusterrolebinding来说，仅仅允许集群角色进行和其进行绑定，对于普通的role来说就
 无效了
-```
 
-```text
-#将wang用户和myclasterrole进行角色绑定，查看资源配置效果
+#将bowen用户和myclasterrole进行角色绑定，查看资源配置效果
 ]# kubectl create clusterrolebinding myclusterrolebinding --
-clusterrole=myclusterrole --user=wang --dry-run=client -o yaml
+clusterrole=myclusterrole --user=bowen --dry-run=client -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
 creationTimestamp: null
 name: myclusterrolebinding
-```
 
-```text
 roleRef:
 apiGroup: rbac.authorization.k8s.io
 kind: ClusterRole                         用户绑定类型
@@ -2027,17 +1840,14 @@ name: myclasterrole                       用户绑定名称
 subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: User                                用户类型
-name: wang                                用户名称
-```
+name: bowen                                用户名称
 
-```text
 #属性解析：这里的属性配置与我们之前的role和rolebinding的方法几乎一样,区别就是kind和--
 clusterrole的不同
 ```
 
 范例: 查看内置rolebindings
-
-```text
+```bash
 [root@master1 ~]#kubectl get clusterrolebinding
 NAME                                                   ROLE
 AGE
@@ -2079,9 +1889,7 @@ ClusterRole/system:controller:attachdetach-controller
 system:controller:certificate-controller
 ClusterRole/system:controller:certificate-controller
 91d
-```
 
-```text
 system:controller:clusterrole-aggregation-controller
 ClusterRole/system:controller:clusterrole-aggregation-controller
 91d
@@ -2139,9 +1947,7 @@ ClusterRole/system:controller:pv-protection-controller
 system:controller:pvc-protection-controller
 ClusterRole/system:controller:pvc-protection-controller
 91d
-```
 
-```text
 system:controller:replicaset-controller
 ClusterRole/system:controller:replicaset-controller
 91d
@@ -2205,8 +2011,7 @@ scheduler                                                91d
 ### 3.4.3 综合案例
 
 范例
-
-```text
+```yaml
 #创建资源定义文件
 [root@master1 ~]#cat security-myclusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2217,21 +2022,15 @@ rules:
 - apiGroups: [""]
 resources: ["pods"]
 verbs: ["get", "list", "watch"]
-```
 
-```text
 #初始化资源对象
 [root@master1 ~]#kubectl apply  -f  security-myclusterrole.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get clusterrole | egrep 'NAME|my'
 NAME                                                 CREATED AT
 myclasterrole                                        2021-10-06T23:28:08Z
-```
 
-```text
 [root@master1 ~]#kubectl describe clusterrole myclusterrole
 Name:         myclusterrole
 Labels:       <none>
@@ -2240,20 +2039,14 @@ PolicyRule:
 Resources  Non-Resource URLs  Resource Names  Verbs
 ---------  -----------------  --------------  -----
 pods       []                 []              [get list watch]
-```
 
-```text
 #结果显示：在myclusterrole仅仅有pod资源的三种权限
-```
 
-```text
 #cluserrolebinding绑定
 #方法1：命令行方式
 [root@master1 ~]#kubectl create clusterrolebinding myclusterrolebinding --
-clusterrole=myclusterrole --user=wang
-```
+clusterrole=myclusterrole --user=bowen
 
-```text
 #方法2：配置文件方式
 [root@master1 ~]#cat security-myclusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2267,25 +2060,17 @@ name: myclusterrole
 subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: User
-name: wang
-```
+name: bowen
 
-```text
 #应用清单文件
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  security-myclusterrolebinding.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get clusterrolebinding | egrep 'NAME|my'
 NAME                                                   AGE
 myclusterrolebinding                                   23s
-```
 
-```text
 [root@master1 ~]#kubectl describe clusterrolebinding myclusterrolebinding
 Name:         myclusterrolebinding
 Labels:       <none>
@@ -2296,28 +2081,24 @@ Name:  myclusterrole
 Subjects:
 Kind  Name  Namespace
 ----  ----  ---------
-User  wang
-#结果显示：将wang的账号赋予了操作集群角色的权限
-```
+User  bowen
+#结果显示：将bowen的账号赋予了操作集群角色的权限
 
-```text
 #切换账号查看效果
-[root@master1 ~]#kubectl get pod --context=wang@mycluster  --
-kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl get pod --context=bowen@mycluster  --
+kubeconfig=/tmp/bowen.conf
 NAME       READY   STATUS    RESTARTS       AGE
 pod-test   1/1     Running   1 (139m ago)   2d2h
-```
 
-```text
-[root@master1 ~]#kubectl get pod --context=wang@mycluster -n kube-system  --
-kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl get pod --context=bowen@mycluster -n kube-system  --
+kubeconfig=/tmp/bowen.conf
 NAME                                         READY   STATUS    RESTARTS
 AGE
 coredns-7d89d9b6b8-kfdvj                     1/1     Running   1 (139m ago)
 2d2h
 coredns-7d89d9b6b8-mbhtn                     1/1     Running   1 (139m ago)
 2d2h
-etcd-master1.wang.org                      1/1     Running   14 (139m ago)
+etcd-master1.bowen.org                      1/1     Running   14 (139m ago)
 2d2h
 ......
 #结果显示：对于clusterrolebinding来说，绑定后的user account不但可以看到当前namespace中的
@@ -2325,33 +2106,26 @@ etcd-master1.wang.org                      1/1     Running   14 (139m ago)
 ```
 
 范例：生成SA和TOKEN，并授权
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat securiy-sa-token-cluster-admin.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-name: wang
+name: bowen
 namespace: kube-system
-```
 
-```text
 ---
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
-name: wang-secret
+name: bowen-secret
 namespace: kube-system
-```
 
-```text
 annotations:
-kubernetes.io/service-account.name: "wang"
-```
+kubernetes.io/service-account.name: "bowen"
 
-```text
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -2363,31 +2137,23 @@ kind: ClusterRole
 name: cluster-admin
 subjects:
 - kind: ServiceAccount
-name: wang
+name: bowen
 namespace: kube-system
-```
 
-```text
 #生成资源
 [root@master1 ~]#kubectl apply -f securiy-sa-token-cluster-admin.yaml
-```
 
-```text
 #查看资源
-[root@master1 ~]#kubectl get sa wang -n kube-system
+[root@master1 ~]#kubectl get sa bowen -n kube-system
 NAME   SECRETS   AGE
-wang   0         29m
-```
+bowen   0         29m
 
-```text
-[root@master1 ~]#kubectl get secrets wang-secret -n kube-system
+[root@master1 ~]#kubectl get secrets bowen-secret -n kube-system
 NAME          TYPE                                  DATA   AGE
-wang-secret   kubernetes.io/service-account-token   3      4m41s
-```
+bowen-secret   kubernetes.io/service-account-token   3      4m41s
 
-```text
 #查看SA对应的TOKEN
-[root@master1 ~]#kubectl get secrets -n kube-system wang-secret -o yaml
+[root@master1 ~]#kubectl get secrets -n kube-system bowen-secret -o yaml
 apiVersion: v1
 data:
 ca.crt:
@@ -2411,9 +2177,7 @@ WnRycW5uKzZaVHZ5amR6THYveXRGcnc2RHNXbWt4cjkxcHdYVVVsU2FzClhGbnovMkJLa0JHS1kvRzRw
 bG5xTEFRcFhwT28yYmdIb0FvR2oydzZQcGd6aWR6S1JGTkpUK0xwbUVVUTQ4SksKQ1pVPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
 namespace: a3ViZS1zeXN0ZW0=
-```
 
-```text
 token:
 ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkluVXdYMlZoVUhSdU9GTnFSRmRFVjIxTFYzSmhWMFZ1
 WVRSQ0xWVkpjMGRYU2tSUVMweFFTbkpFTW5NaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxj
@@ -2435,19 +2199,17 @@ metadata:
 annotations:
 kubectl.kubernetes.io/last-applied-configuration: |
 {"apiVersion":"v1","kind":"Secret","metadata":{"annotations":
-{"kubernetes.io/service-account.name":"wang"},"name":"wang-
+{"kubernetes.io/service-account.name":"bowen"},"name":"bowen-
 secret","namespace":"kube-system"},"type":"kubernetes.io/service-account-token"}
-kubernetes.io/service-account.name: wang
+kubernetes.io/service-account.name: bowen
 kubernetes.io/service-account.uid: 90d0d2e5-9636-475f-af47-441da379c247
 creationTimestamp: "2023-06-03T14:29:23Z"
-name: wang-secret
+name: bowen-secret
 namespace: kube-system
 resourceVersion: "1845479"
 uid: b44c38ad-4ff0-4944-b34a-cd5ab3525ef3
 type: kubernetes.io/service-account-token
-```
 
-```text
 #对上面的TOKEN进行base64解码后生成TOKEN变量
 [root@master1 ~]#TOKEN=$(echo
 ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkluVXdYMlZoVUhSdU9GTnFSRmRFVjIxTFYzSmhWMFZ1
@@ -2466,19 +2228,15 @@ cjYxeVctNHV6ODRWaFhEZzRXYzNSSUpJN1dDMm5tLWxsSk9kaXM0N0lQQjhSTlJ3ZE1LMTdsZm9OQXVz
 Q0FQcllCcWVlbkNWdmg0blFGbzlIb3JRdk1Fc1ZuejRhTk5wc3NoRFFOTnZUV1RWeDhzM1hvaVNxbVN0
 MjRuMXhsdEF3YUNjeDN2cTFtYVV5dDJWUWgxMXE3dDYwTEV4TUc3ekNHcXJoRXg5X3M3dw==|base64 -
 d)
-```
 
-```text
 [root@master1 ~]#curl -s  --cacert /etc/kubernetes/pki/ca.crt -H "Authorization:
-Bearer ${TOKEN}" https://kubeapi.wang.org:6443|head
+Bearer ${TOKEN}" https://kubeapi.bowen.org:6443|head
 {
 "paths": [
 "/.well-known/openid-configuration",
 "/api",
 "/api/v1",
-```
 
-```text
 "/apis",
 "/apis/",
 "/apis/admissionregistration.k8s.io",
@@ -2489,8 +2247,7 @@ Bearer ${TOKEN}" https://kubeapi.wang.org:6443|head
 案例: 实现 Prometheus 的权限
 
 将Prometheus部署运行于Kubernetes之上并监控集群时，需要使用专用的ServiceAccount运行该Pod并认证和授权到API Server。
-
-```text
+```yaml
 #ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -2512,23 +2269,17 @@ resources:
 verbs: ["get", "list", "watch"]
 - nonResourceURLs: ["/metrics"]
 verbs: ["get"]
-```
 
-```text
 #创建 SA
 ---
 apiVersion: v1 kind: ServiceAccount
 metadata:
 name: prometheus
 namespace: prom
-```
 
-```text
 ---
 #ClusterRoleBinding
-```
 
-```text
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
@@ -2550,18 +2301,13 @@ namespace: prom
 即在混合级别实践的场景中，只需要将用户关联同一个clusterrole，那么这个用户只能在指定的namespace空间中进行相应的操作。
 
 **命令格式**
-
-```text
+```bash
 #查看混合实践格式
 kubectl create rolebinding NAME --clusterrole=NAME|--role=NAME [--user=username]
 [--namespace=namespace]
-```
 
-```text
 #属性解析：对于rolebinding来说，可以基于clusterrole和role两种角色进行绑定操作。
-```
 
-```text
 #示例:引用ClusterRole
 kubectl create rolebinding jerry-attachto-cluster-admin --clusterrole=cluster-
 admin --user=jerry --namespace=test
@@ -2573,37 +2319,28 @@ admin --user=jerry --namespace=test
 #### 3.5.2.1 案例1
 
 范例:
-
-```text
+```yaml
 #为了避免之前所做的rolebinding和clusterrolebinding对混合实践的影响，需要将之前所做的操作全
 部清空，对subject账号和clusterrole、role无需变动
 #清理环境
 [root@master1 ~]#kubectl  delete  clusterrolebindings myclusterrolebinding
-[root@master1 ~]#kubectl  delete  rolebindings  wang-myrole
+[root@master1 ~]#kubectl  delete  rolebindings  bowen-myrole
 [root@master1 ~]#kubectl  delete  roles myrole
-```
 
-```text
 #当前subject和clusterrole现状
 [root@master1 ~]#kubectl get clusterrole | egrep 'NAME|my'
 NAME                                            CREATED AT
 myclusterrole                                   2021-03-31T15:32:43Z
-```
 
-```text
 [root@master1 ~]# kubectl config get-contexts
 CURRENT   NAME                          CLUSTER      AUTHINFO
 NAMESPACE
 *         kubernetes-admin@kubernetes   kubernetes   kubernetes-admin
-```
 
-```text
 #创建绑定角色
 [root@master1 ~]#kubectl create rolebinding mixrole --clusterrole=myclusterrole -
--user=wang  --dry-run=client -o yaml > security-mixbinding.yaml
-```
+-user=bowen  --dry-run=client -o yaml > security-mixbinding.yaml
 
-```text
 #定制该资源定义文件
 [root@master1 ~]#cat security-mixbinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2612,31 +2349,23 @@ metadata:
 name: mixrole
 roleRef:
 apiGroup: rbac.authorization.k8s.io
-```
 
-```text
 kind: ClusterRole
 name: myclusterrole
 subjects:
 - apiGroup: rbac.authorization.k8s.io
 kind: User
-name: wang
+name: bowen
 #属性解析：将自动生成的配置文件中的时间戳删除，然后给其设定了一个namespace的权限范围属性
-```
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply  -f  security-mixbinding.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get rolebindings
 NAME      ROLE                        AGE
 mixrole   ClusterRole/myclusterrole   60s
-```
 
-```text
 [root@master1 ~]#kubectl describe rolebindings mixrole
 Name:         mixrole
 Labels:       <none>
@@ -2647,51 +2376,38 @@ Name:  myclusterrole
 Subjects:
 Kind  Name  Namespace
 ----  ----  ---------
-User  wang
-```
+User  bowen
 
-```text
-#结果显示：已经将wang采用rolebinding的方式赋予其clusterrole的角色权限
-```
+#结果显示：已经将bowen采用rolebinding的方式赋予其clusterrole的角色权限
 
-```text
 #检查效果
-[root@master1 ~]#kubectl get pod --context=wang@mycluster  --
-kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl get pod --context=bowen@mycluster  --
+kubeconfig=/tmp/bowen.conf
 NAME       READY   STATUS    RESTARTS       AGE
 pod-test   1/1     Running   1 (157m ago)   2d2h
-```
 
-```text
-[root@master1 ~]#kubectl get pod --context=wang@mycluster -n kube-system --
-kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+[root@master1 ~]#kubectl get pod --context=bowen@mycluster -n kube-system --
+kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "kube-system"
 #结果显示：对于rolebinding的clusterrole来说，我们只能访问指定的default空间中的资源。
-```
 
-```text
 [root@master1 ~]#kubectl delete rolebindings mixrole
 ```
 
 #### 3.5.2.2 案例2
 
 对于自定义的myclusterrole来说，它对于pod只有查看的权限，没有删除的权限。
-
-```text
+```yaml
 #查看效果
-[root@master1 ~]#kubectl delete pod pod-test --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): pods "pod-test" is forbidden: User "wang" cannot
+[root@master1 ~]#kubectl delete pod pod-test --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): pods "pod-test" is forbidden: User "bowen" cannot
 delete resource "pods" in API group "" in the namespace "default"
 #结果显示：我们无法对dafault命名空间的pod资源做权限之外的事情。
-```
 
-```text
 #官方给default空间提供了很多权限，admin的权限就是极大的
-```
 
-```text
 [root@master1 ~]# kubectl get clusterrole admin -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -2715,14 +2431,11 @@ verbs:
 ```
 
 范例:
-
-```text
+```bash
 #定制混合绑定
 [root@master1 ~]# kubectl create rolebinding default-ns-admin  --
-clusterrole=admin --user=wang
-```
+clusterrole=admin --user=bowen
 
-```text
 #查看效果
 [root@master1 ~]#kubectl describe rolebindings default-ns-admin
 Name:         default-ns-admin
@@ -2734,52 +2447,40 @@ Name:  admin
 Subjects:
 Kind  Name  Namespace
 ----  ----  ---------
-User  wang
-```
+User  bowen
 
-```text
 #资源操作
-[root@master1 ~]#kubectl get pod --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
+[root@master1 ~]#kubectl get pod --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
 NAME       READY   STATUS    RESTARTS       AGE
 pod-test   1/1     Running   1 (171m ago)   2d3h
-```
 
-```text
 #删除default的pod成功
-[root@master1 ~]#kubectl delete pod pod-test --context=wang@mycluster --
-kubeconfig=/tmp/wang.conf
-```
+[root@master1 ~]#kubectl delete pod pod-test --context=bowen@mycluster --
+kubeconfig=/tmp/bowen.conf
 
-```text
-[root@master1 ~]# kubectl get pod --context=wang@mycluster -n kube-system --
-kubeconfig=/tmp/wang.conf
-Error from server (Forbidden): pods is forbidden: User "wang" cannot list
+[root@master1 ~]# kubectl get pod --context=bowen@mycluster -n kube-system --
+kubeconfig=/tmp/bowen.conf
+Error from server (Forbidden): pods is forbidden: User "bowen" cannot list
 resource "pods" in API group "" in the namespace "kube-system"
 #结果显示：只能管理当前命名空间的资源，其他命名空间的资源是管理不了的。
 ```
 
 #### 3.5.2.3 案例3
-
-```text
+```bash
 [root@master1 ~]#kubectl create ns test
-```
 
-```text
-#授予wang用户在名称空间test的集群级的管理员权限
-[root@master1 ~]#kubectl create rolebinding wang-cluster-admin --
-clusterrole=cluster-admin --user=wang -n test
-```
+#授予bowen用户在名称空间test的集群级的管理员权限
+[root@master1 ~]#kubectl create rolebinding bowen-cluster-admin --
+clusterrole=cluster-admin --user=bowen -n test
 
-```text
-#授予wang用户在名称空间test的名称空间级的管理员权限
-[root@master1 ~]#kubectl create rolebinding wang-admin --clusterrole=admin --
-user=wang -n test
+#授予bowen用户在名称空间test的名称空间级的管理员权限
+[root@master1 ~]#kubectl create rolebinding bowen-admin --clusterrole=admin --
+user=bowen -n test
 ```
 
 #### 3.5.2.4 案例4： 实现多个名称空间的管理员
-
-```text
+```yaml
 [root@master1 ~]#cat securiy-admin-ns.yaml
 apiVersion: v1
 kind: Namespace
@@ -2790,7 +2491,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
 name: tom
-#namespace: wangns  #SA帐号所在名空空间和它所管理的名称空间无关
+#namespace: bowenns  #SA帐号所在名空空间和它所管理的名称空间无关
 ---
 apiVersion: v1
 kind: Secret
@@ -2813,9 +2514,7 @@ subjects:
 - kind: ServiceAccount
 name: tom
 namespace: default
-```
 
-```text
 ---
 apiVersion: v1
 kind: Namespace
@@ -2824,9 +2523,7 @@ name: test-ns
 ---
 apiVersion: v1
 kind: ServiceAccount
-```
 
-```text
 metadata:
 name: jerry
 #namespace: default
@@ -2852,9 +2549,7 @@ subjects:
 - kind: ServiceAccount
 name: jerry
 namespace: default
-```
 
-```text
 ---
 apiVersion: v1
 kind: Namespace
@@ -2887,71 +2582,52 @@ name: cluster-admin
 subjects:
 - kind: ServiceAccount
 name: jack
-```
 
-```text
 namespace: default
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl apply -f  securiy-admin-ns.yaml
-```
 
-```text
 [root@master1 ~]#kubectl  get ns
 NAME                   STATUS   AGE
 default                Active   17d
 prod-ns                Active   23s
 dev-ns                 Active   23s
 test-ns                Active   23s
-```
 
-```text
 [root@master1 ~]#kubectl  get sa
 NAME      SECRETS   AGE
 default   0         17d
 jack      0         27s
 jerry     0         27s
 tom       0         27s
-```
 
-```text
 [root@master1 ~]#kubectl  get secrets
 NAME           TYPE                                  DATA   AGE
 jack-secret    kubernetes.io/service-account-token   3      36s
 jerry-secret   kubernetes.io/service-account-token   3      36s
-tls-wang       kubernetes.io/tls                     2      2d3h
+tls-bowen       kubernetes.io/tls                     2      2d3h
 tom-secret     kubernetes.io/service-account-token   3      36s
-```
 
-```text
 [root@master1 ~]#kubectl  get  rolebindings.rbac.authorization.k8s.io
 NAME                ROLE          AGE
 admin-rolebinding   Role/myrole   155m
-```
 
-```text
 [root@master1 ~]#kubectl  get  rolebindings.rbac.authorization.k8s.io  -n prod-
 ns
 NAME                         ROLE                        AGE
 prod-ns-tom-clusterrolebinding   ClusterRole/cluster-admin   55s
-```
 
-```text
 [root@master1 security]#kubectl  get  rolebindings.rbac.authorization.k8s.io  -n
 test-ns
 NAME                           ROLE                        AGE
 test-ns-jerry-clusterrolebinding   ClusterRole/cluster-admin   59s
-```
 
-```text
 [root@master1 security]#kubectl  get  rolebindings.rbac.authorization.k8s.io  -n
 m61
 NAME                          ROLE                        AGE
 m61-jack-clusterrolebinding   ClusterRole/cluster-admin   60s
-```
 
-```text
 #获取Token
 [root@master1 ~]#kubectl  describe  secrets tom-secret
 Name:         tom-secret
@@ -2960,18 +2636,12 @@ Labels:       kubernetes.io/legacy-token-last-used=2024-10-10
 Annotations:  kubernetes.io/service-account.name: tom
 kubernetes.io/service-account.uid: 97ad4292-26cc-419f-92c7-
 f44675f09981
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
-```
 
-```text
 ca.crt:     1107 bytes
 namespace:  7 bytes
 token:
@@ -2988,78 +2658,59 @@ D1fISWGou58dn91WChKCYH_xXG7CcT-
 HqE23bHds1AK2wi9hkONVgIu3aWTXc1wgU4Sk7Bgeye016ZYfyow69_QIgiKHqjNouz3TcwCqk-
 u3tiZ1zDALrR1CkI4K7Jj8JbuBMZbSbElZMFPevkmDFMD-
 IWcxaM43nJWZ6EPs11SzQStKrJDXbn_HYtLizg
-```
 
-```text
 [root@master1 ~]#kubectl  describe  secrets jerry-secret
 [root@master1 ~]#kubectl  describe  secrets jack-secret
-```
 
-```text
 #集群外主机,用token测试访问验证权限
 [root@ubuntu2204 ~]#TOKEN_TOM=eyJhbGciOiJSUzI1NiIsImtpZCI6Imp
 [root@ubuntu2204 ~]#TOKEN_JERRY=eyJhbGciOiJSUzI1NiIsImtpZCI6I
 [root@ubuntu2204 ~]#TOKEN_JACK=eyJhbGciOiJSUzI1NiIsImtpZCI6Im
-```
 
-```text
 #无权限访问default名称空间
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_TOM}  get pod   --insecure-skip-tls-verify
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:tom" cannot list resource "pods" in API group ""
 in the namespace "default"
-```
 
-```text
 #可以访问授权的名称空间
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_TOM}  create deploy myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1  -n prod-ns --insecure-skip-tls-
+beijing.aliyuncs.com/bowen/pod-test:v0.1  -n prod-ns --insecure-skip-tls-
 verify
 deployment.apps/myapp created
-```
 
-```text
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_TOM}  get pod  -n prod-ns --insecure-skip-tls-verify
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-64b4b8487f-5zzb8   1/1     Running   0          8s
 ```
-
-```text
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+```bash
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_JERRY}  get pod  -n prod-ns --insecure-skip-tls-verify
 Error from server (Forbidden): pods is forbidden: User
 "system:serviceaccount:default:jerry" cannot list resource "pods" in API group
 "" in the namespace "prod-ns"
-```
 
-```text
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_JERRY}  create deploy myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1  -n test-ns --insecure-skip-tls-
+beijing.aliyuncs.com/bowen/pod-test:v0.1  -n test-ns --insecure-skip-tls-
 verify
 deployment.apps/myapp created
-```
 
-```text
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_JERRY}  get pod  -n test-ns --insecure-skip-tls-verify
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-64b4b8487f-szscl   1/1     Running   0          4s
-```
 
-```text
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_JACK}  create deploy myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1  -n dev-ns --insecure-skip-tls-
+beijing.aliyuncs.com/bowen/pod-test:v0.1  -n dev-ns --insecure-skip-tls-
 verify
 deployment.apps/myapp created
-```
 
-```text
-[root@ubuntu2204 ~]#kubectl -s https://kubeapi.wang.org:6443 --
+[root@ubuntu2204 ~]#kubectl -s https://kubeapi.bowen.org:6443 --
 token=${TOKEN_JACK}  get pod  -n dev-ns --insecure-skip-tls-verify
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-64b4b8487f-r96f5   1/1     Running   0          9s
@@ -3074,15 +2725,12 @@ myapp-64b4b8487f-r96f5   1/1     Running   0          9s
 Kubernetes 官方提供了基于Web的界面的Dashboard功能。
 
 dashboard组件部署用到了很多和服务认证相关的内容，而且只有先配置serviceaccount才能继续。
-
 ```text
 #参考资料:
 https://kubernetes.io/docs/concepts/cluster-administration/addons/
 #kubernetes-dashboard
 https://github.com/kubernetes/dashboard
-```
 
-```text
 #注意：dashboard版本没有通用的，只能找到适合当前kubernetes版本的软件。
 #查看版本支持
 https://github.com/kubernetes/dashboard/releases
@@ -3094,23 +2742,19 @@ https://github.com/kubernetes/dashboard/releases
 
 **安装说明**
 
-```text
-https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation
-```
+
+- <https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation>
 
 ```text
 #注意:v2.7.0以后版本只支持Helm安装
 ```
 
 范例: 通过manifest文件安装
-
-```text
+```yaml
 #获取官方的yaml文件,下载并修改配置文件
 [root@master1 ~]#VERSION=v2.7.0
 [root@master1 ~]#VERSION=v2.0.0
-```
 
-```text
 #通过代理下载
 [root@ubuntu2204 ~]#wget
 https://mirror.ghproxy.com/https://raw.githubusercontent.com/kubernetes/dashboar
@@ -3118,9 +2762,7 @@ d/${VERSION}/aio/deploy/recommended.yaml
 [root@master1 ~]#wget
 https://raw.githubusercontent.com/kubernetes/dashboard/${VERSION}/aio/deploy/rec
 ommended.yaml
-```
 
-```text
 [root@master1 ~]#vim recommended.yaml
 .......
 kind: Service
@@ -3139,53 +2781,38 @@ targetPort: 8443
 nodePort: 30000       #新增此行，指定该端口作为外界访问入口的端口,端口必须在30000-
 32767之间
 ..........
-```
 
-```text
 #注意：修改主要是镜像源的修改和启动端口的配置，采用NodePort 可以在所有的节点上都开启一个端口用
 于dashboard访问
 #依赖两个镜像：kubernetesui/dashboard:v2.3.1 和 kubernetesui/metrics-scraper:v1.0.6
-```
 
-```text
 #应用配置,会自动下载两个镜像dashboard和metrics-scraper到某个node节点
 [root@master1 ~]#kubectl apply -f recommended.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get svc -n kubernetes-dashboard   kubernetes-dashboard
 NAME                   TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)
 AGE
 kubernetes-dashboard   NodePort   10.101.2.160   <none>        443:30000/TCP
 2m34s
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n kubernetes-dashboard
-```
 
-```text
 NAME                                        READY   STATUS    RESTARTS   AGE
 dashboard-metrics-scraper-7bc864c59-k4q6r   1/1     Running   0          3m5s
 kubernetes-dashboard-6c7ccbcf87-bjxvh       1/1     Running   0          3m5s
 ```
 
 #### 3.6.1.3 部署 metric-server 方便在dashboard中观察性能指标,可选
-
-```text
+```yaml
 #没有部署metrics-server时,会提示下面错误,此步可选
 [root@master1 ~]#kubectl top node
 error: Metrics API not available
-```
 
-```text
 #建议安装metrics-server,可以通过dashboard查看更多的信息,此步可选
 #官方链接:https://github.com/kubernetes-sigs/metrics-server
 [root@master1 ~]#curl -LO https://github.com/kubernetes-sigs/metrics-
 server/releases/latest/download/components.yaml
-```
 
-```text
 #默认文件需要修改才能工作,因为默认需要内部证书验证和镜像地址k8s.gcr.io所以修改,此步可选
 [root@master1 ~]#vim components.yaml
 ---
@@ -3222,19 +2849,13 @@ server:v0.6.1 #添加此行
 imagePullPolicy: IfNotPresent
 livenessProbe:
 ……
-```
 
-```text
 #应用此文件,此步可选
 [root@master1 ~]#kubectl apply -f components.yaml
-```
 
-```text
 #添加一个资源群组,此步可选
 [root@master1 ~]#kubectl api-versions
-```
 
-```text
 admissionregistration.k8s.io/v1
 apiextensions.k8s.io/v1
 apiregistration.k8s.io/v1
@@ -3260,35 +2881,27 @@ scheduling.k8s.io/v1
 storage.k8s.io/v1
 storage.k8s.io/v1beta1
 v1
-```
 
-```text
 #一旦metrics-server部署完成,就可通过下面命令查看CPU/memory相关性能指标,此步可选
 [root@master1 ~]#kubectl top node
 NAME               CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
-master1.wang.org   145m         7%     1113Mi          60%
-master2.wang.org   128m         6%     1005Mi          54%
-master3.wang.org   113m         5%     1018Mi          54%
-node1.wang.org     61m          3%     904Mi           48%
-node2.wang.org     62m          3%     855Mi           46%
-node3.wang.org     81m          4%     890Mi           48%
-```
+master1.bowen.org   145m         7%     1113Mi          60%
+master2.bowen.org   128m         6%     1005Mi          54%
+master3.bowen.org   113m         5%     1018Mi          54%
+node1.bowen.org     61m          3%     904Mi           48%
+node2.bowen.org     62m          3%     855Mi           46%
+node3.bowen.org     81m          4%     890Mi           48%
 
-```text
 [root@master1 ~]#kubectl top pod,此步可选
 NAME                       CPU(cores)   MEMORY(bytes)
 demoapp-78b49597cf-j2bk2   1m           22Mi
 demoapp-78b49597cf-jxtj9   1m           23Mi
 demoapp-78b49597cf-lt5qn   1m           23Mi
-```
 
-```text
 [root@master1 ~]#kubectl top pod demoapp-78b49597cf-j2bk2,此步可选
 NAME                       CPU(cores)   MEMORY(bytes)
 demoapp-78b49597cf-j2bk2   1m           22Mi
-```
 
-```text
 #查看SVC的地址：https://10.0.0.12/
 [root@master1 ~]#kubectl get svc -n kubernetes-dashboard
 NAME                        TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)
@@ -3301,7 +2914,7 @@ kubernetes-dashboard        LoadBalancer   10.98.42.43    10.0.0.12
 
 浏览器访问任意master或worker节点的主机。
 
-访问链接https://node1.wang.org:30000/ ，可以看到下面提示
+访问链接https://node1.bowen.org:30000/ ，可以看到下面提示
 
 访问链接http://<集群任意节点>:30000/ ，可以看到下面提示
 
@@ -3316,8 +2929,7 @@ kubernetes-dashboard        LoadBalancer   10.98.42.43    10.0.0.12
 ![原 PDF 第 134 页插图](assets/Kubernetes安全机制_Password_Removed1/img-4fbeb97e63cc5316.png)
 
 #### 3.6.1.4 部署 ingress
-
-```text
+```html
 #定制ingress资源配置文件
 [root@master1 ~]#cat ingress-https-dashboard.yaml
 apiVersion: networking.k8s.io/v1
@@ -3332,12 +2944,10 @@ ingress.kubernetes.io/ssl-passthrough: "true"              #进行TLS透传，�
 nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"      #指定对后端启用https
 协议的访问
 nginx.ingress.kubernetes.io/rewrite-target: /$2
-```
 
-```text
 spec:
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - path: /dashboard(/|$)(.*)
@@ -3347,7 +2957,7 @@ service:
 name: kubernetes-dashboard
 port:
 number: 443
-#- host: dashboard.wang.org  #下面相关配置需要配合
+#- host: dashboard.bowen.org  #下面相关配置需要配合
 nginx.ingress.kubernetes.io/rewrite-target: /$1 使用
 #http:
 #  paths:
@@ -3358,21 +2968,15 @@ nginx.ingress.kubernetes.io/rewrite-target: /$1 使用
 #        name: kubernetes-dashboard
 #        port:
 #          number: 443
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply -f ingress-https-dashboard.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get ingress -n kubernetes-dashboard
 NAME                CLASS    HOSTS             ADDRESS   PORTS   AGE
-ingress-dashboard   <none>   www.wang.org             80      16s
-```
+ingress-dashboard   <none>   www.bowen.org             80      16s
 
-```text
 [root@master1 ~]#kubectl describe ingress -n kubernetes-dashboard
 Name:             ingress-dashboard
 Namespace:        kubernetes-dashboard
@@ -3380,12 +2984,10 @@ Address:          10.0.0.104
 Default backend:  default-http-backend:80 (<error: endpoints "default-http-
 backend" not found>)
 Rules:
-```
 
-```text
 Host             Path  Backends
 ----             ----  --------
-www.wang.org
+www.bowen.org
 /dashboard(/|$)(.*)   kubernetes-dashboard:443
 (10.244.4.34:8443)
 Annotations:       ingress.kubernetes.io/ssl-passthrough: true
@@ -3397,16 +2999,12 @@ Type    Reason  Age                From                      Message
 ----    ------  ----               ----                      -------
 Normal  Sync    56s (x2 over 80s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #在客户端完成发下名称解析
-10.0.0.101 master1 master1.wang.org www.wang.org
-```
+10.0.0.101 master1 master1.bowen.org www.bowen.org
 
-```text
 #HTTP自动跳转HTTPS
-[root@ubuntu2004 ~]#curl http://www.wang.org/dashboard
+[root@ubuntu2004 ~]#curl http://www.bowen.org/dashboard
 <html>
 <head><title>308 Permanent Redirect</title></head>
 <body>
@@ -3414,25 +3012,19 @@ sync
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
-[root@ubuntu2004 ~]#curl -Lk http://www.wang.org/dashboard
+[root@ubuntu2004 ~]#curl -Lk http://www.bowen.org/dashboard
 <!--
 Copyright 2017 The Kubernetes Authors.
 ```
 
-```text
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-```
 
-```text
-http://www.apache.org/licenses/LICENSE-2.0
-```
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
-```text
+
+- <http://www.apache.org/licenses/LICENSE-2.0>
+
+```html
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -3448,26 +3040,18 @@ scrollbar{background:transparent;height:8px;width:8px}</style><link
 rel="stylesheet" href="BOOTSTRAP_TOKEN.css" media="print"
 onload="this.media='all'"><noscript><link rel="stylesheet"
 href="BOOTSTRAP_TOKEN.css"></noscript></head>
-```
 
-```text
 <body>
 <kd-root></kd-root>
-```
 
-```text
 <script src="runtime.134ad7745384bed8.js" type="module"></script><script
 src="polyfills.5c84b93f78682d4f.js" type="module"></script><script
 src="scripts.2c4f58d7c579cacb.js" defer></script><script
 src="en.main.3550e3edca7d0ed8.js" type="module"></script>
-```
 
-```text
 </body></html>
-```
 
-```text
-#浏览器访问 https://www.wang.org/dashboard/ 查看效果，注意，dashboard后面有/
+#浏览器访问 https://www.bowen.org/dashboard/ 查看效果，注意，dashboard后面有/
 #结果显示：借助于nginx-controller的tls功能可以正常的实现相关的https的效果。
 ```
 
@@ -3490,8 +3074,7 @@ src="en.main.3550e3edca7d0ed8.js" type="module"></script>
 创建专用的serviceaccount创建对应的权限角色将serviceaccount和权限角色进行关联绑定。
 
 **清理之前的记录**
-
-```text
+```bash
 kubectl delete clusterrolebindings kubernetes-dashboard
 kubectl delete serviceaccount dashboard-admin -n kube-system
 ```
@@ -3503,32 +3086,24 @@ kubectl delete serviceaccount dashboard-admin -n kube-system
 ##### 3.6.2.1.1 SA帐号的认证和授权
 
 ###### 3.6.2.1.1.1 方法1: 命令方式
-
-```text
+```bash
 #创建专用的SA服务账户,注意SA所在名称空间并不决定可以管理的Pod所在名称空间
 kubectl create serviceaccount dashboard-admin -n kube-system
-```
 
-```text
 #将SA帐号利用集群角色绑定至集群角色cluster-admin
 kubectl create clusterrolebinding  dashboard-admin --clusterrole=cluster-admin -
 -serviceaccount=kube-system:dashboard-admin
-```
 
-```text
 #参数详解：
 --clusterrole=集群角色名称
 --serviceaccount=命名空间:serviceaccountname
-```
 
-```text
 #SA的命名空间是kube-system
 #dashboard需要操作各种资源的所有权限，所以我们需要和cluster-admin的clusterrole进行绑定
 ```
 
 ###### 3.6.2.1.1.2 方法2: 资源清单方式
-
-```text
+```yaml
 #资源定义文件方式
 [root@master1 ~]#cat security-dashboard-admin.yaml
 apiVersion: v1
@@ -3554,17 +3129,14 @@ subjects:
 - kind: ServiceAccount
 name: dashboard-admin
 namespace: kube-system
-```
 
-```text
 [root@master1 ~]#kubectl apply -f yaml/security-dashboard-admin.yaml
 ```
 
 ##### 3.6.2.1.2 获取 Token
 
 范例: k8s-v1.24版本后,创建SA帐号后不会自动创建secret,需要手动创建secret
-
-```text
+```yaml
 [root@master1 ~]#cat security-dashboard-admin-secret.yaml
 apiVersion: v1
 kind: Secret
@@ -3574,39 +3146,27 @@ name: dashboard-admin-secret
 namespace: kube-system
 annotations:
 kubernetes.io/service-account.name: "dashboard-admin"
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f security-dashboard-admin-secret.yaml
 secret/dashboard-admin-secret created
-```
 
-```text
 #查看创建的Secret
 [root@master1 ~]#kubectl get secret -A  | grep dashboard-admin
 kube-system            dashboard-admin-secret            kubernetes.io/service-
 account-token   3      68s
-```
 
-```text
 #查看Secret关联的Token
 [root@master1 ~]#kubectl describe secrets -n kube-system dashboard-admin-secret
 Name:         dashboard-admin-secret
 Namespace:    kube-system
 Labels:       <none>
-```
 
-```text
 Annotations:  kubernetes.io/service-account.name: dashboard-admin
 kubernetes.io/service-account.uid: c1a181c6-5e7d-4dd1-a835-
 b1bd894a49b4
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 namespace:  11 bytes
@@ -3628,16 +3188,13 @@ ca.crt:     1099 bytes
 ```
 
 范例: k8s-v1.23版本之前创建SA会自动创建secret
-
-```text
+```bash
 #要使用token的方式来登录dashboard，而token保存在secrets中，所以需要基于该serviceaccount账
 号对应secrets中获取令牌信息
 #方法1：
 [root@master1 ~]#kubectl describe secrets -n kube-system $(kubectl -n kube-system
 get secret | awk '/dashboard-admin/{print $1}')
-```
 
-```text
 #方法2：
 [root@master1 ~]#kubectl -n kube-system get secret | grep dashboard-admin
 dashboard-admin-token-hqq7x                      kubernetes.io/service-account-
@@ -3650,20 +3207,14 @@ Labels:       <none>
 Annotations:  kubernetes.io/service-account.name: dashboard-admin
 kubernetes.io/service-account.uid: d074c5cb-ca75-4bf2-9efc-
 472bed38dd4e
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 ca.crt:     1099 bytes
 namespace:  11 bytes
-```
 
-```text
 token:
 eyJhbGciOiJSUzI1NiIsImtpZCI6Il9qQVBTeTY0VDVfLTNNeE1yVXpuVmEtaGxkWngtdkozSUluY3ZI
 cGJpS0kifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZ
@@ -3678,23 +3229,17 @@ LWRU9ZIVMssS9n4ybjnYGfHRNPTpgrRu7fnE5I7HJEwFxAWk-EH-
 EvO5uawy_KQF6FwrK1u0nRdu4JgYkf_zRG4KZTqXYemWJ8YbMhgQnVk2DknBrytopMkbT5vhdK7RyAY7
 B_eYsssuCxBTs7EcDeaYi0VcGE7Sh08Rx4yLnn4MUUwUXXk9Itu4m4cjfsMyurs5M0usHgQcitmG8ADr
 5xM2XVhkqO1ycqcbC4WxlSJmIXMCkqThCGzRTGSLjKOSo4VGsKICNqqIR5Q
-```
 
-```text
 #结果显示：配置好serviceaccount之后，会自动生成一个dashboard-admin-token-xxx格式的secret
 信息,token：属性后面的加密信息，就是需要的内容，复制该内容到dashboard界面中的令牌输入框
 #使用输出的token登录Dashboard。
-```
 
-```text
 #方法3:
 #进入使用此SA用户dashboard-admin的Pod,访
 问/var/run/sercets/kubernetes.io/serviceaccount/tokne
 kubect exec pod-test -n testns -- cat
 /var/run/sercets/kubernetes.io/serviceaccount/tokne
-```
 
-```text
 #注意:使用上面的Token登录dashboard后,只能看到testns的Pod
 ```
 
@@ -3709,21 +3254,17 @@ kubect exec pod-test -n testns -- cat
 注意: 要保证sa和rolebinding都在同个名称空间。
 
 方法1: 命令方式
-
-```text
+```bash
 #创建专用的服务账户
 kubectl create serviceaccount def-ns-admin -n default
-```
 
-```text
 #使用角色绑定到指定名称空间的角色
 kubectl create rolebinding def-ns-admin  --clusterrole=admin --
 serviceaccount=default:def-ns-admin -n default
 ```
 
 方法2: 文件方式
-
-```text
+```yaml
 #资源配置文件 security-dashboard-admin-ns.yaml
 [root@master1 ~]#cat security-dashboard-admin-ns.yaml
 apiVersion: v1
@@ -3732,9 +3273,7 @@ metadata:
 name: def-ns-admin
 namespace: default
 ---
-```
 
-```text
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -3748,21 +3287,15 @@ subjects:
 - kind: ServiceAccount
 name: def-ns-admin
 namespace: default
-```
 
-```text
 [root@master1 ~]#kubectl apply -f yaml/security-dashboard-admin-ns.yaml
-```
 
-```text
 #查看sa
 [root@master1 ~]#kubectl  get sa
 NAME           SECRETS   AGE
 def-ns-admin   1         3s
 default        1         4d11h
-```
 
-```text
 [root@master1 ~]#kubectl  describe  sa def-ns-admin
 Name:                def-ns-admin
 Namespace:           default
@@ -3772,9 +3305,7 @@ Image pull secrets:  <none>
 Mountable secrets:   def-ns-admin-token-k2nkb
 Tokens:              def-ns-admin-token-k2nkb
 Events:              <none>
-```
 
-```text
 #k8s-v1.24版本后,需要手动创建secret
 [root@master1 ~]#cat security-dashboard-admin-ns-secret.yaml
 apiVersion: v1
@@ -3785,37 +3316,25 @@ name: dashboard-def-ns-admin-secret
 namespace: default
 annotations:
 kubernetes.io/service-account.name: "def-ns-admin"
-```
 
-```text
 #创建secret
 [root@master1 ~]#kubectl apply  -f yaml/security-dashboard-admin-ns-secret.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get secrets dashboard-def-ns-admin-secret
 NAME                            TYPE                                  DATA   AGE
 dashboard-def-ns-admin-secret   kubernetes.io/service-account-token   3      43s
-```
 
-```text
 [root@master1 ~]#kubectl describe secrets dashboard-def-ns-admin-secret
 Name:         dashboard-def-ns-admin-secret
 Namespace:    default
 Labels:       <none>
 Annotations:  kubernetes.io/service-account.name: def-ns-admin
-```
 
-```text
 kubernetes.io/service-account.uid: 415ac1b9-a45c-4081-9916-
 93ce99d7931d
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 namespace:  11 bytes
@@ -3834,9 +3353,7 @@ ML4iL1biQbpsxjmsUECxDhG0FULfU2Nuqe1iuaWk7W7bXDS5dsR_242QrGnCboG0N98Z4q1_2sNxUUjz
 5daVDDbf6gIKR893zD5EyAJSrYpWu3fUF4fs0fGJq8hMWgFk1gU55g4dWaG4wet_iOUTZkGvrBx9OKeL
 FthUtgM-JDScW5lVTKKeP3kvo4ocIaah8BilQ
 ca.crt:     1099 bytes
-```
 
-```text
 #k8s-v1.23版本之前自动创建secret
 #获取全局令牌信息
 [root@master1 ~]#kubectl  describe secrets  def-ns-admin-token-k2nkb
@@ -3846,13 +3363,9 @@ Labels:       <none>
 Annotations:  kubernetes.io/service-account.name: def-ns-admin
 kubernetes.io/service-account.uid: df127795-3940-43dd-92ce-
 ed7a6cb706d2
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 ca.crt:     1099 bytes
@@ -3873,9 +3386,7 @@ UHu6rRwiPQeMJ41trvn4f8sNNYDH6MUVYIZ4XvPP5FntB-
 wESrjbC9pb1PIIOtbE4b81w51uk3sZ3LBLEANI3qkkYcRzzvZPWGc-yWjtV4QjWRfEFqg
 #结果显示：token：属性后面的加密信息，就是我们需要的内容，复制该内容到dashboard界面中的令牌输
 入框
-```
 
-```text
 #认证通过后，查看效果
 ```
 
@@ -3888,15 +3399,12 @@ wESrjbC9pb1PIIOtbE4b81w51uk3sZ3LBLEANI3qkkYcRzzvZPWGc-yWjtV4QjWRfEFqg
 结果显示：当前的dashboard仅仅能管理default命名空间下的资源。
 
 范例：创建一个管理dev名称空间的dashboard用户
-
-```text
+```yaml
 [root@master1 ~]#kubectl create ns dev
 [root@master1 ~]#kubectl create serviceaccount admin -n dev
 [root@master1 ~]#kubectl create rolebinding admin  --clusterrole=admin --
 serviceaccount=dev:admin -n dev
-```
 
-```text
 [root@master1 ~]#cat security-dashboard-admin-dev-secret.yaml
 apiVersion: v1
 kind: Secret
@@ -3906,9 +3414,7 @@ name: dashboard-admin-dev-secret
 namespace: dev
 annotations:
 kubernetes.io/service-account.name: "admin"
-```
 
-```text
 #查看Token,注意：要使用kubectl describe命令查看，不要使用kubectl get命令
 [root@master1 ~]#kubectl describe secrets -n dev dashboard-admin-dev-secret
 Name:         dashboard-admin-dev-secret
@@ -3917,20 +3423,14 @@ Labels:       <none>
 Annotations:  kubernetes.io/service-account.name: admin
 kubernetes.io/service-account.uid: 5eab3d6f-54ba-4987-aa76-
 aea85a41ea0a
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 ca.crt:     1099 bytes
 namespace:  3 bytes
-```
 
-```text
 token:
 eyJhbGciOiJSUzI1NiIsImtpZCI6IjJxV0NPWVNUN0JNcmk3cWNuUjd1MXE3ZC1nT2FoYmtGTGFBYldW
 VzVoemsifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZ
@@ -3944,9 +3444,7 @@ w0TUvqfOPhutXnI4OHAw6ss-c89fWa6W3NZVUf3TyXBdXpSrQ2PVHWFaX4Gf_FT0sxkVzykFkwFpE-
 d1X5Mru1df7McfK2JVy6ZcoQA7lDUdXoKcXribROol2CX1pflg6bAFSCpkOv0ZqaQ1maw6XpJgLf2Rv5
 4lpkAhsQRRy6JwrQnIa5Uk7L0dPauLFZRoioiBl07Zhoe4SPEdPHM96A4yytjtDa6Pb8eyjkje_X5C01
 qshtngSscBD1YFOIqNzU7qMw
-```
 
-```text
 #注意：有些版本的dashboard有bug，不能选择除default的其它名称空间，只能手动输入名称空间的名称
 才可以
 ```
@@ -3958,52 +3456,38 @@ qshtngSscBD1YFOIqNzU7qMw
 #### 3.6.3.1 集群通用认证
 
 ##### 3.6.3.1.1 准备SA服务账号并授权
-
-```text
+```bash
 #参考token令牌认证当中的serviceaccount创建并做clusterrolebinding
 #创建专用的SA服务账户,注意SA所在名称空间并不决定可以管理的Pod所在名称空间
 [root@master1 ~]#kubectl create serviceaccount dashboard-admin -n kube-system
-```
 
-```text
 #将SA帐号利用集群角色绑定至集群角色cluster-admin
 [root@master1 ~]#kubectl create clusterrolebinding  dashboard-admin --
 clusterrole=cluster-admin --serviceaccount=kube-system:dashboard-admin
-```
 
-```text
 [root@master1 ~]#kubectl get sa dashboard-admin -n kube-system
 NAME              SECRETS   AGE
 dashboard-admin   1         36h
-```
 
-```text
 [root@master1 ~]#kubectl get sa
 NAME           SECRETS   AGE
-```
 
-```text
 def-ns-admin   1         80m
 default        1         4d13h
 ```
 
 ##### 3.6.3.1.2 生成集群配置kubeconfig文件
-
-```text
+```yaml
 #设置集群信息
 [root@master1 ~]#kubectl config set-cluster kubernetes --certificate-
-authority=/etc/kubernetes/pki/ca.crt  --server="https://kubeapi.wang.org:6443" --
+authority=/etc/kubernetes/pki/ca.crt  --server="https://kubeapi.bowen.org:6443" --
 embed-certs=true --kubeconfig=/root/kubeadmin.conf
 #注意：设定cluster信息的时候，必须基于集群初始化时候的认证信息--ca证书：证书认证：--
 certificate-authority
-```
 
-```text
 [root@master1 ~]#ll kubeadmin.conf
 -rw------- 1 root root 1672 Apr  3 09:47 kubeadmin.conf
-```
 
-```text
 [root@master1 ~]#cat kubeadmin.conf
 apiVersion: v1
 clusters:
@@ -4028,29 +3512,25 @@ ODBJb0p0WWtOaEd6akFtVFBMakQwaFNBVFppc2lQSjFMOUFjVwpRbVViTVE5L0JFOWIzN084bTB5dVpG
 Q0tvcC9SVExXbWt3eUkvSEJTT3ExVDZJUytYdmdNRDFvZ2J5WGVuSi9FCmI3SEtzenpSMFZndzhnQTR3
 bjNodzJLc2FZbDFQREtBQk9ncmNlaUlYbVo2WHJ1NWNhOFowTkFOem9OQkNSTWUKNy8wPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users: null
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl config view --kubeconfig=/root/kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
-```
 
-```text
 kind: Config
 preferences: {}
 users: null
@@ -4059,15 +3539,12 @@ users: null
 ##### 3.6.3.1.3 生成用户配置kubeconfig文件
 
 范例: v1.24版本之后
-
-```text
+```yaml
 #获取认证信息
 [root@master1 ~]#kubectl get secrets -n kube-system dashboard-admin-secret
 NAME                     TYPE                                  DATA   AGE
 dashboard-admin-secret   kubernetes.io/service-account-token   3      19s
-```
 
-```text
 #方法1，直接查看token
 [root@master1 ~]#kubectl describe secrets -n kube-system dashboard-admin-secret
 #方法2,需要转码
@@ -4086,28 +3563,20 @@ nIObxi1kABmFC5ls3u0SfszSucFea6h9brnAjhBrgNH9HXGF3q9KgXW9eEChSKkxycCJh5iqpwYr6pN7
 JhugK0_DwLqQ5RUn4rYhl_kMtdYz8mbzWtSIZiEuCl9osx_56sc-FmpOA5oQ-
 t9AwiP7hIIXRnQSvXfYY1H0dM9r7l8iFxe-1xpHoalR5b9v3vGQO6hYfheNYEywIZIjqbO9dbRR9s-
 Cr1lCy1evX2ObNi8doDFvWRTiTVm5YDEaWZsNKF86_HujlX9dqM9ibrj64m8wRZc6Cp8A
-```
 
-```text
 [root@master1 ~]#KUBEADMIN_TOKEN=$(kubectl get secret dashboard-admin-secret -n
 kube-system -o jsonpath='{.data.token}' |base64 -d)
-```
 
-```text
 #设置用户信息
 [root@master1 ~]#kubectl config set-credentials kubeadmin --
 token=$KUBEADMIN_TOKEN --kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 #检查结果
 [root@master1 ~]#cat kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
-```
 
-```text
 certificate-authority-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJek1ETXdOekEwTXpB
@@ -4128,7 +3597,7 @@ ekdkOVFuV0I1Und1ZmVoU21JaisvUnJDTWJRRU8vYzczVGUybgo2dUY4Y3ZsK0llaTBRck9GQmFMam5y
 ZXR6K2dlV2luNEVNa0h4Um42cmYwNkJiNXFrYVZXVjR6Z0JCVTVkNkFhCkRjeGNoclk1aTZRdUtuTkZQ
 bVV5WEVTbGw5QmtVTFFxQjVUK3lyalJqNmRJR3ZITUo4OEJpcTl3bTdrdUhRTlkKRUNZPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4151,15 +3620,13 @@ nIObxi1kABmFC5ls3u0SfszSucFea6h9brnAjhBrgNH9HXGF3q9KgXW9eEChSKkxycCJh5iqpwYr6pN7
 JhugK0_DwLqQ5RUn4rYhl_kMtdYz8mbzWtSIZiEuCl9osx_56sc-FmpOA5oQ-
 t9AwiP7hIIXRnQSvXfYY1H0dM9r7l8iFxe-1xpHoalR5b9v3vGQO6hYfheNYEywIZIjqbO9dbRR9s-
 Cr1lCy1evX2ObNi8doDFvWRTiTVm5YDEaWZsNKF86_HujlX9dqM9ibrj64m8wRZc6Cp8A
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4168,21 +3635,16 @@ preferences: {}
 users:
 - name: kubeadmin
 user:
-```
 
-```text
 token: REDACTED
 ```
 
 范例: v1.23版之前
-
-```text
+```yaml
 [root@master1 ~]#kubectl get secrets -n kube-system | grep admin-token
 dashboard-admin-token-hqq7x                      kubernetes.io/service-account-
 token   3      36h
-```
 
-```text
 [root@master1 ~]# kubectl get secrets dashboard-admin-token-hqq7x -n kube-system
 -o jsonpath='{.data.token}' | base64 -d
 eyJhbGciOiJSUzI1NiIsImtpZCI6Il9qQVBTeTY0VDVfLTNNeE1yVXpuVmEtaGxkWngtdkozSUluY3ZI
@@ -4199,33 +3661,23 @@ EvO5uawy_KQF6FwrK1u0nRdu4JgYkf_zRG4KZTqXYemWJ8YbMhgQnVk2DknBrytopMkbT5vhdK7RyAY7
 B_eYsssuCxBTs7EcDeaYi0VcGE7Sh08Rx4yLnn4MUUwUXXk9Itu4m4cjfsMyurs5M0usHgQcitmG8ADr
 5xM2XVhkqO1ycqcbC4WxlSJmIXMCkqThCGzRTGSLjKOSo4VGsKICNqqIR5Q
 #注意：是 kube-system 命名空间的认证信息
-```
 
-```text
 [root@master1 ~]#KUBEADMIN_TOKEN=$(kubectl get secret dashboard-admin-token-hqq7x
 -n kube-system -o jsonpath='{.data.token}' |base64 -d)
-```
 
-```text
 #设置用户信息
 [root@master1 ~]#kubectl config set-credentials kubeadmin --
 token=$KUBEADMIN_TOKEN --kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 [root@master1 ~]#ll kubeadmin.conf
 -rw------- 1 root root 2647 Apr  3 09:52 kubeadmin.conf
-```
 
-```text
 #检查效果
 [root@master1 ~]#cat kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
-```
 
-```text
 certificate-authority-data:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lH
 OXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeU1ETXlPVEV5TkRB
@@ -4246,7 +3698,7 @@ ODBJb0p0WWtOaEd6akFtVFBMakQwaFNBVFppc2lQSjFMOUFjVwpRbVViTVE5L0JFOWIzN084bTB5dVpG
 Q0tvcC9SVExXbWt3eUkvSEJTT3ExVDZJUytYdmdNRDFvZ2J5WGVuSi9FCmI3SEtzenpSMFZndzhnQTR3
 bjNodzJLc2FZbDFQREtBQk9ncmNlaUlYbVo2WHJ1NWNhOFowTkFOem9OQkNSTWUKNy8wPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4269,15 +3721,13 @@ LWRU9ZIVMssS9n4ybjnYGfHRNPTpgrRu7fnE5I7HJEwFxAWk-EH-
 EvO5uawy_KQF6FwrK1u0nRdu4JgYkf_zRG4KZTqXYemWJ8YbMhgQnVk2DknBrytopMkbT5vhdK7RyAY7
 B_eYsssuCxBTs7EcDeaYi0VcGE7Sh08Rx4yLnn4MUUwUXXk9Itu4m4cjfsMyurs5M0usHgQcitmG8ADr
 5xM2XVhkqO1ycqcbC4WxlSJmIXMCkqThCGzRTGSLjKOSo4VGsKICNqqIR5Q
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4286,27 +3736,20 @@ preferences: {}
 users:
 - name: kubeadmin
 user:
-```
 
-```text
 token: REDACTED
 ```
 
 ##### 3.6.3.1.4 关联集群和用户的上下文配置kubeconfig文件
-
-```text
+```yaml
 #设置上下文信息
 [root@master1 ~]#kubectl config set-context kubeadmin@kubernetes --
 cluster=kubernetes --user=kubeadmin --kubeconfig=/root/kubeadmin.conf
-```
 
-```text
 #检查效果
 [root@master1 ~]#ll /root/kubeadmin.conf
 -rw------- 1 root root 2726 Apr  3 09:56 /root/kubeadmin.conf
-```
 
-```text
 [root@master1 ~]#cat /root/kubeadmin.conf
 apiVersion: v1
 clusters:
@@ -4331,7 +3774,7 @@ ODBJb0p0WWtOaEd6akFtVFBMakQwaFNBVFppc2lQSjFMOUFjVwpRbVViTVE5L0JFOWIzN084bTB5dVpG
 Q0tvcC9SVExXbWt3eUkvSEJTT3ExVDZJUytYdmdNRDFvZ2J5WGVuSi9FCmI3SEtzenpSMFZndzhnQTR3
 bjNodzJLc2FZbDFQREtBQk9ncmNlaUlYbVo2WHJ1NWNhOFowTkFOem9OQkNSTWUKNy8wPQotLS0tLUVO
 RCBDRVJUSUZJQ0FURS0tLS0tCg==
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -4344,9 +3787,7 @@ preferences: {}
 users:
 - name: kubeadmin
 user:
-```
 
-```text
 token:
 eyJhbGciOiJSUzI1NiIsImtpZCI6Il9qQVBTeTY0VDVfLTNNeE1yVXpuVmEtaGxkWngtdkozSUluY3ZI
 cGJpS0kifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZ
@@ -4361,15 +3802,13 @@ LWRU9ZIVMssS9n4ybjnYGfHRNPTpgrRu7fnE5I7HJEwFxAWk-EH-
 EvO5uawy_KQF6FwrK1u0nRdu4JgYkf_zRG4KZTqXYemWJ8YbMhgQnVk2DknBrytopMkbT5vhdK7RyAY7
 B_eYsssuCxBTs7EcDeaYi0VcGE7Sh08Rx4yLnn4MUUwUXXk9Itu4m4cjfsMyurs5M0usHgQcitmG8ADr
 5xM2XVhkqO1ycqcbC4WxlSJmIXMCkqThCGzRTGSLjKOSo4VGsKICNqqIR5Q
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -4383,22 +3822,18 @@ users:
 - name: kubeadmin
 user:
 token: REDACTED
-```
 
-```text
 #指定默认Context
 [root@master1 ~]#kubectl config use-context kubeadmin@kubernetes --
 kubeconfig=/root/kubeadmin.conf
 Switched to context "kubeadmin@kubernetes".
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/kubeadmin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -4411,13 +3846,9 @@ preferences: {}
 users:
 - name: kubeadmin
 user:
-```
 
-```text
 token: REDACTED
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get sa --kubeconfig=/root/kubeadmin.conf
 NAME           SECRETS   AGE
@@ -4426,7 +3857,6 @@ default        1         4d13h
 ```
 
 ##### 3.6.3.1.5 使用文件登录验证
-
 ```text
 #从服务器下载kubeadmin.conf到登录主机,浏览器上采用kubeconfig方式使用kubeadmin.conf文件登
 录，查看效果
@@ -4445,25 +3875,18 @@ default        1         4d13h
 注意：此文件具体内容和用户身份并不决定登录后的权限，主要和Token关联的SA用户权限有关，即只要有此文件存在并格式正确即可，其内容无所谓。
 
 范例：
-
-```text
+```yaml
 #创建SA帐号
 [root@master1 ~]#kubectl create sa cluster-admin -n kube-system
-```
 
-```text
 #1）角色绑定集群管理权限，注意：登录用户的权限由此角色决定，而和kubeconfig文件的用户身份无关
 [root@master1 ~]#kubectl create clusterrolebinding dashboard-cluster-admin --
 clusterrole cluster-admin --serviceaccount kube-system:cluster-admin
-```
 
-```text
 #2）角色绑定集群查看权限
 [root@master1 ~]#kubectl create clusterrolebinding dashboard-cluster-admin --
 clusterrole view --serviceaccount kube-system:cluster-admin
-```
 
-```text
 #创建token
 [root@master1 ~]#cat security-dashboard-cluster-admin-secret.yaml
 apiVersion: v1
@@ -4474,14 +3897,10 @@ name: dashboard-cluster-admin-secret
 namespace: kube-system
 annotations:
 kubernetes.io/service-account.name: "cluster-admin"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f yaml/security-dashboard-cluster-admin-
 secret.yaml
-```
 
-```text
 #查看Token
 [root@master1 ~]#kubectl describe secrets  -n kube-system dashboard-cluster-
 admin-secret
@@ -4491,20 +3910,14 @@ Labels:       kubernetes.io/legacy-token-last-used=2023-07-23
 Annotations:  kubernetes.io/service-account.name: cluster-admin
 kubernetes.io/service-account.uid: 287bf5c2-9552-48e9-baf4-
 fe44d9ccdb1e
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 ca.crt:     1099 bytes
 namespace:  11 bytes
-```
 
-```text
 token:
 eyJhbGciOiJSUzI1NiIsImtpZCI6IjJxV0NPWVNUN0JNcmk3cWNuUjd1MXE3ZC1nT2FoYmtGTGFBYldW
 VzVoemsifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZ
@@ -4519,14 +3932,10 @@ zfEMhe0v5ls4het6NRg2z_GFkdUG-thfT2XJAxBqdoMcyLwzk9-
 cmDK8aJO1g1zEJ6jgECK4eW58lertrpRnYkiUBLE_baAms1yXrQdY7OIkv4Fk0Sez0EVIqvqtTJFd5Oy
 qPMSdTbuVMJpO4IzE39nc-X78OK1VzqaH3EX5CC3EiENzRPs1dWDEhwuNSaxxz5zu-E-
 ylHuIlShKQRpu8O1Np0xlw
-```
 
-```text
 #利用现有kubeconfig文件
 [root@master1 ~]#cp .kube/config /tmp/kubeconfig
-```
 
-```text
 [root@master1 ~]#vim /tmp/kubeconfig
 .....
 client-key-data:
@@ -4549,9 +3958,7 @@ ls4het6NRg2z_GFkdUG-thfT2XJAxBqdoMcyLwzk9-cmDK8aJO1g
 1zEJ6jgECK4eW58lertrpRnYkiUBLE_baAms1yXrQdY7OIkv4Fk0Sez0EVIqvqtTJFd5OyqPMSdTbuVM
 JpO4IzE39nc-X78OK1VzqaH3EX5CC3EiENzRPs1dWDEhwuNSaxxz
 5zu-E-ylHuIlShKQRpu8O1Np0xlw
-```
 
-```text
 #从服务器下载kubeconfig到登录主机,浏览器上采用kubeconfig方式使用kubeconfig文件登录，查看效
 果
 ```
@@ -4565,8 +3972,7 @@ JpO4IzE39nc-X78OK1VzqaH3EX5CC3EiENzRPs1dWDEhwuNSaxxz
 ##### 3.6.3.2.1 准备服务账户
 
 参考服务认证中命名空间用户当中的 serviceaccount 创建。
-
-```text
+```bash
 [root@master1 ~]#kubectl get sa
 NAME           SECRETS   AGE
 def-ns-admin   1         80m
@@ -4574,41 +3980,34 @@ default        1         4d13h
 ```
 
 ##### 3.6.3.2.2 生成集群配置文件
-
-```text
+```yaml
 #设置集群信息
 [root@master1 ~]#kubectl config set-cluster kubernetes --certificate-
-authority=/etc/kubernetes/pki/ca.crt  --server="https://kubeapi.wang.org:6443" --
+authority=/etc/kubernetes/pki/ca.crt  --server="https://kubeapi.bowen.org:6443" --
 embed-certs=true --kubeconfig=/root/def-ns-admin.conf
-```
 
-```text
 [root@master1 ~]#ll def-ns-admin.conf
 -rw------- 1 root root 1672 Apr  3 10:19 def-ns-admin.conf
-```
 
-```text
 [root@master1 ~]#cat def-ns-admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: LS0tLS1CRUdJTiBDRVJUS
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
 kind: Config
 preferences: {}
 users: null
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/def-ns-admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4618,15 +4017,12 @@ users: null
 ```
 
 ##### 3.6.3.2.3  生成用户配置
-
-```text
+```yaml
 #获取秘钥信息
 [root@master1 ~]#kubectl get secret
 NAME                       TYPE                                  DATA   AGE
 def-ns-admin-token-k2nkb   kubernetes.io/service-account-token   3      117m
-```
 
-```text
 [root@master1 ~]#kubectl describe secret def-ns-admin-token-k2nkb
 Name:         def-ns-admin-token-k2nkb
 Namespace:    default
@@ -4634,43 +4030,31 @@ Labels:       <none>
 Annotations:  kubernetes.io/service-account.name: def-ns-admin
 kubernetes.io/service-account.uid: df127795-3940-43dd-92ce-
 ed7a6cb706d2
-```
 
-```text
 Type:  kubernetes.io/service-account-token
-```
 
-```text
 Data
 ====
 ca.crt:     1099 bytes
 namespace:  7 bytes
 token:      eyJhbGciOiJSU
-```
 
-```text
 [root@master1 ~]#DEF_NS_ADMIN_TOKEN=$(kubectl get secret  def-ns-admin-token-
 k2nkb  -o jsonpath={.data.token} |base64 -d)
-```
 
-```text
 #设置用户信息
 [root@master1 ~]#kubectl config set-credentials def-ns-admin --
 token=$DEF_NS_ADMIN_TOKEN --kubeconfig=/root/def-ns-admin.conf
-```
 
-```text
 [root@master1 ~]#ll def-ns-admin.conf
 -rw------- 1 root root 2628 Apr  3 10:22 def-ns-admin.conf
-```
 
-```text
 [root@master1 ~]#cat def-ns-admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: LS0tLS1CRUdJTiBDRVJUS
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4680,15 +4064,13 @@ users:
 - name: def-ns-admin
 user:
 token: eyJhbGciOiJSUzI1NiIsIm
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/def-ns-admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts: null
 current-context: ""
@@ -4701,8 +4083,7 @@ token: REDACTED
 ```
 
 ##### 3.6.3.2.4 关联集群和用户的上下文配置
-
-```text
+```yaml
 #配置上下文信息
 [root@master1 ~]#kubectl config set-context def-ns-admin@kubernetes --
 cluster=kubernetes --user=def-ns-admin --kubeconfig=/root/def-ns-admin.conf
@@ -4714,13 +4095,11 @@ apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: LS0tLS1CRUdJTiBDR
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
-```
 
-```text
 cluster: kubernetes
 user: def-ns-admin
 name: def-ns-admin@kubernetes
@@ -4731,15 +4110,13 @@ users:
 - name: def-ns-admin
 user:
 token: eyJhbGciOiJSU
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/def-ns-admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -4753,21 +4130,17 @@ users:
 - name: def-ns-admin
 user:
 token: REDACTED
-```
 
-```text
 #切换用户
 [root@master1 ~]#kubectl config use-context def-ns-admin@kubernetes --
 kubeconfig=/root/def-ns-admin.conf
-```
 
-```text
 [root@master1 ~]#cat def-ns-admin.conf
 apiVersion: v1
 clusters:
 - cluster:
 certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -4781,18 +4154,14 @@ users:
 - name: def-ns-admin
 user:
 token: eyJhbGciOiJSUzI1NiIs
-```
 
-```text
 [root@master1 ~]#kubectl config view --kubeconfig=/root/def-ns-admin.conf
 apiVersion: v1
-```
 
-```text
 clusters:
 - cluster:
 certificate-authority-data: DATA+OMITTED
-server: https://kubeapi.wang.org:6443
+server: https://kubeapi.bowen.org:6443
 name: kubernetes
 contexts:
 - context:
@@ -4806,17 +4175,13 @@ users:
 - name: def-ns-admin
 user:
 token: REDACTED
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get sa --kubeconfig=def-ns-admin.conf
 NAME           SECRETS   AGE
 def-ns-admin   1         122m
 default        1         4d13h
-```
 
-```text
 [root@master1 ~]#kubectl get sa   -n kube-system --kubeconfig=def-ns-admin.conf
 Error from server (Forbidden): serviceaccounts is forbidden: User
 "system:serviceaccount:default:def-ns-admin" cannot list resource
@@ -4824,12 +4189,9 @@ Error from server (Forbidden): serviceaccounts is forbidden: User
 ```
 
 ##### 3.6.3.2.5 使用文件登录验证
-
 ```text
 #下载def-ns-admin.conf
-```
 
-```text
 #浏览器上，采用kubeconfig方式上传def-ns-admin.conf文件，查看效果
 #结果显示：当前的dashboard，仅仅能管理default命名空间下的资源
 ```
@@ -4839,7 +4201,6 @@ Error from server (Forbidden): serviceaccounts is forbidden: User
 ![原 PDF 第 161 页插图](assets/Kubernetes安全机制_Password_Removed1/img-73a2ab0c7932d95c.png)
 
 ### 3.6.4 用户名和密码验证
-
 ```text
 https://github.com/kubernetes/dashboard/blob/master/docs/user/access-
 control/README.md#basic
@@ -4847,8 +4208,7 @@ https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#vim recommended.yaml
 .....
 containers:
@@ -4864,15 +4224,11 @@ args:
 - --authentication-mode=basic,token  #添加下面两行
 - --token-ttl=86400
 ......
-```
 
-```text
 [root@master1 ~]#kubectl apply -f recommended.yaml
-```
 
-```text
 #浏览器访问
-https://dashboard.wang.org:30000/
+https://dashboard.bowen.org:30000/
 ```
 
 可以看到下面界面
@@ -4901,12 +4257,11 @@ Kuboard v3.x 支持 Kubernetes 多集群管理。如果您从 Kuboard v1.0.x 或
 
 **安装说明**
 
-```text
-https://kuboard.cn/install/v3/install-built-in.html#部署计划
-```
+
+- <https://kuboard.cn/install/v3/install-built-in.html#部署计划>
+
 
 **在线体验**
-
 ```text
 https://demo.kuboard.cn
 用 户： demo
@@ -4925,13 +4280,12 @@ https://demo.kuboard.cn
 
 **官方说明**
 
-```text
-https://kuboard.cn/install/v3/install-in-k8s.html
-```
+
+- <https://kuboard.cn/install/v3/install-in-k8s.html>
+
 
 #### 3.7.2.1 范例: 无数据持久化安装kuboard
-
-```text
+```yaml
 [root@master1 ~]#cat kuboard-deploy-v3.yaml
 ---
 apiVersion: v1
@@ -4956,9 +4310,7 @@ name: cluster-admin
 subjects:
 - kind: ServiceAccount
 name: kuboard-boostrap
-```
 
-```text
 namespace: kuboard
 ---
 apiVersion: apps/v1
@@ -4986,7 +4338,7 @@ value: "http://kuboard-v3:80"
 value: "10081"
 #image: eipwork/kuboard:v3.5.2.4
 #image: eipwork/kuboard:v3
-#image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kuboard:v3.5.2.4
+#image: registry.cn-beijing.aliyuncs.com/bowen/kuboard:v3.5.2.4
 image: swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard:v3
 volumeMounts:
 - name: kuboard-data
@@ -5017,9 +4369,7 @@ protocol: TCP
 - containerPort: 10081
 name: peer-u
 protocol: UDP
-```
 
-```text
 readinessProbe:
 failureThreshold: 3
 httpGet:
@@ -5067,32 +4417,25 @@ k8s.kuboard.cn/name: kuboard-v3
 #type: NodePort
 type: LoadBalancer #需要提前部署Metallb类似的应用
 ```
-
-```text
+```yaml
 [root@master1 ~]#kubectl apply -f kuboard-deploy-v3.yaml
 namespace/kuboard created
 serviceaccount/kuboard-boostrap created
 clusterrolebinding.rbac.authorization.k8s.io/kuboard-boostrap-crb created
 deployment.apps/kuboard-v3 created
 service/kuboard-v3 created
-```
 
-```text
 #查看是否安装
 [root@master1 ~]#kubectl get pods -n kuboard
 NAME                          READY   STATUS    RESTARTS   AGE
 kuboard-v3-664cc56698-r4fp7   0/1     Running   0          62s
-```
 
-```text
 [root@master1 ~]#kubectl get svc -n kuboard
 NAME         TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)
 AGE
 kuboard-v3   NodePort   10.105.202.30   <none>
 80:30080/TCP,10081:30081/TCP,10081:30081/UDP   93s
-```
 
-```text
 #(可选)如果想通过ingress暴Kuboard露，可以执行下面操作，注意：需要提前部署ingress-nginx
 [root@master1 ~]#cat ingress-kuboard.yaml
 apiVersion: networking.k8s.io/v1
@@ -5103,7 +4446,7 @@ namespace: kuboard
 spec:
 ingressClassName: nginx
 rules:
-- host: kuboard.wang.org
+- host: kuboard.bowen.org
 http:
 paths:
 - path: /
@@ -5113,9 +4456,7 @@ name: kuboard-v3
 port:
 number: 80
 pathType: Prefix
-```
 
-```text
 [root@master1 ~]#kubectl apply -f ingress-kuboard.yaml
 ```
 
@@ -5128,40 +4469,34 @@ pathType: Prefix
 用户名： admin密码： Kuboard123
 
 #### 3.7.2.2 范例：支持Storage Class 持久化安装kuboard
-
-```text
+```yaml
 #https://kuboard.cn/install/v3/install-in-k8s.html#%E6%96%B9%E6%B3%95%E4%BA%8C-
 %E4%BD%BF%E7%94%A8-storageclass-%E6%8F%90%E4%BE%9B%E6%8C%81%E4%B9%85%E5%8C%96
-```
 
-```text
 #环境准备，提前准备一个名称为sc-nfs的storageClass
 [root@master1 ~]#kubectl get sc
 NAME     PROVISIONER                                   RECLAIMPOLICY
 VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 sc-nfs   k8s-sigs.io/nfs-subdir-external-provisioner   Delete          Immediate
 false                  43d
-```
 
-```text
 #注意:官方yaml文件有bug,需要修改
 [root@master1 ~]#curl -o kuboard-v3.yaml
 https://addons.kuboard.cn/kuboard/kuboard-v3-storage-class.yaml
-```
 
-```text
 [root@master1 ~]#vim kuboard-v3.yaml
----
 ```
 
-```text
+```yaml
+---
+
 apiVersion: v1
 kind: Namespace
 metadata:
 name: kuboard
 ```
 
-```text
+```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -5172,16 +4507,14 @@ data:
 # 关于如下参数的解释，请参考文档 https://kuboard.cn/install/v3/install-built-in.html
 # [common]
 #KUBOARD_ENDPOINT: 'http://your-node-ip-address:30080' #注释此行
-KUBOARD_ENDPOINT: 'http://kuboard.wang.org'  #添加此行
+KUBOARD_ENDPOINT: 'http://kuboard.bowen.org'  #添加此行
 KUBOARD_AGENT_SERVER_UDP_PORT: '30081'
 KUBOARD_AGENT_SERVER_TCP_PORT: '30081'
 KUBOARD_SERVER_LOGRUS_LEVEL: info  # error / debug / trace
 # KUBOARD_AGENT_KEY是Agent与Kuboard通信时的密钥，请修改为一个任意的包含字母、数字的32位
 字符串，此密钥变更后，需要删除 Kuboard Agent重新导入。
 KUBOARD_AGENT_KEY: 32b7d6572c6255211b4eec9009e4a816
-```
 
-```text
 # 关于如下参数的解释，请参考文档 https://kuboard.cn/install/v3/install-gitlab.html
 # [gitlab login]
 # KUBOARD_LOGIN_TYPE: "gitlab"
@@ -5191,18 +4524,14 @@ KUBOARD_AGENT_KEY: 32b7d6572c6255211b4eec9009e4a816
 "7c10882aa46810a0402d17c66103894ac5e43d6130b81c17f7f2d8ae182040b5"
 # GITLAB_CLIENT_SECRET:
 "77c149bd3a4b6870bffa1a1afaf37cba28a1817f4cf518699065f5a8fe958889"
-```
 
-```text
 # 关于如下参数的解释，请参考文档 https://kuboard.cn/install/v3/install-github.html
 # [github login]
 # KUBOARD_LOGIN_TYPE: "github"
 # KUBOARD_ROOT_USER: "your-user-name-in-github"
 # GITHUB_CLIENT_ID: "17577d45e4de7dad88e0"
 # GITHUB_CLIENT_SECRET: "ff738553a8c7e9ad39569c8d02c1d85ec19115a7"
-```
 
-```text
 # 关于如下参数的解释，请参考文档 https://kuboard.cn/install/v3/install-ldap.html
 # [ldap login]
 # KUBOARD_LOGIN_TYPE: "ldap"
@@ -5223,7 +4552,7 @@ KUBOARD_AGENT_KEY: 32b7d6572c6255211b4eec9009e4a816
 # LDAP_GROUP_NAME_ATTRIBUTE: "cn"
 ```
 
-```text
+```yaml
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -5281,9 +4610,7 @@ volumeClaimTemplates:
 name: data
 spec:
 # 请填写一个有效的 StorageClass name
-```
 
-```text
 #storageClassName: please-provide-a-valid-StorageClass-name-here #修改此处
 storageClassName: sc-nfs
 accessModes: [ "ReadWriteMany" ]
@@ -5292,7 +4619,7 @@ requests:
 storage: 5Gi
 ```
 
-```text
+```yaml
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -5310,7 +4637,7 @@ requests:
 storage: 10Gi
 ```
 
-```text
+```yaml
 ---
 apiVersion: v1
 kind: Service
@@ -5328,7 +4655,7 @@ selector:
 app: kuboard-etcd
 ```
 
-```text
+```yaml
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -5347,9 +4674,7 @@ replicas: 1
 selector:
 matchLabels:
 k8s.kuboard.cn/name: kuboard-v3
-```
 
-```text
 template:
 metadata:
 labels:
@@ -5376,7 +4701,7 @@ persistentVolumeClaim:
 claimName: kuboard-data-pvc
 ```
 
-```text
+```yaml
 ---
 apiVersion: v1
 kind: Service
@@ -5409,45 +4734,32 @@ k8s.kuboard.cn/name: kuboard-v3
 sessionAffinity: None
 type: NodePort
 ```
-
-```text
+```yaml
 [root@master1 ~]#kubectl apply -f kuboard-v3-storage-class.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get all -n kuboard
 NAME                              READY   STATUS    RESTARTS        AGE
 pod/kuboard-etcd-0                1/1     Running   1 (2m12s ago)   14m
 pod/kuboard-etcd-1                1/1     Running   0               12m
 pod/kuboard-etcd-2                1/1     Running   0               10m
 pod/kuboard-v3-6df7c85ff5-bd2gf   1/1     Running   1 (2m2s ago)    14m
-```
 
-```text
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)
 AGE
 service/kuboard-etcd   ClusterIP   10.100.145.165   <none>
 2379/TCP,2380/TCP                              14m
 service/kuboard-v3     NodePort    10.105.198.193   <none>
 80:30080/TCP,10081:30081/TCP,10081:30081/UDP   14m
-```
 
-```text
 NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/kuboard-v3   1/1     1            1           14m
-```
 
-```text
 NAME                                    DESIRED   CURRENT   READY   AGE
 replicaset.apps/kuboard-v3-6df7c85ff5   1         1         1       14m
-```
 
-```text
 NAME                            READY   AGE
 statefulset.apps/kuboard-etcd   3/3     14m
-```
 
-```text
 [root@master1 ~]#kubectl get pvc,pv -n kuboard
 \NAME                                        STATUS   VOLUME
 CAPACITY   ACCESS MODES   STORAGECLASS   AGE
@@ -5459,9 +4771,7 @@ persistentvolumeclaim/data-kuboard-etcd-2   Bound    pvc-fd0df1ef-9cb6-4fa8-842b
 58a1a2eee6b0   5Gi        RWX            sc-nfs         18m
 persistentvolumeclaim/kuboard-data-pvc      Bound    pvc-814ebb26-8111-49de-b64d-
 74f836291611   10Gi       RWO            sc-nfs         12m
-```
 
-```text
 NAME                                                        CAPACITY   ACCESS
 MODES   RECLAIM POLICY   STATUS   CLAIM                         STORAGECLASS
 REASON   AGE
@@ -5476,23 +4786,19 @@ Delete           Bound    kuboard/data-kuboard-etcd-1   sc-nfs
 20m
 persistentvolume/pvc-fd0df1ef-9cb6-4fa8-842b-58a1a2eee6b0   5Gi        RWX
 Delete           Bound    kuboard/data-kuboard-etcd-2   sc-nfs
-```
 
-```text
 #如果想通过ingress暴Kuboard露，可以执行下面操作，注意：需要提前部署ingress-nginx(可选)
 [root@master1 ~]#cat ingress-kuboard.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-```
 
-```text
 metadata:
 name: kuboard
 namespace: kuboard
 spec:
 ingressClassName: nginx
 rules:
-- host: kuboard.wang.org
+- host: kuboard.bowen.org
 http:
 paths:
 - path: /
@@ -5502,26 +4808,18 @@ name: kuboard-v3
 port:
 number: 80
 pathType: Prefix
-```
 
-```text
 [root@master1 ~]#kubectl apply -f ingress-kuboard.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get ingress -n kuboard
 NAME      CLASS   HOSTS              ADDRESS     PORTS   AGE
-kuboard   nginx   kuboard.wang.org   10.0.0.11   80      3m14s
-```
+kuboard   nginx   kuboard.bowen.org   10.0.0.11   80      3m14s
 
-```text
 #做域名解析
-kuboard.wang.org   10.0.0.11
-```
+kuboard.bowen.org   10.0.0.11
 
-```text
 #安装后访问 Kuboard
-#在浏览器中打开链接 `http://kuboard.wang.org
+#在浏览器中打开链接 `http://kuboard.bowen.org
 #输入初始用户名和密码，并登录
 #用户名： admin
 #密码： Kuboard123 #注意大写的K
@@ -5537,9 +4835,9 @@ kuboard.wang.org   10.0.0.11
 
 **官方安装**
 
-```text
-https://kuboard.cn/install/v3/install-built-in.html#部署计划
-```
+
+- <https://kuboard.cn/install/v3/install-built-in.html#部署计划>
+
 
 基于如下原因，建议您以 docker run 的方式运行 Kuboard：
 
@@ -5560,7 +4858,6 @@ https://kuboard.cn/install/v3/install-built-in.html#部署计划
 #### 3.7.3.2 基于 docker 安装实现kubernetes 多个集群管理
 
 安装 Kuboard v3.x 版本的指令如下：
-
 ```text
 sudo docker run -d \
 --restart=unless-stopped \
@@ -5570,12 +4867,10 @@ sudo docker run -d \
 -e KUBOARD_ENDPOINT="http://kuboard内网IP:80" \
 -e KUBOARD_AGENT_SERVER_TCP_PORT="10081" \
 -v /root/kuboard-data:/data \
---add-host kubeapi.wang.org:10.0.0.100 #可选，k8s-apiserver的名称解释
+--add-host kubeapi.bowen.org:10.0.0.100 #可选，k8s-apiserver的名称解释
 swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard:v3
 #eipwork/kuboard:v3
-```
 
-```text
 # 可以使用镜像 swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard:v3 可以更快地完成镜像
 下载。
 # 请不要使用 127.0.0.1 或者 localhost 作为内网 IP
@@ -5613,33 +4908,26 @@ KUBOARD_ENDPOINT 参数的作用是，让部署到 Kubernetes 中的 kuboard-age
 ##### 3.7.4.1.1 基于Token导入集群信息
 
 按提示使用Token方式，执行下面命令。
-
-```text
+```yaml
 [root@master1 ~]#cat << EOF > kuboard-create-token.yaml
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
 name: kuboard
-```
 
-```text
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
 name: kuboard-admin
 namespace: kuboard
-```
 
-```text
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-```
 
-```text
 name: kuboard-admin-crb
 roleRef:
 apiGroup: rbac.authorization.k8s.io
@@ -5649,9 +4937,7 @@ subjects:
 - kind: ServiceAccount
 name: kuboard-admin
 namespace: kuboard
-```
 
-```text
 ---
 apiVersion: v1
 kind: Secret
@@ -5662,13 +4948,9 @@ kubernetes.io/service-account.name: kuboard-admin
 name: kuboard-admin-token
 namespace: kuboard
 EOF
-```
 
-```text
 [root@master1 ~]#kubectl apply -f kuboard-create-token.yaml
-```
 
-```text
 #方法1：官方获取Token
 [root@master1 ~]#echo -e "\033[1;34m将下面这一行红色输出结果填入到 kuboard 界面的 Token
 字段：\033[0m"
@@ -5688,9 +4970,7 @@ GinGVfFzmzqlSFnLpqczdQ6aX9mqQygzxkNPg2GLHcrRuesZRxFbelZp6qydF282vHoAz7VXnpOkqkOq
 QWKZGaDgwdTZB0VnqIpicaRAVWvyWRpYE1w6CSu9KKGOfS2Vd_bOfteEgH_bkfSUGCkTK-
 N0pt2Y3lTR6ML7z38F7otnZLbgyHBm2UFLojMNwF3FGkZMs8_yG5HU0KH8s5_GhRwV0go6QrAH6dwW5j
 o9a8z7-rzC6xJSabl-hGSfumfhG-aibnW76gmhMaJAygWZwA3GWhaGqtYIS5218xQ
-```
 
-```text
 #方法2：
 [root@master1 ~]#kubectl describe  -n kuboard secrets  kuboard-admin-token |awk
 '/token:/{print $2}'
@@ -5707,22 +4987,16 @@ o9a8z7-rzC6xJSabl-hGSfumfhG-aibnW76gmhMaJAygWZwA3GWhaGqtYIS5218xQ
 ![原 PDF 第 180 页插图](assets/Kubernetes安全机制_Password_Removed1/img-7fba59faf4912691.png)
 
 ##### 3.7.4.1.2 基于Kubeconfig 导入集群信息
-
-```text
+```bash
 #将下面命令执行结果，复制到kubeconfig的框中
 [root@master1 ~]#cat /etc/kubernetes/admin.conf
-```
 
-```text
 #注意：如果没有实现api-server的域名解析，还需要修改红色部分的内容
-```
 
-```text
 #注意：firefox 浏览器不兼容kuboard，会提示下面错误，可以使用edge或 chrome其它浏览器
 ```
 
 ![原 PDF 第 181 页插图](assets/Kubernetes安全机制_Password_Removed1/img-9da50a94527359ef.png)
-
 ```text
 #如果没有域名解析，需要修改APIServer地址信息，否则提示下面错误
 ```
@@ -5736,10 +5010,9 @@ o9a8z7-rzC6xJSabl-hGSfumfhG-aibnW76gmhMaJAygWZwA3GWhaGqtYIS5218xQ
 ![原 PDF 第 183 页插图](assets/Kubernetes安全机制_Password_Removed1/img-9b3b18f6f0538b23.png)
 
 ##### 3.7.4.1.3 集群管理
-
-```text
+```bash
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 ```
 
 **对deployment进行伸缩**
@@ -5757,8 +5030,7 @@ beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
 ![原 PDF 第 185 页插图](assets/Kubernetes安全机制_Password_Removed1/img-8a0bbc84987a1e9e.png)
 
 **在已有的Kubernetes管理节点执行**
-
-```text
+```bash
 #将下面命令的执行结果都复制,粘贴到kubeconfig对应的框内
 #方法1
 [root@master1 ~]#kubectl config view --raw
@@ -5775,10 +5047,9 @@ beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
 ![原 PDF 第 187 页插图](assets/Kubernetes安全机制_Password_Removed1/img-885624a1711868af.png)
 
 ![原 PDF 第 188 页插图](assets/Kubernetes安全机制_Password_Removed1/img-0fa33bed033eef6f.png)
-
-```text
+```bash
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 ```
 
 ![原 PDF 第 188 页插图](assets/Kubernetes安全机制_Password_Removed1/img-c60495e4f126e355.png)
@@ -5804,8 +5075,7 @@ beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
 ![原 PDF 第 192 页插图](assets/Kubernetes安全机制_Password_Removed1/img-f896f0e5f979bc3c.png)
 
 **在已有的Kubernetes管理节点执行**
-
-```text
+```bash
 #将下面命令的执行结果都复制,粘贴到kubeconfig对应的框内
 [root@master1 ~]#kubectl config view --raw
 [root@master1 ~]#cat .kube/config

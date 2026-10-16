@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · CRD 与 Operator'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -38,8 +39,7 @@ syntax_highlight: true
 ![原 PDF 第 80 页插图](assets/kubernetes有状态服务管理/img-280b2426d8cfd8c0.png)
 
 示例: 查看calico 自定义的资源CRD
-
-```text
+```bash
 #calico环境创建的时候，就用到了很多CRD对象，而且我们为了让CRD能够生效，该软件还提供了一个
 controller的CRD控制器。这个控制器就是将CRD对象转换为真正有意义的现实的代码。
 [root@master1 ~]#kubectl get pod -n kube-system | egrep 'NAME|calico'
@@ -86,8 +86,7 @@ CRD( Custom Resource Definition ) 定制资源可以通过动态注册的方式�
 通常情况下，一个CRD会结合对应的Controller，并添加一些其它资源，组成一个专属应用的Operator，来解决特定应用的功能。
 
 ## 2.2 CRD 配置解析
-
-```text
+```yaml
 apiVersion: apiextensions.k8s.io/v1     # API群组和版本
 kind: CustomResourceDefinition          # 资源类别
 metadata:
@@ -125,8 +124,7 @@ status <map[string]>            # 启用status子资源，为资源生成/status
 ```
 
 范例： 查看网络附件Calico的自定义资源对象CRD
-
-```text
+```yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -179,12 +177,9 @@ storedVersions: []
 ## 2.3  CRD 案例
 
 范例: 自定义CRD资源
-
-```text
+```yaml
 #创建一个基于用户的CRD资源
-```
 
-```text
 [root@master1 ~]#cat crd-user.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -224,101 +219,79 @@ password:
 type: string
 format: password
 required: ["userID","groups"]
-```
 
-```text
 #应用资源配置文件
 [root@master1 ~]#kubectl apply  -f  scheduler-crd-user.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl api-resources  |grep user
 users                             u            auth.democrd.io/v1alpha1
 true         User
-```
 
-```text
 [root@master1 ~]#kubectl  get crd | egrep 'NA|users'
 NAME                    CREATED AT
 users.auth.democrd.io   2021-04-04T02:54:13Z
-```
 
-```text
 [root@master1 ~]#kubectl explain users.auth.democrd.io
 KIND:     User
 VERSION:  auth.democrd.io/v1alpha1
-```
 
-```text
 DESCRIPTION:
 <empty>
 ```
 
-```text
-FIELDS:
-apiVersion   <string>
-APIVersion defines the versioned schema of this representation of an
-object. Servers should convert recognized schemas to the latest internal
-value, and may reject unrecognized values. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
-conventions.md#resources
-```
 
-```text
-kind <string>
-Kind is a string value representing the REST resource this object
-represents. Servers may infer this from the endpoint the client submits
-requests to. Cannot be updated. In CamelCase. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+FIELDS: apiVersion   <string>APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
+conventions.md#resources
+
+
+kind <string>Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#types-kinds
-```
 
 ```text
 metadata <Object>
 Standard object's metadata. More info:
 https://git.k8s.io/community/contributors/devel/sig-architecture/api-
 conventions.md#metadata
-```
 
-```text
 spec <Object>
 ```
 
 范例: 简单使用自定义资源CRD
-
-```text
+```yaml
 #创建自定义资源
 [root@master1 ~]#cat crd-user-test.yaml
 apiVersion: auth.democrd.io/v1alpha1
 kind: User
 metadata:
-name: wang
+name: bowen
 namespace: default
 spec:
 userID: 1
-email: wangxiaochun@wang.org
+email: bowen@bowen.org
 groups:
 - superusers
 - adminstrators
 password: "123456"
-```
 
-```text
 #监听
 [root@master1 ~]#kubectl proxy
 [root@master1 ~]#curl http://localhost:8001/apis/auth.democrd.io/v1alpha1/users?
 watch=true
 #应用资源清单文件后可以显示下面内容
-```
 
-```text
 {"type":"ADDED","object":
 {"apiVersion":"auth.democrd.io/v1alpha1","kind":"User","metadata":
 {"annotations":{"kubectl.kubernetes.io/last-applied-configuration":"
 {\"apiVersion\":\"auth.democrd.io/v1alpha1\",\"kind\":\"User\",\"metadata\":
-{\"annotations\":{},\"name\":\"wang\",\"namespace\":\"default\"},\"spec\":
-{\"email\":\"wangxiaochun@wang.org\",\"groups\":
+{\"annotations\":{},\"name\":\"bowen\",\"namespace\":\"default\"},\"spec\":
+{\"email\":\"bowen@bowen.org\",\"groups\":
 [\"superusers\",\"adminstrators\"],\"password\":\"123456\",\"userID\":1}}\n"},"c
 reationTimestamp":"2021-04-04T02:58:53Z","generation":1,"managedFields":
 [{"apiVersion":"auth.democrd.io/v1alpha1","fieldsType":"FieldsV1","fieldsV1":
@@ -326,25 +299,19 @@ reationTimestamp":"2021-04-04T02:58:53Z","generation":1,"managedFields":
 configuration":{}}},"f:spec":{".":{},"f:email":{},"f:groups":{},"f:password":
 {},"f:userID":{}}},"manager":"kubectl-client-side-
 apply","operation":"Update","time":"2024-08-
-20T06:07:42Z"}],"name":"wang","namespace":"default","resourceVersion":"1224837",
+20T06:07:42Z"}],"name":"bowen","namespace":"default","resourceVersion":"1224837",
 "uid":"4513a391-2fca-4cf6-b5b7-4efa721a76c3"},"spec":
-{"email":"wangxiaochun@wang.org","groups":
+{"email":"bowen@bowen.org","groups":
 ["superusers","adminstrators"],"password":"123456","userID":1}}}
-```
 
-```text
 #应用资源配置文件
 [root@master1 ~]#kubectl apply -f crd-user-test.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get users
 NAME    AGE
-wang   26s
-```
+bowen   26s
 
-```text
 [root@master1 ~]#kubectl get user -o yaml
 apiVersion: v1
 items:
@@ -355,16 +322,16 @@ annotations:
 kubectl.kubernetes.io/last-applied-configuration: |
 {"apiVersion":"auth.democrd.io/v1alpha1","kind":"User","metadata":
 {"annotations":{},"name":"admin","namespace":"default"},"spec":
-{"email":"wangxiaochun@wang.org","groups":
+{"email":"bowen@bowen.org","groups":
 ["superusers","adminstrators"],"password":"123456","userID":1}}
 creationTimestamp: "2021-04-04T02:58:53Z"
 generation: 1
-name: wang
+name: bowen
 namespace: default
 resourceVersion: "166759"
 uid: d742870e-12c5-413b-a98a-541873c2205e
 spec:
-email: wangxiaochun@wang.org
+email: bowen@bowen.org
 groups:
 - superusers
 - adminstrators
@@ -373,14 +340,10 @@ userID: 1
 kind: List
 metadata:
 resourceVersion: ""
-```
 
-```text
-[root@master1 ~]#kubectl describe users wang
-Name:         wang
-```
+[root@master1 ~]#kubectl describe users bowen
+Name:         bowen
 
-```text
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
@@ -409,20 +372,16 @@ Time:            2021-04-04T02:58:53Z
 Resource Version:  166759
 UID:               d742870e-12c5-413b-a98a-541873c2205e
 Spec:
-Email:  wangxiaochun@wang.org
+Email:  bowen@bowen.org
 Groups:
 superusers
 adminstrators
 Password:  123456
 User ID:   1
 Events:      <none>
-```
 
-```text
 #注意:虽然创建好了CRD，但是CRD本身没有太大的意义，意义只在于如何在控制器或者operator中使用它
-```
 
-```text
 #清理环境,注意顺序,如果相反会导致admin资源不可用，无法删除
 [root@master1 ~]#kubectl delete  -f  crd-user-test.yaml
 [root@master1 ~]#kubectl delete  -f  crd-user.yaml
@@ -452,10 +411,10 @@ Operator就是基于以上原理工作，以Redis Operator为例，为了实现O
 
 Operator 链接：
 
-```text
-https://operatorhub.io/
-https://github.com/operator-framework/awesome-operators
-```
+
+- <https://operatorhub.io/>
+- <https://github.com/operator-framework/awesome-operators>
+
 
 ![原 PDF 第 88 页插图](assets/kubernetes有状态服务管理/img-bde6d1a87f922cb1.png)
 
@@ -468,67 +427,39 @@ https://github.com/operator-framework/awesome-operators
 注意：Worker 节点内存需要4G以上。
 
 **官方安装说明**
-
 ```text
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-
 elasticsearch.html
-```
 
-```text
 #1)Install custom resource definitions:
-```
 
-```text
 kubectl create -f https://download.elastic.co/downloads/eck/2.12.1/crds.yaml
 ```
 
-```text
-The following Elastic resources have been created:
-customresourcedefinition.apiextensions.k8s.io/agents.agent.k8s.elastic.co
-created
-customresourcedefinition.apiextensions.k8s.io/apmservers.apm.k8s.elastic.co
-created
-customresourcedefinition.apiextensions.k8s.io/beats.beat.k8s.elastic.co created
-customresourcedefinition.apiextensions.k8s.io/elasticmapsservers.maps.k8s.elasti
-c.co created
-customresourcedefinition.apiextensions.k8s.io/elasticsearches.elasticsearch.k8s.
-elastic.co created
-customresourcedefinition.apiextensions.k8s.io/enterprisesearches.enterprisesearc
-h.k8s.elastic.co created
-```
+
+The following Elastic resources have been created: customresourcedefinition.apiextensions.k8s.io/agents.agent.k8s.elastic.co created customresourcedefinition.apiextensions.k8s.io/apmservers.apm.k8s.elastic.co created customresourcedefinition.apiextensions.k8s.io/beats.beat.k8s.elastic.co created customresourcedefinition.apiextensions.k8s.io/elasticmapsservers.maps.k8s.elasti c.co created customresourcedefinition.apiextensions.k8s.io/elasticsearches.elasticsearch.k8s. elastic.co created customresourcedefinition.apiextensions.k8s.io/enterprisesearches.enterprisesearc h.k8s.elastic.co created
 
 ```text
 customresourcedefinition.apiextensions.k8s.io/kibanas.kibana.k8s.elastic.co
 created
 customresourcedefinition.apiextensions.k8s.io/logstashes.logstash.k8s.elastic.co
 created
-```
 
-```text
 #2)Install the operator with its RBAC rules:
-```
 
-```text
 kubectl apply -f https://download.elastic.co/downloads/eck/2.12.1/operator.yaml
 ```
 
-```text
-The ECK operator runs by default in the elastic-system namespace. It is
-recommended that you choose a dedicated namespace for your workloads, rather
-than using the elastic-system or the default namespace.
-```
 
-```text
+The ECK operator runs by default in the elastic-system namespace. It is recommended that you choose a dedicated namespace for your workloads, rather than using the elastic-system or the default namespace.
+
+```yaml
 #Monitor the operator logs:
-```
 
-```text
 kubectl -n elastic-system logs -f statefulset.apps/elastic-operator
-```
 
-```text
 #3)Apply a simple Elasticsearch cluster specification, with one Elasticsearch
 node:
 cat <<EOF | kubectl apply -f -
@@ -544,98 +475,62 @@ count: 1
 config:
 node.store.allow_mmap: false
 EOF
-```
 
-```text
 #4)Monitor cluster health and creation progressedit
 #Get an overview of the current Elasticsearch clusters in the Kubernetes cluster,
 including health, version and number of nodes:
-```
 
-```text
 kubectl get elasticsearch
 NAME          HEALTH    NODES     VERSION   PHASE         AGE
 quickstart    green     1         8.13.2     Ready         1m
 ```
 
-```text
-#When you create the cluster, there is no HEALTH status and the PHASE is empty.
-After a while, the PHASE turns into Ready, and HEALTH becomes green. The HEALTH
-status comes from Elasticsearch’s cluster health API.
-```
 
-```text
+#When you create the cluster, there is no HEALTH status and the PHASE is empty. After a while, the PHASE turns into Ready, and HEALTH becomes green. The HEALTH status comes from Elasticsearch’s cluster health API.
+
+```bash
 #One Pod is in the process of being started:
-```
 
-```text
 kubectl get pods --selector='elasticsearch.k8s.elastic.co/cluster-
 name=quickstart'
 NAME                      READY   STATUS    RESTARTS   AGE
 quickstart-es-default-0   1/1     Running   0          79s
-```
 
-```text
 #Access the logs for that Pod:
-```
 
-```text
 kubectl logs -f quickstart-es-default-0
-```
 
-```text
 #Request Elasticsearch accessedit
 #A ClusterIP Service is automatically created for your cluster:
-```
 
-```text
 kubectl get service quickstart-es-http
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 quickstart-es-http   ClusterIP   10.15.251.145   <none>        9200/TCP   34m
-```
 
-```text
 #Get the credentials.
-```
 
-```text
 #A default user named elastic is automatically created with the password stored
 in a Kubernetes secret:
-```
 
-```text
 PASSWORD=$(kubectl get secret quickstart-es-elastic-user -o go-
 template='{{.data.elastic | base64decode}}')
 Request the Elasticsearch endpoint.
-```
 
-```text
 #From inside the Kubernetes cluster:
-```
 
-```text
 curl -u "elastic:$PASSWORD" -k "https://quickstart-es-http:9200"
-```
 
-```text
 #From your local workstation, use the following command in a separate terminal:
-```
 
-```text
 kubectl port-forward service/quickstart-es-http 9200
-```
 
-```text
 #Then request localhost:
-```
 
-```text
 curl -u "elastic:$PASSWORD" -k "https://localhost:9200"
 ```
 
 #### 3.2.1.1 安装 Operator
-
-```text
+```bash
 #安装Operator
 [root@master1 ~]#kubectl create -f
 https://download.elastic.co/downloads/eck/2.12.1/crds.yaml
@@ -658,16 +553,12 @@ customresourcedefinition.apiextensions.k8s.io/logstashes.logstash.k8s.elastic.co
 created
 customresourcedefinition.apiextensions.k8s.io/stackconfigpolicies.stackconfigpol
 icy.k8s.elastic.co created
-```
 
-```text
 #自动创建相关CRD
 [root@master1 ~]#kubectl get crd --sort-by='{.metadata.creationTimestamp}'|tail
 enterprisesearches.enterprisesearch.k8s.elastic.co     2024-04-21T03:41:22Z
 elasticmapsservers.maps.k8s.elastic.co                 2024-04-21T03:41:22Z
-```
 
-```text
 elasticsearchautoscalers.autoscaling.k8s.elastic.co    2024-04-21T03:41:22Z
 stackconfigpolicies.stackconfigpolicy.k8s.elastic.co   2024-04-21T03:41:22Z
 logstashes.logstash.k8s.elastic.co                     2024-04-21T03:41:22Z
@@ -676,9 +567,7 @@ kibanas.kibana.k8s.elastic.co                          2024-04-21T03:41:22Z
 elasticsearches.elasticsearch.k8s.elastic.co           2024-04-21T03:41:22Z
 beats.beat.k8s.elastic.co                              2024-04-21T03:41:22Z
 apmservers.apm.k8s.elastic.co                          2024-04-21T03:41:22Z
-```
 
-```text
 #安装operator相关RBAC 规则
 [root@master1 ~]#kubectl apply -f
 https://download.elastic.co/downloads/eck/2.12.1/operator.yaml
@@ -694,35 +583,26 @@ service/elastic-webhook-server created
 statefulset.apps/elastic-operator created
 validatingwebhookconfiguration.admissionregistration.k8s.io/elastic-
 webhook.k8s.elastic.co created
-```
 
-```text
 #在elastic-system 名称空间查看相关资源
 [root@master1 ~]#kubectl get all -n elastic-system
 NAME                     READY   STATUS    RESTARTS   AGE
 pod/elastic-operator-0   1/1     Running   0          23s
-```
 
-```text
 NAME                             TYPE        CLUSTER-IP       EXTERNAL-IP
 PORT(S)   AGE
 service/elastic-webhook-server   ClusterIP   10.100.174.107   <none>
 443/TCP   23s
-```
 
-```text
 NAME                                READY   AGE
 statefulset.apps/elastic-operator   1/1     23s
 ```
 
 #### 3.2.1.2 部署 Elasticsearch
-
-```text
+```yaml
 #准备业务的名称空间
 [root@master1 ~]#kubectl create ns demo
-```
 
-```text
 #准备elasticsearch-cluster清单文件
 [root@master1 ~]#cat operator-elasticsearch-cluster.yaml
 apiVersion: elasticsearch.k8s.elastic.co/v1
@@ -736,9 +616,7 @@ spec:
 version: 8.14.0
 nodeSets:
 - name: default
-```
 
-```text
 count: 3                  #3个节点的集群
 config:
 node.store.allow_mmap: false
@@ -751,30 +629,22 @@ resources:
 requests:
 storage: 2Gi
 storageClassName: sc-nfs     #需要提前准备sc-nfs的storageClass
-```
 
-```text
 #注意：节点内存需要4G以上
 [root@master1 ~]#kubectl apply -f operator-elasticsearch-cluster.yaml
-```
 
-```text
 #查看结果
 [root@master1 ~]#kubectl get elasticsearch -n demo
 NAME            HEALTH   NODES   VERSION   PHASE   AGE
 my-es-cluster   green    3       8.13.2    Ready   51m
-```
 
-```text
 #查看结果
 [root@master1 ~]#kubectl get all -n demo
 NAME                             READY   STATUS    RESTARTS   AGE
 pod/my-es-cluster-es-default-0   1/1     Running   0          31s
 pod/my-es-cluster-es-default-1   1/1     Running   0          31s
 pod/my-es-cluster-es-default-2   1/1     Running   0          31s
-```
 
-```text
 NAME                                     TYPE        CLUSTER-IP       EXTERNAL-IP
 PORT(S)    AGE
 service/my-es-cluster-es-default         ClusterIP   None             <none>
@@ -785,14 +655,10 @@ service/my-es-cluster-es-internal-http   ClusterIP   10.105.185.183   <none>
 9200/TCP   42s
 service/my-es-cluster-es-transport       ClusterIP   None             <none>
 9300/TCP   42s
-```
 
-```text
 NAME                                        READY   AGE
 statefulset.apps/my-es-cluster-es-default   3/3     31s
-```
 
-```text
 [root@master1 ~]#kubectl get secret -n demo
 NAME                                          TYPE     DATA   AGE
 my-es-cluster-es-default-es-config            Opaque   1      20m
@@ -807,9 +673,7 @@ my-es-cluster-es-remote-ca                    Opaque   1      20m
 my-es-cluster-es-transport-ca-internal        Opaque   2      20m
 my-es-cluster-es-transport-certs-public       Opaque   1      20m
 my-es-cluster-es-xpack-file-realm             Opaque   4      20m
-```
 
-```text
 [root@master1 ~]#ls /data/sc-nfs/
 demo-elasticsearch-data-my-es-cluster-es-default-0-pvc-2c75f0cd-4f73-42dc-9f00-
 80862d43128e
@@ -817,26 +681,20 @@ demo-elasticsearch-data-my-es-cluster-es-default-1-pvc-de45a3e6-820f-4e27-b596-
 c50eb57e0563
 demo-elasticsearch-data-my-es-cluster-es-default-2-pvc-8704ca2c-f0e4-4c1a-90c0-
 47c3a9e5f809
-```
 
-```text
 #取出ES的访问密码
 [root@master1 ~]#PASSWORD=$(kubectl get secret my-es-cluster-es-elastic-user -n
 demo -o go-template='{{.data.elastic | base64decode}}')
 #或者
 [root@master1 ~]#PASSWORD=$(kubectl get secret my-es-cluster-es-elastic-user -n
 demo -o jsonpath={.data.elastic} -n demo|base64 -d)
-```
 
-```text
 [root@master1 ~]#echo $PASSWORD
 r969NUq7Xq3p445XZ46wKqoi
-```
 
-```text
 #开启一个新的Pod测试访问ES Cluster
 [root@master1 ~]#kubectl run --env="PASSWORD=$PASSWORD" client-$RANDOM --image
-registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --
+registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --
 restart=Never --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 root@client-6625 /# curl -u "elastic:$PASSWORD" -k https://my-es-cluster-es-
@@ -858,9 +716,7 @@ http.demo:9200
 },
 "tagline" : "You Know, for Search"
 }
-```
 
-```text
 root@client-6625 /#curl -u "elastic:$PASSWORD" -k https://my-es-cluster-es-
 http.demo:9200/_cat/health
 1713678472 05:47:52 my-es-cluster green 3 3 0 0 0 0 0 0 - 100.0%
@@ -869,26 +725,21 @@ http.demo:9200/_cat/nodes
 10.244.2.76 61 73 4 0.36 0.43 0.45 cdfhilmrstw - my-es-cluster-es-default-2
 10.244.3.65 53 71 4 0.81 0.74 0.52 cdfhilmrstw - my-es-cluster-es-default-0
 10.244.1.84 39 71 4 0.19 0.19 0.26 cdfhilmrstw * my-es-cluster-es-default-1
-```
 
-```text
 [root@master1 ~]#curl -u "elastic:$PASSWORD" -k
 https://10.109.165.206:9200/_cat/health?v
 epoch      timestamp cluster       status node.total node.data shards pri relo
 init unassign pending_tasks max_task_wait_time active_shards_percent
 1755490243 04:10:43  my-es-cluster green           3         3      0   0    0
 0        0             0                  -                100.0%
-```
 
-```text
 #当前没有索引
 root@client-6625 /#curl -u "elastic:$PASSWORD" -k https://my-es-cluster-es-
 http.demo:9200/_cat/indices
 ```
 
 #### 3.2.1.3 部署 Kibana
-
-```text
+```yaml
 #部署Kibana
 [root@master1 ~]#cat operator-elasticsearch-cluster-kibana.yaml
 apiVersion: kibana.k8s.elastic.co/v1
@@ -921,7 +772,7 @@ type: LoadBalancer #
 #spec:
 #  ingressClassName: nginx
 #  rules:
-#  - host: kibana.wang.org
+#  - host: kibana.bowen.org
 #    http:
 #      paths:
 #      - backend:
@@ -935,21 +786,15 @@ type: LoadBalancer #
 #  # - hosts:
 #  #   - host-name
 #  #   secretName: tls-secret-name
-```
 
-```text
 [root@master1 ~]#kubectl apply -f operator-elasticsearch-cluster-kibana.yaml
 kibana.kibana.k8s.elastic.co/kibana created
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get kibana  -n demo
 NAME     HEALTH   NODES   VERSION   AGE
 kibana   green    1       8.11.3    26m
-```
 
-```text
 #查看SVC
 [root@master1 ~]#kubectl get svc  -n demo
 NAME                                     TYPE        CLUSTER-IP       EXTERNAL-IP
@@ -959,8 +804,7 @@ service/kibana-kb-http                   LoadBalancer  10.108.134.123
 ```
 
 #### 3.2.1.4 部署 Filebeat
-
-```text
+```yaml
 #部署Filebeat
 [root@master1 ~]#cat operator-elasticsearch-cluster-filebeat.yaml
 apiVersion: beat.k8s.elastic.co/v1beta1
@@ -1004,9 +848,7 @@ kubernetes.namespace: "kube-system"
 kubernetes.namespace: "logging"
 - equals:
 kubernetes.namespace: "ingress-nginx"
-```
 
-```text
 - equals:
 kubernetes.namespace: "kube-node-lease"
 - equals:
@@ -1065,9 +907,7 @@ verbs:
 ---
 apiVersion: v1
 kind: ServiceAccount
-```
 
-```text
 metadata:
 name: filebeat
 #namespace: elastic-system
@@ -1087,18 +927,13 @@ kind: ClusterRole
 name: filebeat
 apiGroup: rbac.authorization.k8s.io
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl apply -f operator-elasticsearch-cluster-filebeat.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get beats -n demo
 NAME       HEALTH   AVAILABLE   EXPECTED   TYPE       VERSION   AGE
 filebeat   green    3           3          filebeat   8.11.3    28m
-```
 
-```text
 [root@master1 ~]#kubectl get all -n demo
 NAME                               READY   STATUS    RESTARTS      AGE
 pod/filebeat-beat-filebeat-42qfw   1/1     Running   3 (50s ago)   2m6s
@@ -1108,9 +943,7 @@ pod/kibana-kb-6bcdf8d8d8-b2jp2     1/1     Running   0             2m6s
 pod/my-es-cluster-es-default-0     1/1     Running   0             58m
 pod/my-es-cluster-es-default-1     1/1     Running   0             58m
 pod/my-es-cluster-es-default-2     1/1     Running   0             58m
-```
 
-```text
 NAME                                     TYPE        CLUSTER-IP       EXTERNAL-IP
 PORT(S)          AGE
 service/kibana-kb-http                   LoadBalancer  10.108.134.123
@@ -1123,45 +956,32 @@ service/my-es-cluster-es-internal-http   ClusterIP   10.105.185.183   <none>
 9200/TCP         58m
 service/my-es-cluster-es-transport       ClusterIP   None             <none>
 9300/TCP         58m
-```
 
-```text
 NAME                                    DESIRED   CURRENT   READY   UP-TO-DATE
 AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/filebeat-beat-filebeat   3         3         3       3
 3           <none>          2m7s
-```
 
-```text
 NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/kibana-kb   1/1     1            1           2m7s
-```
 
-```text
 NAME                                   DESIRED   CURRENT   READY   AGE
-```
 
-```text
 replicaset.apps/kibana-kb-6bcdf8d8d8   1         1         1       2m7s
-```
 
-```text
 NAME                                        READY   AGE
 statefulset.apps/my-es-cluster-es-default   3/3     58m
 ```
 
 #### 3.2.1.5 测试访问 Kibana
-
-```text
+```bash
 #使用ElasticSearch部署时生成的用户elastic及其密码即可登录service的NodePort
 #用前面的命令取出密码
 [root@master1 ~]#kubectl get secret my-es-cluster-es-elastic-user -n demo -o
 jsonpath={.data.elastic} -n demo|base64 -d
 r969NUq7Xq3p445XZ46wKqoi
 http://10.0.0.200:30635/
-```
 
-```text
 #或者通过Kibana的LoadBalancer SVC的IP直接访问
 ```
 
@@ -1182,13 +1002,12 @@ Kibana会自动加载由filebeat生成的index pattern。
 因此直接进行Discover页面即可查看到数据
 
 ![原 PDF 第 102 页插图](assets/kubernetes有状态服务管理/img-bcafce83d2e01439.png)
-
-```text
+```bash
 #查看到索引
 [root@master1 ~]#PASSWORD=$(kubectl get secret my-es-cluster-es-elastic-user -n
 demo -o jsonpath={.data.elastic} -n demo|base64 -d)
 [root@master1 ~]#kubectl run --env="PASSWORD=$PASSWORD" client-$RANDOM --image
-wangxiaochun/admin-box:v0.1 -it --rm --restart=Never --command -- /bin/bash
+bowen/admin-box:v0.1 -it --rm --restart=Never --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 root@client-20723 /# curl -u "elastic:$PASSWORD" -k https://my-es-cluster-es-
 http.demo:9200/_cat/indices
@@ -1222,10 +1041,10 @@ qUQluR1wwqM3U6KQ 1 1    0 0 498b 249b 249b
 
 **github 参考链接**
 
-```text
-https://github.com/prometheus-operator/kube-prometheus
-https://github.com/prometheus-operator/kube-prometheus/tree/main/manifests
-```
+
+- <https://github.com/prometheus-operator/kube-prometheus>
+- <https://github.com/prometheus-operator/kube-prometheus/tree/main/manifests>
+
 
 参看Prometheus 课件的11.1.3 小节
 
@@ -1233,9 +1052,9 @@ https://github.com/prometheus-operator/kube-prometheus/tree/main/manifests
 
 ### 3.2.3   案例：基于 Operator  实现 Nacos
 
-```text
-https://github.com/nacos-group/nacos-k8s/blob/master/operator/README-CN.md
-```
+
+- <https://github.com/nacos-group/nacos-k8s/blob/master/operator/README-CN.md>
+
 
 nacos-operator项目，快速在K8s上面部署构建nacos。
 
@@ -1243,9 +1062,9 @@ nacos-operator项目，快速在K8s上面部署构建nacos。
 
 #### 3.2.3.1 Nacos-Operator 项目与基于manifest清单文件nacos-k8s项目的区别
 
-```text
-https://github.com/nacos-group/nacos-k8s/blob/master/README-CN.md
-```
+
+- <https://github.com/nacos-group/nacos-k8s/blob/master/README-CN.md>
+
 
 nacos-k8s的项目包含一个可构建的Nacos Docker Image,旨在利用StatefulSets在Kubernetes上部署Nacos。
 
@@ -1254,13 +1073,10 @@ nacos-k8s的项目包含一个可构建的Nacos Docker Image,旨在利用Statefu
 通过operator快速构建nacos集群，指定简单的cr.yaml文件，既可以实现各种类型的nacos集群(数据库选型、standalone/cluster模式等)增加一定的运维能力，在status中增加对nacos集群状态的检查、自动化运维等(后续扩展更多功能)。
 
 #### 3.2.3.2 快速开始
-
-```text
+```bash
 #方法1: 直接使用helm方式安装operator
 helm install nacos-operator ./chart/nacos-operator
-```
 
-```text
 #方法2: 如果没有helm, 使用kubectl进行安装, 默认安装在default下面
 kubectl apply -f chart/nacos-operator/nacos-operator-all.yaml
 ```
@@ -1268,8 +1084,7 @@ kubectl apply -f chart/nacos-operator/nacos-operator-all.yaml
 #### 3.2.3.3 启动单实例，standalone模式
 
 **查看cr文件**
-
-```text
+```yaml
 cat config/samples/nacos.yaml
 apiVersion: nacos.io/v1alpha1
 kind: Nacos
@@ -1279,31 +1094,24 @@ spec:
 type: standalone
 image: nacos/nacos-server:1.4.1
 replicas: 1
-```
 
-```text
 # 安装demo standalone模式
 kubectl apply -f config/samples/nacos.yaml
 ```
 
 **查看nacos实例**
-
-```text
+```bash
 kubectl get nacos
 NAME    REPLICAS   READY     TYPE         DBTYPE   VERSION   CREATETIME
 nacos   1          Running   standalone            1.4.1     2021-03-
 14T09:21:49Z
-```
 
-```text
 kubectl get pod  -o wide
 NAME                 READY   STATUS    RESTARTS   AGE    IP               NODE
 NOMINATED NODE   READINESS GATES
 nacos-0   1/1     Running   0          84s    10.168.247.38    slave-100   <none>
 <none>
-```
 
-```text
 kubectl get nacos nacos -o yaml
 ...
 status
@@ -1318,18 +1126,14 @@ version: 1.4.1
 ```
 
 清除
-
 ```text
 make demo clear=true
 ```
 
 #### 3.2.3.4 启动集群模式
-
-```text
+```yaml
 cat config/samples/nacos_cluster.yaml
-```
 
-```text
 apiVersion: nacos.io/v1alpha1
 kind: Nacos
 metadata:
@@ -1338,14 +1142,10 @@ spec:
 type: cluster
 image: nacos/nacos-server:1.4.1
 replicas: 3
-```
 
-```text
 # 创建nacos集群
 kubectl apply -f config/samples/nacos_cluster.yaml
-```
 
-```text
 kubectl get po -o wide
 NAME             READY   STATUS    RESTARTS   AGE    IP               NODE
 NOMINATED NODE   READINESS GATES
@@ -1355,15 +1155,11 @@ nacos-1          1/1     Running   0          109s   10.168.152.186   master-212
 <none>           <none>
 nacos-2          1/1     Running   0          108s   10.168.207.209   slave-214
 <none>           <none>
-```
 
-```text
 kubectl get nacos
 NAME    REPLICAS   READY     TYPE      DBTYPE   VERSION   CREATETIME
 nacos   3          Running   cluster            1.4.1     2021-03-14T09:33:09Z
-```
 
-```text
 kubectl get nacos nacos -o yaml -w
 ...
 status:
@@ -1398,7 +1194,6 @@ version: 1.4.1
 ```
 
 清除
-
 ```text
 make demo clear=true
 ```
@@ -1412,8 +1207,7 @@ make demo clear=true
 #### 3.2.3.6 数据库配置
 
 **embedded数据库**
-
-```text
+```yaml
 apiVersion: nacos.io/v1alpha1
 kind: Nacos
 metadata:
@@ -1435,8 +1229,7 @@ storageClass: default
 **mysql数据库**
 
 该模式下需要提供外部mysql连接信息，会自动创建创建nacos数据库，并执行初始化sql。
-
-```text
+```yaml
 apiVersion: nacos.io/v1alpha1
 kind: Nacos
 metadata:
@@ -1457,8 +1250,7 @@ mysqlPassword: "123456"
 #### 3.2.3.7 自定义配置
 
 1. 通过环境变量配置 兼容nacos-docker项目， https://github.com/nacos-group/nacos-docker
-
-```text
+```yaml
 apiVersion: nacos.io/v1alpha1
 kind: Nacos
 metadata:
@@ -1473,15 +1265,13 @@ value: 2g
 2. 通过properties文件配置
 
 https://github.com/nacos-group/nacos-docker/blob/master/build/bin/docker-startup.sh
-
-```text
+```bash
 export CUSTOM_SEARCH_NAMES="application,custom"
 export CUSTOM_SEARCH_LOCATIONS=${BASE_DIR}/init.d/,file:${BASE_DIR}/conf/
 ```
 
 支持自定义配置文件，spec.config 会直接映射成custom.properties文件。
-
-```text
+```yaml
 apiVersion: nacos.io/v1alpha1
 kind: Nacos
 metadata:

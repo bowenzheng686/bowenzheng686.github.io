@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 准入控制'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -16,7 +17,6 @@ syntax_highlight: true
 ## 4.1 准入机制说明
 
 ### 4.1.1 准入机制介绍
-
 ```text
 https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/admission-
 controllers/
@@ -43,62 +43,33 @@ controllers/
 ### 4.1.2 准入控制器
 
 **准入控制功能启用**
-
-```text
+```bash
 #准入控制器需要在kube-apiserver中进行配置，我们的kubeadm的kube-apiserver的配置文件中就通过
 属性开启了准入控制器：
-```
 
-```text
 [root@master1 ~]#grep -ni 'admission' /etc/kubernetes/manifests/kube-
 apiserver.yaml
 20:    - --enable-admission-plugins=NodeRestriction
-```
 
-```text
 #根据上面的内容显示，开启用enbable，那么关闭控制器也比较方便：
 --disable-admission-plugins=控制器列表
-```
 
-```text
 #查看默认开启的控制器
-[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.wang.org
+[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.bowen.org
 -- kube-apiserver -h | grep 'enable-admission-plugins strings'
 ```
 
-```text
---enable-admission-plugins strings       admission plugins that should be
-enabled in addition to default enabled ones (NamespaceLifecycle, LimitRanger,
-ServiceAccount, TaintNodesByCondition, PodSecurity, Priority,
-DefaultTolerationSeconds, DefaultStorageClass, StorageObjectInUseProtection,
-PersistentVolumeClaimResize, RuntimeClass, CertificateApproval,
-CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass,
-MutatingAdmissionWebhook, ValidatingAdmissionWebhook, ResourceQuota). Comma-
-delimited list of admission plugins: AlwaysAdmit, AlwaysDeny, AlwaysPullImages,
-CertificateApproval, CertificateSigning, CertificateSubjectRestriction,
-DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds,
-DenyServiceExternalIPs, EventRateLimit, ExtendedResourceToleration,
-ImagePolicyWebhook, LimitPodHardAntiAffinityTopology, LimitRanger,
-MutatingAdmissionWebhook, NamespaceAutoProvision, NamespaceExists,
-NamespaceLifecycle, NodeRestriction, OwnerReferencesPermissionEnforcement,
-PersistentVolumeClaimResize, PersistentVolumeLabel, PodNodeSelector, PodSecurity,
-PodSecurityPolicy, PodTolerationRestriction, Priority, ResourceQuota,
-RuntimeClass, SecurityContextDeny, ServiceAccount, StorageObjectInUseProtection,
-TaintNodesByCondition, ValidatingAdmissionWebhook. The order of plugins in this
-flag does not matter.
-#结果显示：kubernetes-v1.23版中默认启用了 18个 准入控制器。而可以启用的准入控制器有 35 个。
-```
 
-```text
+--enable-admission-plugins strings       admission plugins that should be enabled in addition to default enabled ones (NamespaceLifecycle, LimitRanger, ServiceAccount, TaintNodesByCondition, PodSecurity, Priority, DefaultTolerationSeconds, DefaultStorageClass, StorageObjectInUseProtection, PersistentVolumeClaimResize, RuntimeClass, CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, MutatingAdmissionWebhook, ValidatingAdmissionWebhook, ResourceQuota). Comma-delimited list of admission plugins: AlwaysAdmit, AlwaysDeny, AlwaysPullImages, CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds, DenyServiceExternalIPs, EventRateLimit, ExtendedResourceToleration, ImagePolicyWebhook, LimitPodHardAntiAffinityTopology, LimitRanger, MutatingAdmissionWebhook, NamespaceAutoProvision, NamespaceExists, NamespaceLifecycle, NodeRestriction, OwnerReferencesPermissionEnforcement, PersistentVolumeClaimResize, PersistentVolumeLabel, PodNodeSelector, PodSecurity, PodSecurityPolicy, PodTolerationRestriction, Priority, ResourceQuota, RuntimeClass, SecurityContextDeny, ServiceAccount, StorageObjectInUseProtection, TaintNodesByCondition, ValidatingAdmissionWebhook. The order of plugins in this flag does not matter.#结果显示：kubernetes-v1.23版中默认启用了 18个 准入控制器。而可以启用的准入控制器有 35 个。
+
+```bash
 #kubernetes-v1.30.0版有54种准备入控制器
 [root@master1 ~]#kubectl version
 Client Version: v1.30.0
 Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 Server Version: v1.30.0
-```
 
-```text
-[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.wang.org
+[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.bowen.org
 -- kube-apiserver -h | grep 'enable-admission-plugins strings'|tr "," "\n"
 --enable-admission-plugins strings       admission plugins that should be
 enabled in addition to default enabled ones (NamespaceLifecycle
@@ -131,37 +102,11 @@ DefaultIngressClass
 DefaultStorageClass
 ```
 
-```text
-DefaultTolerationSeconds
-DenyServiceExternalIPs
-EventRateLimit
-ExtendedResourceToleration
-ImagePolicyWebhook
-LimitPodHardAntiAffinityTopology
-LimitRanger
-MutatingAdmissionWebhook
-NamespaceAutoProvision
-NamespaceExists
-NamespaceLifecycle
-NodeRestriction
-OwnerReferencesPermissionEnforcement
-PersistentVolumeClaimResize
-PersistentVolumeLabel
-PodNodeSelector
-PodSecurity
-PodTolerationRestriction
-Priority
-ResourceQuota
-RuntimeClass
-ServiceAccount
-StorageObjectInUseProtection
-TaintNodesByCondition
-ValidatingAdmissionPolicy
-ValidatingAdmissionWebhook. The order of plugins in this flag does not matter.
-```
 
-```text
-[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.wang.org
+DefaultTolerationSeconds DenyServiceExternalIPs EventRateLimit ExtendedResourceToleration ImagePolicyWebhook LimitPodHardAntiAffinityTopology LimitRanger MutatingAdmissionWebhook NamespaceAutoProvision NamespaceExists NamespaceLifecycle NodeRestriction OwnerReferencesPermissionEnforcement PersistentVolumeClaimResize PersistentVolumeLabel PodNodeSelector PodSecurity PodTolerationRestriction Priority ResourceQuota RuntimeClass ServiceAccount StorageObjectInUseProtection TaintNodesByCondition ValidatingAdmissionPolicy ValidatingAdmissionWebhook. The order of plugins in this flag does not matter.
+
+```bash
+[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.bowen.org
 -- kube-apiserver -h | grep 'enable-admission-plugins strings'|tr "," "\n"  |wc -
 l
 54
@@ -180,8 +125,7 @@ limitrange示意图
 ![原 PDF 第 199 页插图](assets/Kubernetes安全机制_Password_Removed1/img-99a2bc46a3482aed.png)
 
 **psp资源属性**
-
-```text
+```yaml
 apiVersion: policy/v1beta1                  # PSP资源所属的API群组及版本
 kind: PodSecurityPolicy                     # 资源类型标识
 metadata:
@@ -219,9 +163,7 @@ readOnlyRootFilesystem  <boolean>         # 是否设定容器的根文件系统
 requiredDropCapabilities <[]string>       # 必须要禁用的内核能力列表
 runAsGroup  <Object>                      # 允许Pod在runAsGroup中使用值列表，未定义
 表示不限制
-```
 
-```text
 runAsUser <Object>                        # 允许Pod在runAsUser中使用的值列表，必选
 字段
 rule <string>                           # 支持RunAsAny、MustRunAs和
@@ -244,11 +186,9 @@ volumes <[]string>                        # 允许Pod使用的存储卷插件列
 *表示全部
 ```
 
-```text
-#注意：由于PSP的准入控制非常严格，而且默认情况下，不允许任何未被k8s集群所承认的资源正常使用，所
-以，k8s集群默认情况下，没有正常启用。而且psp资源也不会被生效,如果需要使用psp资源的话，需要自己
-来进行相关功能的启用。
-```
+
+#注意：由于PSP的准入控制非常严格，而且默认情况下，不允许任何未被k8s集群所承认的资源正常使用，所以，k8s集群默认情况下，没有正常启用。而且psp资源也不会被生效,如果需要使用psp资源的话，需要自己来进行相关功能的启用。
+
 
 ## 4.2 实战案例
 
@@ -283,7 +223,6 @@ Kubernetes 支持在名称空间级别对资源进行限制。
 为命名空间定义总的 CPU 和内存资源限制。
 
 **配置命名空间下 Pod 配额**
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/policy/limit-range/
 https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/manage-resources/
@@ -319,8 +258,7 @@ CPU 资源以 CPU 单位度量。Kubernetes 中的一个 CPU 等同于：
 管理内存、CPU 和 API 资源
 
 #### 4.2.1.1 LimitRanger 案例
-
-```text
+```yaml
 #定义清单
 [root@master1 ~]#cat security-limitrange-test.yaml
 apiVersion: v1
@@ -371,9 +309,7 @@ storage: "1Gi"
 default:
 storage: "5Gi"
 defaultRequest:
-```
 
-```text
 storage: "1Gi"
 maxLimitRequestRatio:
 storage: "5"
@@ -383,22 +319,16 @@ storage: "5"
 #当一个容器请求了 500m（0.5 个 CPU），那么它的 CPU 限制最多只能设置为 4 * 500m = 2000m（2
 个 CPU）。
 #这个比例的目的是为了防止容器请求的资源非常低但设置了非常高的限制，这可能导致集群资源的低效利用。
-```
 
-```text
 #应用资源定义文件
 [root@master1 yaml]#kubectl apply -f security-limitrange-test.yaml
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get limitranges
 NAME                   CREATED AT
 core-resource-limits   2021-04-03T03:31:43Z
 storagelimits          2021-04-03T03:31:43Z
-```
 
-```text
 [root@master1 ~]#kubectl describe limitranges core-resource-limits
 Name:                  core-resource-limits
 Namespace:             default
@@ -411,9 +341,7 @@ Pod                    memory    16Mi  4Gi   -                -              -
 Container              cpu       100m  4     500m             2              4
 Container              memory    4Mi   1Gi   64Mi             512Mi          -
 PersistentVolumeClaim  storage   1Gi   10Gi  1Gi              5Gi            5
-```
 
-```text
 [root@master1 ~]#kubectl describe limitranges storagelimits
 Name:                  storagelimits
 Namespace:             default
@@ -422,15 +350,11 @@ Limit/Request Ratio
 ----                   --------  ---  ---   ---------------  -------------  ----
 -------------------
 PersistentVolumeClaim  storage   1Gi  10Gi  -                -              -
-```
 
-```text
 #创建pod测试限制
 [root@master1 ~]#kubectl run pod --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 #验证限制生效
 [root@master1 ~]#kubectl describe pod pod
 .....
@@ -441,14 +365,12 @@ Requests:
 cpu:        500m
 memory:     64Mi
 ......
-```
 
-```text
 #对指定pod的资源限制
-[root@master1 ~]#cat security-limitrange-pod-test-1.yaml
 ```
+```yaml
+[root@master1 ~]#cat security-limitrange-pod-test-1.yaml
 
-```text
 apiVersion: v1
 kind: Pod
 metadata:
@@ -456,7 +378,7 @@ name: pod-test-1
 spec:
 containers:
 - name: pod-test-1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 resources:
 requests:
 memory: 128Mi
@@ -464,21 +386,15 @@ cpu: 1
 limits:
 memory: 1Gi
 cpu: 2
-```
 
-```text
 [root@master1 ~]#kubectl  apply -f security-limitrange-pod-test-1.yaml
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get pod
 NAME       READY   STATUS    RESTARTS   AGE
 pod        1/1     Running   0          47m
 pod-test-1   1/1     Running   0          42m
-```
 
-```text
 #创建新pod
 [root@master1 ~]#cat security-limitrange-pod-test-2.yaml
 apiVersion: v1
@@ -488,7 +404,7 @@ name: pod-test-2
 spec:
 containers:
 - name: pod-test-2
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 resources:
 requests:
 memory: 128Mi
@@ -496,9 +412,7 @@ cpu: 200m        #指定小于min的cpu
 limits:
 memory: 1Gi
 cpu: 2
-```
 
-```text
 #因资源限制的原因创建失败
 [root@master1 ~]#kubectl apply  -f  security-limitrange-pod-test-2.yaml
 Error from server (Forbidden): error when creating "security-limitrange-pod-
@@ -507,9 +421,7 @@ test-2.yaml": pods "pod-test-2" is forbidden: [minimum cpu usage per Pod is
 but provided ratio is 10.000000]
 #显示：CPU资源的200m低于min的500m以及cpu资源request200m和limit的2之间的比率达到10，超过设
 置的4，导致Pod创建失败
-```
 
-```text
 #创建pod
 [root@master1 ~]#cat security-limitrange-pod-test-3.yaml
 apiVersion: v1
@@ -517,12 +429,10 @@ kind: Pod
 metadata:
 name: pod-test-3
 spec:
-```
 
-```text
 containers:
 - name: pod-test-3
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 resources:
 requests:
 memory: 128Mi
@@ -531,16 +441,12 @@ limits:
 memory: 1Gi
 cpu: 3          #指定超过worker节点的cpu数
 [root@master1 ~]#kubectl apply  -f  security-limitrange-pod-test-3.yaml
-```
 
-```text
 #查看状态
 [root@master1 ~]#kubectl get pod  pod-test-3
 NAME         READY   STATUS    RESTARTS   AGE
 pod-test-3   0/1     Pending   0          9s
-```
 
-```text
 [root@master1 ~]#kubectl describe  pod  pod-test-3
 Name:         pod-test-3
 .....
@@ -549,7 +455,7 @@ IP:
 IPs:          <none>
 Containers:
 pod-test:
-Image:      wangxiaochun/pod-test:v0.1
+Image:      bowen/pod-test:v0.1
 Port:       <none>
 Host Port:  <none>
 Limits:
@@ -570,8 +476,7 @@ the pod didn't tolerate.
 #### 4.2.1.2 ResourceQuota 案例
 
 范例: 名称空间的资源限制
-
-```text
+```yaml
 #资源定义文件
 [root@master1 ~]#cat security-resourcequota-test.yaml
 apiVersion: v1
@@ -583,9 +488,7 @@ spec:
 hard:
 pods: "5"
 count/services: "5"
-```
 
-```text
 count/configmaps: "5"
 count/secrets: "5"
 count/cronjobs.batch: "2"
@@ -598,14 +501,10 @@ count/deployments.apps: "2"
 count/statefulsets.apps: "2"
 persistentvolumeclaims: "6"
 requests.storage: "20Gi"
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply -f security-resourcequota-test.yaml
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get resourcequotas
 NAME                 AGE   REQUEST        LIMIT
@@ -614,9 +513,7 @@ count/deployments.apps: 2/2, count/secrets: 1/5, count/services: 2/5,
 count/statefulsets.apps: 0/2, persistentvolumeclaims: 1/6, pods: 5/5,
 requests.cpu: 200m/2, requests.memory: 128Mi/4Gi, requests.nvidia.com/gpu: 0/4,
 requests.storage: 10Gi/20Gi   limits.cpu: 500m/4, limits.memory: 256Mi/8Gi
-```
 
-```text
 [root@master1 ~]#kubectl describe  resourcequotas resourcequota-test
 Name:                    resourcequota-test
 Namespace:               default
@@ -636,12 +533,10 @@ requests.cpu             4500m   2
 requests.memory          320Mi   4Gi
 requests.nvidia.com/gpu  0       4
 requests.storage         0       20Gi
-```
 
-```text
 #尝试创建多个pod,确认一下，pod数量多于5个的时候，看看是否会限制pod的创建
 [root@master1 ~]#kubectl run pod --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 Error from server (Forbidden): pods "pod" is forbidden: exceeded quota:
 resourcequota-test, requested: limits.cpu=2,requests.cpu=500m, used:
 limits.cpu=7,requests.cpu=4500m, limited: limits.cpu=4,requests.cpu=2
@@ -650,65 +545,23 @@ limits.cpu=7,requests.cpu=4500m, limited: limits.cpu=4,requests.cpu=2
 ### 4.2.2 安全策略 ( Kubernetes v1.21 版本后被弃用 )
 
 #### 4.2.2.1 podsecuritpolicy 启用
-
-```text
+```bash
 #启用psp功能
-[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.wang.org
+[root@master1 ~]#kubectl -n kube-system exec -it kube-apiserver-master1.bowen.org
 -- kube-apiserver --help | grep 'enable-admission'
 ```
 
-```text
---admission-control strings              Admission is divided into two
-phases. In the first phase, only mutating admission plugins run. In the second
-phase, only validating admission plugins run. The names in the below list may
-represent a validating plugin, a mutating plugin, or both. The order of plugins
-in which they are passed to this flag does not matter. Comma-delimited list of:
-AlwaysAdmit, AlwaysDeny, AlwaysPullImages, CertificateApproval,
-CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass,
-DefaultStorageClass, DefaultTolerationSeconds, DenyServiceExternalIPs,
-EventRateLimit, ExtendedResourceToleration, ImagePolicyWebhook,
-LimitPodHardAntiAffinityTopology, LimitRanger, MutatingAdmissionWebhook,
-NamespaceAutoProvision, NamespaceExists, NamespaceLifecycle, NodeRestriction,
-OwnerReferencesPermissionEnforcement, PersistentVolumeClaimResize,
-PersistentVolumeLabel, PodNodeSelector, PodSecurity, PodSecurityPolicy,
-PodTolerationRestriction, Priority, ResourceQuota, RuntimeClass,
-SecurityContextDeny, ServiceAccount, StorageObjectInUseProtection,
-TaintNodesByCondition, ValidatingAdmissionWebhook. (DEPRECATED: Use --enable-
-admission-plugins or --disable-admission-plugins instead. Will be removed in a
-future version.)
---enable-admission-plugins strings       admission plugins that should be
-enabled in addition to default enabled ones (NamespaceLifecycle, LimitRanger,
-ServiceAccount, TaintNodesByCondition, PodSecurity, Priority,
-DefaultTolerationSeconds, DefaultStorageClass, StorageObjectInUseProtection,
-PersistentVolumeClaimResize, RuntimeClass, CertificateApproval,
-CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass,
-MutatingAdmissionWebhook, ValidatingAdmissionWebhook, ResourceQuota). Comma-
-delimited list of admission plugins: AlwaysAdmit, AlwaysDeny, AlwaysPullImages,
-CertificateApproval, CertificateSigning, CertificateSubjectRestriction,
-DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds,
-DenyServiceExternalIPs, EventRateLimit, ExtendedResourceToleration,
-ImagePolicyWebhook, LimitPodHardAntiAffinityTopology, LimitRanger,
-MutatingAdmissionWebhook, NamespaceAutoProvision, NamespaceExists,
-NamespaceLifecycle, NodeRestriction, OwnerReferencesPermissionEnforcement,
-PersistentVolumeClaimResize, PersistentVolumeLabel, PodNodeSelector, PodSecurity,
-PodSecurityPolicy, PodTolerationRestriction, Priority, ResourceQuota,
-RuntimeClass, SecurityContextDeny, ServiceAccount, StorageObjectInUseProtection,
-TaintNodesByCondition, ValidatingAdmissionWebhook. The order of plugins in this
-flag does not matter.
-```
 
-```text
-#注意：由于默认psp是拒绝所有pod的，所以我们在启用psp的时候，需要额外做一些措施,即提前做好psp相
-关的策略，然后再开启PSP功能。
-```
+--admission-control strings              Admission is divided into two phases. In the first phase, only mutating admission plugins run. In the second phase, only validating admission plugins run. The names in the below list may represent a validating plugin, a mutating plugin, or both. The order of plugins in which they are passed to this flag does not matter. Comma-delimited list of: AlwaysAdmit, AlwaysDeny, AlwaysPullImages, CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds, DenyServiceExternalIPs, EventRateLimit, ExtendedResourceToleration, ImagePolicyWebhook, LimitPodHardAntiAffinityTopology, LimitRanger, MutatingAdmissionWebhook, NamespaceAutoProvision, NamespaceExists, NamespaceLifecycle, NodeRestriction, OwnerReferencesPermissionEnforcement, PersistentVolumeClaimResize, PersistentVolumeLabel, PodNodeSelector, PodSecurity, PodSecurityPolicy, PodTolerationRestriction, Priority, ResourceQuota, RuntimeClass, SecurityContextDeny, ServiceAccount, StorageObjectInUseProtection, TaintNodesByCondition, ValidatingAdmissionWebhook. (DEPRECATED: Use --enable-admission-plugins or --disable-admission-plugins instead. Will be removed in a future version.)--enable-admission-plugins strings       admission plugins that should be enabled in addition to default enabled ones (NamespaceLifecycle, LimitRanger, ServiceAccount, TaintNodesByCondition, PodSecurity, Priority, DefaultTolerationSeconds, DefaultStorageClass, StorageObjectInUseProtection, PersistentVolumeClaimResize, RuntimeClass, CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, MutatingAdmissionWebhook, ValidatingAdmissionWebhook, ResourceQuota). Comma-delimited list of admission plugins: AlwaysAdmit, AlwaysDeny, AlwaysPullImages, CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds, DenyServiceExternalIPs, EventRateLimit, ExtendedResourceToleration, ImagePolicyWebhook, LimitPodHardAntiAffinityTopology, LimitRanger, MutatingAdmissionWebhook, NamespaceAutoProvision, NamespaceExists, NamespaceLifecycle, NodeRestriction, OwnerReferencesPermissionEnforcement, PersistentVolumeClaimResize, PersistentVolumeLabel, PodNodeSelector, PodSecurity, PodSecurityPolicy, PodTolerationRestriction, Priority, ResourceQuota, RuntimeClass, SecurityContextDeny, ServiceAccount, StorageObjectInUseProtection, TaintNodesByCondition, ValidatingAdmissionWebhook. The order of plugins in this flag does not matter.
+
+注意：由于默认psp是拒绝所有pod的，所以我们在启用psp的时候，需要额外做一些措施,即提前做好psp相关的策略，然后再开启PSP功能。
 
 Policy本身并不会产生实际作用，需要将其与用户或者serviceaccount绑定才可以完成授权。所以PSP的基本的操作步骤是：
 
 定义psp相关策略绑定psp资源的角色集群启用PSP功能
 
 #### 4.2.2.2 定义psp相关策略
-
-```text
+```yaml
 #定制资源配置文件
 [root@master1 ~]#cat security-podsecuritypolicy-base.yaml
 apiVersion: policy/v1beta1
@@ -742,9 +595,7 @@ supplementalGroups:
 rule: 'RunAsAny'
 fsGroup:
 rule: 'RunAsAny'
-```
 
-```text
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
@@ -768,45 +619,19 @@ volumes:
 - 'projected'
 ```
 
-```text
-- 'secret'
-- 'downwardAPI'
-- 'persistentVolumeClaim'
-hostNetwork: false
-hostIPC: false
-hostPID: false
-runAsUser:
-rule: 'MustRunAsNonRoot'
-seLinux:
-rule: 'RunAsAny'
-supplementalGroups:
-rule: 'MustRunAs'
-ranges:
-# Forbid adding the root group.
-- min: 1
-max: 65535
-fsGroup:
-rule: 'MustRunAs'
-ranges:
-# Forbid adding the root group.
-- min: 1
-max: 65535
-readOnlyRootFilesystem: false
-```
 
-```text
+- 'secret'- 'downwardAPI'- 'persistentVolumeClaim'hostNetwork: false hostIPC: false hostPID: false runAsUser: rule: 'MustRunAsNonRoot'seLinux: rule: 'RunAsAny'supplementalGroups: rule: 'MustRunAs'ranges:# Forbid adding the root group.- min: 1 max: 65535 fsGroup: rule: 'MustRunAs'ranges:# Forbid adding the root group.- min: 1 max: 65535 readOnlyRootFilesystem: false
+
+```bash
 #应用资源定义文件
 [root@master1 ~]#kubectl apply  -f  security-podsecuritypolicy-base.yaml
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get podsecuritypolicies.policy
 ```
 
 #### 4.2.2.3 绑定psp资源的角色
-
-```text
+```yaml
 #定义资源配置文件
 [root@master1 ~]#cat security-podsecuritypolicy-binding.yaml
 kind: ClusterRole
@@ -832,9 +657,7 @@ resourceNames:
 - privileged
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-```
 
-```text
 kind: ClusterRoleBinding
 metadata:
 name: privileged-psp-user
@@ -865,43 +688,33 @@ subjects:
 - kind: Group
 apiGroup: rbac.authorization.k8s.io
 name: system:authenticated
-```
 
-```text
 #应用资源定义文件
 [root@master1 ~]#kubectl apply  -f  security-podsecuritypolicy-binding.yaml
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get clusterrole | grep psp
 psp-privileged                          2021-10-07T06:10:41Z
 psp-restricted                          2021-10-07T06:10:41Z
-```
 
-```text
 [root@master1 ~]#kubectl get clusterrolebindings | grep psp
 privileged-psp-user             ClusterRole/psp-privileged       56s
 restricted-psp-user             ClusterRole/psp-restricted       56s
 ```
 
 #### 4.2.2.4 集群启用PSP功能
-
-```text
+```bash
 #配置apiserver增加admission plugin PodSecurityPolicy即可。
 #编辑kube-apiserver.yaml 文件，添加如下配置
 [root@master1 ~]#vim /etc/kubernetes/manifests/kube-apiserver.yaml
 --enable-admission-plugins=NodeRestriction,PodSecurityPolicy
-```
 
-```text
 #由于kubeadm集群中，api-server是以静态pod的方式来进行管控的，所以我们不用重启，稍等一会，集群
 环境自然就开启了PSP功能
 ```
 
 #### 4.2.2.5 测试效果
-
-```text
+```yaml
 #设置资源配置文件
 [root@master1 ~]#cat security-pod-test.yaml
 apiVersion: v1
@@ -911,10 +724,8 @@ name: nginx
 spec:
 containers:
 - image: nginx
-name: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
-```
+name: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 
-```text
 [root@master1 ~]#kubectl apply  -f  security-pod-test.yaml
 ```
 

@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 集群备份、恢复与迁移'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -14,7 +15,6 @@ syntax_highlight: true
 # 2 Kubernetes 备份和还原
 
 ## 2.1 Kubernetes 集群的容灾架构与方案
-
 ```text
 https://help.aliyun.com/zh/ack/distributed-cloud-container-platform-for-
 kubernetes/use-cases/disaster-recovery-architecture-and-scheme-based-on-
@@ -225,19 +225,16 @@ Kubernetes 的备份和还原可以通过多种方式实现，具体取决于你
 **备份 Kubernetes 资源**
 
 1. 导出所有命名空间资源：使用以下命令导出所有命名空间中的常见的资源。
-
 ```text
 kubectl get all --all-namespaces -o yaml > all-resources.yaml
 ```
 
 2. 导出特定命名空间资源：如果只需要备份特定命名空间的常见的资源，可以指定命名空间。
-
 ```text
 kubectl get all -n <namespace> -o yaml > namespace-resources.yaml
 ```
 
 3. 备份 Secrets 和 ConfigMaps：备份 Secrets 和 ConfigMaps 时需要特别注意，因为它们可能包含敏感信息。
-
 ```text
 kubectl get secrets,configmaps -n <namespace> -o yaml > secrets-
 configmaps.yaml
@@ -246,13 +243,11 @@ configmaps.yaml
 **还原 Kubernetes 资源**
 
 1. 创建命名空间（如果需要）：在还原资源之前，确保目标命名空间存在。
-
 ```text
 kubectl create namespace <namespace>
 ```
 
 2. 应用资源：使用 kubectl apply 命令还原资源。
-
 ```text
 kubectl apply -f all-resources.yaml
 ```
@@ -264,13 +259,11 @@ ETCD 是 Kubernetes 的核心存储组件，存储了集群的所有状态信息
 **备份 ETCD**
 
 1. 检查 ETCD 配置：确保你能够访问 ETCD 集群，并获取 ETCD 的配置信息（如证书、端口等）。
-
 ```text
 kubectl get pods -n kube-system -l component=etcd
 ```
 
 2. 使用 etcdctl 备份 ETCD：使用 etcdctl 工具备份 ETCD 数据。
-
 ```text
 ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 \
 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
@@ -282,7 +275,6 @@ snapshot save /backup/etcd-snapshot.db
 这会生成一个快照文件 /backup/etcd-snapshot.db 。
 
 3. 验证备份：使用以下命令验证备份文件的完整性。
-
 ```text
 ETCDCTL_API=3 etcdctl --write-out=table snapshot status /backup/etcd-
 snapshot.db
@@ -291,28 +283,24 @@ snapshot.db
 **还原 ETCD**
 
 1. 停止 Kubernetes API Server：在还原 ETCD 之前，需要停止 Kubernetes API Server，以确保集群状态不会被修改。
-
-```text
+```bash
 systemctl stop kubelet
 docker stop $(docker ps -q --filter name=k8s_kube-apiserver)
 ```
 
 2. 还原 ETCD 数据：使用 etcdctl 还原 ETCD 数据。
-
 ```text
 ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-snapshot.db \
 --data-dir=/var/lib/etcd-restore
 ```
 
 3. 更新 ETCD 配置：将还原后的数据目录配置到 ETCD 的启动参数中。
-
 ```text
 --data-dir=/var/lib/etcd-restore
 ```
 
 4. 启动 Kubernetes API Server：启动 Kubernetes API Server 和 kubelet。
-
-```text
+```bash
 systemctl start kubelet
 docker start $(docker ps -a -q --filter name=k8s_kube-apiserver)
 ```
@@ -324,14 +312,12 @@ docker start $(docker ps -a -q --filter name=k8s_kube-apiserver)
 **备份持久化存储数据**
 
 1. 找到 PVC 对应的 PV：使用以下命令找到 PVC 对应的 PV。
-
-```text
+```bash
 kubectl get pvc -n <namespace>
 kubectl get pv <pv-name>
 ```
 
 2. 备份数据：使用工具（如 rsync 或 tar ）备份 PV 中的数据。
-
 ```text
 rsync -av /mnt/data /backup/data
 ```
@@ -339,14 +325,12 @@ rsync -av /mnt/data /backup/data
 **还原持久化存储数据**
 
 1. 创建新的 PV 和 PVC：在目标集群中创建新的 PV 和 PVC。
-
-```text
+```bash
 kubectl apply -f new-pv.yaml
 kubectl apply -f new-pvc.yaml
 ```
 
 2. 恢复数据：将备份的数据恢复到新的 PV 中。
-
 ```text
 rsync -av /backup/data /mnt/data
 ```
@@ -360,8 +344,7 @@ rsync -av /backup/data /mnt/data
 **使用 Velero 备份和还原**
 
 1. 安装 Velero：下载并安装 Velero CLI。
-
-```text
+```bash
 wget https://github.com/vmware-
 tanzu/velero/releases/download/v1.10.0/velero-v1.10.0-linux-amd64.tar.gz
 tar -xvf velero-v1.10.0-linux-amd64.tar.gz
@@ -369,20 +352,17 @@ sudo mv velero-v1.10.0-linux-amd64/velero /usr/local/bin/
 ```
 
 2. 配置 Velero：配置 Velero 与云存储（如 AWS S3、GCP Storage）集成。
-
 ```text
 velero install --provider aws --bucket my-bucket --secret-file
 ./credentials-velero
 ```
 
 3. 备份资源：使用 Velero 备份 Kubernetes 资源。
-
 ```text
 velero backup create my-backup --include-namespaces my-namespace
 ```
 
 4. 还原资源：使用 Velero 还原 Kubernetes 资源。
-
 ```text
 velero restore create --from-backup my-backup
 ```
@@ -403,27 +383,27 @@ Etcd 基于Raft协议开发,使用Go语言实现。
 
 **官方网站**
 
-```text
-https://etcd.io/
-```
+
+- <https://etcd.io/>
+
 
 **GitHub 网站**
 
-```text
-https://github.com/etcd-io/etcd
-```
+
+- <https://github.com/etcd-io/etcd>
+
 
 **官方文档**
 
-```text
-https://etcd.io/docs/v3.5/
-```
+
+- <https://etcd.io/docs/v3.5/>
+
 
 **硬件要求**
 
-```text
-https://etcd.io/docs/v3.5/op-guide/hardware/
-```
+
+- <https://etcd.io/docs/v3.5/op-guide/hardware/>
+
 
 ![原 PDF 第 16 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-ae82aa7c79288640.png)
 
@@ -800,71 +780,52 @@ etcd认为写入请求被Leader节点处理并分发给了多数节点后，就�
 #### 2.3.2.1 etcdctl 和 etcdutl 工具安装
 
 ##### 2.3.2.1.1 范例: 包安装 etcdctl 工具：包安装的版本可能不被新的k8集群支持（不建议）
-
-```text
+```sql
 #查看K8s集群使用的当前ETCD版本
-[root@master1 ~]#kubectl get pod -n kube-system      etcd-master1.wang.org -o
+[root@master1 ~]#kubectl get pod -n kube-system      etcd-master1.bowen.org -o
 yaml |grep image:
 image: registry.aliyuncs.com/google_containers/etcd:3.6.4-0
 image: registry.aliyuncs.com/google_containers/etcd:3.6.4-0
-[root@master1 ~]#kubectl exec -n kube-system etcd-master1.wang.org --
+[root@master1 ~]#kubectl exec -n kube-system etcd-master1.bowen.org --
 /usr/local/bin/etcd --version
 etcd Version: 3.6.4
 Git SHA: 5400cdc
 Go Version: go1.23.11
 Go OS/Arch: linux/amd64
-```
 
-```text
 #系统仓库内置的etcdctl工具版本和K8s的ETCD版本不一致
 [root@ubuntu2404 ~]#apt update && apt -y install etcd-client
 [root@ubuntu2404 ~]#etcdctl version: 3.4.30
 API version: 3.4
-```
 
-```text
 [root@ubuntu2204 ~]#apt update && apt -y install etcd-client
-```
 
-```text
 [root@ubuntu2204 ~]#etcdctl version
 etcdctl version: 3.3.25
 API version: 2
-```
 
-```text
 #查看帮助
 [root@ubuntu2204 ~]#etcdctl --help
 NAME:
 etcdctl - A simple command line client for etcd.
-```
 
-```text
 WARNING:
 Environment variable ETCDCTL_API is not set; defaults to etcdctl v2.
 Set environment variable ETCDCTL_API=3 to use v3 API or ETCDCTL_API=2 to use
 v2 API.
-```
 
-```text
 USAGE:
 etcdctl [global options] command [command options] [arguments...]
-```
 
-```text
 VERSION:
 3.3.25
-```
 
-```text
 COMMANDS:
 backup          backup an etcd directory
 cluster-health  check the health of the etcd cluster
 mk              make a new key with a given value
 mkdir           make a new directory
-```
 
-```text
 rm              remove a key or a directory
 rmdir           removes the key if it is an empty directory or a key-value
 pair
@@ -883,65 +844,31 @@ auth            overall auth controls
 help, h         Shows a list of commands or help for one command
 ```
 
-```text
-GLOBAL OPTIONS:
---debug                          output cURL commands which can be used to
-reproduce the request
---no-sync                        don't synchronize cluster information before
-sending request
---output simple, -o simple       output response in the given format (simple,
-`extended` or `json`) (default: "simple")
---discovery-srv value, -D value  domain name to query for SRV records
-describing cluster endpoints
---insecure-discovery             accept insecure SRV records describing
-cluster endpoints
---peers value, -C value          DEPRECATED - "--endpoints" should be used
-instead
---endpoint value                 DEPRECATED - "--endpoints" should be used
-instead
---endpoints value                a comma-delimited list of machine addresses
-in the cluster (default: "http://127.0.0.1:2379,http://127.0.0.1:4001")
---cert-file value                identify HTTPS client using this SSL
-certificate file
---key-file value                 identify HTTPS client using this SSL key
-file
---ca-file value                  verify certificates of HTTPS-enabled servers
-using this CA bundle
---username value, -u value       provide username[:password] and prompt if
-password is not supplied.
---timeout value                  connection timeout per request (default: 2s)
---total-timeout value            timeout for the command execution (except
-watch) (default: 5s)
---help, -h                       show help
---version, -v                    print the versio
-```
+
+GLOBAL OPTIONS:--debug                          output cURL commands which can be used to reproduce the request--no-sync                        don't synchronize cluster information before sending request--output simple, -o simple       output response in the given format (simple,`extended` or `json`) (default: "simple")--discovery-srv value, -D value  domain name to query for SRV records describing cluster endpoints--insecure-discovery             accept insecure SRV records describing cluster endpoints--peers value, -C value          DEPRECATED - "--endpoints" should be used instead--endpoint value                 DEPRECATED - "--endpoints" should be used instead--endpoints value                a comma-delimited list of machine addresses in the cluster (default: "http://127.0.0.1:2379,http://127.0.0.1:4001")--cert-file value                identify HTTPS client using this SSL certificate file--key-file value                 identify HTTPS client using this SSL key file--ca-file value                  verify certificates of HTTPS-enabled servers using this CA bundle--username value, -u value       provide username[:password] and prompt if password is not supplied.--timeout value                  connection timeout per request (default: 2s)--total-timeout value            timeout for the command execution (except watch) (default: 5s)--help, -h                       show help--version, -v                    print the versio
+
 
 ##### 2.3.2.1.2 范例: 二进制安装
 
-```text
-https://github.com/etcd-io/etcd/releases
-```
+
+- <https://github.com/etcd-io/etcd/releases>
+
 
 范例:
-
-```text
+```bash
 #查看K8s集群使用的当前ETCD版本
-```
 
-```text
-[root@master1 ~]#kubectl get pod -n kube-system      etcd-master1.wang.org -o
+[root@master1 ~]#kubectl get pod -n kube-system      etcd-master1.bowen.org -o
 yaml |grep image:
 image: registry.aliyuncs.com/google_containers/etcd:3.6.4-0
 image: registry.aliyuncs.com/google_containers/etcd:3.6.4-0
-[root@master1 ~]#kubectl exec -n kube-system etcd-master1.wang.org --
+[root@master1 ~]#kubectl exec -n kube-system etcd-master1.bowen.org --
 /usr/local/bin/etcd --version
 etcd Version: 3.6.4
 Git SHA: 5400cdc
 Go Version: go1.23.11
 Go OS/Arch: linux/amd64
-```
 
-```text
 #指定下载K8s的ETCD版本一致的etcdctl工具版本
 [root@master1 ~]#ETCD_VER=v3.6.4
 [root@master1 ~]#ETCD_VER=v3.5.17
@@ -949,47 +876,33 @@ Go OS/Arch: linux/amd64
 [root@master1 ~]#GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
 [root@master1 ~]#GOOGLE_URL=https://storage.googleapis.com/etcd
 [root@master1 ~]#DOWNLOAD_URL=${GITHUB_URL}
-```
 
-```text
 #代理下载
 [root@master1 ~]#curl -L
 https://mirror.ghproxy.com/${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-
 amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
-```
 
-```text
 [root@master1 ~]#curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-
 amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
-```
 
-```text
 [root@master1 ~]#tar xf /tmp/etcd-v3.5.17-linux-amd64.tar.gz -C /srv
 [root@master1 ~]#ls /srv
 etcd-v3.5.17-linux-amd64
-```
 
-```text
 [root@master1 ~]#ls /srv/etcd-${ETCD_VER}-linux-amd64/
 Documentation  etcd  etcdctl  etcdutl  README-etcdctl.md  README-etcdutl.md
 README.md  READMEv2-etcdctl.md
-```
 
-```text
 #验证
 #注意：k8s-1.34以后版本etcdutl替换etcdctl工具实现还原
 [root@master1 ~]#/srv/etcd-${ETCD_VER}-linux-amd64/etcdutl version
 etcdutl version: 3.6.4
 API version: 3.6
-```
 
-```text
 [root@master1 ~]#/srv/etcd-${ETCD_VER}-linux-amd64/etcdctl version
 etcdctl version: 3.5.17
 API version: 3.5
-```
 
-```text
 [root@master1 ~]#/srv/etcd-${ETCD_VER}-linux-amd64/etcd --version
 etcd Version: 3.5.17
 Git SHA: 507c0de
@@ -998,40 +911,31 @@ Go OS/Arch: linux/amd64
 ```
 
 ##### 2.3.2.1.3 范例: 将k8s集群内置的etcd的Pod的etcdctl工具导出至宿主机实现安装
-
-```text
-[root@master1 ~]#kubectl  exec -n kube-system etcd-master1.wang.org --  etcdctl
+```bash
+[root@master1 ~]#kubectl  exec -n kube-system etcd-master1.bowen.org --  etcdctl
 version
 etcdctl version: 3.5.16
 API version: 3.5
-```
 
-```text
-[root@master1 ~]#kubectl exec -it -n kube-system etcd-master1.wang.org --
+[root@master1 ~]#kubectl exec -it -n kube-system etcd-master1.bowen.org --
 /usr/local/bin/etcdctl version
 etcdctl version: 3.5.16
 API version: 3.5
-```
 
-```text
 [root@master1 ~]#docker ps |grep etcd
 25eef883ea42   a9e7e6b294ba                                         "etcd --
 advertise-cl…"   About an hour ago   Up About an hour             k8s_etcd_etcd-
-master1.wang.org_kube-system_cd477d4acc2ceff619110f6adc21fe4e_6
+master1.bowen.org_kube-system_cd477d4acc2ceff619110f6adc21fe4e_6
 f4810caf0375   registry.aliyuncs.com/google_containers/pause:3.10   "/pause"
 About an hour ago   Up About an hour             k8s_POD_etcd-
-master1.wang.org_kube-system_cd477d4acc2ceff619110f6adc21fe4e_7
-```
+master1.bowen.org_kube-system_cd477d4acc2ceff619110f6adc21fe4e_7
 
-```text
-[root@master1 ~]#docker inspect  k8s_etcd_etcd-master1.wang.org_kube-
+[root@master1 ~]#docker inspect  k8s_etcd_etcd-master1.bowen.org_kube-
 system_cd477d4acc2ceff619110f6adc21fe4e_10|grep MergedDir
 "MergedDir":
 "/var/lib/docker/overlay2/ee01b1cc7506c82bd985671506e0aec7d8bcc767695c5f3c05e839
 335aa8eb0f/merged",
-```
 
-```text
 [root@master1 ~]#ls
 /var/lib/docker/overlay2/ee01b1cc7506c82bd985671506e0aec7d8bcc767695c5f3c05e8393
 35aa8eb0f/merged/usr/local/bin/ -l
@@ -1044,44 +948,32 @@ total 142240
 -r-xr-xr-x 1 root root 17899672 Sep 13 21:34 etcdctl-3.5.16
 -r-xr-xr-x 1 root root 20963874 Sep 13 21:34 migrate
 -r-xr-xr-x 1 root root      836 Sep 13 21:33 migrate-if-needed.sh
-```
 
-```text
 #将Pod的etcdctl复制到宿主机目录中
-[root@master1 ~]#docker cp k8s_etcd_etcd-master1.wang.org_kube-
+[root@master1 ~]#docker cp k8s_etcd_etcd-master1.bowen.org_kube-
 system_cd477d4acc2ceff619110f6adc21fe4e_6:/usr/local/bin/etcdctl /usr/local/bin/
 Successfully copied 17.9MB to /usr/local/bin/
-```
 
-```text
 [root@master1 ~]#ls -l  /usr/local/bin/etcdctl
 -r-xr-xr-x 1 root root 17899672 Sep 13 21:34 /usr/local/bin/etcdctl
-```
 
-```text
 [root@master1 ~]#/usr/local/bin/etcdctl version
 etcdctl version: 3.5.16
 API version: 3.5
-```
 
-```text
 [root@master1 ~]#ldd /usr/local/bin/etcdctl
 not a dynamic executable
-```
 
-```text
 [root@master1 ~]#which etcdctl
-```
 
-```text
 /usr/local/bin/etcdctl
 ```
 
 #### 2.3.2.2 etcdctl 和 etcdutl  工具说明
 
-```text
-https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
-```
+
+- <https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/>
+
 
 etcdctl 是一个命令行工具，用于与 etcd 分布式键值存储系统进行交互。etcd 是一个高可用的分布式键值存储系统，通常用于配置共享和服务发现。etcdctl 提供了多种命令，允许用户读取、写入、删除键值对，以及执行其他管理操作。
 
@@ -1094,8 +986,7 @@ etcdctl 是一个命令行工具，用于与 etcd 分布式键值存储系统进
 ETCD_API: 新版变量 指定ETCD的版本,支持2和3两个版本ETCDCTL_API : 指定ETCD的版本,支持2和3两个版本ETCDCTL_ENDPOINTS : 指定 etcd 集群的地址，多个地址用逗号分隔。ETCDCTL_CACERT : 指定 CA 证书文件路径。ETCDCTL_CERT : 指定客户端证书文件路径。ETCDCTL_KEY : 指定客户端私钥文件路径。
 
 假设 etcd 集群的地址为 http://127.0.0.1:2379 ，可以通过以下命令设置环境变量：
-
-```text
+```bash
 export ETCDCTL_ENDPOINTS=http://127.0.0.1:2379
 ```
 
@@ -1160,7 +1051,6 @@ export ETCDCTL_ENDPOINTS=http://127.0.0.1:2379
 示例
 
 假设 etcd 集群的地址为 http://127.0.0.1:2379 ，并且需要使用客户端证书进行认证，可以通过以下命令进行操作：
-
 ```text
 etcdctl --endpoints=http://127.0.0.1:2379 --cacert=/path/to/ca.crt --
 cert=/path/to/client.crt --key=/path/to/client.key get /mykey --write-out=json
@@ -1247,39 +1137,34 @@ watch监测指定键或前缀的事件
 version输出 etcdctl 的版本
 
 1. 写入键值对
-
 ```text
 etcdctl put <key> <value>
 ```
 
-示例：etcdctl put /wang/mykey "Hello, etcd"说明：将指定的键值对写入 etcd ,可以创建或修改指定的键
+示例：etcdctl put /bowen/mykey "Hello, etcd"说明：将指定的键值对写入 etcd ,可以创建或修改指定的键
 
 2. 读取键值对
-
 ```text
 etcdctl get <key>
 ```
 
-示例：etcdctl get --prefix /wang/mykey说明：读取指定以mykey开头键的值。
+示例：etcdctl get --prefix /bowen/mykey说明：读取指定以mykey开头键的值。
 
 3. 删除键值对
-
 ```text
 etcdctl del <key>
 ```
 
-示例：etcdctl del /wang/mykey说明：删除指定键及其对应的值。
+示例：etcdctl del /bowen/mykey说明：删除指定键及其对应的值。
 
 4. 监听键值变化
-
 ```text
 etcdctl watch <key>
 ```
 
-示例：etcdctl watch /wang/mykey说明：监听指定键的变化，当键的值发生变化时，会输出变化的内容。
+示例：etcdctl watch /bowen/mykey说明：监听指定键的变化，当键的值发生变化时，会输出变化的内容。
 
 5. 列出所有键
-
 ```text
 etcdctl get --prefix ""
 ```
@@ -1287,7 +1172,6 @@ etcdctl get --prefix ""
 示例：etcdctl get --prefix ""说明：列出 etcd 中存储的所有键。
 
 6. 列出指定前缀的键
-
 ```text
 etcdctl get --prefix <prefix>
 ```
@@ -1295,7 +1179,6 @@ etcdctl get --prefix <prefix>
 示例：etcdctl get --prefix /my说明：列出所有以指定前缀开头的键。
 
 7. 列出键的详细信息
-
 ```text
 etcdctl get <key> --write-out=json
 ```
@@ -1303,7 +1186,6 @@ etcdctl get <key> --write-out=json
 示例：etcdctl get /mykey --write-out=json说明：以 JSON 格式输出键的详细信息，包括创建版本、修改版本等。
 
 8. 列出所有成员
-
 ```text
 etcdctl member list
 ```
@@ -1311,7 +1193,6 @@ etcdctl member list
 示例：etcdctl member list说明：列出 etcd 集群中的所有成员。
 
 9. 检查集群健康状态
-
 ```text
 etcdctl endpoint health
 ```
@@ -1319,7 +1200,6 @@ etcdctl endpoint health
 示例：etcdctl endpoint health说明：检查 etcd 集群的健康状态。
 
 10. 备份数据
-
 ```text
 etcdctl snapshot save <filename>
 ```
@@ -1327,7 +1207,6 @@ etcdctl snapshot save <filename>
 示例：etcdctl snapshot save backup.db说明：将 etcd 数据备份到指定的文件中。
 
 11. 恢复数据
-
 ```text
 etcdctl snapshot restore <filename>
 ```
@@ -1337,14 +1216,11 @@ etcdctl snapshot restore <filename>
 #### 2.3.2.3 etcdctl 使用案例
 
 范例: kubeadm安装Kubernetes检查ETCD的服务状态
-
-```text
-[root@master1 ~]#kubectl get po -n kube-system      etcd-master1.wang.org -o
+```bash
+[root@master1 ~]#kubectl get po -n kube-system      etcd-master1.bowen.org -o
 yaml|grep hostNetwork
 hostNetwork: true
-```
 
-```text
 #查看健康性
 #k8s-v1.34以后版本
 [root@master1 ~]#ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
@@ -1353,14 +1229,10 @@ cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.cr
 +------------------------+--------+-------------+-------+
 |        ENDPOINT        | HEALTH |    TOOK     | ERROR |
 +------------------------+--------+-------------+-------+
-```
 
-```text
 | https://127.0.0.1:2379 |   true | 13.141134ms |       |
 +------------------------+--------+-------------+-------+
-```
 
-```text
 #旧版
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
@@ -1370,17 +1242,13 @@ cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.cr
 +------------------------+--------+-----------+-------+
 | https://127.0.0.1:2379 |   true | 8.03693ms |       |
 +------------------------+--------+-----------+-------+
-```
 
-```text
 #查看节点状态和leader角色
 #k8s-v1.34以后版本
 [root@master1 ~]#ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key -w table  endpoint status
-```
 
-```text
 #旧版
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
@@ -1395,9 +1263,7 @@ RAFT TERM | RAFT INDEX |
 2 |       4496 |
 +------------------------+------------------+---------+---------+-----------+---
 --------+------------+
-```
 
-```text
 #百看成员
 #k8s-v1.34以后版本
 [root@master1 ~]#ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
@@ -1409,13 +1275,11 @@ cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.cr
 CLIENT ADDRS       | IS LEARNER |
 +------------------+---------+------------------+-------------------------+-----
 --------------------+------------+
-| 99c2fd4fe11e28d9 | started | master1.wang.org | https://10.0.0.100:2380 |
+| 99c2fd4fe11e28d9 | started | master1.bowen.org | https://10.0.0.100:2380 |
 https://10.0.0.100:2379 |      false |
 +------------------+---------+------------------+-------------------------+-----
 --------------------+------------+
-```
 
-```text
 #旧版
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
@@ -1424,27 +1288,21 @@ cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.cr
 ------------------+
 |        ID        | STATUS  |       NAME       |      PEER ADDRS       |
 CLIENT ADDRS       |
-```
 
-```text
 +------------------+---------+------------------+-----------------------+-------
 ------------------+
-| 8e9e05c52164694d | started | master1.wang.org | http://localhost:2380 |
+| 8e9e05c52164694d | started | master1.bowen.org | http://localhost:2380 |
 https://10.0.0.200:2379 |
 +------------------+---------+------------------+-----------------------+-------
 ------------------+
-```
 
-```text
 #对ETCD数据碎片整理
 #k8s-v1.34以后版本
 [root@master1 ~]#ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key  defrag
 Finished defragmenting etcd member[https://127.0.0.1:2379]. took 36.799765ms
-```
 
-```text
 #旧版
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
@@ -1453,8 +1311,7 @@ Finished defragmenting etcd member[https://127.0.0.1:2379]
 ```
 
 范例: kubeadm安装Kubernetes数据操作
-
-```text
+```bash
 #查看ETCD的数据
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
@@ -1469,9 +1326,7 @@ lb.io
 /registry/apiextensions.k8s.io/customresourcedefinitions/bgpconfigurations.crd.p
 rojectcalico.org
 ......
-```
 
-```text
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key get / --prefix --keys-only |grep -Ev
@@ -1489,112 +1344,87 @@ t.storage.k8s.io
 /registry/apiregistration.k8s.io/apiservices/v1.authentication.k8s.io
 /registry/apiregistration.k8s.io/apiservices/v1.authorization.k8s.io
 /registry/apiregistration.k8s.io/apiservices/v1.autoscaling
-```
 
-```text
 #ETCD写入,读取和删除数据
-```
 
-```text
 #创建和修改
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
---key=/etc/kubernetes/pki/etcd/server.key  put /name wangxiaochun
+--key=/etc/kubernetes/pki/etcd/server.key  put /name bowen
 OK
-```
 
-```text
 #查看
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key  get /name
 /name
-wangxiaochun
-```
+bowen
 
-```text
 #删除
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key  del /name
 1
-```
 
-```text
 #确认数据删除
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key  get /name
 [root@master1 ~]#
-```
 
-```text
 #跟踪数据变化
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key  watch /name
 PUT
 /name
-wangxiaochun-v1
+bowen-v1
 PUT
 /name
-wangxiaochun-v2
-```
+bowen-v2
 
-```text
 #打开另一个终端执行下面操作,观察上面的变化
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
---key=/etc/kubernetes/pki/etcd/server.key  put /name wangxiaochun-v1
+--key=/etc/kubernetes/pki/etcd/server.key  put /name bowen-v1
 OK
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379  --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
---key=/etc/kubernetes/pki/etcd/server.key  put /name wangxiaochun-v2
+--key=/etc/kubernetes/pki/etcd/server.key  put /name bowen-v2
 OK
 ```
 
 范例: 二进制安装检查ETCD的服务状态
-
-```text
+```bash
 #二进制安装检查ETCD的服务状态
 [root@master1~]#ETCD_IPS="10.0.0.101 10.0.0.102 10.0.0.103"
 [root@master1~]#for i in $ETCD_IPS;do ETCDCTL_API=3 etcdctl --
 endpoints=https://$i:2379 --cacert=/etc/kubernetes/ssl/ca.pem --
 cert=/etc/kubernetes/ssl/etcd.pem --key=/etc/kubernetes/ssl/etcd-key.pem endpoint
 health;done
-```
 
-```text
 https://10.0.0.101:3379 is healthy: successfully committed proposal: took =
 18.367426ms
-```
 
-```text
 https://10.0.0.102:2379 is healthy: successfully committed proposal: took =
 15.362120ms
 https://10.0.0.103:2379 is healthy: successfully committed proposal: took =
 16.896772ms
-```
 
-```text
 #二进制安装查看成员
 [root@master1~]#ETCD_IPS="10.0.0.101 10.0.0.102 10.0.0.103"
 [root@master1~]#for i in $ETCD_IPS;do ETCDCTL_API=3 etcdctl --
 endpoints=https://$i:2379 --cacert=/etc/kubernetes/ssl/ca.pem --
 cert=/etc/kubernetes/ssl/etcd.pem --key=/etc/kubernetes/ssl/etcd-key.pem--write-
 out=table member list;done
-```
 
-```text
 #二进制安装查看成员详细状态
 [root@master1~]#ETCD_IPS="10.0.0.101 10.0.0.102 10.0.0.103"
 [root@master1~]#for i in $ETCD_IPS;do ETCDCTL_API=3 etcdctl --
 endpoints=https://$i:2379 --cacert=/etc/kubernetes/ssl/ca.pem --
 cert=/etc/kubernetes/ssl/etcd.pem --key=/etc/kubernetes/ssl/etcd-key.pem -w json
 endpoint status;done
-```
 
-```text
 #二进制安装对ETCD数据碎片整理
 [root@master1~]#ETCD_IPS="10.0.0.101 10.0.0.102 10.0.0.103"
 [root@master1 ~]#for i in $ETCD_IPS;do ETCDCTL_API=3 etcdctl  --
@@ -1604,45 +1434,35 @@ defrag;done
 ```
 
 范例: 二进制安装Kubernetes数据访问
-
-```text
+```bash
 #二进制安装查看ETCD的数据
 [root@master1~]#ETCDCTL_API=3 etcdctl get / --keys-only --prefix
-```
 
-```text
 #ETCD写入,读取和删除数据
 #创建和修改
-[root@master1~]#ETCDCTL_API=3 etcdctl put /name wangxiaochun
-```
+[root@master1~]#ETCDCTL_API=3 etcdctl put /name bowen
 
-```text
 #查看数据
 [root@master1~]#ETCDCTL_API=3 etcctl get /name
-```
 
-```text
 #删除
 [root@master1~]#ETCDCTL_API=3 etcctl del /name
-```
 
-```text
 #ETCD利用watch跟踪数据变化
 #不断跟踪数据变化
 [root@master1~]#ETCDCTL_API=3 etcctl watch /name
 PUT
 /name
-wangxiaochun-v1
+bowen-v1
 PUT
 /name
-wangxiaochun-v2
+bowen-v2
 #更新几次数据,上面命令可以看到变化的过程
-[root@master1~]#ETCDCTL_API=3 etcctl put /name wangxiaochun-v1
-[root@master1~]#ETCDCTL_API=3 etcctl put /name wangxiaochun-v2
+[root@master1~]#ETCDCTL_API=3 etcctl put /name bowen-v1
+[root@master1~]#ETCDCTL_API=3 etcctl put /name bowen-v2
 ```
 
 ### 2.3.3 使用 etcdctl 和 etcdutl 工具实现 ETCD 备份和还原
-
 ```text
 https://etcd.io/docs/v3.4/op-guide/recovery/
 https://etcd.io/docs/v3.5/op-guide/recovery/
@@ -1663,8 +1483,7 @@ etcdctl 和 etcdutl velero
 #### 2.3.3.2 案例: 利用 etcdctl和etcdutl  命令实现备份还原数据
 
 范例: 基于Kubeadm安装查看ETCD数据存放目录
-
-```text
+```yaml
 [root@master1 ~]#cat /etc/kubernetes/manifests/etcd.yaml
 apiVersion: v1
 kind: Pod
@@ -1688,15 +1507,13 @@ containers:
 - --experimental-initial-corrupt-check=true
 - --experimental-watch-progress-notify-interval=5s
 - --initial-advertise-peer-urls=https://10.0.0.100:2380
-- --initial-cluster=master1.wang.org=https://10.0.0.100:2380
-```
+- --initial-cluster=master1.bowen.org=https://10.0.0.100:2380
 
-```text
 - --key-file=/etc/kubernetes/pki/etcd/server.key
 - --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.100:2379
 - --listen-metrics-urls=http://127.0.0.1:2381
 - --listen-peer-urls=https://10.0.0.100:2380
-- --name=master1.wang.org
+- --name=master1.bowen.org
 - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
 - --peer-client-cert-auth=true
 - --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
@@ -1750,9 +1567,7 @@ priorityClassName: system-node-critical
 securityContext:
 seccompProfile:
 type: RuntimeDefault
-```
 
-```text
 volumes:
 - hostPath:
 path: /etc/kubernetes/pki/etcd
@@ -1763,18 +1578,16 @@ path: /var/lib/etcd                 #Master节点的数据目录
 type: DirectoryOrCreate
 name: etcd-data
 status: {}
-```
 
-```text
 #kubernetes 中的ETCD
 [root@master1 ~]#docker ps |grep etcd
 e4bca5720e4f   a8a176a5d5d6                                        "etcd --
 advertise-cl…"   56 minutes ago   Up 56 minutes             k8s_etcd_etcd-
-master1.wang.org_kube-system_f25f12246bbb12000135554d28341de5_5
+master1.bowen.org_kube-system_f25f12246bbb12000135554d28341de5_5
 aca79e407c6e   registry.aliyuncs.com/google_containers/pause:3.7   "/pause"
 56 minutes ago   Up 56 minutes             k8s_POD_etcd-
-master1.wang.org_kube-system_f25f12246bbb12000135554d28341de5_5
-[root@master1 ~]#docker inspect k8s_etcd_etcd-master1.wang.org_kube-
+master1.bowen.org_kube-system_f25f12246bbb12000135554d28341de5_5
+[root@master1 ~]#docker inspect k8s_etcd_etcd-master1.bowen.org_kube-
 system_f25f12246bbb12000135554d28341de5_5
 .......
 "Args": [
@@ -1785,13 +1598,13 @@ system_f25f12246bbb12000135554d28341de5_5
 "--experimental-initial-corrupt-check=true",
 "--experimental-watch-progress-notify-interval=5s",
 "--initial-advertise-peer-urls=https://10.0.0.101:2380",
-"--initial-cluster=master1.wang.org=https://10.0.0.101:2380",
+"--initial-cluster=master1.bowen.org=https://10.0.0.101:2380",
 "--key-file=/etc/kubernetes/pki/etcd/server.key",
 "--listen-client-
 urls=https://127.0.0.1:2379,https://10.0.0.101:2379",
 "--listen-metrics-urls=http://127.0.0.1:2381",
 "--listen-peer-urls=https://10.0.0.101:2380",
-"--name=master1.wang.org",
+"--name=master1.bowen.org",
 "--peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt",
 "--peer-client-cert-auth=true",
 "--peer-key-file=/etc/kubernetes/pki/etcd/peer.key",
@@ -1800,9 +1613,7 @@ urls=https://127.0.0.1:2379,https://10.0.0.101:2379",
 "--trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt"
 ]
 .......
-```
 
-```text
 [root@master1 ~]#tree /var/lib/etcd/
 /var/lib/etcd/
 └── member
@@ -1815,42 +1626,31 @@ urls=https://127.0.0.1:2379,https://10.0.0.101:2379",
 │   └── db
 └── wal
 ├── 0000000000000002-000000000002d3bf.wal
-```
 
-```text
 ├── 0000000000000003-000000000003f8dc.wal
 ├── 0000000000000004-0000000000053310.wal
 ├── 0000000000000005-0000000000065939.wal
 ├── 0000000000000006-0000000000076e99.wal
 └── 0.tmp
-```
 
-```text
 3 directories, 12 files
 ```
 
 范例: 基于kubeadm安装kubernetes 备份还原
-
-```text
+```bash
 #安装etcdctl或从etcd的Pod获取此工具，包安装的etcdctl版本和ETCD的版本不一致，建议其它使用方法
 [root@master1 ~]#apt update && apt -y install etcd-client
-```
 
-```text
 #生成新Pod
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-547df679bb-cjsf9   1/1     Running   0          3s
 myapp-547df679bb-fbc7s   1/1     Running   0          3s
 myapp-547df679bb-x9sxp   1/1     Running   0          3s
-```
 
-```text
 #查看基于kubeadm安装的ETCD数据目录
 [root@master1 ~]#tree /var/lib/etcd/
 /var/lib/etcd/
@@ -1868,13 +1668,9 @@ myapp-547df679bb-x9sxp   1/1     Running   0          3s
 ├── 0000000000000011-0000000000148d1e.wal
 ├── 0000000000000012-000000000015c00c.wal
 └── 0000000000000013-000000000016e695.wal
-```
 
-```text
 3 directories, 11 files
-```
 
-```text
 [root@master1 ~]#ll /var/lib/etcd/member/snap/
 total 18012
 drwx------ 2 root root     4096 Nov 28 17:52 ./
@@ -1887,23 +1683,17 @@ drwx------ 4 root root     4096 Nov 26 08:06 ../
 0000000000170b08.snap
 -rw-r--r-- 1 root root    15400 Nov 28 16:55 0000000000000018-
 0000000000173219.snap
-```
 
-```text
 -rw-r--r-- 1 root root    15400 Nov 28 17:52 0000000000000018-
 000000000017592a.snap
 -rw------- 1 root root 18354176 Nov 28 17:52 db
-```
 
-```text
 #备份ETCD数据
 [root@master1 ~]#ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key   snapshot save etcd-backup-`date
 +%F_%H-%M-%S`.db
-```
 
-```text
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379   --
 cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt
 --key=/etc/kubernetes/pki/etcd/server.key   snapshot save etcd-backup-`date
@@ -1911,22 +1701,16 @@ cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.cr
 2023-11-28 18:40:07.132465 I | clientv3: opened snapshot stream; downloading
 2023-11-28 18:40:07.370742 I | clientv3: completed snapshot read; closing
 Snapshot saved at etcd-backup-2023-11-28_18-40-07.db
-```
 
-```text
 #验证备份结果
 [root@master1 ~]#ll etcd-backup-2024-11-28_18-40-07.db
 -rw-r--r-- 1 root root 18354208 Nov 28 18:40 etcd-backup-2024-11-28_18-40-07.db
-```
 
-```text
 #校验
 #新版：1.34.X 使用etcdutl代替etcdctl
 [root@master1 ~]#ETCD_API=3 etcdutl --write-out=table snapshot status etcd-
 backup-2025-11-04_10-38-30.db
-```
 
-```text
 #旧版
 [root@master1 ~]#ETCDCTL_API=3 etcdctl --write-out=table snapshot status etcd-
 backup-2023-11-28_18-40-07.db
@@ -1935,42 +1719,32 @@ backup-2023-11-28_18-40-07.db
 +----------+----------+------------+------------+
 | 882f55aa |  2674587 |       2496 |      18 MB |
 +----------+----------+------------+------------+
-```
 
-```text
 #破坏Pod
 [root@master1 ~]#kubectl delete deployments.apps myapp
 [root@master1 ~]#kubectl get pod
 No resources found in default namespace.
-```
 
-```text
 #还原前停止所有etcd节点和master节点的相关服务
 #方法1: 在所有master节点执行
 [root@master1 ~]#systemctl stop kubelet
 [root@master1 ~]#docker stop $(docker ps -q --filter name=k8s_kube-apiserver)
-```
 
-```text
 #方法2:
 [root@master1 ~]#ls /etc/kubernetes/manifests/
 etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-
 scheduler.yaml
-```
 
-```text
 [root@master1 ~]#mv /etc/kubernetes/manifests/* /srv/
 [root@master1 ~]#ls /srv
 etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-
 scheduler.yaml
-```
 
-```text
 #还原前停止所有worker节点的相关服务(可选)
-[root@node1~]#systemctl stop kubelet
 ```
+```bash
+[root@node1~]#systemctl stop kubelet
 
-```text
 #还原到指定的不存在的或者已存在但必须为空的临时目录
 #新版：使用etcdutl代替etcdctl
 [root@master1 ~]#ETCD_API=3 ./etcdutl  --data-dir=/tmp/etcd  snapshot restore
@@ -1981,9 +1755,7 @@ etcd-backup-2023-11-28_18-40-07.db
 2023-11-28 18:43:45.197990 I | mvcc: restore compact to 2672772
 2023-11-28 18:43:45.211729 I | etcdserver/membership: added member
 8e9e05c52164694d [http://localhost:2380] to cluster cdf818194e3a8c32
-```
 
-```text
 #查看目录
 [root@master1 ~]#tree /tmp/etcd
 /tmp/etcd
@@ -1993,33 +1765,23 @@ etcd-backup-2023-11-28_18-40-07.db
 │   └── db
 └── wal
 └── 0000000000000000-0000000000000000.wal
-```
 
-```text
 3 directories, 3 files
-```
 
-```text
 [root@master1 ~]#ll /tmp/etcd/member/wal/ -h
 total 62M
 drwx------ 2 root root 4.0K Nov 28 18:43 ./
 drwx------ 4 root root 4.0K Nov 28 18:43 ../
 -rw------- 1 root root  62M Nov 28 18:43 0000000000000000-0000000000000000.wal
-```
 
-```text
 #如果有原数据,先删除旧的数据目录
 [root@master1 ~]#rm -rf /var/lib/etcd/member
 [root@master1 ~]#ls /var/lib/etcd
 [root@master1 ~]#
-```
 
-```text
 #将前面备份的临时目录的数据覆盖原etcd数据目录,实现还原
 [root@master1~]#mv /tmp/etcd/member /var/lib/etcd/
-```
 
-```text
 #确认还原
 [root@master1 ~]#tree /var/lib/etcd/
 /var/lib/etcd/
@@ -2029,34 +1791,22 @@ drwx------ 4 root root 4.0K Nov 28 18:43 ../
 │   └── db
 └── wal
 └── 0000000000000000-0000000000000000.wal
-```
 
-```text
 3 directories, 3 files
-```
 
-```text
 #启动所有相关的服务
 #方法1:对应前面的方法1
 [root@master1 ~]#systemctl start kubelet
-```
 
-```text
 [root@master1 ~]#docker start $(docker ps -a -q --filter name=k8s_kube-
 apiserver)
-```
 
-```text
 #方法2: 对应前面的方法2
 [root@master1 ~]#mv /srv/* /etc/kubernetes/manifests/
-```
 
-```text
 #建议重启所有节点的相关服务
 [root@node1~]#systemctl start kubelet
-```
 
-```text
 #确认Pod等相关资源还原
 [root@master1 ~]#kubectl get pod
 NAME                     READY   STATUS    RESTARTS   AGE
@@ -2066,19 +1816,14 @@ myapp-547df679bb-xh8hn   1/1     Running   0          7m34s
 ```
 
 范例: 二进制安装kubernetes 备份还原
-
-```text
+```bash
 #安装etcdctl
 [root@master1 ~]#apt update && apt -y install etcd-client
-```
 
-```text
 #备份
 [root@master1~]#ETCDCTL_API=3 etcdctl snapshot save etcd-backup-`date +%F_%H-%M-
 %S`.db
-```
 
-```text
 #校验
 [root@master1 ~]#export ETCDCTL_API=3
 [root@master1 ~]#etcdctl --write-out=table snapshot status etcd-backup.db
@@ -2087,75 +1832,54 @@ myapp-547df679bb-xh8hn   1/1     Running   0          7m34s
 +----------+----------+------------+------------+
 | 75a52c9d |  2671572 |       1879 |      18 MB |
 +----------+----------+------------+------------+
-```
 
-```text
 #还原前停止所有etcd节点和master节点的相关服务
 [root@master1~]#systemctl stop  kube-apiserver etcd kube-controller-manager kube-
 scheduler kubelet kube-porxy
-```
 
-```text
 #还原前停止所有worker节点的相关服务
 [root@node1~]#systemctl stop kubelet kube-porxy
-```
 
-```text
 #还原到指定的不存在的或者已存在但必须为空的目录
 [root@master1~]#ETCDCTL_API=3 etcdctl snapshot restore etcd-backup-`date +%F_%H-
 %M-%S`.db --data-dir=/tmp/etcd
-```
 
-```text
 #再将上面目录的数据覆盖源etcd数据目录的数据,最终实现还原
 [root@master1~]#rm -rf /var/lib/etcd/member
 [root@master1~]#cp -av /tmp/etcd/member /var/lib/etcd/
-```
 
-```text
 #启动所有相关的服务
 [root@master1~]#systemctl start etcd.service kube-apiserver kube-controller-
 manager kube-scheduler kubelet kube-porxy
-```
 
-```text
 #还原前停止所有worker节点的相关服务
 [root@node1~]#systemctl start kubelet kube-porxy
-```
 
-```text
 #注意:如果还原的无控制器的自主的Pod无法连网,再要删除重建Pod
 ```
 
 #### 2.3.3.3 案例: kubeasz 项目的备份还原
 
-```text
-https://github.com/easzlab/kubeasz/blob/master/docs/op/cluster_restore.md
-```
 
-```text
+- <https://github.com/easzlab/kubeasz/blob/master/docs/op/cluster_restore.md>
+
+```bash
 #注意:kubeasz 项目本质也是利用 etcdctl 实现ETCD的数据备份和还原
 #备份
 [root@master1~]#/etc/kubeasz/ezctl backup <集群名称>
 #备份调用的是/etc/kubeasz/playbooks/94.backup.yml 实现
-```
 
-```text
 #备份数据存放在下面目录
 [root@master1~]#ls /etc/kubeasz/clusters/<集群名称>/backup
 snapshot.db snapshot_YYYYMMDDHHMM.db
 #注意:如果有多次备份,snapshot.db为最新的一次备份文件,而snapshot_YYYYMMDDHHMM.db有所有多次
 备份的文件
-```
 
-```text
 #还原
 [root@master1~]#/etc/kubeasz/ezctl restore <集群名称>
 #还原调用的是/etc/kubeasz/playbooks/95.restore.yml和/etc/kubeasz/roles/cluster-
 restore实现
-```
 
-```text
 #注意:如果还原的无控制器的自主的Pod无法连网,再要删除重建Pod
 ```
 
@@ -2229,9 +1953,9 @@ Velero 组件一共分三部分，分别是客户端和服务端,插件。
 
 **插件（Plugins）**
 
-```text
-https://velero.io/docs/main/supported-providers/
-```
+
+- <https://velero.io/docs/main/supported-providers/>
+
 
 **存储插件**：用于对接不同的存储后端，支持多种存储类型，像 Amazon S3、Google Cloud Storage、Azure Blob Storage、MinIO等云存储服务，以及一些本地的兼容 S3 协议的存储系统，如MinIO，实现备份数据的可靠存储和获取。卷快照插件：针对不同的存储提供商（如不同云平台对持久卷的管理机制不同），卷快照插件能够与相应的存储系统集成，实现对持久卷数据的快照创建和恢复，提高备份和恢复的效率，尤其是对于大容量数据的处理。
 
@@ -2275,30 +1999,25 @@ VolumeSnapshotLocation
 
 软件包下载地址：
 
-```text
-https://github.com/vmware-tanzu/velero/releases
-```
+
+- <https://github.com/vmware-tanzu/velero/releases>
+
 
 范例:  二进制安装 Velero CLI
-
-```text
+```bash
 #在K8s集群的Master节点上安装velero CLI
 [root@master1 ~]# VERSION=v1.17.0
 [root@master1 ~]# VERSION=v1.16.2
 [root@master1 ~]# VERSION=v1.16.1
 [root@master1 ~]# VERSION=v1.13.1
-```
 
-```text
 #直接下载
 [root@master1 ~]# wget https://github.com/vmware-
 tanzu/velero/releases/download/${VERSION}/velero-${VERSION}-linux-amd64.tar.gz
 #如果下载失败,可以通过代理如下
 [root@master1 ~]# wget https://githubfast.com/vmware-
 tanzu/velero/releases/download/${VERSION}/velero-${VERSION}-linux-amd64.tar.gz
-```
 
-```text
 [root@master1 ~]# tar -zxvf velero-${VERSION}-linux-amd64.tar.gz
 [root@master1 ~]# tree velero-${VERSION}-linux-amd64
 velero-v1.16.1-linux-amd64
@@ -2311,13 +2030,9 @@ velero-v1.16.1-linux-amd64
 │       └── with-pv.yaml
 ├── LICENSE
 └── velero
-```
 
-```text
 3 directories, 6 files
-```
 
-```text
 [root@master1 ~]# mv velero-${VERSION}-linux-amd64/velero /usr/local/bin/
 [root@master1 ~]# velero version
 Client:
@@ -2342,29 +2057,20 @@ backup ：用于处理备份相关的操作，比如创建、查看、管理备�
 日志相关参数：像 --logtostderr 控制是输出日志到标准错误输出还是文件，--log_dir 可以指定日志文件存放的目录等。Kubernetes 集群连接相关参数：--kubeconfig 用于指定连接 Kubernetes API 服务器的配置文件路径，--kubecontext 用来确定使用的上下文等。
 
 范例: 查看帮助
-
-```text
+```bash
 [root@master1 ~]#velero --help
 Velero is a tool for managing disaster recovery, specifically for Kubernetes
 cluster resources. It provides a simple, configurable, and operationally robust
 way to back up your application state and associated data.
 ```
 
-```text
-If you're familiar with kubectl, Velero supports a similar model, allowing you
-to
-execute commands such as 'velero get backup' and 'velero create schedule'. The
-same
-operations can also be performed as 'velero backup get' and 'velero schedule
-create'.
-```
 
-```text
+If you're familiar with kubectl, Velero supports a similar model, allowing you to execute commands such as 'velero get backup' and 'velero create schedule'. The same operations can also be performed as 'velero backup get' and 'velero schedule create'.
+
+```bash
 Usage:
 velero [command]
-```
 
-```text
 Available Commands:
 backup            Work with backups
 backup-location   Work with backup storage locations
@@ -2385,9 +2091,7 @@ schedule          Work with schedules
 snapshot-location Work with snapshot locations
 uninstall         Uninstall Velero
 version           Print the velero version and associated image
-```
 
-```text
 Flags:
 --add_dir_header                   If true, adds the file directory to the
 header of the log messages
@@ -2400,9 +2104,7 @@ default
 enable for this Velero process. Combines with values from
 $HOME/.config/velero/config.json if present
 -h, --help                             help for velero
-```
 
-```text
 --kubeconfig string                Path to the kubeconfig file to use to
 talk to the Kubernetes apiserver. If unset, try the environment variable
 KUBECONFIG, as well as in-cluster configuration
@@ -2435,15 +2137,12 @@ alsologtostderr=false) (default 2)
 -v, --v Level                          number for the log level verbosity
 --vmodule moduleSpec               comma-separated list of pattern=N
 settings for file-filtered logging
-```
 
-```text
 Use "velero [command] --help" for more information about a command.
 ```
 
 范例: 启用命令补全
-
-```text
+```bash
 #方法1
 [root@ubuntu2204 ~]# echo 'source <(velero completion bash)' >> ~/.bashrc;exit
 #方法2
@@ -2461,8 +2160,7 @@ Velero支持很多种存储插件，可查看：https://velero.io/docs/main/supp
 ##### 2.4.2.3.1 安装部署 MinIO
 
 范例: 二进制部署单机单磁盘
-
-```text
+```bash
 #下载
 [root@ubuntu2204 ~]#wget https://dl.min.io/server/minio/release/linux-
 amd64/minio
@@ -2470,70 +2168,36 @@ amd64/minio
 [root@ubuntu2204 ~]#wget https://dl.minio.org.cn/server/minio/release/linux-
 amd64/minio
 [root@ubuntu2204 ~]#install minio  /usr/local/bin/
-```
 
-```text
 #准备数据目录,建议此目录为LVM
 [root@ubuntu2204 ~]#mkdir -p /data/minio
 ```
 
-```text
-#启动服务命令选项说明
-#示例: minio server /data/minio --console-address :9090
-server #表示start object storage server
---console-address #指定管理后面端口,管理后台登录用户和密码,默认为minioadmin/minioadmin.
-也可以通过还境变量MINIO_ROOT_USER（至少3个字符）和MINIO_ROOT_PASSWORD（至少8个字符）进行指
-定
-```
 
-```text
-#方式1:使用默认用户名和密码minioadmin/minioadmin执行启动
-#输出信息如下
-Formatting 1st pool, 1 set(s), 1 drives per set.
-WARNING: Host local has more than 0 drives of set. A host failure will result in
-data becoming unavailable.
-WARNING: Detected default credentials 'minioadmin:minioadmin', we recommend that
-you change these values with 'MINIO_ROOT_USER' and 'MINIO_ROOT_PASSWORD'
-environment variables
-MinIO Object Storage Server
-Copyright: 2015-2023 MinIO, Inc.
-License: GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
-Version: RELEASE.2023-08-29T23-07-35Z (go1.19.12 linux/amd64)
-```
+#启动服务命令选项说明#示例: minio server /data/minio --console-address :9090 server #表示start object storage server--console-address #指定管理后面端口,管理后台登录用户和密码,默认为minioadmin/minioadmin.也可以通过还境变量MINIO_ROOT_USER（至少3个字符）和MINIO_ROOT_PASSWORD（至少8个字符）进行指定
 
-```text
+
+#方式1:使用默认用户名和密码minioadmin/minioadmin执行启动#输出信息如下 Formatting 1st pool, 1 set(s), 1 drives per set. WARNING: Host local has more than 0 drives of set. A host failure will result in data becoming unavailable. WARNING: Detected default credentials 'minioadmin:minioadmin', we recommend that you change these values with 'MINIO_ROOT_USER' and 'MINIO_ROOT_PASSWORD'environment variables MinIO Object Storage Server Copyright: 2015-2023 MinIO, Inc. License: GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>Version: RELEASE.2023-08-29T23-07-35Z (go1.19.12 linux/amd64)
+
+```bash
 Status:         1 Online, 0 Offline.
-```
 
-```text
 S3-API: http://10.0.0.101:9000  http://10.10.53.81:9000  http://127.0.0.1:9000
-```
 
-```text
 RootUser: minioadmin
 RootPass: minioadmin
-```
 
-```text
 Console: http://10.0.0.101:9090 http://10.10.53.81:9090 http://127.0.0.1:9090
-```
 
-```text
 RootUser: minioadmin
 RootPass: minioadmin
-```
 
-```text
 Command-line: https://min.io/docs/minio/linux/reference/minio-mc.html#quickstart
 $ mc alias set myminio http://10.0.0.101:9000 minioadmin minioadmin
-```
 
-```text
 Documentation: https://min.io/docs/minio/linux/index.html
 Warning: The standard parity is set to 0. This can lead to data loss.
-```
 
-```text
 #方式2:指定用户和密码
 [root@ubuntu2204 ~]#export MINIO_ROOT_USER=admin
 [root@ubuntu2204 ~]#export MINIO_ROOT_PASSWORD=12345678
@@ -2541,18 +2205,13 @@ Warning: The standard parity is set to 0. This can lead to data loss.
 ```
 
 范例: 容器化部署单机单磁盘
-
-```text
+```bash
 [root@ubuntu2204 ~]#apt update && apt -y install docker.io
 [root@ubuntu2204 ~]#docker pull minio/minio
-```
 
-```text
 #可选
 [root@ubuntu2204 ~]#mkdir -p /data/minio
-```
 
-```text
 #docker部署
 [root@ubuntu2204 ~]#docker run -d \
 -p 9000:9000 \
@@ -2562,32 +2221,25 @@ Warning: The standard parity is set to 0. This can lead to data loss.
 -v /data/minio:/data \
 -e "MINIO_ROOT_USER=admin" \
 -e "MINIO_ROOT_PASSWORD=12345678" \
-registry.cn-beijing.aliyuncs.com/wangxiaochun/minio:RELEASE.2024-11-07T00-52-
+registry.cn-beijing.aliyuncs.com/bowen/minio:RELEASE.2024-11-07T00-52-
 20Z server /data --console-address ":9090"
 #minio/minio server /data --console-address ":9090"
-```
 
-```text
 #使用admin/12345678 登录MinIO 的 Console
-http://minio.wang.org:9090
+http://minio.bowen.org:9090
 ```
 
 范例：基于 Docker Compose 部署单节点
-
-```text
+```bash
 [root@ubuntu2404 ~]#cat docker-compose.yaml
 version: '3.8'
-```
 
-```text
 services:
 minio:
 #image: minio/minio:RELEASE.2024-11-07T00-52-20Z
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/minio:RELEASE.2024-11-
+image: registry.cn-beijing.aliyuncs.com/bowen/minio:RELEASE.2024-11-
 07T00-52-20Z
-```
 
-```text
 container_name: minio
 restart: always
 environment:
@@ -2609,28 +2261,20 @@ timeout: 20s
 retries: 3
 command: server /data
 #command: server --console-address ":9001" /data
-```
 
-```text
 networks:
 minio_net:
 driver: bridge
-```
 
-```text
 [root@ubuntu2404 ~]#apt update && apt -y install docker-compose python3-pip
 [root@ubuntu2404 ~]#docker-compose version
 docker-compose version 1.29.2, build unknown
 docker-py version: 5.0.3
 CPython version: 3.12.3
 OpenSSL version: OpenSSL 3.0.13 30 Jan 2024
-```
 
-```text
 [root@ubuntu2404 ~]#docker-compose up -d
-```
 
-```text
 [root@ubuntu2404 ~]#docker-compose ps
 Name               Command                  State
 Ports
@@ -2649,15 +2293,12 @@ f26890b252b5   none             null      local
 ```
 
 范例: kubernetes 部署 MinIO
-
-```text
+```yaml
 #velero默认带有一个部署MinIO的清单文件
 [root@master1 ~]# VERSOIN=v1.16.1
 [root@master1 ~]# cat velero-${VERSION}-linux-amd64/examples/minio/00-minio-
 deployment.yaml
-```
 
-```text
 # Copyright 2017 the Velero contributors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -2671,17 +2312,13 @@ deployment.yaml
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-```
 
-```text
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
 name: velero
-```
 
-```text
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -2720,18 +2357,14 @@ value: "minio"
 - name: MINIO_SECRET_KEY
 value: "minio123"
 ports:
-```
 
-```text
 - containerPort: 9000
 volumeMounts:
 - name: storage
 mountPath: "/storage"
 - name: config
 mountPath: "/config"
-```
 
-```text
 ---
 apiVersion: v1
 kind: Service
@@ -2752,9 +2385,7 @@ targetPort: 9000
 protocol: TCP
 selector:
 component: minio
-```
 
-```text
 ---
 apiVersion: batch/v1
 kind: Job
@@ -2801,7 +2432,6 @@ mountPath: "/config"
 ##### 2.4.2.3.3 创建Access Key并配置权限
 
 **创建并记录 Access Key 和 Secret key**
-
 ```text
 #Access Key
 y81QoEEcmV06Zc18e2Fp
@@ -2814,8 +2444,7 @@ y81QoEEcmV06Zc18e2Fp
 ![原 PDF 第 65 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-d6f690485d4e269d.png)
 
 ##### 2.4.2.3.4 配置 CLI 访问 MinIO 认证密钥
-
-```text
+```bash
 #在K8s集群的Master节点上MinIO的创建认证文件
 [root@master1 ~]# cat > credentials-velero <<EOF
 [default]
@@ -2836,9 +2465,8 @@ the velero install CLI command the Helm chart
 
 **aws插件**
 
-```text
-https://github.com/vmware-tanzu/velero-plugin-for-aws
-```
+
+- <https://github.com/vmware-tanzu/velero-plugin-for-aws>
 
 ```text
 #查看兼容性
@@ -2870,9 +2498,9 @@ v1.3.x v1.7.x
 
 **velero 相关镜像**
 
-```text
-https://hub.docker.com/u/velero
-```
+
+- <https://hub.docker.com/u/velero>
+
 
 ![原 PDF 第 67 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-bf2e8cba8c18cca8.png)
 
@@ -2885,7 +2513,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --backup-location-config
 
 用途：用于指定备份存储位置相关的配置信息。这是很关键的一个参数，因为 Velero 需要知道将备份数据存储到哪里，比如可以配置为使用对象存储服务（像 Amazon S3、Google Cloud Storage、Azure Blob Storage 等）或者其他兼容的存储后端。示例：
-
 ```text
 --backup-location-config='{
 "region": "us-west-1",
@@ -2900,7 +2527,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --image
 
 用途：指定 Velero 组件所使用的镜像名称及版本。这样你可以选择使用特定版本的镜像，或者切换到符合你需求的自定义镜像（例如经过内部安全加固等处理后的镜像）。示例：表示使用 v1.10.0 版本的 Velero 官方镜像来进行安装。
-
 ```text
 --image=velero/velero:v1.10.0
 ```
@@ -2908,7 +2534,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --init-image
 
 用途：设置用于初始化相关操作的镜像（比如初始化存储资源等任务可能需要特定的初始化镜像来完成启动阶段的一些前置工作），和 --image 关注的主体组件不同，它侧重于初始化流程。示例：指定了在基于 AWS 相关环境进行初始化时的对应插件版本镜像，不同云环境或存储场景对应的初始化镜像根据需求选用。
-
 ```text
 --init-image=velero/velero-plugin-aws:v1.10.0
 ```
@@ -2916,7 +2541,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --plugins
 
 用途：用来指定要安装的插件列表。Velero 要适配不同的云平台、存储系统等需要对应的插件支持，通过该选项可以明确安装所需插件，确保能与相应的基础设施顺利协同工作。示例：表示同时安装适用于 AWS 和 GCP（Google Cloud Platform）的插件，方便 Velero 在两种云环境完成备份、恢复等操作。
-
 ```text
 --plugins=velero/velero-plugin-aws,velero/velero-plugin-gcp
 ```
@@ -2924,7 +2548,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --namespace
 
 用途：定义 Velero 组件将会被安装到的 Kubernetes 命名空间。默认情况下，通常安装到velero 命名空间示例：会把 Velero 相关组件安装到名为 my-backup-namespace 的命名空间内。
-
 ```text
 --namespace=my-backup-namespace
 ```
@@ -2932,7 +2555,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --provider
 
 用途：指明 Velero 所运行的底层基础设施提供商（如云平台等），这有助于 Velero 根据对应平台特性来进行适配性安装，比如针对 AWS、Azure、GCP 等不同平台，启用相应的特定功能模块或配置不同的资源访问方式。示例：告知 Velero 是运行在 AWS 环境下，后续的安装流程就会按照 AWS 相关的规范和接口来配置组件以及资源访问等事项。
-
 ```text
 --provider=aws
 ```
@@ -2940,7 +2562,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --secret-file
 
 用途：指定包含访问存储资源（比如存储桶等）所需的认证凭据等敏感信息的文件。这个文件内容一般是以加密或者符合安全规范的形式存储的，确保 Velero 在与存储后端交互时能够进行身份验证并获得相应权限。示例：指向了存储在 /path/to/secret/file 这个路径下的包含认证信息的文件。
-
 ```text
 --secret-file=/path/to/secret/file
 ```
@@ -2948,7 +2569,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 --use-restic
 
 用途：决定是否启用 Restic 来处理持久卷数据的备份和恢复。Restic 是一个用于备份文件的工具，在 Velero 中启用它可以更精细地对应用中的持久卷数据进行备份和恢复操作，尤其适用于一些有复杂数据存储结构的应用场景。示例：表示在 Velero 安装过程中启用 Restic，后续 Velero 就可以利用它来处理持久卷相关的数据备份与恢复工作了。
-
 ```text
 --use-restic=true
 ```
@@ -2974,7 +2594,6 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 允许你定义快照数据存放的具体位置以及与之相关的各种参数，例如存储的具体区域、存储后端的访问配置、对应的存储桶或存储目录等细节内容，确保 Velero 知道将快照数据保存到哪里以及如何去访问该存储位置来读写这些快照数据。
 
 示例：展示了若 Velero 运行在 Amazon S3 存储相关环境下，配置快照存储位置时的一种可能形式（配置以 JSON 格式呈现，不同存储后端格式类似但具体参数会有变化）：
-
 ```text
 --snapshot-location-config='{
 "region": "us-west-1",
@@ -3011,14 +2630,11 @@ velero install 命令用于在 Kubernetes 集群中安装 Velero，它有多个�
 用途：设置安装完成后是否等待 Velero 组件达到就绪状态才返回结果。如果设置为 true ，命令会一直阻塞，直到确认 Velero 相关组件都已经成功启动并且可以正常工作了才结束执行；如果设置为 false ，则命令执行完安装操作后立即返回，不关注后续组件是否就绪。常用于自动化部署脚本等场景，确保后续基于 Velero 的操作（如备份操作等）能马上开展。
 
 方法2：通过 helm 安装
-
-```text
+```bash
 [root@master1 ~]# helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-
 charts
 [root@master1 ~]# helm repo update
-```
 
-```text
 [root@master1 ~]# cat values.yaml
 configuration:
 provider: aws
@@ -3033,9 +2649,7 @@ credentials:
 useSecret: false
 accessKeyID: your-access-key
 secretAccessKey: your-secret-access-key
-```
 
-```text
 [root@master1 ~]# helm install velero vmware-tanzu/velero --namespace velero -f
 values.yaml
 ```
@@ -3043,31 +2657,28 @@ values.yaml
 #### 2.4.3.2 安装 Velero Server
 
 范例:  安装 Velero Server
-
-```text
+```bash
 #示例1: 支持资源和数据以文件方式备份,但不支持快照备份
-#注意:minio.wang.org需要coreDNS解析,不能用节点的hosts文件解析
+#注意:minio.bowen.org需要coreDNS解析,不能用节点的hosts文件解析
 [root@master1 ~]# velero install \
 --provider aws \
 #--image velero/velero:v1.13.1 \
-#--image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.13.1 \
---image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.15.0 \
+#--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.13.1 \
+--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.15.0 \
 #--plugins velero/velero-plugin-for-aws:v1.9.1 \
-#--plugins registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+#--plugins registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 aws:v1.9.1 \
---plugins registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+--plugins registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 aws:v1.11.0 \
 --backup-location-config
-region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
+region=minio,s3ForcePathStyle="true",s3Url=http://minio.bowen.org:9000 \
 --bucket velero \
 --secret-file ./credentials-velero \
 --namespace velero \
 --use-node-agent \
 --use-volume-snapshots=false \
 --wait
-```
 
-```text
 #选项说明
 --provider aws #指定云服务提供商为 AWS。尽管这里用的是aws，但 Velero 支持通过插件机制与其他
 存储系统（如 MinIO）兼容。此选项告诉 Velero 使用 AWS 兼容的存储接口。
@@ -3077,13 +2688,13 @@ region=minio #指定存储区域名称。对于 MinIO，此值可以是任意字
 s3ForcePathStyle="true" #强制使用路径风格的 S3 URL。路径风格的 URL 格式为
 http://<host>/<bucket>/<key>，而不是虚拟主机风格的http://<bucket>.<host>/<key>。MinIO
 要求启用此选项。
-s3Url=http://minio.wang.org:9000 #指定 MinIO 服务器的 URL。Velero 将通过此 URL 连接到
-MinIO 服务，端口9000是 MinIO 的默认 API 端口。minio.wang.org需要coreDNS解析,不能用hosts
+s3Url=http://minio.bowen.org:9000 #指定 MinIO 服务器的 URL。Velero 将通过此 URL 连接到
+MinIO 服务，端口9000是 MinIO 的默认 API 端口。minio.bowen.org需要coreDNS解析,不能用hosts
 文件解析
 [root@master1 ~]#kubectl edit cm -n kube-system  coredns
 ......
 hosts {
-10.0.0.200 minio.wang.org
+10.0.0.200 minio.bowen.org
 fallthrough
 }
 loop
@@ -3094,19 +2705,15 @@ loadbalance
 [root@master1 ~]#kubectl rollout restart deployment -n kube-system  coredns
 ```
 
-```text
---use-node-agent #启用 Velero 的 Node Agent组件，该组件以DaemonSet形式部署在每个节点上,
-可以支持对 PVC数据的文件级备份。
---use-volume-snapshots=false #禁用卷快照功能。卷快照是通过云提供商（如 AWS EBS、GCP PD）
-或 CSI 驱动实现的块级备份。仅备份 PVC 的元数据和挂载信息，不备份卷的实际数据
-```
 
-```text
+--use-node-agent #启用 Velero 的 Node Agent组件，该组件以DaemonSet形式部署在每个节点上,可以支持对 PVC数据的文件级备份。--use-volume-snapshots=false #禁用卷快照功能。卷快照是通过云提供商（如 AWS EBS、GCP PD）或 CSI 驱动实现的块级备份。仅备份 PVC 的元数据和挂载信息，不备份卷的实际数据
+
+```bash
 #示例2：备份到Kubernetes中部署的MinIO
 [root@master1 ~]# velero install \
 --provider aws \
---image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.15.0 \
---plugins registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.15.0 \
+--plugins registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 aws:v1.11.0 \
 --backup-location-config
 region=minio,s3ForcePathStyle="true",s3Url=http://minio.velero.svc.cluster,local
@@ -3115,30 +2722,26 @@ region=minio,s3ForcePathStyle="true",s3Url=http://minio.velero.svc.cluster,local
 --secret-file ./credentials-velero \
 --namespace velero \
 --use-volume-snapshots=false
-```
 
-```text
 #示例3：启用CSI插件部署Velero,支持资源和数据以文件和快照方式的备份,但需要事先部署支持快照的sc
-#注意:minio.wang.org需要coreDNS解析,不能用hosts文件解析
+#注意:minio.bowen.org需要coreDNS解析,不能用hosts文件解析
 #参考https://github.com/kubernetes-csi/csi-driver-nfs项目可以支持
 [root@master1 ~]#velero install \
 --provider=aws \
---image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.13.1 \
-#--image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.15.0 \
+--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.13.1 \
+#--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.15.0 \
 --backup-location-config
-region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
+region=minio,s3ForcePathStyle="true",s3Url=http://minio.bowen.org:9000 \
 --secret-file=./credentials-velero \
---plugins=registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
-aws:v1.11.0,registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+--plugins=registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
+aws:v1.11.0,registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 csi:v0.7.1 \
 --bucket=velero \
 --use-volume-snapshots=true  \
 --features=EnableCSI \
 --use-node-agent  \
 --uploader-type=kopia
-```
 
-```text
 #执行install命令后会创建一系列清单，包括CustomResourceDefinition、Namespace、Deployment
 等。
 CustomResourceDefinition/backuprepositories.velero.io: attempting to create
@@ -3165,83 +2768,18 @@ CustomResourceDefinition/downloadrequests.velero.io: attempting to create
 resource client
 ```
 
-```text
-CustomResourceDefinition/downloadrequests.velero.io: created
-CustomResourceDefinition/podvolumebackups.velero.io: attempting to create
-resource
-CustomResourceDefinition/podvolumebackups.velero.io: attempting to create
-resource client
-CustomResourceDefinition/podvolumebackups.velero.io: created
-CustomResourceDefinition/podvolumerestores.velero.io: attempting to create
-resource
-CustomResourceDefinition/podvolumerestores.velero.io: attempting to create
-resource client
-CustomResourceDefinition/podvolumerestores.velero.io: created
-CustomResourceDefinition/restores.velero.io: attempting to create resource
-CustomResourceDefinition/restores.velero.io: attempting to create resource
-client
-CustomResourceDefinition/restores.velero.io: created
-CustomResourceDefinition/schedules.velero.io: attempting to create resource
-CustomResourceDefinition/schedules.velero.io: attempting to create resource
-client
-CustomResourceDefinition/schedules.velero.io: created
-CustomResourceDefinition/serverstatusrequests.velero.io: attempting to create
-resource
-CustomResourceDefinition/serverstatusrequests.velero.io: attempting to create
-resource client
-CustomResourceDefinition/serverstatusrequests.velero.io: created
-CustomResourceDefinition/volumesnapshotlocations.velero.io: attempting to create
-resource
-CustomResourceDefinition/volumesnapshotlocations.velero.io: attempting to create
-resource client
-CustomResourceDefinition/volumesnapshotlocations.velero.io: created
-CustomResourceDefinition/datadownloads.velero.io: attempting to create resource
-CustomResourceDefinition/datadownloads.velero.io: attempting to create resource
-client
-CustomResourceDefinition/datadownloads.velero.io: created
-CustomResourceDefinition/datauploads.velero.io: attempting to create resource
-CustomResourceDefinition/datauploads.velero.io: attempting to create resource
-client
-CustomResourceDefinition/datauploads.velero.io: created
-Waiting for resources to be ready in cluster...
-Namespace/velero: attempting to create resource
-Namespace/velero: attempting to create resource client
-Namespace/velero: created
-ClusterRoleBinding/velero: attempting to create resource
-ClusterRoleBinding/velero: attempting to create resource client
-ClusterRoleBinding/velero: created
-ServiceAccount/velero: attempting to create resource
-ServiceAccount/velero: attempting to create resource client
-ServiceAccount/velero: created
-Secret/cloud-credentials: attempting to create resource
-Secret/cloud-credentials: attempting to create resource client
-Secret/cloud-credentials: created
-BackupStorageLocation/default: attempting to create resource
-BackupStorageLocation/default: attempting to create resource client
-BackupStorageLocation/default: created
-Deployment/velero: attempting to create resource
-Deployment/velero: attempting to create resource client
-Deployment/velero: created
-DaemonSet/node-agent: attempting to create resource
-DaemonSet/node-agent: attempting to create resource client
-```
 
-```text
-DaemonSet/node-agent: created
-Waiting for Velero deployment to be ready.
-Waiting for node-agent daemonset to be ready.
-Velero is installed! ⛵ Use 'kubectl logs deployment/velero -n velero' to view
-the status.
-```
+CustomResourceDefinition/downloadrequests.velero.io: created CustomResourceDefinition/podvolumebackups.velero.io: attempting to create resource CustomResourceDefinition/podvolumebackups.velero.io: attempting to create resource client CustomResourceDefinition/podvolumebackups.velero.io: created CustomResourceDefinition/podvolumerestores.velero.io: attempting to create resource CustomResourceDefinition/podvolumerestores.velero.io: attempting to create resource client CustomResourceDefinition/podvolumerestores.velero.io: created CustomResourceDefinition/restores.velero.io: attempting to create resource CustomResourceDefinition/restores.velero.io: attempting to create resource client CustomResourceDefinition/restores.velero.io: created CustomResourceDefinition/schedules.velero.io: attempting to create resource CustomResourceDefinition/schedules.velero.io: attempting to create resource client CustomResourceDefinition/schedules.velero.io: created CustomResourceDefinition/serverstatusrequests.velero.io: attempting to create resource CustomResourceDefinition/serverstatusrequests.velero.io: attempting to create resource client CustomResourceDefinition/serverstatusrequests.velero.io: created CustomResourceDefinition/volumesnapshotlocations.velero.io: attempting to create resource CustomResourceDefinition/volumesnapshotlocations.velero.io: attempting to create resource client CustomResourceDefinition/volumesnapshotlocations.velero.io: created CustomResourceDefinition/datadownloads.velero.io: attempting to create resource CustomResourceDefinition/datadownloads.velero.io: attempting to create resource client CustomResourceDefinition/datadownloads.velero.io: created CustomResourceDefinition/datauploads.velero.io: attempting to create resource CustomResourceDefinition/datauploads.velero.io: attempting to create resource client CustomResourceDefinition/datauploads.velero.io: created Waiting for resources to be ready in cluster... Namespace/velero: attempting to create resource Namespace/velero: attempting to create resource client Namespace/velero: created ClusterRoleBinding/velero: attempting to create resource ClusterRoleBinding/velero: attempting to create resource client ClusterRoleBinding/velero: created ServiceAccount/velero: attempting to create resource ServiceAccount/velero: attempting to create resource client ServiceAccount/velero: created Secret/cloud-credentials: attempting to create resource Secret/cloud-credentials: attempting to create resource client Secret/cloud-credentials: created BackupStorageLocation/default: attempting to create resource BackupStorageLocation/default: attempting to create resource client BackupStorageLocation/default: created Deployment/velero: attempting to create resource Deployment/velero: attempting to create resource client Deployment/velero: created DaemonSet/node-agent: attempting to create resource DaemonSet/node-agent: attempting to create resource client
 
-```text
+
+DaemonSet/node-agent: created Waiting for Velero deployment to be ready. Waiting for node-agent daemonset to be ready. Velero is installed! ⛵ Use 'kubectl logs deployment/velero -n velero' to view the status.
+
+```bash
 #查看velero创建的api对象
 [root@master1 ~]#kubectl api-versions |grep velero
 velero.io/v1
 velero.io/v2alpha1
-```
 
-```text
 #查看生成的相关资源
 [root@master1 ~]# kubectl api-resources --api-group=velero.io
 NAME                      SHORTNAMES   APIVERSION           NAMESPACED   KIND
@@ -3269,9 +2807,7 @@ serverstatusrequests      ssr          velero.io/v1         true
 ServerStatusRequest
 volumesnapshotlocations   vsl          velero.io/v1         true
 VolumeSnapshotLocation
-```
 
-```text
 #生成CRD
 [root@master1 ~]#kubectl get  crds -l component=velero
 NAME                                CREATED AT
@@ -3288,9 +2824,7 @@ restores.velero.io                  2024-12-12T04:14:01Z
 schedules.velero.io                 2024-12-12T04:14:01Z
 serverstatusrequests.velero.io      2024-12-12T04:14:01Z
 volumesnapshotlocations.velero.io   2024-12-12T04:14:01Z
-```
 
-```text
 [root@master1 ~]#kubectl get crd |grep velero
 backuprepositories.velero.io                          2024-12-12T04:14:01Z
 backups.velero.io                                     2024-12-12T04:14:01Z
@@ -3305,45 +2839,33 @@ restores.velero.io                                    2024-12-12T04:14:01Z
 schedules.velero.io                                   2024-12-12T04:14:01Z
 serverstatusrequests.velero.io                        2024-12-12T04:14:01Z
 volumesnapshotlocations.velero.io                     2024-12-12T04:14:01Z
-```
 
-```text
 [root@master1 ~]#kubectl get all -n velero
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/node-agent-8ks5z         1/1     Running   0          63s
 pod/node-agent-lkhh2         1/1     Running   0          63s
 pod/node-agent-tx8pn         1/1     Running   0          63s
 pod/velero-ddd5bcb88-f5dbh   1/1     Running   0          63s
-```
 
-```text
 NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE
 NODE SELECTOR   AGE
 daemonset.apps/node-agent   3         3         3       3            3
 <none>          63s
-```
 
-```text
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/velero   1/1     1            1           63s
-```
 
-```text
 NAME                               DESIRED   CURRENT   READY   AGE
 replicaset.apps/velero-ddd5bcb88   1         1         1       63s
-```
 
-```text
 [root@master1 ~]#kubectl get backupstoragelocation -A
 NAMESPACE   NAME      PHASE       LAST VALIDATED   AGE     DEFAULT
 velero      default   Available   2s               2m31s   true
-```
 
-```text
 #查看运行日志
 [root@master1 ~]# kubectl logs deployment/velero -n velero
-Defaulted container "velero" out of: velero, wangxiaochun-velero-plugin-for-aws
-(init), wangxiaochun-velero-plugin-for-csi (init)
+Defaulted container "velero" out of: velero, bowen-velero-plugin-for-aws
+(init), bowen-velero-plugin-for-csi (init)
 time="2024-12-17T00:52:23Z" level=info msg="setting log-level to INFO"
 logSource="pkg/cmd/server/server.go:191"
 time="2024-12-17T00:52:23Z" level=info msg="Starting Velero server v1.13.1
@@ -3358,26 +2880,20 @@ time="2024-12-17T00:52:25Z" level=info msg="registering plugin" command=/velero
 kind=BackupItemAction logSource="pkg/plugin/clientmgmt/process/registry.go:104"
 name=velero.io/crd-remap-version
 .....
-```
 
-```text
 #查看备份位置信息
 [root@master1 ~]#velero backup-location get
-```
 
-```text
 NAME      PROVIDER   BUCKET/PREFIX   PHASE       LAST VALIDATED
 ACCESS MODE   DEFAULT
 default   aws        velero          Available   2024-12-12 12:17:32 +0800 CST
 ReadWrite     true
-```
 
-```text
 #示例4: 使用默认镜像
 [root@master1 ~]#velero install \
 --provider=aws \
 --backup-location-config
-region=minio,s3ForcePathStyle=true,s3Url=http://minio.wang.org:9000 \
+region=minio,s3ForcePathStyle=true,s3Url=http://minio.bowen.org:9000 \
 --secret-file=./credentials-velero \
 --plugins=velero/velero-plugin-for-aws:v1.9.0,velero/velero-plugin.for-
 csi:v0.7.0  \
@@ -3387,17 +2903,15 @@ csi:v0.7.0  \
 --snapshot-location-config region=minio  \
 --use-node-agent  \
 --uploader-type=kopia
-```
 
-```text
 #示例5: 使用restic上传插件
 [root@ubuntu2204 ~]# velero install \
 --provider aws \
---image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.13.1 \
---plugins registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.13.1 \
+--plugins registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 aws:v1.11.0 \
 --backup-location-config
-region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
+region=minio,s3ForcePathStyle="true",s3Url=http://minio.bowen.org:9000 \
 --bucket velero \
 --secret-file ./credentials-velero \
 --use-node-agent \
@@ -3415,13 +2929,10 @@ region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
 #### 2.4.3.3 卸载 Velero Server
 
 如果想从集群中完全卸载Velero，则以下命令将删除由velero install 创建的所有资源:
-
-```text
+```bash
 #方法1
 [root@master1 ~]#velero uninstall --namespace velero
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl delete namespace/velero clusterrolebinding/velero
 [root@master1 ~]#kubectl delete crds -l component=velero
@@ -3433,12 +2944,11 @@ region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
 
 ##### 2.4.4.1.1 备份命令说明
 
-```text
-https://velero.io/docs/v1.8/how-velero-works/
-```
+
+- <https://velero.io/docs/v1.8/how-velero-works/>
+
 
 ![原 PDF 第 77 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-82236ab67b3333ef.png)
-
 ```text
 velero create backup NAME [flags]
 ```
@@ -3448,7 +2958,6 @@ backup选项：
 --exclude-namespaces stringArray : 要从备份中排除的名称空间
 
 --exclude-resources stringArray : 要从备份中排除的资源，如
-
 ```text
 storageclasses.storage.k8s.io
 ```
@@ -3458,7 +2967,6 @@ storageclasses.storage.k8s.io
 --include-namespaces stringArray : 要包含在备份中的名称空间(默认’*'),多个名称空间,用逗号或空格隔开。
 
 示例:
-
 ```text
 --include-namespaces <命名空间1>,<命名空间2>,<命名空间3>
 --include-namespaces "<命名空间1> <命名空间2> <命名空间3>"
@@ -3483,7 +2991,6 @@ storageclasses.storage.k8s.io
 --volume-snapshot-locations strings : 指定快照的位置，即指定是哪一个公有云的驱动。
 
 --default-volumes-to-fs-backup :当备份 Kubernetes 资源（如 Pod、Deployment 等）时，Velero 会处理关联的 Volume（存储卷）。默认情况下：持久化卷（Persistent Volume, PV）：可以通过底层云存储提供商（如 AWS EBS、GCP PD 等）的快照机制进行备份（块级备份）。非持久化卷（如 EmptyDir、ConfigMap、Secret 等）：会被直接序列化到备份文件中（文件系统级备份）。使用选项强制将所有 Volume（包括 PV）的备份方式切换为文件系统级备份，而非使用云提供商的快照机制。
-
 ```text
 # 结合 Volume 过滤（例如排除名为 "data-volume" 的 PV）
 velero backup create my-backup --default-volumes-to-fs-backup --volume-
@@ -3497,14 +3004,11 @@ exclude=data-volume
 ##### 2.4.4.1.2 创建测试应用
 
 ###### 2.4.4.1.2.1 无状态资源
-
-```text
+```bash
 [root@master1 ~]#kubectl create ns demo
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3 -n demo
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3 -n demo
 
-```text
 [root@master1 ~]#kubectl get pod -n demo
 NAME                     READY   STATUS    RESTARTS   AGE
 myapp-547df679bb-88bj7   1/1     Running   0          9s
@@ -3513,12 +3017,9 @@ myapp-547df679bb-lssd9   1/1     Running   0          9s
 ```
 
 ###### 2.4.4.1.2.2 emptydir 存储资源
-
-```text
+```yaml
 [root@master1 ~]#kubectl create ns demo
-```
 
-```text
 #示例1:基于emtydir的数据存储
 [root@master1 ~]#cat storage-emptydir-redis.yaml
 apiVersion: v1
@@ -3528,7 +3029,7 @@ name: redis-emptydir-pod
 spec:
 containers:
 - name: redis
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/redis:7.2.5
+image: registry.cn-beijing.aliyuncs.com/bowen/redis:7.2.5
 ports:
 - containerPort: 6379
 name: redis
@@ -3538,19 +3039,13 @@ name: data
 volumes:
 - name: data
 emptyDir: {}
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-emptydir-redis.yaml -n demo
-```
 
-```text
 #生成数据
 [root@master1 ~]#kubectl exec -it -n demo redis-emptydir-pod -- sh
-# redis-cli set name wangxiaochun
-```
+# redis-cli set name bowen
 
-```text
 OK
 # redis-cli bgsave
 Background saving started
@@ -3561,37 +3056,33 @@ dump.rdb
 ```
 
 ###### 2.4.4.1.2.3  HostPath 存储资源
-
-```text
+```yaml
 [root@master1 ~]#cat storage-hostpath-redis.yaml
 apiVersion: v1
 kind: Pod
 metadata:
 name: hostpath-redis
 spec:
-nodeName: node1.wang.org      #指定运行在指定worker主机上
+nodeName: node1.bowen.org      #指定运行在指定worker主机上
 volumes:
 - name: redis-backup
 hostPath:
 path: /backup/redis       #宿主机的目录会自动创建
 containers:
 - name: hostpath-redis
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/redis:6.2.5
+image: registry.cn-beijing.aliyuncs.com/bowen/redis:6.2.5
 volumeMounts:
 - name: redis-backup
 mountPath: /data
 ```
 
 ###### 2.4.4.1.2.4  PVC 存储资源
-
-```text
+```yaml
 #示例1:PV和PVC
 #事先在PV所在的目标节点上准备目录，对于本地存储Kubernetes本身并不会自动创建路径，这是因为
 Kubernetes不能控制节点上的本地存储，因此无法自动创建路径
 [root@node2 ~]#mkdir -p /data/mysql
-```
 
-```text
 [root@master1 ~]#cat storage-sc-local-pv-pvc-mysql-pod.yaml
 apiVersion: v1
 kind: Secret
@@ -3609,9 +3100,7 @@ name: local-storage
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer  #延迟绑定，只有Pod启动后再绑定PV到Pod所在节
 点，否则PVC处理Pending状态
-```
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -3634,27 +3123,21 @@ nodeSelectorTerms:        #指定节点
 - key: kubernetes.io/hostname
 operator: In
 values:
-- node2.wang.org
-```
+- node2.bowen.org
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
 name: pvc-sc-local
 spec:
-```
 
-```text
 storageClassName: local-storage
 accessModes: ["ReadWriteOnce"]
 resources:
 requests:
 storage: 100Gi
-```
 
-```text
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -3672,7 +3155,7 @@ labels:
 app: mysql
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+- image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 name: mysql
 env:
 - name: MYSQL_ROOT_PASSWORD
@@ -3699,18 +3182,16 @@ volumes:
 - name: mysql-persistent-storage
 persistentVolumeClaim:
 claimName: pvc-sc-local
-```
 
-```text
 #示例2:基于storageclass的PVC的存储数据
+```
+```yaml
 [root@master1 velero]#cat redis-pvc-sc.yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
 name: redis-pvc
-```
 
-```text
 spec:
 storageClassName: sc-nfs
 accessModes:
@@ -3718,9 +3199,7 @@ accessModes:
 resources:
 requests:
 storage: 2Gi
-```
 
-```text
 ---
 apiVersion: v1
 kind: Pod
@@ -3729,7 +3208,7 @@ name: redis-pvc-pod
 spec:
 containers:
 - name: redis
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/redis:7.2.5
+image: registry.cn-beijing.aliyuncs.com/bowen/redis:7.2.5
 ports:
 - containerPort: 6379
 name: redis
@@ -3740,29 +3219,21 @@ volumes:
 - name: data
 persistentVolumeClaim:
 claimName: redis-pvc
-```
 
-```text
 [root@master1 velero]#kubectl apply -f redis-pvc-sc.yaml -n demo
 persistentvolumeclaim/redis-pvc created
 pod/redis-pvc-pod created
-```
 
-```text
 [root@master1 ~]#kubectl get pod,pvc -n demo
 NAME                READY   STATUS    RESTARTS   AGE
 pod/redis-pvc-pod   1/1     Running   0          104s
-```
 
-```text
 NAME                              STATUS   VOLUME
 CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/redis-pvc   Bound    pvc-09dc9e61-52a1-4a54-b936-
 8ec582db3534   2Gi        RWX            sc-nfs         <unset>
 104s
-```
 
-```text
 [root@master1 ~]#kubectl get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM
 POLICY   STATUS   CLAIM                   STORAGECLASS   VOLUMEATTRIBUTESCLASS
@@ -3770,73 +3241,54 @@ REASON   AGE
 pvc-09dc9e61-52a1-4a54-b936-8ec582db3534   2Gi        RWX            Delete
 Bound    demo/redis-pvc   sc-nfs         <unset>
 118s
-```
 
-```text
 [root@master1 ~]#ls /data/sc-nfs/
 demo-redis-pvc-pvc-09dc9e61-52a1-4a54-b936-8ec582db3534
-```
 
-```text
 #创建测试数据
 [root@master1 ~]#kubectl exec -it -n demo redis-pvc-pod  -- sh
 # ls /data
 # redis-cli
-127.0.0.1:6379> set name wangxiaochun
-```
+127.0.0.1:6379> set name bowen
 
-```text
 OK
 127.0.0.1:6379> get name
-"wangxiaochun"
+"bowen"
 127.0.0.1:6379> bgsave
 Background saving started
 127.0.0.1:6379> exit
 # ls /data
 dump.rdb
-```
 
-```text
 #在NFS存储中查看到数据文件
 [root@master1 ~]#tree /data/sc-nfs/
 /data/sc-nfs/
 └── pvc-f1802b0f-271c-4409-b579-e53fae2b197f
 └── dump.rdb
-```
 
-```text
 1 directory, 1 file
 ```
 
 ##### 2.4.4.1.3 备份
-
-```text
+```yaml
 [root@master1 ~]#TIME=`date +%F-%H-%M-%S`
-```
 
-```text
 #示例1:只备份demo名称空间的资源,不包括数据
 [root@master1 ~]#velero backup create k8s-backup-$TIME --kubeconfig
 ~/.kube/config --include-namespaces=demo,default
-```
 
-```text
 #示例2:只备份demo名称空间的资源和相关数据
 [root@master1 ~]#velero backup create k8s-backup-$TIME --kubeconfig
 ~/.kube/config --include-namespaces=demo --default-volumes-to-fs-backup --
 snapshot-volumes=false
-```
 
-```text
 [root@master1 ~]#velero backup create k8s-backup-$TIME --kubeconfig
 ~/.kube/config --include-namespaces=demo --default-volumes-to-fs-backup --
 snapshot-volumes=false --wait
 Backup request "k8s-backup" submitted successfully.
 Run `velero backup describe k8s-backup` or `velero backup logs k8s-backup` for
 more details.
-```
 
-```text
 #示例3:创建本地快照,但不上传到远程MinIO的存储,可以执行下面命令
 #提前安装https://github.com/kubernetes-csi/csi-driver-nfs,并创建
 volumesnapshotclasses
@@ -3850,22 +3302,16 @@ velero.io/csi-volumesnapshot-class: "true"
 driver: nfs.csi.k8s.io
 parameters:
 parameters:
-server: nfs.wang.org #节点需要实现域名解析
+server: nfs.bowen.org #节点需要实现域名解析
 share: /data/sc-nfs
 deletionPolicy: Delete
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-csi-nfs-volumesnapshotclasse.yaml
 [root@master1 ~]#kubectl  get volumesnapshotclasses
 NAME      DRIVER           DELETIONPOLICY   AGE
-```
 
-```text
 nfs-csi   nfs.csi.k8s.io   Delete           22s
-```
 
-```text
 #基于本地快照备份,但不上传远程存储
 [root@master1 ~]#velero backup create k8s-backup-$TIME --kubeconfig
 ~/.kube/config --include-namespaces=demo  --snapshot-volumes
@@ -3875,38 +3321,28 @@ NAME                             STATUS      ERRORS   WARNINGS   CREATED
 EXPIRES   STORAGE LOCATION   SELECTOR
 k8s-backup-2024-12-19-18-59-53   Completed   0        0          2024-12-19
 19:00:26 +0800 CST   29d       default            <none>
-```
 
-```text
 #可看到快照资源
 [root@master1 ~]#velero get vsc
-```
 
-```text
 #可看到快照生成
 [root@master1 ~]#ls /data/sc-nfs/
 pvc-c0042afa-ac4f-4c78-b72f-c5a6e48fe617  snapshot-a301478b-2d03-4316-a02a-
 1eca203e8c03
-```
 
-```text
 #示例4:创建本地快照并上传到远程存储,基于示例3准备操作后,执行下面命令,--snapshot-move-data表
 示上传到远程存储并删除本地快照
 [root@master1 ~]#TIME=`date +%F-%H-%M-%S`
 [root@master1 ~]#velero backup create k8s-backup-$TIME --kubeconfig
 ~/.kube/config --include-namespaces=demo  --snapshot-volumes --snapshot-move-
 data
-```
 
-```text
 [root@master1 ~]#velero get backup
 NAME                             STATUS      ERRORS   WARNINGS   CREATED
 EXPIRES   STORAGE LOCATION   SELECTOR
 k8s-backup-2024-12-19-19-09-19   Completed   0        0          2024-12-19
 19:09:41 +0800 CST   29d       default            <none>
-```
 
-```text
 # 部署 Velero 到集群（启用 Restic 插件）
 velero install \
 --provider aws \
@@ -3926,15 +3362,12 @@ region=minio,s3ForcePathStyle="true",s3Url=http://minio.minio.svc.cluster.local:
 --include-namespaces ：指定需要备份的命名空间--default-volumes-to-fs-backup : 默认不备份PV，使用此选项可以将PV的卷数据以文件方式上传至远程存储--selector ：标签选择器，如app=nginx
 
 ##### 2.4.4.1.4 查看备份
-
-```text
+```bash
 #创建新的资源backup
 [root@master1 ~]#kubectl get backup -A
 NAMESPACE   NAME           AGE
 velero      k8s-backup     129m
-```
 
-```text
 #查看状态,正常为completed,如果为PartiallyFailed表示备份出现了部分错误
 [root@master1 ~]#velero get backup
 [root@master1 ~]#velero backup get
@@ -3942,18 +3375,14 @@ NAME         STATUS      ERRORS   WARNINGS   CREATED
 EXPIRES   STORAGE LOCATION   SELECTOR
 k8s-backup   Completed   0        6          2024-12-12 14:17:02 +0800 CST   29d
 default            <none>
-```
 
-```text
 #如果有错误,会提示下面状态
 [root@master1 ~]#velero backup get
 NAME       STATUS            ERRORS   WARNINGS   CREATED              EXPIRES
 STORAGE LOCATION   SELECTOR
 k8s-backup   PartiallyFailed   1        0        2024-12-19 08:45:18 +0800 CST
 29d       default            <none>
-```
 
-```text
 #如果有错误,可以查看备份详细信息
 [root@master1 ~]#velero  describe  backup k8s-backup
 Name:         k8s-backup
@@ -3963,14 +3392,10 @@ Annotations:  velero.io/resource-timeout=10m0s
 velero.io/source-cluster-k8s-gitversion=v1.32.0
 velero.io/source-cluster-k8s-major-version=1
 velero.io/source-cluster-k8s-minor-version=32
-```
 
-```text
 Phase:  PartiallyFailed (run `velero backup logs k8s-backup` for more
 information)
-```
 
-```text
 Errors:
 Velero:    message: /no matches for kind "VolumeSnapshot" in version
 "snapshot.storage.k8s.io/v1"
@@ -3978,9 +3403,7 @@ message: /no matches for kind "VolumeSnapshotContent" in version
 "snapshot.storage.k8s.io/v1"
 Cluster:    <none>
 Namespaces: <none>
-```
 
-```text
 [root@master1 ~]#velero backup describe k8s-backup --details
 Name:         k8s-backup
 Namespace:    velero
@@ -3989,14 +3412,10 @@ Annotations:  velero.io/resource-timeout=10m0s
 velero.io/source-cluster-k8s-gitversion=v1.30.2
 velero.io/source-cluster-k8s-major-version=1
 velero.io/source-cluster-k8s-minor-version=30
-```
 
-```text
 Phase:  Completed
 ......
-```
 
-```text
 # 查看备份日志
 [root@master1 ~]#velero backup logs k8s-backup
 ```
@@ -4014,7 +3433,6 @@ Phase:  Completed
 ##### 2.4.4.1.6  定时备份
 
 velero支持定时备份
-
 ```text
 #Examples :
 #Create a backup every 6 hours.
@@ -4028,36 +3446,27 @@ velero create schedule NAME --schedule="@every 168h" --ttl 2160h@m0s
 ```
 
 范例：定时备份
-
-```text
+```bash
 #每天备份一次
 [root@ubuntu2204 ~]#velero schedule create k8s-backup-daily --schedule="@every
 24h" --include-namespaces=demo --default-volumes-to-fs-backup --snapshot-
 volumes=false  --wait
-```
 
-```text
 # 使用cron表达式备份，每天1点备份
 [root@ubuntu2204 ~]#velero schedule create k8s-backup-daily --schedule="0 1 * *
 *" --include-namespaces=demo --default-volumes-to-fs-backup --snapshot-
 volumes=false  --wait
-```
 
-```text
 [root@master1 ~]#velero schedule get
 NAME               STATUS    CREATED                         SCHEDULE    BACKUP
 TTL   LAST BACKUP   SELECTOR   PAUSED
 k8s-backup-daily   Enabled   2024-12-12 14:24:01 +0800 CST   * * * * *   0s
 n/a           <none>     false
-```
 
-```text
 #手动触发定时任务
 [root@ubuntu2204 ~]# velero backup create --from-schedule k8s-backup-daily  --
 wait
-```
 
-```text
 #等一会儿可以查看备份成功
 [root@master1 ~]#velero get backup
 [root@master1 ~]#velero backup get
@@ -4072,14 +3481,11 @@ k8s-backup-minute-20241217084353   Completed   0        9          2024-12-17
 ```
 
 ![原 PDF 第 88 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-715ae65ff741e019.png)
-
-```text
+```bash
 #删除定时备份任务
 [root@master1 ~]#velero schedule delete k8s-backup-daily --confirm
 Schedule deleted: k8s-backup-daily
-```
 
-```text
 #确认删除
 [root@master1 ~]#velero schedule get
 [root@master1 ~]#
@@ -4092,109 +3498,82 @@ Schedule deleted: k8s-backup-daily
 velero restore 恢复时不会覆盖已有的资源，只恢复当前集群中不存在的资源。已有的资源不会回滚到之前的版本，如需要回滚，需在restore之前提前删除现有的资源。
 
 ##### 2.4.4.2.1 模拟灾难
-
-```text
+```bash
 # 删除nginx-example命名空间和资源
 [root@master1 ~]# kubectl delete namespace demo
-```
 
-```text
 # 检查是否删除
 [root@master1 ~]# kubectl get all -n demo
 No resources found in velero-test namespace.
 ```
 
 ##### 2.4.4.2.2 恢复资源
-
-```text
+```bash
 #恢复前查看备份名称
 [root@master1 ~]#velero backup get
 NAME           STATUS      ERRORS   WARNINGS   CREATED
 EXPIRES   STORAGE LOCATION   SELECTOR
 k8s-backup   Completed   0        0          2024-04-07 21:44:45 +0800 CST   29d
 default            <none>
-```
 
-```text
 #恢复,在worker节点上可以提前下载相关镜像
 [root@node3 ~]#docker pull velero/velero-restore-helper:v1.15.0
-```
 
-```text
 [root@master1 ~]#velero restore create --from-backup k8s-backup --wait
 Restore request "k8s-backup" submitted successfully.
 Waiting for restore to complete. You may safely press ctrl-c to stop waiting -
 your restore will continue in the background.
 ```
 
-```text
-Restore completed with status: Completed. You may check for more information
-using the commands `velero restore describe k8s-backup` and `velero restore logs
-k8s-backup`.
-```
 
-```text
+Restore completed with status: Completed. You may check for more information using the commands `velero restore describe k8s-backup` and `velero restore logs k8s-backup`.
+
+```bash
 #如果恢复定时备份的数据
 #使用如下命令恢复指定的备份
 [root@master1 ~]#velero restore create --from-backup k8s-backup-daily-
 20250612025049 --wait
-```
 
-```text
 #恢复定时备份k8s-backup-daily中的最近成功的备份版本
 [root@master1 ~]#velero restore create --from-schedule k8s-backup-daily  --wait
 ```
 
 ##### 2.4.4.2.3 检查恢复的资源
-
-```text
+```bash
 #创建restores资源
 [root@master1 ~]#kubectl get restores.velero.io -A
 NAMESPACE   NAME                            AGE
 velero      k8s-backup                      138m
-```
 
-```text
 #完成恢复后，会在MinIO存储中同时创建和一个和backups同级的restores的目录
 ```
 
 ![原 PDF 第 90 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-597358dd76106dd9.png)
 
 ![原 PDF 第 90 页插图](assets/Kubernetes集群维护管理-6fa2a0e84f8d/img-1986140d5f26466f.png)
-
-```text
+```bash
 #查看恢复情况
 [root@master1 ~]#velero restore get
 NAME         BACKUP   STATUS      STARTED         COMPLETED         ERRORS
 WARNINGS   CREATED                 SELECTOR
 k8s-backup   Completed  2024-04-06 22:47:30 +0800 CST  2024-04-06 22:47:31 +0800
 CST  0 1 2024-04-06 22:47:30 +0800 CST   <none>
-```
 
-```text
 #查看详细信息
 [root@master1 ~]#velero restore describe k8s-backup --details
-```
 
-```text
 Name:         k8s-backup
 Namespace:    velero
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Phase:                       Completed
 Total items to be restored:  8
 Items restored:              8
-```
 
-```text
 Started:    2024-12-12 15:30:23 +0800 CST
 Completed:  2024-12-12 15:30:23 +0800 CST
-```
 
-```text
 Warnings:
 Velero:     <none>
 Cluster:    <none>
@@ -4222,24 +3601,18 @@ it cannot be resolved via discovery" logSource="pkg/restore/restore.go:2185"
 resource=volumesnapshots.snapshot.storage.k8s.io restore=velero/k8s-backup-2024-
 12-12-1733984216-20241212153023
 ......
-```
 
-```text
 #检查资源恢复
 #示例1
 [root@master1 ~]#kubectl get pod -n demo
 NAME                 READY   STATUS    RESTARTS   AGE
 redis-emptydir-pod   1/1     Running   0          9s
-```
 
-```text
 [root@master1 ~]#kubectl exec -it -n demo redis-emptydir-pod -- sh
 Defaulted container "redis" out of: redis, restore-wait (init)
 # redis-cli get name
-"wangxiaochun"
-```
+"bowen"
 
-```text
 #示例2
 [root@master1 ~]#kubectl get all -n demo
 NAME                READY   STATUS    RESTARTS   AGE
@@ -4247,9 +3620,7 @@ pod/redis-pvc-pod   1/1     Running   0          51s
 [root@master1 ~]#kubectl get pvc -n demo
 NAME        STATUS   VOLUME                                     CAPACITY   ACCESS
 MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-```
 
-```text
 redis-pvc   Bound    pvc-c1dda9c0-f49d-4493-a79c-a5a4627f7fa6   2Gi        RWX
 sc-nfs         <unset>                 58s
 [root@master1 ~]#kubectl exec -it -n demo redis-pvc-pod -- sh
@@ -4257,10 +3628,8 @@ Defaulted container "redis" out of: redis, restore-wait (init)
 # ls /data
 dump.rdb
 # redis-cli get name
-"wangxiaochun"
-```
+"bowen"
 
-```text
 #NFS存储的数据也恢复
 [root@master1 ~]#ls /data/sc-nfs/
 pvc-a2d94be9-310e-4400-b5f3-fa9e207221f9
@@ -4283,8 +3652,7 @@ pvc-a2d94be9-310e-4400-b5f3-fa9e207221f9
 注意: 相同版本的 velero CLI和原MinIO相同的认证信息。
 
 范例:
-
-```text
+```bash
 #在目标K8s集群的Master节点上安装相同版本的velero CLI
 [root@master1 ~]# VERSION=v1.17.0
 [root@master1 ~]# VERSION=v1.16.2
@@ -4295,23 +3663,17 @@ tanzu/velero/releases/download/${VERSION}/velero-${VERSION}-linux-amd64.tar.gz
 #如果下载失败,可以通过代理如下
 [root@master1 ~]# wget https://githubfast.com/vmware-
 tanzu/velero/releases/download/${VERSION}/velero-${VERSION}-linux-amd64.tar.gz
-```
 
-```text
 [root@master1 ~]# tar -zxvf velero-${VERSION}-linux-amd64.tar.gz
 [root@master1 ~]# mv velero-${VERSION}-linux-amd64/velero /usr/local/bin/
 [root@master1 ~]# velero version
 Client:
-```
 
-```text
 Version: v1.16.1
 Git commit: ea5a89f83b89b2cb7a27f54148683c1ee8d57a37
 <error getting server version: no matches for kind "ServerStatusRequest" in
 version "velero.io/v1">
-```
 
-```text
 [root@master1 ~]#cat credentials-velero
 [default]
 #aws_access_key_id = admin
@@ -4325,33 +3687,30 @@ aws_secret_access_key = 8VdbRxsgG7Or5yk7f5FXHjs87dOMhjuPmNK8s2cs
 使用和 2.4.3.2 相同的命令安装 Velero Server。
 
 范例:
-
-```text
+```bash
 #示例1
 [root@master1 ~]#velero install \
 --provider aws \
---image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.15.0 \
---plugins registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.15.0 \
+--plugins registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 aws:v1.11.0 \
 --backup-location-config
-region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
+region=minio,s3ForcePathStyle="true",s3Url=http://minio.bowen.org:9000 \
 --bucket velero \
 --secret-file ./credentials-velero \
 --namespace velero \
 --use-node-agent \
 --use-volume-snapshots=false \
 --wait
-```
 
-```text
 #示例2
 [root@master1 ~]# velero install \
 --provider aws \
---image registry.cn-beijing.aliyuncs.com/wangxiaochun/velero:v1.15.0 \
---plugins registry.cn-beijing.aliyuncs.com/wangxiaochun/velero-plugin-for-
+--image registry.cn-beijing.aliyuncs.com/bowen/velero:v1.15.0 \
+--plugins registry.cn-beijing.aliyuncs.com/bowen/velero-plugin-for-
 aws:v1.11.0 \
 --backup-location-config
-region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
+region=minio,s3ForcePathStyle="true",s3Url=http://minio.bowen.org:9000 \
 --bucket velero \
 --secret-file ./credentials-velero \
 --namespace velero \
@@ -4359,39 +3718,28 @@ region=minio,s3ForcePathStyle="true",s3Url=http://minio.wang.org:9000 \
 ```
 
 #### 2.4.5.4 新的 Kubernetes 集群下载 MinIO 上备份数据并恢复
-
-```text
+```bash
 #可以查看到原来旧的Kubernetes集群的备份名称信息
 [root@master1 ~]#kubectl get backups.velero.io -n velero
 NAME         AGE
 k8s-backup   54s
-```
 
-```text
 [root@master1 ~]#velero backup-location get
-```
 
-```text
 NAME      PROVIDER   BUCKET/PREFIX   PHASE       LAST VALIDATED
 ACCESS MODE   DEFAULT
 default   aws        velero          Available   2025-06-12 10:04:45 +0800 CST
 ReadWrite     true
-```
 
-```text
 [root@master1 ~]#velero backup get
 NAME           STATUS    ERRORS   WARNINGS   CREATED             EXPIRES
 STORAGE LOCATION   SELECTOR
 k8s-backup   Completed   0        0          2024-04-07 21:44:45 +0800 CST   29d
 default    <none>
-```
 
-```text
 #在worker节点上可以提前下载相关镜像,可选
 [root@node3 ~]#docker pull velero/velero-restore-helper:v1.15.0
-```
 
-```text
 #基于上面查看到的备份名称进行恢复
 [root@master1 ~]#velero restore create --from-backup k8s-backup --wait
 Restore request "k8s-backup" submitted successfully.
@@ -4399,15 +3747,12 @@ Waiting for restore to complete. You may safely press ctrl-c to stop waiting -
 your restore will continue in the background.
 ```
 
-```text
-Restore completed with status: Completed. You may check for more information
-using the commands `velero restore describe k8s-backup` and `velero restore logs
-k8s-backup`.
-```
+
+Restore completed with status: Completed. You may check for more information using the commands `velero restore describe k8s-backup` and `velero restore logs k8s-backup`.
+
 
 #### 2.4.5.5  新的 Kubernetes 集群检查数据恢复情况
-
-```text
+```bash
 #查看恢复情况
 [root@master1 ~]#velero restore get
 NAME                   BACKUP   STATUS      STARTED
@@ -4415,30 +3760,22 @@ COMPLETED                       ERRORS   WARNINGS   CREATED
 SELECTOR
 k8s-backup       Completed   2024-04-06 22:47:30 +0800 CST   2024-04-06 22:47:31
 +0800 CST   0        1          2024-04-06 22:47:30 +0800 CST   <none>
-```
 
-```text
 [root@master1 ~]#kubectl  get pod -n demo
 NAME            READY   STATUS    RESTARTS   AGE
 redis-pvc-pod   1/1     Running   0          6m23s
-```
 
-```text
 [root@master1 ~]#kubectl exec -it -n demo redis-pvc-pod -- sh
 Defaulted container "redis" out of: redis, restore-wait (init)
 # ls /data
 dump.rdb
 # redis-cli get name
-"wangxiaochun"
+"bowen"
 # exit
-```
 
-```text
 [root@master1 ~]#ls /data/sc-nfs/
 demo-redis-pvc-pvc-93f62187-03f6-4f1c-a0c9-4984a9ab0dd7
-```
 
-```text
 [root@master1 velero]#ll /data/sc-nfs/demo-redis-pvc-pvc-93f62187-03f6-4f1c-a0c9-
 4984a9ab0dd7/
 总计 16

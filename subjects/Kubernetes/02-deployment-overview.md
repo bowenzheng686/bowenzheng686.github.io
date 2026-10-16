@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 部署模型与 Minikube'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -35,20 +36,19 @@ syntax_highlight: true
 
 Kubernetes 部署方式有很多,建议使用CNCF认证的安装方法进行安装,当前有23钟安装方式通过了CNCF认证。
 
-```text
-https://www.cncf.io/certification/software-conformance/
-```
+
+- <https://www.cncf.io/certification/software-conformance/>
+
 
 ![原 PDF 第 44 页插图](assets/Kubernetes架构和部署/img-3f15c0042c5940e0.png)
 
 ![原 PDF 第 44 页插图](assets/Kubernetes架构和部署/img-31c5917cf42152cc.png)
 
-```text
-https://landscape.cncf.io/?group=certified-partners-and-providers
-```
+
+- <https://landscape.cncf.io/?group=certified-partners-and-providers>
+
 
 ![原 PDF 第 45 页插图](assets/Kubernetes架构和部署/img-bc5d4cdb64151936.png)
-
 ```text
 https://docs.google.com/spreadsheets/d/1uF9BoDzzisHSQemXHIKegMhuythuq_GL3N1mlUUK
 2h0/edit#gid=0
@@ -116,15 +116,15 @@ Rancher 最初是为了支持多种容器编排引擎而构建的，其中包括
 
 官方网站:
 
-```text
-https://rancher.com/
-```
+
+- <https://rancher.com/>
+
 
 **中文文档**
 
-```text
-https://www.rancher.cn/
-```
+
+- <https://www.rancher.cn/>
+
 
 Sealos
 
@@ -132,41 +132,26 @@ Sealos是一个Go语言开发的简单且轻量的Kubernetes集群部署工具�
 
 **官方网站**
 
-```text
-https://www.sealyun.com/
-```
+
+- <https://www.sealyun.com/>
+
 
 gitee
 
-```text
-https://gitee.com/mirrors/sealos
-```
 
-```text
-#https://blog.csdn.net/m0_46700908/article/details/123848539
-Sealos诞生的过程是很有趣的。K8s早期版本时，官网上找不到可用度高的安装工具。最初的方海涛写
-了一个可用度较高的安装脚本放在阿里云市场上，有很多人下载，可见需求量之多。但是此脚本也存在很
-多问题，程序十分复杂。于是第二个版本——ansible诞生了。但ansible只是使用起来方便许多，并没
-有解决根本的安装复杂问题，很多用户安装ansible本身都不成功，特别是在离线的环境中更容易出错，
-需要把ansible放到docker中。为了解决这个问题，他思考了很长时间，最后在kubeproxy源码上找
-到了灵感。借用负载均衡器的实现方式，去掉很重的组件，使整个脚本变得简单，于是第三个版本
-golang解决了以往的问题。把事情做到简单极致，一条命令解决一切。Sealos已经诞生三年，即使在今
-天依然非常先进，这也是Sealos有竞争力的地方。
-```
+- <https://gitee.com/mirrors/sealos>
 
-```text
-Sealos从诞生之日起就是商业化的，最早的脚本便放在市场上进行售卖了。在云市场上架，人工审核要
-一周的时间，需要人为催促或者手动上传，整个过程非常消耗精力和时间。为了解决这个问题，方海涛创
-造一个网站售卖Sealos，机器人通过网站的API将Sealos传到云市场，保持最快的更新速度。整个过程
-全部由机器人自动构建、自动测试、自动上架。
-```
 
-```text
-早期开发团队的运营每天写代码写到24点左右，之后开始在云市场上找客户，拿到他们的联系方式与他们
-联络，积累了一些种子客户。后续的发展主要通过技术博客引流，目前已经到了用户口碑传播的阶段，真
-正进入了爆发期，甚至有一段时间短短两周的增长超过之前两年总和。所以把作品做到极致是实现爆发增
-长的必要因素，在产品还不够极致时去推广很多时候反而适得其反。
-```
+参考链接：<https://blog.csdn.net/m0_46700908/article/details/123848539>
+
+Sealos诞生的过程是很有趣的。K8s早期版本时，官网上找不到可用度高的安装工具。最初的方海涛写了一个可用度较高的安装脚本放在阿里云市场上，有很多人下载，可见需求量之多。但是此脚本也存在很多问题，程序十分复杂。于是第二个版本——ansible诞生了。但ansible只是使用起来方便许多，并没有解决根本的安装复杂问题，很多用户安装ansible本身都不成功，特别是在离线的环境中更容易出错，需要把ansible放到docker中。为了解决这个问题，他思考了很长时间，最后在kubeproxy源码上找到了灵感。借用负载均衡器的实现方式，去掉很重的组件，使整个脚本变得简单，于是第三个版本 golang解决了以往的问题。把事情做到简单极致，一条命令解决一切。Sealos已经诞生三年，即使在今天依然非常先进，这也是Sealos有竞争力的地方。
+
+
+Sealos从诞生之日起就是商业化的，最早的脚本便放在市场上进行售卖了。在云市场上架，人工审核要一周的时间，需要人为催促或者手动上传，整个过程非常消耗精力和时间。为了解决这个问题，方海涛创造一个网站售卖Sealos，机器人通过网站的API将Sealos传到云市场，保持最快的更新速度。整个过程全部由机器人自动构建、自动测试、自动上架。
+
+
+早期开发团队的运营每天写代码写到24点左右，之后开始在云市场上找客户，拿到他们的联系方式与他们联络，积累了一些种子客户。后续的发展主要通过技术博客引流，目前已经到了用户口碑传播的阶段，真正进入了爆发期，甚至有一段时间短短两周的增长超过之前两年总和。所以把作品做到极致是实现爆发增长的必要因素，在产品还不够极致时去推广很多时候反而适得其反。
+
 
 ### 3.2.2 部署架构
 
@@ -184,47 +169,36 @@ Sealos从诞生之日起就是商业化的，最早的脚本便放在市场上�
 
 ### 3.3.1 手动部署 Minikube cluster
 
-```text
-https://minikube.sigs.k8s.io/docs/start/
-```
+
+- <https://minikube.sigs.k8s.io/docs/start/>
+
 
 示例:
-
-```text
+```bash
 #安装docker
 [root@ubuntu2004 ~]#apt update && apt install docker.io
-```
 
-```text
 #创建普通用户并授权
-[root@ubuntu2004 ~]#useradd -G docker -m -s /bin/bash  wang
+[root@ubuntu2004 ~]#useradd -G docker -m -s /bin/bash  bowen
 [root@ubuntu2004 ~]#vim /etc/sudoers
-wang ALL=(ALL) NOPASSWD: /usr/bin/docker
-```
+bowen ALL=(ALL) NOPASSWD: /usr/bin/docker
 
-```text
 #下载并部署
-[root@ubuntu2004 ~]#su - wang
-[wang@ubuntu2004 ~]$curl -LO
+[root@ubuntu2004 ~]#su - bowen
+[bowen@ubuntu2004 ~]$curl -LO
 https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-[wang@ubuntu2004 ~]$sudo install minikube-linux-amd64 /usr/local/bin/minikube
-```
+[bowen@ubuntu2004 ~]$sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
-```text
 #启动,注意:内存必须大于3G才能启动
-[wang@rubuntu2004 ~]$minikube start
+[bowen@rubuntu2004 ~]$minikube start
 * minikube v1.25.2 on Rocky 8.4
 * Automatically selected the docker driver. Other choices: none, ssh
 ```
 
-```text
-X The requested memory allocation of 1950MiB does not leave room for system
-overhead (total system memory: 1950MiB). You may face stability issues.
-* Suggestion: Start minikube with less memory allocated: 'minikube start --
-memory=1950mb'
-```
 
-```text
+X The requested memory allocation of 1950MiB does not leave room for system overhead (total system memory: 1950MiB). You may face stability issues.* Suggestion: Start minikube with less memory allocated: 'minikube start --memory=1950mb'
+
+```bash
 * Starting control plane node minikube in cluster minikube
 * Pulling base image ...
 * Downloading Kubernetes v1.23.3 preload ...
@@ -247,20 +221,16 @@ https://minikube.sigs.k8s.io/docs/reference/networking/proxy/
 * kubectl not found. If you need it, try: 'minikube kubectl -- get pods -A'
 * Done! kubectl is now configured to use "minikube" cluster and "default"
 namespace by default
-```
 
-```text
 #验证
-[wang@ubuntu2004 ~]$minikube kubectl -- get po -A
+[bowen@ubuntu2004 ~]$minikube kubectl -- get po -A
 > kubectl.sha256: 64 B / 64 B [--------------------------] 100.00% ? p/s 0s
 > kubectl: 44.43 MiB / 44.43 MiB [--------------] 100.00% 9.88 MiB p/s 4.7s
 NAMESPACE     NAME                               READY   STATUS    RESTARTS
 AGE
 kube-system   coredns-64897985d-l967b            1/1     Running   0
 18s
-```
 
-```text
 kube-system   etcd-minikube                      1/1     Running   0
 30s
 kube-system   kube-apiserver-minikube            1/1     Running   0
@@ -273,25 +243,21 @@ kube-system   kube-scheduler-minikube            1/1     Running   0
 32s
 kube-system   storage-provisioner                1/1     Running   0
 28s
-```
 
-```text
-[wang@ubuntu2004 ~]$ minikube kubectl -- get nodes
+[bowen@ubuntu2004 ~]$ minikube kubectl -- get nodes
 NAME       STATUS   ROLES                  AGE   VERSION
 minikube   Ready    control-plane,master   46s   v1.23.3
-```
 
-```text
 #或者
-[wang@ubuntu2004 ~]$alias kubectl="minikube kubectl --"
-[wang@ubuntu2004 ~]$kubectl get po -A
+[bowen@ubuntu2004 ~]$alias kubectl="minikube kubectl --"
+[bowen@ubuntu2004 ~]$kubectl get po -A
 ```
 
 ### 3.3.2 在线开启 Minikube cluster
 
-```text
-https://kubernetes.io/docs/tutorials/hello-minikube/
-```
+
+- <https://kubernetes.io/docs/tutorials/hello-minikube/>
+
 
 ![原 PDF 第 50 页插图](assets/Kubernetes架构和部署/img-88521152cb42edf3.png)
 

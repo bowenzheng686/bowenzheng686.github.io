@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 存储与配置综合实践'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -28,33 +29,25 @@ syntax_highlight: true
 对于wordpress 来说，没有本质的区别nginx的更新，依赖configmap和secret的内容。
 
 示例
-
 ```text
 https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/mysql-wordpress-
 persistent-volume/
 ```
 
 ## 3.1  准备基于NFS的 StorageClass
-
-```text
+```bash
 #参考1.6.3.2 案例sc-nfs名称的storageClass
-```
 
-```text
 #检查下面的资源
 [root@master1 ~]#kubectl get all -n sc-nfs
 NAME                                          READY   STATUS    RESTARTS
 AGE
 pod/nfs-client-provisioner-7cbdc4cf66-v4nvs   1/1     Running   1 (36m ago)
 46h
-```
 
-```text
 NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/nfs-client-provisioner   1/1     1            1           46h
-```
 
-```text
 NAME                                                DESIRED   CURRENT   READY
 AGE
 replicaset.apps/nfs-client-provisioner-7cbdc4cf66   1         1         1
@@ -64,25 +57,18 @@ NAME     PROVISIONER                                   RECLAIMPOLICY
 VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 sc-nfs   k8s-sigs.io/nfs-subdir-external-provisioner   Delete          Immediate
 false                  46h
-```
 
-```text
 [root@master1 ~]#exportfs -v
-```
 
-```text
 /data/sc-nfs    <world>
 (sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squas
 h)
 ```
 
 ## 3.2 部署 Metallb 的 LoadBalancer 服务
-
-```text
+```bash
 #部署过程参看Kubernetes 服务发现和域名解析的小节1.3.4.4.2 MetalLB 实现
-```
 
-```text
 #检查
 [root@master1 ~]#kubectl get all -n metallb-system
 NAME                             READY   STATUS    RESTARTS       AGE
@@ -91,35 +77,26 @@ pod/speaker-4wsm9                1/1     Running   13 (44m ago)   7d16h
 pod/speaker-76p7c                1/1     Running   14 (44m ago)   7d16h
 pod/speaker-mm424                1/1     Running   8 (44m ago)    7d16h
 pod/speaker-srmsx                1/1     Running   13 (44m ago)   7d16h
-```
 
-```text
 NAME                              TYPE        CLUSTER-IP     EXTERNAL-IP
 PORT(S)   AGE
 service/metallb-webhook-service   ClusterIP   10.103.38.17   <none>
 443/TCP   7d16h
-```
 
-```text
 NAME                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE
 NODE SELECTOR            AGE
 daemonset.apps/speaker   4         4         4       4            4
 kubernetes.io/os=linux   7d16h
-```
 
-```text
 NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/controller   1/1     1            1           7d16h
-```
 
-```text
 NAME                                   DESIRED   CURRENT   READY   AGE
 replicaset.apps/controller-bb5f47665   1         1         1       7d16h
 ```
 
 ## 3.3 MySQL的相关资源
-
-```text
+```yaml
 #提前准备名为sc-nfs的storage Class
 [root@master1 ~]#cat > storage-wordpress-mysql.yaml
 apiVersion: v1
@@ -130,9 +107,7 @@ type: kubernetes.io/basic-auth
 #type: Opaque  #也可以用Opaque类型
 data:
 password: MTIzNDU2             #key名称:password,value为123456
-```
 
-```text
 ---
 apiVersion: v1
 kind: Service
@@ -141,9 +116,7 @@ name: wordpress-mysql
 labels:
 app: wordpress
 spec:
-```
 
-```text
 ports:
 - port: 3306
 selector:
@@ -186,7 +159,7 @@ app: wordpress
 tier: mysql
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+- image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 name: mysql
 env:
 - name: MYSQL_ROOT_PASSWORD
@@ -202,9 +175,7 @@ value: wordpress
 valueFrom:
 secretKeyRef:
 name: mysql-pass
-```
 
-```text
 key: password
 ports:
 - containerPort: 3306
@@ -219,8 +190,7 @@ claimName: mysql-pv-claim
 ```
 
 ## 3.4 wordpress 相关资源
-
-```text
+```yaml
 [root@master1 ~]#cat > storage-wordpress-wordpress.yaml
 apiVersion: v1
 kind: Service
@@ -264,9 +234,7 @@ spec:
 replicas: 2
 selector:
 matchLabels:
-```
 
-```text
 app: wordpress
 tier: frontend
 strategy:
@@ -278,7 +246,7 @@ app: wordpress
 tier: frontend
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/wordpress:php8.2-
+- image: registry.cn-beijing.aliyuncs.com/bowen/wordpress:php8.2-
 apache
 name: wordpress
 env:
@@ -306,8 +274,7 @@ claimName: wp-pv-claim
 ```
 
 ## 3.5 创建 Ingress (可选)
-
-```text
+```yaml
 [root@master1 ~]#cat ingress-wordpress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -319,39 +286,30 @@ namespace: wordpress
 spec:
 ingressClassName: nginx   #新版建议使用此项指定controller类型
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - path: /
 pathType: Prefix
 backend:
 service:
-```
 
-```text
 name: wordpress
 port:
 number: 80
-```
 
-```text
 [root@master1 wordpress-mysql]#kubectl apply -f  ingress-wordpress.yaml
-```
 
-```text
 [root@master1 wordpress-mysql]#kubectl get ingress -n wordpress
 NAME           CLASS   HOSTS          ADDRESS               PORTS   AGE
-ingress-test   nginx   www.wang.org   10.0.0.10,10.0.0.99   80      25s
+ingress-test   nginx   www.bowen.org   10.0.0.10,10.0.0.99   80      25s
 ```
 
 ## 3.6 应用并测试
-
-```text
+```bash
 #创建独立的名称空间
 [root@master1 ~]#kubectl create ns wordpress
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f storage-wordpress-mysql.yaml -f storage-
 wordpress-wordpress.yaml -n wordpress
@@ -362,84 +320,62 @@ deployment.apps/wordpress-mysql created
 service/wordpress created
 persistentvolumeclaim/wp-pv-claim created
 deployment.apps/wordpress created
-```
 
-```text
 #可以正常访问
 [root@master1 ~]#kubectl  get all -n wordpress
 NAME                                   READY   STATUS    RESTARTS   AGE
 pod/wordpress-9c8c6d676-xghzw          1/1     Running   0          95s
 pod/wordpress-mysql-6d86b54f56-4gbjt   1/1     Running   0          2m35s
-```
 
-```text
 NAME                      TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)
 AGE
 service/wordpress         LoadBalancer   10.99.25.42   10.0.0.10
 80:32734/TCP   8m38s
 service/wordpress-mysql   ClusterIP      None          <none>        3306/TCP
 8m38s
-```
 
-```text
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/wordpress         1/1     1            1           8m38s
 deployment.apps/wordpress-mysql   1/1     1            1           8m38s
-```
 
-```text
 NAME                                         DESIRED   CURRENT   READY   AGE
 replicaset.apps/wordpress-9c8c6d676          1         1         1       8m38s
 replicaset.apps/wordpress-mysql-6d86b54f56   1         1         1       8m38s
-```
 
-```text
 #通过SVC直接访问
 10.0.0.10
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n wordpress
 NAME                               READY   STATUS    RESTARTS   AGE
 wordpress-9c8c6d676-xghzw          1/1     Running   0          68s
 wordpress-mysql-6d86b54f56-4gbjt   1/1     Running   0          2m8s
-```
 
-```text
 #删除Pod，自动创建新的Pod,仍可以继续访问
 [root@master1 ~]#kubectl  delete pod --all -n wordpress
-```
 
-```text
 pod "wordpress-9c8c6d676-xghzw" deleted
 pod "wordpress-mysql-6d86b54f56-4gbjt" deleted
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n wordpress
 NAME                               READY   STATUS    RESTARTS   AGE
 wordpress-9c8c6d676-5cqrk          1/1     Running   0          33s
 wordpress-mysql-6d86b54f56-s8gw8   1/1     Running   0          33s
-```
 
-```text
 #Pod所在主机宕机后，等待几分钟后会在其它主机节点重建Pod
 [root@master1 ~]#kubectl get pod -n wordpress -o wide
 NAME                               READY   STATUS        RESTARTS   AGE    IP
 NODE             NOMINATED NODE   READINESS GATES
 wordpress-7674c49955-5qmh4         1/1     Running       0          3m7s
-10.244.1.109   node1.wang.org   <none>           <none>
+10.244.1.109   node1.bowen.org   <none>           <none>
 wordpress-7674c49955-hfftf         1/1     Running       0          112s
-10.244.1.111   node1.wang.org   <none>           <none>
+10.244.1.111   node1.bowen.org   <none>           <none>
 wordpress-7674c49955-hwvmr         1/1     Terminating   0          16m
-10.244.2.117   node3.wang.org   <none>           <none>
+10.244.2.117   node3.bowen.org   <none>           <none>
 wordpress-7674c49955-phsss         1/1     Terminating   0          16m
-10.244.4.120   node2.wang.org   <none>           <none>
+10.244.4.120   node2.bowen.org   <none>           <none>
 wordpress-mysql-7fdbb5fb4c-f7bbb   1/1     Running       0          16m
-10.244.1.107   node1.wang.org   <none>           <none>
-```
+10.244.1.107   node1.bowen.org   <none>           <none>
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete ns wordpress
 namespace "wordpress" deleted

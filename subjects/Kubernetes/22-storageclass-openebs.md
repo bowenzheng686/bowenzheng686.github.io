@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · StorageClass 与 OpenEBS'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -17,9 +18,9 @@ syntax_highlight: true
 
 #### 1.6.1.1 说明
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/>
+
 
 对于 PV 和 PVC 的使用过程是比较繁琐的，不仅需要自己定义PV和PVC还需要将其与Pod进行关联，而且对于PV和PVC的适配我们也要做好前提规划，而生产环境中，这种繁琐的事情是有悖于我们使用kubernetes的原则，而且这种方式在很大程度上并不能满足我们的需求，而且不同的应用程序对于存储性能的要求可能也不尽相同，比如读写速度、并发性能等，比如有一个应用需要对存储的并发度要求比较高，而另外一个应用对读写速度又要求比较高，特别是对于 StatefulSet 类型的应用简单的来使用静态的 PV 就很不合适了，这种情况下就需要用到动态 PV。
 
@@ -48,8 +49,7 @@ PV的属性.比如,存储类型,Volume的大小等创建这种PV需要用到的�
 StorageClass API
 
 每个 StorageClass 都包含 provisioner 、parameters 和 reclaimPolicy 字段， 这些字段会在StorageClass 需要动态制备 PersistentVolume 时会使用到。StorageClass 对象的命名很重要，用户使用这个命名来请求生成一个特定的类。 当创建 StorageClass对象时，管理员设置 StorageClass 对象的命名和其他参数。
-
-```text
+```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -65,16 +65,12 @@ mountOptions:
 - debug
 volumeBindingMode: Immediate | WaitForFirstConsumer #延迟绑定，只有Pod准备好，才进行
 PV和PVC的绑定
-```
 
-```text
 #管理员可以为没有申请绑定到特定 StorageClass 的 PVC 指定一个默认的存储类
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-```
 
-```text
 name: myclaim
 spec:
 accessModes:
@@ -95,9 +91,9 @@ matchExpressions:
 
 每个 StorageClass 都有一个制备器（Provisioner），用于提供存储驱动，用来决定使用哪个卷插件制备 PV。 该字段必须指定。
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/>
+
 
 卷插件内置制备器配置示例
 
@@ -124,8 +120,7 @@ Local-Local
 #### 1.6.1.2 案例
 
 范例：基于 StorageClass  属性字段实现PV和PVC的绑定
-
-```text
+```yaml
 [root@master1 ~]#cat  storage-multi-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -135,16 +130,14 @@ spec:
 storageClassName: mystorage     #指定 StorageClass 的名称
 capacity:
 storage: 5Gi
-```
 
-```text
 volumeMode: Filesystem
 accessModes:
 - ReadWriteMany
 persistentVolumeReclaimPolicy: Retain
 nfs:
 path:  "/nfsdata/data1"
-server: nfs.wang.org
+server: nfs.bowen.org
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -159,7 +152,7 @@ accessModes:
 persistentVolumeReclaimPolicy: Retain
 nfs:
 path:  "/nfsdata/data2"
-server: nfs.wang.org
+server: nfs.bowen.org
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -174,10 +167,8 @@ accessModes:
 persistentVolumeReclaimPolicy: Retain
 nfs:
 path:  "/nfsdata/data3"
-server: nfs.wang.org
-```
+server: nfs.bowen.org
 
-```text
 [root@master1 ~]#cat   storage-multi-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -194,14 +185,10 @@ requests:
 storage: 3Gi
 limits:
 storage: 10Gi
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-multi-pv.yaml -f storage-multi-
 pvc.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pv,pvc
 NAME                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS
 CLAIM                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
@@ -211,16 +198,12 @@ persistentvolume/pv-nfs-2   5Gi        RWX            Retain           Available
 <unset>                          13m
 persistentvolume/pv-nfs-3   1Gi        RWO            Retain           Available
 <unset>                          13m
-```
 
-```text
 NAME                               STATUS   VOLUME     CAPACITY   ACCESS MODES
 STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/pvc-demo-1   Bound    pv-nfs-1   5Gi        RWX
 mystorage       <unset>                 13m
-```
 
-```text
 #没有创建独立的StorageClass资源
 [root@master1 storage]#kubectl get sc
 No resources found
@@ -228,10 +211,10 @@ No resources found
 
 ### 1.6.2 Local Volume
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/#local
-https://kubernetes.io/zh-cn/docs/concepts/storage/volumes/#local
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/#local>
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/volumes/#local>
+
 
 #### 1.6.2.1 hostPath 存在的问题
 
@@ -276,8 +259,7 @@ Pod调度至哪个节点由PV所在的节点决定，HostPath是由Pod决定Host
 创建PV，使用 nodeAffinity 指定绑定的节点提供存储创建 PVC，绑定PV的存储条件创建Pod，引用前面的PVC和PV实现Local 存储。
 
 下面是一个使用 local 卷和 nodeAffinity 的持久卷示例：
-
-```text
+```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -286,9 +268,7 @@ provisioner: kubernetes.io/no-provisioner #表示该存储类不使用任何prov
 动态分配持久卷。这意味着管理员需要手动创建并管理持久卷
 volumeBindingMode: WaitForFirstConsumer   #延迟绑定，只有Pod准备好才绑定PV至PVC，否则
 PVC处于Pending状态
-```
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -312,9 +292,7 @@ nodeSelectorTerms:
 operator: In
 values:
 - example-node
-```
 
-```text
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -327,9 +305,7 @@ resources:
 requests:
 storage: 10Gi
 storageClassName: local-storage
-```
 
-```text
 #selector: # 支持使用指定的PV
 #  matchLabels:
 #    pv: example-pv
@@ -344,14 +320,11 @@ storageClassName: local-storage
 ##### 1.6.2.6.1 范例：基于 StorageClass 实现 Local 卷
 
 范例：
-
-```text
+```yaml
 #事先在PV所在的目标节点上准备目录，对于本地存储Kubernetes本身并不会自动创建路径，这是因为
 Kubernetes不能控制节点上的本地存储，因此无法自动创建路径
 [root@node2 ~]#mkdir -p /data/mysql
-```
 
-```text
 [root@master1 ~]#cat storage-sc-local-pv-pvc-mysql-pod.yaml
 ---
 apiVersion: storage.k8s.io/v1
@@ -361,9 +334,7 @@ name: local-storage
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer  #延迟绑定，只有Pod启动后再绑定PV到Pod所在节
 点，否则PVC处理Pending状态
-```
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -386,13 +357,9 @@ nodeSelectorTerms:        #指定节点
 - key: kubernetes.io/hostname
 operator: In
 values:
-```
 
-```text
-- node2.wang.org
-```
+- node2.bowen.org
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -404,9 +371,7 @@ accessModes: ["ReadWriteOnce"]
 resources:
 requests:
 storage: 100Gi
-```
 
-```text
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -424,7 +389,7 @@ labels:
 app: mysql
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+- image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 name: mysql
 env:
 # 在实际中使用 secret
@@ -440,34 +405,24 @@ volumes:
 - name: mysql-persistent-storage
 persistentVolumeClaim:
 claimName: pvc-sc-local
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-sc-local-pv-pvc-mysql-pod.yaml
-```
 
-```text
 [root@master1 ~]#kubectl  get sc
 NAME            PROVISIONER                    RECLAIMPOLICY   VOLUMEBINDINGMODE
 ALLOWVOLUMEEXPANSION   AGE
 local-storage   kubernetes.io/no-provisioner   Delete
 WaitForFirstConsumer   false                  105s
-```
 
-```text
 [root@master1 ~]#kubectl  get pod,pvc,pv
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/mysql-754f87ddfd-n46wc   1/1     Running   0          57s
-```
 
-```text
 NAME                                 STATUS   VOLUME        CAPACITY   ACCESS
 MODES   STORAGECLASS    VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/pvc-sc-local   Bound    pv-sc-local   100Gi      RWO
 local-storage   <unset>                 57s
-```
 
-```text
 NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS
 CLAIM                  STORAGECLASS    VOLUMEATTRIBUTESCLASS   REASON   AGE
 persistentvolume/pv-sc-local   100Gi      RWO            Delete           Bound
@@ -475,14 +430,11 @@ default/pvc-sc-local   local-storage   <unset>                          57s
 ```
 
 范例
-
-```text
+```html
 #事先在PV所在的目标节点上准备目录，对于本地存储Kubernetes本身并不会自动创建路径，这是因为
 Kubernetes不能控制节点上的本地存储，因此无法自动创建路径
 [root@node2 ~]#mkdir -p /data/www
-```
 
-```text
 #如果没有准备目录，会出现下面提示错误
 [root@master1 ~]#kubectl describe pod pod-sc-local-demo
 Events:
@@ -492,13 +444,11 @@ Warning  FailedScheduling  2m2s              default-scheduler  0/4 nodes are
 available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/4
 nodes are available: 4 No preemption victims found for incoming pod..
 Normal   Scheduled         2m1s              default-scheduler  Successfully
-assigned default/pod-sc-local-demo to node2.wang.org
+assigned default/pod-sc-local-demo to node2.bowen.org
 Warning  FailedMount       56s (x8 over 2m)  kubelet
 MountVolume.NewMounter initialization failed for volume "example-pv" : path
 "/data/www" does not exist
-```
 
-```text
 #准备清单文件
 [root@master1 ~]#cat storage-sc-local-pv-pvc-pod.yaml
 #kubernetes内置了Local的置备器，所以下面StorageClass资源可以不创建
@@ -510,9 +460,7 @@ name: local-storage
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer  #延迟绑定，只有Pod启动后再绑定PV到Pod所在节
 点，否则PVC处理Pending状态
-```
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -523,9 +471,7 @@ capacity:
 storage: 100Gi
 volumeMode: Filesystem
 accessModes:
-```
 
-```text
 - ReadWriteOnce
 persistentVolumeReclaimPolicy: Delete
 storageClassName: local-storage
@@ -538,10 +484,8 @@ nodeSelectorTerms:
 - key: kubernetes.io/hostname
 operator: In
 values:
-- node2.wang.org
-```
+- node2.bowen.org
 
-```text
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -553,9 +497,7 @@ accessModes: ["ReadWriteOnce"]
 resources:
 requests:
 storage: 100Mi
-```
 
-```text
 ---
 apiVersion: v1
 kind: Pod
@@ -564,7 +506,7 @@ name: pod-sc-local-demo
 spec:
 containers:
 - name: pod-sc-local-demo
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 volumeMounts:
 - name: pvc-sc-local
 mountPath: "/usr/share/nginx/html/"
@@ -573,55 +515,41 @@ volumes:
 - name: pvc-sc-local
 persistentVolumeClaim:
 claimName: pvc-sc-local
-```
 
-```text
 #应用清单文件
 [root@master1 ~]#kubectl apply -f storage-sc-local-pv-pvc-pod.yaml
 persistentvolume/pv-sc-local created
 persistentvolumeclaim/pvc-sc-local created
 pod/pod-sc-local-demo created
-```
 
-```text
 #查看结果
 [root@master1 ~]#kubectl get sc,pv,pvc,pod
 NAME           PROVISIONER        RECLAIMPOLICY   VOLUMEBINDINGMODE
 ALLOWVOLUMEEXPANSION   AGE
 storageclass.storage.k8s.io/local-storage kubernetes.io/no-provisioner Delete
 WaitForFirstConsumer false 14s
-```
 
-```text
 NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM
 STORAGECLASS    REASON   AGE
 persistentvolume/pv-sc-local  100Gi    RWO    Delete   Bound  default/pvc-sc-
 local   local-storage     2m31s
-```
 
-```text
 NAME                                 STATUS    VOLUME        CAPACITY   ACCESS
 MODES   STORAGECLASS    AGE
 persistentvolumeclaim/pvc-sc-local    Bound     pv-sc-local   100Gi      RWO
 local-storage   2m31s
-```
 
-```text
 NAME                                          READY   STATUS    RESTARTS
 AGE
 pod/pod-sc-local-demo                         1/1     Running   0
 2m31s
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME    READY   STATUS    RESTARTS       AGE    IP      NODE      NOMINATED NODE
 READINESS GATES
-pod-sc-local-demo  1/1    Running   0       117s   10.244.36.1    node2.wang.org
+pod-sc-local-demo  1/1    Running   0       117s   10.244.36.1    node2.bowen.org
 <none>     <none>
-```
 
-```text
 #默认没有页面文件，提示如下
 [root@master1 ~]#curl 10.244.36.1
 <html>
@@ -631,29 +559,21 @@ pod-sc-local-demo  1/1    Running   0       117s   10.244.36.1    node2.wang.org
 <hr><center>nginx/1.20.0</center>
 </body>
 </html>
-```
 
-```text
 #在提供存储服务的节点准备页面文件
 [root@node2 ~]#hostname > /data/www/index.html
-```
 
-```text
 #再次访问
 [root@master1 ~]#curl 10.244.36.1
-node2.wang.org
-```
+node2.bowen.org
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f storage-sc-local-pv-pvc-pod.yaml
 storageclass.storage.k8s.io "local-storage" deleted
 persistentvolume "pv-sc-local" deleted
 persistentvolumeclaim "pvc-sc-local" deleted
 pod "pod-sc-local-demo" deleted
-```
 
-```text
 [root@node2 ~]#rm -f /data/www/index.html
 ```
 
@@ -662,16 +582,14 @@ pod "pod-sc-local-demo" deleted
 **创建数据目录**
 
 创建 Local PV 其实应该给宿主机挂载并格式化一个可用的磁盘，这里我们就在宿主机上挂载几个 RAM Disk（内存盘）来模拟本地磁盘。
-
-```text
+```bash
 $ mkdir /mnt/disks
 ```
 
 如果希望其他节点也能支持 Local Persistent Volume 的话，那就需要为它们也执行上述操作，可以创建多个目录供pv挂载。
 
 **创建StorageClass**
-
-```text
+```yaml
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -681,8 +599,7 @@ volumeBindingMode: WaitForFirstConsumer
 ```
 
 provisioner 字段定义为 no-provisioner，这是因为 Local Persistent Volume 目前尚不支持 Dynamic Provisioning 动态生成 PV，所以我们需要提前手动创建 PV。volumeBindingMode 字段定义为 WaitForFirstConsumer，它是 Local Persistent Volume 里一个非常重要的特性，即：延迟绑定。延迟绑定就是在我们提交 PVC 文件时，StorageClass 为我们延迟绑定 PV与 PVC 的对应关系。这样做的原因是：比如我们在当前集群上有两个相同属性的 PV，它们分布在不同的节点 Node1 和Node2 上，而我们定义的 Pod 需要运行在 Node1 节点上 ，但是 StorageClass 已经为 Pod 声明的 PVC绑定了在 Node2 上的 PV，这样的话，Pod 调度就会失败，所以我们要延迟 StorageClass 的绑定操作。也就是延迟到到第一个声明使用该 PVC 的 Pod 出现在调度器之后，调度器再综合考虑所有的调度规则，当然也包括每个 PV 所在的节点位置，来统一决定，这个 Pod 声明的 PVC，到底应该跟哪个 PV 进行绑定。比如上面的 Pod 需要运行在 node1 节点上，StorageClass 发现可以绑定的 PV 后，先不为 Pod 中的PVC 绑定 PV，而是等到 Pod 调度到 node1 节点后，再为 PVC 绑定当前节点运行的 PV。所以，通过这个延迟绑定机制，原本实时发生的 PVC 和 PV 的绑定过程，就被延迟到了 Pod 第一次调度的时候在调度器中进行，从而保证了这个绑定结果不会影响 Pod 的正常调度。现在我们创建 StoragClass。
-
-```text
+```bash
 $ kubectl  create -f localpv-storageclass.yaml
 storageclass.storage.k8s.io/local-storage created
 ```
@@ -700,8 +617,7 @@ local-pv2 work1 10Gi/mnt/data2
 local-pv3 work2 50Gi/mnt/data1
 
 local-pv4 work2 50Gi/mnt/data2
-
-```text
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -709,9 +625,7 @@ name: local-pv1
 labels:
 pv: local-pv1
 spec:
-```
 
-```text
 capacity:
 storage: 10Gi
 volumeMode: Filesystem
@@ -770,9 +684,7 @@ accessModes:
 persistentVolumeReclaimPolicy: Delete
 storageClassName: local-storage
 local:
-```
 
-```text
 path: /mnt/data1
 nodeAffinity:
 required:
@@ -812,8 +724,7 @@ values:
 上面定义的 local 字段，指定了它是一个 Local Persistent Volume；而 path 字段，指定的正是这个 PV对应的本地磁盘的路径，即：/mnt/data。而这个磁盘存在于指定的节点上，也就意味着 Pod 使用这个PV 就必须运行在指定的节点上。所以 nodeAffinity 字段就指定节点的名字，声明 PV 与节点的对应关系。这正是 Kubernetes 实现 “在调度的时候就考虑 Volume 分布” 的主要方法。
 
 **创建PV**
-
-```text
+```bash
 [root@master1 test]# kubectl apply -f pv.yaml
 persistentvolume/local-pv1 created
 persistentvolume/local-pv2 created
@@ -837,8 +748,7 @@ local-storage                  16s
 Pod通过pvc使用
 
 **创建pvc**
-
-```text
+```yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -856,8 +766,7 @@ pv: local-pv3
 ```
 
 **查看pvc**
-
-```text
+```bash
 [root@master1 ~]# kubectl apply -f pod-pvc.yaml
 persistentvolumeclaim/local-pvc created
 [root@master1 ~]# kubectl get pvc
@@ -879,8 +788,7 @@ local-storage                  91s
 可以看到当前 PVC 的状态为 Pending，PV 与 PVC 也没有建立绑定关系。
 
 **创建pod**
-
-```text
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -905,8 +813,7 @@ claimName: local-pvc
 ```
 
 **查看资源**
-
-```text
+```bash
 [root@master1 ~]# kubectl apply -f nginx-pod.yaml
 pod/nginx created
 [root@master1 ~]# kubectl get pod -o wide
@@ -937,8 +844,7 @@ StatefulSet通过pvc使用
 **创建pvc**
 
 创建的时候注意pvc的名字的构成：pvc的名字 = volume_name-statefulset_name-序号例如挂载名称为www，statefulset名称为nginx，副本数为2。创建的pvc资源名分别是www-nginx-0、www-nginx-1
-
-```text
+```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -992,9 +898,7 @@ spec:
 accessModes:
 - ReadWriteOnce
 resources:
-```
 
-```text
 requests:
 storage: 50Gi
 storageClassName: local-storage
@@ -1004,8 +908,7 @@ pv: local-pv4
 ```
 
 **创建资源**
-
-```text
+```bash
 [root@master1 ~]# kubectl apply -f pvc.yaml
 persistentvolumeclaim/local-pvc-1 created
 persistentvolumeclaim/local-pvc-2 created
@@ -1027,8 +930,7 @@ local-storage   13s
 可以看到当前 PVC 的状态为 Pending，PV 与 PVC 也没有建立绑定关系。
 
 **创建statefulset资源**
-
-```text
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -1056,9 +958,7 @@ replicas: 2
 template:
 metadata:
 labels:
-```
 
-```text
 app: myapp
 spec:
 containers:
@@ -1092,8 +992,7 @@ storage: 50Gi
 ```
 
 **创建并查看资源信息**
-
-```text
+```bash
 [root@master1 ~]# kubectl apply -f nginx.yaml
 service/nginx created
 statefulset.apps/nginx created
@@ -1117,9 +1016,7 @@ local-pv1    10Gi       RWO            Delete           Bound    default/www-
 nginx-0   local-storage                  114s
 local-pv2    50Gi       RWO            Delete           Bound    default/log-
 nginx-0   local-storage                  114s
-```
 
-```text
 local-pv3    10Gi       RWO            Delete           Bound    default/www-
 nginx-1   local-storage                  114s
 local-pv4    50Gi       RWO            Delete           Bound    default/log-
@@ -1133,8 +1030,7 @@ nginx-1   local-storage                  114s
 验证pod与pv节点绑定
 
 查看资源信息，nginx-0调度至work1节点，nginx-1调度至work2节点。
-
-```text
+```bash
 [root@master1 ~]# kubectl get pod -o wide
 NAME      READY   STATUS    RESTARTS   AGE     IP            NODE    NOMINATED
 NODE   READINESS GATES
@@ -1155,8 +1051,7 @@ www-nginx-1   Bound    local-pv3   10Gi       RWO            local-storage
 ```
 
 删除pod，让k8s重新调度，看是否能和之前一样调度至原来的节点。
-
-```text
+```bash
 [root@master1 ~]# kubectl delete pod `kubectl get pod | grep nginx | awk '{ print
 $1 }'`
 pod "nginx-0" deleted
@@ -1175,8 +1070,7 @@ nginx-1   1/1     Running   0          2s    10.244.4.76   work2   <none>
 验证文件持久化
 
 现在验证文件是否可以持久化存储，进入当前这个 Pod 的挂载目录新建一个测试文件。
-
-```text
+```bash
 [root@master1 ~]# kubectl exec -it nginx-0 -- bash
 root@nginx-0:/# cd /usr/share/nginx/html/
 root@nginx-0:/usr/share/nginx/html# echo "hello" > test.html
@@ -1185,8 +1079,7 @@ hello
 ```
 
 **在work1的挂载目录上查看是否创建**
-
-```text
+```bash
 [root@work1 ~]# cd /mnt/data1/
 [root@work1 data1]# ls
 test.html
@@ -1195,8 +1088,7 @@ hello
 ```
 
 现在我们删除或者重建这个 Pod，进入容器验证文件是否存在。
-
-```text
+```bash
 [root@master1 ~]# kubectl delete pod nginx-0
 pod "nginx-0" deleted
 [root@master1 ~]# kubectl exec -it nginx-0 -- bash
@@ -1221,15 +1113,15 @@ hello
 
 NFS 的自动配置程序 Provisioner 可以通过不同的项目实现,比如：
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/#nfs
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/storage-classes/#nfs>
+
 
 csi-driver-nfs
 
-```text
-https://github.com/kubernetes-csi/csi-driver-nfs
-```
+
+- <https://github.com/kubernetes-csi/csi-driver-nfs>
+
 
 ![原 PDF 第 78 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-6656044a694005db.png)
 
@@ -1238,7 +1130,6 @@ https://github.com/kubernetes-csi/csi-driver-nfs
 nfs-client-provisioner
 
 nfs-client-provisioner 是一个自动配置卷程序，它使用现有的和已配置的 NFS 服务器来支持通过PVC动态配置 PV。nfs-client-provisioner 目前已经不提供更新，nfs-client-provisioner 的 Github 仓库当前已经迁移到 NFS-Subdir-External-Provisioner的仓库。
-
 ```text
 https://github.com/kubernetes-retired/external-storage/tree/master/nfs-
 client
@@ -1255,23 +1146,22 @@ NFS-Subdir-External-Provisioner
 
 是对 nfs-client-provisioner 组件的扩展
 
-```text
-https://kubernetes.io/docs/concepts/storage/storage-classes/#nfs
-```
+
+- <https://kubernetes.io/docs/concepts/storage/storage-classes/#nfs>
+
 
 ![原 PDF 第 80 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-88da7d5085aab6ab.png)
 
-```text
-https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
-https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner
-```
+
+- <https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner>
+- <https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner>
+
 
 ![原 PDF 第 80 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-843248a5cffb71e3.png)
 
 NFS-Subdir-External-Provisioner 是一个自动配置卷程序，可以在 NFS 服务器上通过PVC动态创建和配置 Kubernetes 持久卷。
 
 PV命名规则如下：
-
 ```text
 自动创建的 PV 以${namespace}-${pvcName}-${pvName} 命名格式创建在 NFS 服务器上的共享
 数据目录中
@@ -1280,7 +1170,6 @@ NFS 服务器中
 ```
 
 NFS Ganesha server and external provisioner
-
 ```text
 https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-
 provisioner
@@ -1291,7 +1180,6 @@ nfs-ganesha-server-and-external-provisioner 是 Kubernetes 1.14+ 的树外动态
 #### 1.6.3.2 案例:  基于 nfs-subdir-external-provisioner 创建 NFS 共享存储的 storageclass
 
 **部署相关文件**
-
 ```text
 https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
 https://github.com/kubernetes-sigs/nfs-subdir-external-
@@ -1307,8 +1195,7 @@ file#manually
 创建 NFS 共享创建 Service Account 并授予管控NFS provisioner在k8s集群中运行的权限部署 NFS-Subdir-External-Provisioner 对应的 Deployment创建 StorageClass 负责建立PVC并调用NFS provisioner进行预定的工作,并让PV与PVC建立联系创建 PVC 时自动调用SC创建PV创建Pod 使用 PVC。
 
 ##### 1.6.3.2.1 创建 NFS 服务
-
-```text
+```bash
 [root@master1 ~]#apt update && apt -y install nfs-server
 [root@master1 ~]#systemctl status nfs-server.service
 ● nfs-server.service - NFS server and services
@@ -1319,53 +1206,36 @@ Main PID: 64029 (code=exited, status=0/SUCCESS)
 Tasks: 0 (limit: 2236)
 Memory: 0B
 CGroup: /system.slice/nfs-server.service
-```
 
-```text
-9月 29 09:28:40 master1.wang.org systemd[1]: Starting NFS server and services...
-9月 29 09:28:41 master1.wang.org systemd[1]: Finished NFS server and services.
-```
+9月 29 09:28:40 master1.bowen.org systemd[1]: Starting NFS server and services...
+9月 29 09:28:41 master1.bowen.org systemd[1]: Finished NFS server and services.
 
-```text
 [root@master1 ~]#mkdir -pv /data/sc-nfs/
-```
 
-```text
 [root@master1 ~]#vim /etc/exports
 #授权worker节点的网段可以挂载
 #/data/sc-nfs *(rw,no_root_squash,all_squash,anonuid=0,anongid=0)
-```
 
-```text
 /data/sc-nfs *(rw,no_root_squash)
-```
 
-```text
 [root@master1 ~]#exportfs -rv
 /data/sc-nfs <world>
 (sync,wdelay,hide,no_subtree_check,anonuid=0,anongid=0,sec=sys,rw,secure,no_root
 _squash,all_squash)
-```
 
-```text
 #并在所有worker节点安装NFS客户端
 [root@nodeX ~]#apt update && apt -y install nfs-common 或者 nfs-client
 ```
 
 ##### 1.6.3.2.2 创建 ServiceAccount 并授权
-
-```text
+```yaml
 [root@master1 ~]#ls
 nfs-client-provisioner.yaml  nfs-StorageClass.yaml  pod-test.yaml  pvc.yaml
 rbac.yaml
-```
 
-```text
 #建议创建独立的名称空间
 [root@master1 ~]#kubectl create ns sc-nfs
-```
 
-```text
 #方式1:指定名称空间
 [root@master1 ~]#cat rbac.yaml
 apiVersion: v1
@@ -1403,9 +1273,7 @@ metadata:
 name: run-nfs-client-provisioner
 subjects:
 - kind: ServiceAccount
-```
 
-```text
 name: nfs-client-provisioner
 # replace with namespace where provisioner is deployed
 #namespace: default
@@ -1444,9 +1312,7 @@ roleRef:
 kind: Role
 name: leader-locking-nfs-client-provisioner
 apiGroup: rbac.authorization.k8s.io
-```
 
-```text
 #方式2:默认名称空间
 [root@master1 ~]#cat rbac.yaml
 apiVersion: v1
@@ -1465,9 +1331,7 @@ rules:
 resources: ["nodes"]
 verbs: ["get", "list", "watch"]
 - apiGroups: [""]
-```
 
-```text
 resources: ["persistentvolumes"]
 verbs: ["get", "list", "watch", "create", "delete"]
 - apiGroups: [""]
@@ -1521,21 +1385,16 @@ kind: Role
 name: leader-locking-nfs-client-provisioner
 apiGroup: rbac.authorization.k8s.io
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl apply -f rbac.yaml
 serviceaccount/nfs-client-provisioner created
 clusterrole.rbac.authorization.k8s.io/nfs-client-provisioner-runner created
 clusterrolebinding.rbac.authorization.k8s.io/run-nfs-client-provisioner created
 role.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner created
-```
 
-```text
 rolebinding.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner
 created
-```
 
-```text
 [root@master1 ~]#kubectl get sa
 NAME                     SECRETS   AGE
 default                  0         34d
@@ -1543,8 +1402,7 @@ nfs-client-provisioner   0         9s
 ```
 
 ##### 1.6.3.2.3 部署 NFS-Subdir-External-Provisioner 对应的 Deployment
-
-```text
+```yaml
 #方式1:指定名称空间
 [root@master1 ~]#cat nfs-client-provisioner.yaml
 apiVersion: apps/v1
@@ -1571,11 +1429,11 @@ spec:
 serviceAccountName: nfs-client-provisioner
 containers:
 - name: nfs-client-provisioner
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nfs-subdir-
+image: registry.cn-beijing.aliyuncs.com/bowen/nfs-subdir-
 external-provisioner:v4.0.2
 #image: registry.k8s.io/sig-storage/nfs-subdir-external-
 provisioner:v4.0.2
-#image: wangxiaochun/nfs-subdir-external-provisioner:v4.0.2
+#image: bowen/nfs-subdir-external-provisioner:v4.0.2
 #image: k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
 imagePullPolicy: IfNotPresent
 volumeMounts:
@@ -1586,7 +1444,7 @@ env:
 value: k8s-sigs.io/nfs-subdir-external-provisioner #名称确保与 nfs-
 StorageClass.yaml文件中的provisioner名称保持一致
 - name: NFS_SERVER
-value: nfs.wang.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
+value: nfs.bowen.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
 名
 - name: NFS_PATH
 value: /data/sc-nfs  # NFS 共享目录
@@ -1594,14 +1452,10 @@ volumes:
 - name: nfs-client-root
 ```
 
-```text
-nfs:
-server: nfs.wang.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
-名
-path: /data/sc-nfs  # NFS 共享目录
-```
 
-```text
+nfs: server: nfs.bowen.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域名 path: /data/sc-nfs  # NFS 共享目录
+
+```yaml
 #方式2:使用默认名间空间
 [root@master1 ~]#cat nfs-client-provisioner.yaml
 apiVersion: apps/v1
@@ -1627,7 +1481,7 @@ spec:
 serviceAccountName: nfs-client-provisioner
 containers:
 - name: nfs-client-provisioner
-image: registry.cn-beijing.aliyuncs.com/wangxiaochunnfs-subdir-
+image: registry.cn-beijing.aliyuncs.com/bowennfs-subdir-
 external-provisioner:v4.0.2
 #image: k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2 #
 此镜像国内可能无法访问
@@ -1640,44 +1494,33 @@ env:
 value: k8s-sigs.io/nfs-subdir-external-provisioner #名称确保与 nfs-
 StorageClass.yaml文件中的provisioner名称保持一致
 - name: NFS_SERVER
-value: nfs.wang.org #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
+value: nfs.bowen.org #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
 名
 - name: NFS_PATH
 value: /data/sc-nfs # NFS 共享目录
 volumes:
 - name: nfs-client-root
 nfs:
-server: nfs.wang.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
+server: nfs.bowen.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域
 名
 path: /data/sc-nfs  # NFS 共享目录
-```
 
-```text
 [root@master1 ~]#kubectl apply -f nfs-client-provisioner.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get deployments.apps
-```
 
-```text
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
 nfs-client-provisioner   1/1     1            1           5m26s
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                                      READY   STATUS    RESTARTS   AGE
 nfs-client-provisioner-7468dcd749-24lpv   1/1     Running   0          5m34s
-```
 
-```text
 #注意:如果失败,检查是否worker节点安装了nfs-client
 ```
 
 ##### 1.6.3.2.4 创建 NFS 资源的 StorageClass
-
-```text
+```yaml
 [root@master1 ~]#cat nfs-StorageClass.yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -1691,15 +1534,11 @@ name, must match deployment's env PROVISIONER_NAME
 parameters:
 archiveOnDelete: "true" # 设置为"false"时删除PVC不会保留数据,"true"则保留数据,基于安全
 原因建议设为"true"
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply  -f nfs-StorageClass.yaml
 storageclass.storage.k8s.io/sc-nfs created
-```
 
-```text
 #查看是否创建
 [root@master1 ~]#kubectl get sc
 NAME    PROVISIONER                                 RECLAIMPOLICY
@@ -1711,8 +1550,7 @@ false                  6s
 ##### 1.6.3.2.5 创建 PVC
 
 范例：
-
-```text
+```yaml
 [root@master1 ~]#cat pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -1724,49 +1562,36 @@ accessModes: ["ReadWriteMany","ReadOnlyMany"]
 resources:
 requests:
 storage: 100Mi
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f pvc.yaml
 persistentvolumeclaim/pvc-nfs-sc created
-```
 
-```text
 #验证
-```
 
-```text
 [root@master1 ~]#kubectl get pvc
 NAME         STATUS   VOLUME                                     CAPACITY
 ACCESS MODES   STORAGECLASS          AGE
 pvc-nfs-sc   Bound    pvc-eae826dd-6270-445c-8d0f-e06fb0093773   100Mi
 ROX,RWX        sc-nfs   2s
-```
 
-```text
 #自动创建PV并绑定PVC
 [root@master1 ~]#kubectl get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM
 POLICY   STATUS   CLAIM                STORAGECLASS          REASON   AGE
 pvc-9be97a7b-2d9c-4778-8c2a-519da3266ea4   100Mi      ROX,RWX        Delete
 Bound    default/pvc-nfs-sc   sc-nfs            5s
-```
 
-```text
 #自动在NFS服务器共享目录创建目录
 [root@master1 ~]#ls /data/sc-nfs/
 default-pvc-nfs-sc-pvc-9be97a7b-2d9c-4778-8c2a-519da3266ea4
-```
 
-```text
 [root@master1 ~]#ls /data/sc-nfs/default-pvc-nfs-sc-pvc-9be97a7b-2d9c-4778-8c2a-
 519da3266ea4/
 ```
 
 ##### 1.6.3.2.6 创建 Pod
-
-```text
+```html
 [root@master1 ~]#cat pod-test.yaml
 apiVersion: v1
 kind: Pod
@@ -1775,7 +1600,7 @@ name: pod-nfs-sc-test
 spec:
 containers:
 - name: pod-nfs-sc-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 volumeMounts:
 - name: nfs-pvc
 mountPath: "/usr/share/nginx/html/"
@@ -1784,32 +1609,24 @@ volumes:
 - name: nfs-pvc
 persistentVolumeClaim:
 claimName: pvc-nfs-sc  #指定前面创建的PVC名称
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f pod-test.yaml
 pod/pod-nfs-sc-test created
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl get pod  -o wide
 NAME                                      READY   STATUS    RESTARTS   AGE   IP
 NODE             NOMINATED NODE   READINESS GATES
 nfs-client-provisioner-7468dcd749-24lpv   1/1     Running   0          16m
-10.244.3.9    node3.wang.org   <none>           <none>
+10.244.3.9    node3.bowen.org   <none>           <none>
 pod-nfs-sc-test                           1/1     Running   0          41s
-10.244.1.14   node1.wang.org   <none>           <none>
-```
+10.244.1.14   node1.bowen.org   <none>           <none>
 
-```text
 #查看Pod的挂载
 [root@master1 ~]#kubectl exec -it pod-nfs-sc-test  -- sh
 # df
-```
 
-```text
 Filesystem
 1K-blocks    Used Available Use% Mounted on
 overlay
@@ -1833,23 +1650,17 @@ tmpfs
 999676       0    999676   0% /proc/scsi
 tmpfs
 999676       0    999676   0% /sys/firmware
-```
 
-```text
 #在Pod运行的宿主机,可以看到NFS挂载
 [root@node1 ~]#df |grep 10.0.0.101
 10.0.0.101:/data/sc-nfs/default-pvc-nfs-sc-pvc-9be97a7b-2d9c-4778-8c2a-
 519da3266ea4 101848064 7139328 89489152    8% /var/lib/kubelet/pods/eb7a4c14-
 ba48-4bf3-87ee-eb8bd6dbae71/volumes/kubernetes.io~nfs/pvc-644ecc87-38f5-4959-
 b100-f9a5ff803011
-```
 
-```text
 # 查看nginx的网页文件不存在
 # ls /usr/share/nginx/html
-```
 
-```text
 #由于没有页面文件,访问Pod失败
 [root@master1 ~]#curl 10.244.1.14
 <html>
@@ -1859,50 +1670,35 @@ b100-f9a5ff803011
 <hr><center>nginx/1.20.0</center>
 </body>
 </html>
-```
 
-```text
 #在NFS服务器创建页面文件
 [root@master1 ~]#echo NFS-SC Website > /data/sc-nfs/default-pvc-nfs-sc-pvc-
 9be97a7b-2d9c-4778-8c2a-519da3266ea4/index.html
-```
 
-```text
 #查看Pod内的文件
 [root@master1 ~]#kubectl exec -it pod-nfs-sc-test  -- sh
 # ls /usr/share/nginx/html
 index.html
-```
 
-```text
 #访问Pod页面成功
 [root@master1 ~]#curl 10.244.1.14
 NFS-SC Website
 ```
 
 ##### 1.6.3.2.7 删除 Pod 和 PVC
-
-```text
+```bash
 #先删除Pod
 [root@master1 ~]#kubectl delete -f pod-test.yaml
-```
 
-```text
 #再删除PVC
 [root@master1 ~]#kubectl delete -f pvc.yaml
-```
 
-```text
 #自动删除对应的PV
 [root@master1 ~]#kubectl get pv
 No resources found
-```
 
-```text
 [root@master1 ~]#kubectl get pvc
-```
 
-```text
 #查看对应的数据不会删除,仍保留
 [root@master1 ~]#ls /data/sc-nfs/archived-default-pvc-nfs-sc-pvc-9be97a7b-2d9c-
 4778-8c2a-519da3266ea4
@@ -1910,8 +1706,7 @@ index.html
 ```
 
 ##### 1.6.3.2.8  基于sc-nfs 实现MySQL的动态置备
-
-```text
+```yaml
 [root@master1 ~]#cat  storage-mysql-storage-class-pvc.yaml
 ---
 apiVersion: v1
@@ -1948,15 +1743,13 @@ app: mysql
 strategy:
 type: Recreate
 template:
-```
 
-```text
 metadata:
 labels:
 app: mysql
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+- image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 name: mysql
 env:
 # 在实际中使用 secret
@@ -1975,7 +1768,6 @@ claimName: mysql-pv-claim
 ```
 
 #### 1.6.3.3 案例：通过 Helm 部署 nfs-subdir-external-provisioner
-
 ```text
 https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
 https://github.com/kubernetes-sigs/nfs-subdir-external-
@@ -1985,23 +1777,20 @@ provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
 ##### 1.6.3.3.1 准备 NFS 服务器
 
 Kubernetes 主节点（Ubuntu 22.04）上安装 NFS 服务器。登录主节点并运行以下命令：
-
-```text
+```bash
 $ sudo apt update
 $ sudo apt -y install nfs-kernel-server
 ```
 
 创建以下文件夹并使用 NFS 共享它：
-
-```text
+```bash
 $ sudo mkdir /data/sc-nfs
 $ sudo chown -R nobody:nogroup /data/sc-nfs
 $ sudo chmod 777 /data/sc-nfs
 ```
 
 在 /etc/exports 文件中添加以下条目：
-
-```text
+```bash
 $ sudo vi /etc/exports
 /data/sc-nfs 10.0.0.0/24(rw,sync,no_subtree_check)
 ```
@@ -2011,14 +1800,11 @@ $ sudo vi /etc/exports
 注意：不要忘记更改导出文件中适合你的部署的网络。
 
 要使上述更改生效，请运行：
-
-```text
+```bash
 $ sudo exportfs -a
 $ sudo systemctl restart nfs-kernel-server
 $ sudo systemctl status nfs-kernel-server
-```
 
-```text
 [root@master1 ~]#systemctl status nfs-kernel-server
 ● nfs-server.service - NFS server and services
 Loaded: loaded (/lib/systemd/system/nfs-server.service; enabled; vendor
@@ -2028,24 +1814,19 @@ Main PID: 148304 (code=exited, status=0/SUCCESS)
 CPU: 4ms
 ```
 
-```text
-8月 15 09:33:05 master1.wang.org systemd[1]: Starting NFS server and services...
-8月 15 09:33:05 master1.wang.org exportfs[148299]: exportfs: can't open
-/etc/exports for reading
-8月 15 09:33:05 master1.wang.org systemd[1]: Finished NFS server and services.
-```
+
+8月 15 09:33:05 master1.bowen.org systemd[1]: Starting NFS server and services... 8月 15 09:33:05 master1.bowen.org exportfs[148299]: exportfs: can't open/etc/exports for reading 8月 15 09:33:05 master1.bowen.org systemd[1]: Finished NFS server and services.
+
 
 在所有工作节点上，使用以下 apt 命令安装nfs-common 包。
-
-```text
+```bash
 $ sudo apt install nfs-common -y
 ```
 
 ##### 1.6.3.3.2 安装和配置 NFS 客户端配置程序
 
 NFS 子目录外部配置程序在 Kubernetes 集群中部署 NFS 客户端配置程序。配置程序负责动态创建和管理由 NFS 存储支持的持久卷（PV）和持久卷声明（PVC）。因此，要安装 NFS 子目录外部配置程序，首先使用以下命令集安装 helm ：
-
-```text
+```bash
 $ curl -fsSL -o get_helm.sh
 https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 $ chmod 700 get_helm.sh
@@ -2053,22 +1834,19 @@ $ ./get_helm.sh
 ```
 
 运行以下命令来启用 helm 仓库：
-
-```text
+```bash
 $ helm repo add nfs-subdir-external-provisioner https://kubernetes-
 sigs.github.io/nfs-subdir-external-provisioner
 ```
 
 使用以下 helm 命令部署配置程序：
-
 ```text
 https://github.com/kubernetes-sigs/nfs-subdir-external-
 provisioner/blob/master/charts/nfs-subdir-external-provisioner/README.md
 ```
 
 范例: 创建 SC
-
-```text
+```bash
 #默认创建SC名为nfs-client
 $ helm install -n nfs-provisioning --create-namespace nfs-subdir-external-
 provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set
@@ -2078,22 +1856,16 @@ deployment、名称为`nfs-client`的存储类，并将创建所需的rbac。
 #删除SC
 [root@master1 ~]#helm uninstall -n nfs-provisioning nfs-subdir-external-
 provisioner
-```
 
-```text
 #指定创建SC名为sc-nfs,此步可能因为网络原因失败,可以多试几次
-```
 
-```text
 [root@master1 ~]#helm install -n nfs-provisioning --create-namespace nfs-subdir-
 external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-
 provisioner \
 --set nfs.server=10.0.0.200 \
 --set nfs.path=/data/sc-nfs \
 --set storageClass.name=sc-nfs
-```
 
-```text
 NAME: nfs-subdir-external-provisioner
 LAST DEPLOYED: Tue Aug 15 10:09:24 2023
 NAMESPACE: nfs-provisioning
@@ -2103,28 +1875,21 @@ TEST SUITE: None
 ```
 
 查看
-
-```text
+```bash
 $ kubectl get all -n nfs-provisioning
 $ kubectl get sc -n nfs-provisioning
-```
 
-```text
 [root@master1 ~]#kubectl get all -n nfs-provisioning
 NAME                                                   READY   STATUS
 RESTARTS   AGE
 pod/nfs-subdir-external-provisioner-79756db4bc-qdcvv   0/1     ImagePullBackOff
 0          54s
-```
 
-```text
 NAME                                              READY   UP-TO-DATE   AVAILABLE
 AGE
 deployment.apps/nfs-subdir-external-provisioner   0/1     1            0
 54s
-```
 
-```text
 NAME                                                         DESIRED   CURRENT
 READY   AGE
 replicaset.apps/nfs-subdir-external-provisioner-79756db4bc   1         1
@@ -2141,8 +1906,7 @@ Immediate           true                   63s
 ##### 1.6.3.3.3 创建持久卷声明（PVC）
 
 让我们创建 PVC 来为你的容器荚或部署请求存储。PVC 将从存储类 sc-nfs 请求特定数量的存储：
-
-```text
+```yaml
 $ vi demo-pvc.yml
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -2159,14 +1923,12 @@ storage: 10Mi
 ```
 
 运行以下 kubectl 命令以使用上面创建的 YML 文件创建 PVC：
-
-```text
+```bash
 $ kubectl create -f demo-pvc.yml
 ```
 
 验证 PVC 和 PV 是否创建：
-
-```text
+```bash
 $ kubectl get pv,pvc -n nfs-provisioning
 ```
 
@@ -2177,8 +1939,7 @@ $ kubectl get pv,pvc -n nfs-provisioning
 ##### 1.6.3.3.4 测试并验证动态 NFS 配置
 
 为了测试和验证动态 NFS 配置，请使用以下 YML 文件启动测试容器荚：
-
-```text
+```yaml
 $ vi test-pod.yml
 kind: Pod
 apiVersion: v1
@@ -2201,31 +1962,26 @@ restartPolicy: "Never"
 volumes:
 - name: nfs-pvc
 persistentVolumeClaim:
-```
 
-```text
 claimName: demo-claim
 ```
 
 ![原 PDF 第 95 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-334a5266655e7d94.jpeg)
 
 使用以下 kubectl 命令部署容器荚：
-
-```text
+```bash
 $ kubectl apply -f test-pod.yml
 ```
 
 验证 test-pod 的状态：
-
-```text
+```bash
 $ kubectl get pods -n nfs-provisioning
 ```
 
 ![原 PDF 第 95 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-6a051f7f5e360350.jpeg)
 
 登录到容器荚并验证 NFS 卷是否已安装。
-
-```text
+```bash
 $ kubectl exec -it test-pod -n nfs-provisioning /bin/sh
 ```
 
@@ -2234,8 +1990,7 @@ $ kubectl exec -it test-pod -n nfs-provisioning /bin/sh
 太棒了，上面容器荚的输出确认了动态 NFS 卷已安装且可访问。
 
 最后删除Pod和 PVC，查看 PV 是否自动删除。
-
-```text
+```bash
 $ kubectl delete -f test-pod.yml
 $ kubectl delete -f demo-pvc.yml
 $ kubectl get pv,pvc -n  nfs-provisioning
@@ -2244,21 +1999,17 @@ $ kubectl get pv,pvc -n  nfs-provisioning
 ![原 PDF 第 96 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-e4297efc004aee31.jpeg)
 
 #### 1.6.3.4 案例: 基于 csi-driver-nfs 项目实现
-
 ```text
 https://github.com/kubernetes-csi/csi-driver-nfs
 #此项目中的镜像需要科学上网才能下载
 ```
 
 ##### 1.6.3.4.1 准备 NFS 服务
-
-```text
+```bash
 #方法1:部署至kubernetes
 https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/deploy/example/nfs-
 provisioner/README.md
-```
 
-```text
 #方法2:手动部署在集群外
 [root@master1 ~]#apt update && apt -y install nfs-server
 [root@master1 ~]#systemctl status nfs-server.service
@@ -2270,38 +2021,27 @@ Main PID: 64029 (code=exited, status=0/SUCCESS)
 Tasks: 0 (limit: 2236)
 Memory: 0B
 CGroup: /system.slice/nfs-server.service
-```
 
-```text
-9月 29 09:28:40 master1.wang.org systemd[1]: Starting NFS server and services...
-9月 29 09:28:41 master1.wang.org systemd[1]: Finished NFS server and services.
-```
+9月 29 09:28:40 master1.bowen.org systemd[1]: Starting NFS server and services...
+9月 29 09:28:41 master1.bowen.org systemd[1]: Finished NFS server and services.
 
-```text
 [root@master1 ~]#mkdir -pv /data/sc-nfs
-```
 
-```text
 [root@master1 ~]#vim /etc/exports
 #授权worker节点的网段可以挂载
 #/data/sc-nfs *(rw,no_root_squash,all_squash,anonuid=0,anongid=0)
 /data/sc-nfs *(rw,no_root_squash)
-```
 
-```text
 [root@master1 ~]#exportfs -rv
 /data/sc-nfs <world>
 (sync,wdelay,hide,no_subtree_check,anonuid=0,anongid=0,sec=sys,rw,secure,no_root
 _squash,all_squash)
-```
 
-```text
 #并在所有worker节点安装NFS客户端
 [root@nodeX ~]#apt update && apt -y install nfs-common 或者 nfs-client
 ```
 
 ##### 1.6.3.4.2 Install NFS CSI driver  on a kubernetes cluster
-
 ```text
 https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-
 driver-v4.6.0.md
@@ -2310,21 +2050,17 @@ driver-v4.6.0.md
 Install with kubectl 可能需要科学上网下载相关镜像。
 
 ###### 1.6.3.4.2.1 方法1: local install
-
-```text
+```bash
 git clone https://github.com/kubernetes-csi/csi-driver-nfs.git
 cd csi-driver-nfs
 ./deploy/install-driver.sh v4.6.0 local
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#git clone https://github.com/kubernetes-csi/csi-driver-nfs.git
 Cloning into 'csi-driver-nfs'...
-```
 
-```text
 [root@master1 ~]#ls csi-driver-nfs/
 CHANGELOG        cmd                 deploy      go.mod  LICENSE   OWNERS_ALIASES
 RELEASE.md         test
@@ -2332,9 +2068,7 @@ charts           code-of-conduct.md  Dockerfile  go.sum  Makefile  pkg
 release-tools      vendor
 cloudbuild.yaml  CONTRIBUTING.md     docs        hack    OWNERS    README.md
 SECURITY_CONTACTS
-```
 
-```text
 [root@master1 ~]#ls csi-driver-nfs/deploy/
 crd-csi-snapshot.yaml    csi-nfs-node.yaml             install-driver.sh
 uninstall-driver.sh  v4.0.0  v4.3.0  v4.6.0
@@ -2347,9 +2081,7 @@ controller.yaml  v3.1.0               v4.2.0  v4.5.0
 crd-csi-snapshot.yaml    csi-nfs-driverinfo.yaml  csi-snapshot-controller.yaml
 rbac-snapshot-controller.yaml
 csi-nfs-controller.yaml  csi-nfs-node.yaml        rbac-csi-nfs.yaml
-```
 
-```text
 #镜像需要科学上网才能下载
 [root@master1 deploy]#grep -R  image: v4.6.0/
 v4.6.0/csi-nfs-controller.yaml:          image: registry.k8s.io/sig-storage/csi-
@@ -2368,22 +2100,16 @@ v4.6.0/csi-nfs-node.yaml:          image: registry.k8s.io/sig-storage/csi-node-
 driver-registrar:v2.10.0
 v4.6.0/csi-nfs-node.yaml:          image: registry.k8s.io/sig-
 storage/nfsplugin:v4.6.0
-```
 
-```text
 [root@master1 deploy]#kubectl apply -f v4.6.0/
-```
 
-```text
 #自动生成相关CRD
 [root@master1 ~]#kubectl  get crd
 NAME                                             CREATED AT
 volumesnapshotclasses.snapshot.storage.k8s.io    2024-12-19T09:43:11Z
 volumesnapshotcontents.snapshot.storage.k8s.io   2024-12-19T09:43:11Z
 volumesnapshots.snapshot.storage.k8s.io          2024-12-19T09:43:11Z
-```
 
-```text
 [root@master1 ~]#kubectl  api-resources --api-group storage.k8s.io
 NAME                   SHORTNAMES   APIVERSION          NAMESPACED   KIND
 csidrivers                          storage.k8s.io/v1   false        CSIDriver
@@ -2394,9 +2120,7 @@ storageclasses         sc           storage.k8s.io/v1   false
 StorageClass
 volumeattachments                   storage.k8s.io/v1   false
 VolumeAttachment
-```
 
-```text
 #确认相关Pod正常工作
 [root@master1 ~]#kubectl  get pod -A |grep -E 'csi|snapshot'
 kube-system    csi-nfs-controller-db9cf5df7-n28nx         4/4     Running   0
@@ -2413,29 +2137,23 @@ kube-system    snapshot-controller-796bf74d5f-5fss8       1/1     Running   0
 32m
 kube-system    snapshot-controller-796bf74d5f-f2dp4       1/1     Running   0
 32m
-```
 
-```text
 [root@master1 ~]#kubectl -n kube-system get pod -o wide -l app=csi-nfs-
 controller
 [root@master1 ~]#kubectl -n kube-system get pod -o wide -l app=csi-nfs-node
 ```
 
 ###### 1.6.3.4.2.2 方法2. remote install
-
 ```text
 curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
 nfs/v4.6.0/deploy/install-driver.sh | bash -s v4.6.0 --
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-
 driver-nfs/v4.6.0/deploy/install-driver.sh | bash -s v4.6.0 --
-```
 
-```text
 #新创建资源类型
 [root@master1 ~]#kubectl api-resources  |grep storage.k8s.io
 csidrivers                                     storage.k8s.io/v1
@@ -2448,9 +2166,7 @@ storageclasses                    sc           storage.k8s.io/v1
 false        StorageClass
 volumeattachments                              storage.k8s.io/v1
 false        VolumeAttachment
-```
 
-```text
 #新创建的资源
 [root@master1 ~]#kubectl get all -n kube-system  |grep csi
 pod/csi-nfs-controller-57bb8fd754-j9xtb        0/4     ContainerCreating   0
@@ -2467,15 +2183,12 @@ daemonset.apps/csi-nfs-node   4         4         0       4            0
 kubernetes.io/os=linux   68s
 deployment.apps/csi-nfs-controller   0/1     1            0           76s
 replicaset.apps/csi-nfs-controller-57bb8fd754   1         1         0       76s
-```
 
-```text
 #新建CRD
 [root@master1 ~]#kubectl get crd
 ```
 
 ##### 1.6.3.4.3  创建 Storage Class
-
 ```text
 https://github.com/kubernetes-csi/csi-driver-
 nfs/blob/master/deploy/example/README.md
@@ -2484,14 +2197,11 @@ nfs/blob/master/deploy/example/README.md
 Create a storage class
 
 change server , share with your existing NFS server address and share name
-
-```text
+```yaml
 #https://github.com/kubernetes-csi/csi-driver-
 nfs/blob/master/deploy/example/README.md#storage-class-usage-dynamic-
 provisioning
-```
 
-```text
 [root@master1 csi-driver-nfs]#cat storageclass-csi-nfs.yaml
 ---
 apiVersion: storage.k8s.io/v1
@@ -2502,20 +2212,16 @@ annotations:
 storageclass.kubernetes.io/is-default-class: "true"
 provisioner: nfs.csi.k8s.io
 parameters:
-server: nfs.wang.org #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域名
+server: nfs.bowen.org #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域名
 share: /data/sc-nfs
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
 #mountOptions:
 #  - hard
 #  - nfsvers=4.1
-```
 
-```text
 [root@master1 csi-driver-nfs]#kubectl  apply -f storageclass-csi-nfs.yaml
-```
 
-```text
 [root@master1 ~]#kubectl  get sc
 NAME               PROVISIONER      RECLAIMPOLICY   VOLUMEBINDINGMODE
 ALLOWVOLUMEEXPANSION   AGE
@@ -2524,13 +2230,10 @@ sc-nfs (default)   nfs.csi.k8s.io   Delete          Immediate           false
 ```
 
 ##### 1.6.3.4.4  PVC  (Dynamic Provisioning)
-
-```text
+```yaml
 wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
 nfs/master/deploy/example/pvc-nfs-csi-dynamic.yaml
-```
 
-```text
 cat storage-pvc-nfs-csi-dynamic.yaml
 ---
 apiVersion: v1
@@ -2544,9 +2247,7 @@ resources:
 requests:
 storage: 10Gi
 storageClassName: sc-nfs #指向前面创建的SC
-```
 
-```text
 #创建PVC,也会自动创建对应的PV
 kubectl create -f pvc-nfs-csi-dynamic.yaml
 ```
@@ -2554,14 +2255,11 @@ kubectl create -f pvc-nfs-csi-dynamic.yaml
 ##### 1.6.3.4.5 PV/PVC Usage (Static Provisioning)
 
 Follow the following command to create PersistentVolume and PersistentVolumeClaim statically.
-
-```text
+```yaml
 # create PV
 wget  https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
 nfs/master/deploy/example/pv-nfs-csi.yaml
-```
 
-```text
 cat storage-pv-nfs-csi.yaml
 ---
 apiVersion: v1
@@ -2585,21 +2283,15 @@ driver: nfs.csi.k8s.io
 # make sure this value is unique for every share in the cluster
 volumeHandle: nfs-server.default.svc.cluster.local/share##
 volumeAttributes:
-server: nfs.wang.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域名
+server: nfs.bowen.org  #指定NFS服务器地址,如果是域名,需要宿主机节点能解析此域名
 share: /data/sc-nfs
-```
 
-```text
 kubectl create -f storage-pv-nfs-csi.yaml
-```
 
-```text
 # create PVC
 wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
 nfs/master/deploy/example/pvc-nfs-csi-static.yaml
-```
 
-```text
 cat storage-pvc-nfs-csi-static.yaml
 ---
 kind: PersistentVolumeClaim
@@ -2614,20 +2306,15 @@ requests:
 storage: 10Gi
 volumeName: pv-nfs
 storageClassName: sc-nfs
-```
 
-```text
 kubectl create -f  storage-pvc-nfs-csi-static.yaml
 ```
 
 ##### 1.6.3.4.6  Create a deployment
-
-```text
+```yaml
 wget https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
 nfs/master/deploy/example/deployment.yaml
-```
 
-```text
 cat storage-deployment.yaml
 ---
 apiVersion: v1
@@ -2675,29 +2362,24 @@ volumes:
 - name: nfs
 persistentVolumeClaim:
 claimName: pvc-deployment-nfs
-```
 
-```text
 kubectl create -f deployment.yaml
 ```
 
 ##### 1.6.3.4.7 clean up NFS CSI driver
-
 ```text
 https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-
 driver-v4.9.0.md
 ```
 
 Option#1. remote uninstall
-
 ```text
 curl -skSL https://raw.githubusercontent.com/kubernetes-csi/csi-driver-
 nfs/v4.9.0/deploy/uninstall-driver.sh | bash -s v4.9.0 --
 ```
 
 Option#2. local uninstall
-
-```text
+```bash
 git clone https://github.com/kubernetes-csi/csi-driver-nfs.git
 cd csi-driver-nfs
 git checkout v4.9.0
@@ -2705,7 +2387,6 @@ git checkout v4.9.0
 ```
 
 ### 1.6.4 改变默认存储类
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/change-default-storage-
 class/
@@ -2726,13 +2407,11 @@ storageclass
 #### 1.6.4.2 改变默认 StorageClass
 
 1. 列出你的集群中的 StorageClasses：
-
 ```text
 kubectl get storageclass
 ```
 
 输出类似这样：
-
 ```text
 NAME                 PROVISIONER               AGE
 standard (default)   kubernetes.io/gce-pd      1d
@@ -2746,17 +2425,14 @@ gold                 kubernetes.io/gce-pd      1d
 默认 StorageClass 的注解 storageclass.kubernetes.io/is-default-class 设置为 true 。注解的其它任意值或者缺省值将被解释为 false 。
 
 要标记一个 StorageClass 为非默认的，你需要改变它的值为 false ：
-
-```text
+```bash
 #方法1:交互
 kubectl edit storageclasses.storage.k8s.io <your-class-name>
 metadata:
 annotations:
 ......
 storageclass.kubernetes.io/is-default-class: "false" #修改为false
-```
 
-```text
 #方法2
 kubectl patch storageclass standard -p '{"metadata": {"annotations":
 {"storageclass.kubernetes.io/is-default-class":"false"}}}'
@@ -2767,17 +2443,14 @@ kubectl patch storageclass standard -p '{"metadata": {"annotations":
 3. 标记一个 StorageClass 为默认的：
 
 和前面的步骤类似，你需要添加/设置注解 storageclass.kubernetes.io/is-default-class=true 。
-
-```text
+```bash
 #方法1:交互
 kubectl edit storageclasses.storage.k8s.io <your-class-name>
 metadata:
 annotations:
 ......
 storageclass.kubernetes.io/is-default-class: "true" #修改为true
-```
 
-```text
 #方法2
 kubectl patch storageclass <your-class-name> -p '{"metadata":
 {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
@@ -2786,13 +2459,11 @@ kubectl patch storageclass <your-class-name> -p '{"metadata":
 请注意，最多只能有一个 StorageClass 能够被标记为默认。 如果它们中有两个或多个被标记为默认，Kubernetes 将忽略这个注解， 也就是它将表现为没有默认 StorageClass。
 
 4. 验证你选用的 StorageClass 为默认的：
-
 ```text
 kubectl get storageclass
 ```
 
 输出类似这样：
-
 ```text
 NAME             PROVISIONER               AGE
 standard         kubernetes.io/gce-pd      1d
@@ -2800,19 +2471,14 @@ gold (default)   kubernetes.io/gce-pd      1d
 ```
 
 范例：指定sc-nfs storageClass 是默认的
-
-```text
+```bash
 [root@master1 ~]#kubectl  get sc
 NAME     PROVISIONER                                   RECLAIMPOLICY
 VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-```
 
-```text
 sc-nfs   k8s-sigs.io/nfs-subdir-external-provisioner   Delete          Immediate
 false                  17m
-```
 
-```text
 #指定sc-nfs storageClass 是默认的存储类
 #方法1
 [root@master1 ~]#kubectl edit storageclasses.storage.k8s.io sc-nfs
@@ -2820,25 +2486,19 @@ metadata:
 annotations:
 ......
 storageclass.kubernetes.io/is-default-class: "true" #修改为true
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl patch storageclass sc-nfs -p '{"metadata":
 {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 storageclass.storage.k8s.io/sc-nfs patched
-```
 
-```text
 #验证已经默认
 [root@master1 ~]#kubectl  get sc
 NAME               PROVISIONER                                   RECLAIMPOLICY
 VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 sc-nfs (default)   k8s-sigs.io/nfs-subdir-external-provisioner   Delete
 Immediate           false                  17m
-```
 
-```text
 #取消默认
 #方法1
 [root@master1 ~]#kubectl edit storageclasses.storage.k8s.io sc-nfs
@@ -2846,16 +2506,12 @@ metadata:
 annotations:
 ......
 storageclass.kubernetes.io/is-default-class: "false" #修改为false
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl patch storageclass sc-nfs -p '{"metadata":
 {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 storageclass.storage.k8s.io/sc-nfs patched
-```
 
-```text
 #验证取消默认
 [root@master1 ~]#kubectl  get sc
 NAME     PROVISIONER                                   RECLAIMPOLICY
@@ -2938,23 +2594,23 @@ Kubernetes的卷通常是基于外部文件系统或块存储实现，这种存�
 
 OpenEBS是CNS存储机制的著名实现之一，由CNCF孵化。
 
-```text
-https://openebs.io/
-```
+
+- <https://openebs.io/>
+
 
 ![原 PDF 第 107 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-07ceda201896f9b1.png)
 
-```text
-https://openebs.io/docs#what-is-openebs
-```
+
+- <https://openebs.io/docs#what-is-openebs>
+
 
 OpenEBS 将 Kubernetes 工作线程节点可用的任何存储转换为本地或复制的 Kubernetes 持久卷。OpenEBS 可帮助应用程序和平台团队轻松部署需要快速、高度持久、可靠且可扩展的容器原生存储的Kubernetes 有状态工作负载。OpenEBS 也是基于 NVMe 的存储部署的首选。OpenEBS 最初由 MayaData 构建并捐赠给云原生计算基金会，现在是 CNCF 沙盒项目。
 
 #### 1.7.2.2 为什么用户更喜欢 OpenEBS
 
-```text
-https://openebs.io/docs#why-do-users-prefer-openebs)
-```
+
+- <https://openebs.io/docs#why-do-users-prefer-openebs)>
+
 
 OpenEBS 采用案例提到了推动用户转向 OpenEBS 的主要原因：
 
@@ -2962,9 +2618,9 @@ OpenEBS 在所有 Kubernetes 发行版（本地和云）之间提供一致性。
 
 #### 1.7.2.3 OpenEBS 是做什么的
 
-```text
-https://openebs.io/docs#what-does-openebs-do)
-```
+
+- <https://openebs.io/docs#what-does-openebs-do)>
+
 
 OpenEBS 管理每个 Kubernetes 节点上的可用存储，并使用该存储为有状态工作负载提供本地或复制的持久卷。
 
@@ -3032,24 +2688,21 @@ MongoDB
 
 ### 1.7.3 OpenEBS 安装和使用
 
-```text
-https://openebs.io/docs/quickstart-guide/installation
-```
+
+- <https://openebs.io/docs/quickstart-guide/installation>
+
 
 Installation via Helm
 
-```text
-https://openebs.io/docs/quickstart-guide/installation#installation-via-helm
-```
+
+- <https://openebs.io/docs/quickstart-guide/installation#installation-via-helm>
+
 
 1. Setup helm repository.
-
-```text
+```bash
 helm repo add openebs https://openebs.github.io/openebs
 helm repo update
-```
 
-```text
 helm repo add openebs https://openebs.github.io/charts has changed to helm repo add
 ```
 
@@ -3060,7 +2713,6 @@ OpenEBS provides several options to customize during installation such as:
 Specifying the directory where hostpath volume data is stored or Specifying the nodes on which OpenEBS components should be deployed and so forth.
 
 2. Install the OpenEBS helm chart with default values.
-
 ```text
 helm install openebs --namespace openebs openebs/openebs --create-namespace
 ```
@@ -3068,19 +2720,15 @@ helm install openebs --namespace openebs openebs/openebs --create-namespace
 The above commands will install OpenEBS Local PV Hostpath, OpenEBS Local PV LVM, OpenEBS Local PV ZFS, and OpenEBS Replicated Storage components in openebs namespace and chart name as openebs .
 
 The default OpenEBS helm chart will install both Local Storage and Replicated Storage. If you do not want to install OpenEBS Replicated Storage, use the following command:
-
 ```text
 helm install openebs --namespace openebs openebs/openebs --set
 engines.replicated.mayastor.enabled=false --create-namespace
 ```
 
 3. To view the chart and get the output, use the following commands:
-
 ```text
 helm ls -n openebs
-```
 
-```text
 #Output
 NAME     NAMESPACE   REVISION  UPDATED                          STATUS     CHART
 APP VERSION
@@ -3095,12 +2743,9 @@ Verify Pods
 Default Installation
 
 List the pods in <openebs> namespace
-
 ```text
 kubectl get pods -n openebs
-```
 
-```text
 #In the successful installation of OpenEBS, you should see an example output like
 below:
 NAME                                              READY   STATUS    RESTARTS
@@ -3123,9 +2768,7 @@ openebs-csi-node-k8d7h                            2/2     Running   0
 11m
 openebs-csi-node-v7jfh                            2/2     Running   0
 11m
-```
 
-```text
 openebs-etcd-0                                    1/1     Running   0
 11m
 openebs-etcd-1                                    1/1     Running   0
@@ -3179,12 +2822,9 @@ openebs-zfs-localpv-node-wm9ks                    2/2     Running   0
 Installation with Replicated Storage Disabled
 
 List the pods in <openebs> namespace
-
 ```text
 kubectl get pods -n openebs
-```
 
-```text
 #In the successful installation of OpenEBS, you should see an example output like
 below:
 NAME                                              READY   STATUS    RESTARTS
@@ -3212,12 +2852,9 @@ openebs-zfs-localpv-node-g77g6                    2/2     Running   0
 Verify StorageClasses
 
 List the storage classes to check if OpenEBS has been installed with default StorageClasses.
-
 ```text
 kubectl get sc
-```
 
-```text
 #In the successful installation, you should have the following StorageClasses
 created:
 NAME                  PROVISIONER               RECLAIMPOLICY   VOLUMEBINDINGMODE
@@ -3235,8 +2872,7 @@ true
 5. PVC和Pod
 
 Hostpath 会生成临时Pod，初始化目录结构，完成后会删除此Pod。默认会创建Pod所在节点的目录/var/openebs/local/pvc-下。
-
-```text
+```yaml
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -3244,17 +2880,13 @@ metadata:
 name: openebs-local-hostpath-pvc
 spec:
 storageClassName: openebs-hostpath
-```
 
-```text
 accessModes:
 - ReadWriteOnce
 resources:
 requests:
 storage: 1G
-```
 
-```text
 ---
 apiVersion: v1
 kind: Pod

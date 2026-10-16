@@ -1,0 +1,93 @@
+/* Kubernetes chapters: compact code controls, readable figures and image zoom. */
+.prose .k8-code-shell {
+  position: relative;
+  isolation: isolate;
+  margin: 32px 0 26px;
+}
+.prose .k8-code-shell pre,
+.prose .k8-code-shell pre.has-copy-button {
+  margin: 0;
+  padding: 19px 20px;
+}
+.prose .k8-code-shell .code-copy {
+  position: absolute;
+  z-index: 2;
+  top: -15px;
+  right: 12px;
+  min-height: 30px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .16);
+  white-space: nowrap;
+}
+.prose .k8-code-shell .code-copy:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+.prose img {
+  display: block;
+  width: auto;
+  max-width: min(100%, var(--k8-image-width, 760px));
+  max-height: min(72vh, var(--k8-image-height, 680px));
+  height: auto;
+  margin-inline: auto;
+  object-fit: contain;
+}
+.prose img.k8-image-wide { --k8-image-width: 1000px; }
+.prose img.k8-image-tall { --k8-image-height: 580px; }
+.prose img.k8-image-small { --k8-image-width: 480px; }
+.prose .k8-image-link {
+  display: table;
+  max-width: 100%;
+  margin: 0 auto;
+  cursor: zoom-in;
+  text-decoration: none;
+}
+.prose .k8-image-link img { margin: 0 auto; }
+.prose a { overflow-wrap: anywhere; }
+.k8-lightbox {
+  position: fixed;
+  width: min(96vw, 1800px);
+  max-width: none;
+  max-height: 96vh;
+  padding: 44px 14px 14px;
+  border: 1px solid #505765;
+  border-radius: 12px;
+  background: #10151e;
+  color: #f4f6f8;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .6);
+}
+.k8-lightbox::backdrop { background: rgba(0, 0, 0, .86); }
+.k8-lightbox img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(96vh - 64px);
+  margin: auto;
+  object-fit: contain;
+}
+.k8-lightbox-close {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #657080;
+  border-radius: 6px;
+  background: #28313e;
+  color: #fff;
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .prose .k8-code-shell { margin-top: 34px; }
+  .prose .k8-code-shell pre,
+  .prose .k8-code-shell pre.has-copy-button { padding: 17px 15px; }
+  .prose .k8-code-shell .code-copy { min-height: 32px; }
+}

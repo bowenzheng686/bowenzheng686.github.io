@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Kubeadm 与 Containerd 高可用部署'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -16,7 +17,6 @@ syntax_highlight: true
 ### 3.5.1 基于Kubeadm 和 Containerd 实现 Kubernetes 集群流程说明
 
 **官方说明**
-
 ```text
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-
@@ -31,23 +31,23 @@ environment/tools/kubeadm/create-cluster-kubeadm/
 
 IP主机名角色
 
-10.0.0.101 master1.wang.org K8s 集群主节点 1，Master和etcd
+10.0.0.101 master1.bowen.org K8s 集群主节点 1，Master和etcd
 
-10.0.0.102 master2.wang.org K8s 集群主节点 2，Master和etcd
+10.0.0.102 master2.bowen.org K8s 集群主节点 2，Master和etcd
 
-10.0.0.103 master3.wang.org K8s 集群主节点 3，Master和etcd
+10.0.0.103 master3.bowen.org K8s 集群主节点 3，Master和etcd
 
-10.0.0.104 node1.wang.org K8s 集群工作节点 1
+10.0.0.104 node1.bowen.org K8s 集群工作节点 1
 
-10.0.0.105 node2.wang.org K8s 集群工作节点 2
+10.0.0.105 node2.bowen.org K8s 集群工作节点 2
 
-10.0.0.106 node3.wang.org K8s 集群工作节点 3
+10.0.0.106 node3.bowen.org K8s 集群工作节点 3
 
-10.0.0.107 ha1.wang.org K8s 主节点访问入口 1,提供高可用及负载均衡
+10.0.0.107 ha1.bowen.org K8s 主节点访问入口 1,提供高可用及负载均衡
 
-10.0.0.108 ha2.wang.org K8s 主节点访问入口 2,提供高可用及负载均衡
+10.0.0.108 ha2.bowen.org K8s 主节点访问入口 2,提供高可用及负载均衡
 
-10.0.0.100 kubeapi.wang.org VIP，在ha1和ha2主机实现
+10.0.0.100 kubeapi.bowen.org VIP，在ha1和ha2主机实现
 
 实现流程
 
@@ -69,70 +69,49 @@ IP主机名角色
 #### 3.5.2.1 安装 HAProxy
 
 利用 HAProxy 实现 Kubeapi 服务的负载均衡。
-
-```text
+```bash
 #修改内核参数
 [root@ha1 ~]#cat >> /etc/sysctl.conf <<EOF
 net.ipv4.ip_nonlocal_bind = 1
 EOF
 [root@ha1 ~]#sysctl -p
-```
 
-```text
 #安装配置haproxy
 [root@ha1 ~]#apt update
 [root@ha1 ~]#apt -y install haproxy
-```
 
-```text
 ##添加下面行
 [root@ha1 ~]#cat >> /etc/haproxy/haproxy.cfg  <<EOF
 listen stats
 mode http
 bind 0.0.0.0:8888
 stats enable
-```
 
-```text
 log global
 stats uri /status
 stats auth admin:123456
 ```
 
-```text
-listen  kubernetes-api-6443
-bind 10.0.0.100:6443
-mode tcp
-server master1 10.0.0.101:6443 check inter 3s fall 3 rise 3
-#注意: 在集群安装前,必须只启用用于初始化的第一台master节点,当安装kubernetes集群完成后,再
-将下面两台主机启动
-#server master2 10.0.0.102:6443 check inter 3s fall 3 rise 3
-#server master3 10.0.0.103:6443 check inter 3s fall 3 rise 3
-EOF
-```
 
-```text
+listen  kubernetes-api-6443 bind 10.0.0.100:6443 mode tcp server master1 10.0.0.101:6443 check inter 3s fall 3 rise 3#注意: 在集群安装前,必须只启用用于初始化的第一台master节点,当安装kubernetes集群完成后,再将下面两台主机启动#server master2 10.0.0.102:6443 check inter 3s fall 3 rise 3#server master3 10.0.0.103:6443 check inter 3s fall 3 rise 3 EOF
+
+```bash
 [root@ha1 ~]#systemctl restart  haproxy
 ```
 
 #### 3.5.2.2 安装 Keepalived
 
 安装 keepalived 实现 HAProxy 的高可用。
-
-```text
+```bash
 [root@ha1 ~]#apt update
 [root@ha1 ~]#apt -y install keepalived
 [root@ha1 ~]#vim /etc/keepalived/keepalived.conf
 ! Configuration File for keepalived
-```
 
-```text
 global_defs {
-router_id ha1.wang.org  #指定router_id,#在ha2上为ha2.wang.org
+router_id ha1.bowen.org  #指定router_id,#在ha2上为ha2.bowen.org
 }
-```
 
-```text
 vrrp_script check_haproxy {             #定义脚本
 script "/etc/keepalived/check_haproxy.sh"
 interval 1
@@ -143,40 +122,17 @@ timeout 2
 }
 ```
 
-```text
-vrrp_instance VI_1 {
-state MASTER            #在ha2上为BACKUP
-interface eth0
-garp_master_delay 10
-smtp_alert
-virtual_router_id 66   #指定虚拟路由器ID,ha1和ha2此值必须相同
-priority 100           #在ha2上为80
-advert_int 1
-authentication {
-auth_type PASS
-auth_pass 123456   #指定验证密码,ha1和ha2此值必须相同
-}
-virtual_ipaddress {
-10.0.0.100/24 dev eth0  label eth0:1  #指定VIP,ha1和ha2此值必须相同
-}
-track_script {
-check_haproxy                       #调用上面定义的脚本
-}
-}
-```
 
-```text
+vrrp_instance VI_1 {state MASTER            #在ha2上为BACKUP interface eth0 garp_master_delay 10 smtp_alert virtual_router_id 66   #指定虚拟路由器ID,ha1和ha2此值必须相同 priority 100           #在ha2上为80 advert_int 1 authentication {auth_type PASS auth_pass 123456   #指定验证密码,ha1和ha2此值必须相同}virtual_ipaddress {10.0.0.100/24 dev eth0  label eth0:1  #指定VIP,ha1和ha2此值必须相同}track_script {check_haproxy                       #调用上面定义的脚本}}
+
+```bash
 [root@ha1 ~]# cat > /etc/keepalived/check_haproxy.sh <<EOF
 #!/bin/bash
 /usr/bin/killall -0 haproxy  || systemctl restart haproxy
 EOF
-```
 
-```text
 [root@ha1 ~]# chmod a+x /etc/keepalived/check_haproxy.sh
-```
 
-```text
 [root@ha1 ~]# systemctl restart keepalived
 ```
 
@@ -184,9 +140,9 @@ EOF
 
 浏览器访问验证,用户名密码: admin:123456。
 
-```text
-http://kubeapi.wang.org:8888/status
-```
+
+- <http://kubeapi.bowen.org:8888/status>
+
 
 ![原 PDF 第 119 页插图](assets/Kubernetes架构和部署/img-9878d3f017c7f1ed.png)
 
@@ -199,40 +155,33 @@ http://kubeapi.wang.org:8888/status
 #### 3.5.3.1 配置 ssh key 验证(可选)
 
 配置 ssh key 验证,方便后续同步文件
-
-```text
+```bash
 ssh-keygen
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@10.0.0.102
 .....
 ```
 
 #### 3.5.3.2 设置主机名和解析
+```bash
+hostnamectl set-hostname master1.bowen.org
 
-```text
-hostnamectl set-hostname master1.wang.org
-```
-
-```text
 cat >> /etc/hosts <<EOF
-10.0.0.100 kubeapi.wang.org kubeapi
-10.0.0.101 master1.wang.org master1
-10.0.0.102 master2.wang.org master2
-10.0.0.103 master2.wang.org master3
-10.0.0.104 node1.wang.org node1
-10.0.0.105 node2.wang.org node2
-10.0.0.106 node3.wang.org node3
-10.0.0.107 ha1.wang.org ha1
-10.0.0.108 ha2.wang.org ha2
+10.0.0.100 kubeapi.bowen.org kubeapi
+10.0.0.101 master1.bowen.org master1
+10.0.0.102 master2.bowen.org master2
+10.0.0.103 master2.bowen.org master3
+10.0.0.104 node1.bowen.org node1
+10.0.0.105 node2.bowen.org node2
+10.0.0.106 node3.bowen.org node3
+10.0.0.107 ha1.bowen.org ha1
+10.0.0.108 ha2.bowen.org ha2
 EOF
-```
 
-```text
 for i in {102..108};do scp /etc/hosts 10.0.0.$i:/etc/ ;done
 ```
 
 #### 3.5.3.3 禁用 swap
-
-```text
+```bash
 swapoff -a
 sed -i '/swap/s/^/#/' /etc/fstab
 #或者
@@ -240,7 +189,6 @@ systemctl disable --now swap.img.swap;systemctl mask swap.target
 ```
 
 #### 3.5.3.4 时间同步
-
 ```text
 #借助于chronyd服务（程序包名称chrony）设定各节点时间精确同步
 apt -y install chrony
@@ -248,7 +196,6 @@ chronyc sources -v
 ```
 
 #### 3.5.3.5 禁用防火墙和SELinux
-
 ```text
 #禁用默认配置的iptables防火墙服务
 ufw disable
@@ -258,44 +205,33 @@ ufw status
 #### 3.5.3.6 内核参数调整
 
 如果是安装 Docker 会自动配置以下的内核参数，而无需手动实现。但是如果安装Contanerd，还需手动配置。允许 iptables 检查桥接流量,若要显式加载此模块，需运行 modprobe br_netfilter。为了让 Linux 节点的 iptables 能够正确查看桥接流量，还需要确认net.bridge.bridge-nf-call-iptables设置为 1。
-
-```text
+```bash
 #方法1: 安装docker,自动修改内核参数,并自动安装containerd
 [root@ubuntu2204 ~]#apt update && apt -y install docker.io
-```
 
-```text
 #方法2
 #加载模块
 modprobe overlay
 modprobe br_netfilter
-```
 
-```text
 lsmod  |grep -E  'overlay|br_netfilter'
 br_netfilter           32768  0
 bridge                421888  1 br_netfilter
 overlay               212992  0
-```
 
-```text
 #开机加载
 cat <<EOF | tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
 EOF
-```
 
-```text
 #设置所需的 sysctl 参数，参数在重新启动后保持不变
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-iptables  = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.ipv4.ip_forward                 = 1
 EOF
-```
 
-```text
 #应用 sysctl 参数生效而不重新启动
 sysctl --system
 ```
@@ -305,18 +241,13 @@ sysctl --system
 #### 3.5.4.1 包安装 Containerd
 
 **在所有节点上安装 Containerd**
-
-```text
+```bash
 #Ubuntu24.04，22.04和Ubuntu20.04可以利用内置仓库安装containerd
 [root@node1 ~]#apt update && apt -y install containerd
-```
 
-```text
 #确认服务启动
 [root@node1 ~]#systemctl status containerd
-```
 
-```text
 #ubuntu24.04
 [root@master1 ~]#containerd -v
 containerd github.com/containerd/containerd 1.7.24
@@ -325,118 +256,84 @@ runc version 1.1.12-0ubuntu3.1
 spec: 1.0.2-dev
 go: go1.22.2
 libseccomp: 2.5.5
-```
 
-```text
 #ubuntu22.04
 [root@node1 ~]#containerd --version
-```
 
-```text
 containerd github.com/containerd/containerd 1.7.2
-```
 
-```text
 [root@node1 ~]#runc -v
 runc version 1.1.7-0ubuntu1~22.04.2
 spec: 1.0.2-dev
 go: go1.18.1
 libseccomp: 2.5.3
-```
 
-```text
 [root@node1 ~]#containerd --version
 containerd github.com/containerd/containerd 1.5.9-0ubuntu1~20.04.4
-```
 
-```text
 #利用containerd的客户端工具ctr验证修改是否成功
 [root@ubuntu2204 ~]#ctr version
 Client:
 Version:  1.7.2
 Revision:
 Go version: go1.20.3
-```
 
-```text
 Server:
 Version:  1.7.2
 Revision:
 UUID: 75495462-55c4-4a88-b898-bf810af4d353
-```
 
-```text
 [root@node1 ~]#ctr version
 Client:
 Version:  1.5.9-0ubuntu1~20.04.4
 Revision:
 Go version: go1.13.8
-```
 
-```text
 Server:
 Version:  1.5.9-0ubuntu1~20.04.4
 Revision:
 UUID: dedffba3-daac-4ad9-b596-14da3b7a1cf3
-```
 
-```text
 #修改containerd配置基于toml(Tom's Obvious Minimal Language)格式：toml.io
 [root@node1 ~]#mkdir /etc/containerd/
 [root@node1 ~]#containerd config default > /etc/containerd/config.toml
-```
 
-```text
 #1）将 sandbox_image 镜像源设置为阿里云google_containers镜像源（国内网络需要）
 [root@node1 ~]#grep sandbox_image  /etc/containerd/config.toml
 #新版k8s-v1.34.1
 [root@node1 ~]#sed -i
 "s#registry.k8s.io/pause:3.8#registry.aliyuncs.com/google_containers/pause:3.10.
 1#g"  /etc/containerd/config.toml
-```
 
-```text
 #新版k8s-v1.32.0
 [root@node1 ~]#sed -i
 "s#registry.k8s.io/pause:3.8#registry.aliyuncs.com/google_containers/pause:3.10#
 g"  /etc/containerd/config.toml
-```
 
-```text
 #新版k8s-v1.31.1
 [root@node1 ~]#sed -i
 "s#registry.k8s.io/pause:3.8#registry.aliyuncs.com/google_containers/pause:3.10#
 g"  /etc/containerd/config.toml
-```
 
-```text
 #k8s-v1.30
-```
 
-```text
 [root@node1 ~]#sed -i
 "s#registry.k8s.io/pause#registry.aliyuncs.com/google_containers/pause#g"
 /etc/containerd/config.toml
 [root@node1 ~]#sed -i  "s/pause:3.8/pause:3.9/g" /etc/containerd/config.toml
-```
 
-```text
 #旧版
 [root@node1 ~]#sed -i
 "s#k8s.gcr.io/pause#registry.aliyuncs.com/google_containers/pause#g"
 /etc/containerd/config.toml
-```
 
-```text
 #2）配置containerd cgroup 驱动程序systemd,ubuntu22.04/24.04较新内核必须修
 改,ubuntu20.04更旧的内核版本可不做修改
 [root@node1 ~]#sed -i 's#SystemdCgroup = false#SystemdCgroup = true#g'
 /etc/containerd/config.toml
 [root@node1 ~]#grep SystemdCgroup /etc/containerd/config.toml
 SystemdCgroup = true
-```
 
-```text
 #镜像加速(建议，可选)
 [root@node1 ~]#vim /etc/containerd/config.toml
 #在此行下面加行
@@ -446,47 +343,33 @@ SystemdCgroup = true
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
 endpoint =
 ["https://docker.m.daocloud.io","https://docker.1panel.live"]
-[plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.wang.org"]
-endpoint = ["https://harbor.wang.org"]
-```
+[plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.bowen.org"]
+endpoint = ["https://harbor.bowen.org"]
 
-```text
-[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.wang.org".tls]
+[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.bowen.org".tls]
 insecure_skip_verify = true
-```
 
-```text
-[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.wang.org".auth]
+[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.bowen.org".auth]
 username = "admin"
 password = "REPLACE_WITH_STRONG_PASSWORD"
-```
 
-```text
 #旧版
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
 endpoint =
 ["https://si7y70hh.mirror.aliyuncs.com","https://registry.aliyuncs.com"]
 ###################################################################
-[plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.wang.org"]
-endpoint = ["https://harbor.wang.org"]
-```
+[plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.bowen.org"]
+endpoint = ["https://harbor.bowen.org"]
 
-```text
-[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.wang.org".tls]
+[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.bowen.org".tls]
 insecure_skip_verify = true
-```
 
-```text
-[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.wang.org".auth]
+[plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.bowen.org".auth]
 username = "admin"
 password = "REPLACE_WITH_STRONG_PASSWORD"
-```
 
-```text
 [root@node1 ~]#systemctl restart containerd
-```
 
-```text
 #同步到所有节点
 [root@node1 ~]#for i  in {102..106};do scp -r /etc/containerd/
 10.0.0.$i:/etc/;done
@@ -494,34 +377,21 @@ password = "REPLACE_WITH_STRONG_PASSWORD"
 
 **关于 SystemdCgroup**
 
-```text
-cgroups（Control Groups）是 Linux 内核的一个特性，用于限制、账单和隔离一个或多个进程的资源
-（如 CPU、内存、磁盘 I/O 等）。systemd 是一个常见的 Linux 启动和系统管理工具，它可以用来启
-动、停止和管理系统上的服务和进程。在容器化环境中，systemd 也可以被用来管理容器中的进程。
-```
 
-```text
-当 SystemdCgroup 设置为 true 时，containerd 将使用 systemd cgroup 驱动来创建和管理容器
-的 cgroups来实现资源限制和隔离。这意味着容器的资源限制和隔离将由 systemd 控制，而不是其他
-cgroup 驱动程序（如 cgroupfs 或 systemd-nspawn）。
-```
+cgroups（Control Groups）是 Linux 内核的一个特性，用于限制、账单和隔离一个或多个进程的资源（如 CPU、内存、磁盘 I/O 等）。systemd 是一个常见的 Linux 启动和系统管理工具，它可以用来启动、停止和管理系统上的服务和进程。在容器化环境中，systemd 也可以被用来管理容器中的进程。
 
-```text
-当将 SystemdCgroup 设置为 no 时，containerd 将不再使用 systemd cgroup 驱动来管理容器的
-cgroups。相反，它将使用其他可用的 cgroup 驱动程序。在大多数情况下，默认情况下，containerd 使
-用 cgroupfs 作为 cgroup 驱动程序。
-```
 
-```text
-这通常用于确保容器的行为与系统上其他服务和进程的行为保持一致，以及利用 systemd 提供的更丰富的功
-能和工具来管理容器。
-```
+当 SystemdCgroup 设置为 true 时，containerd 将使用 systemd cgroup 驱动来创建和管理容器的 cgroups来实现资源限制和隔离。这意味着容器的资源限制和隔离将由 systemd 控制，而不是其他 cgroup 驱动程序（如 cgroupfs 或 systemd-nspawn）。
 
-```text
-Docker 从 1.10 版本开始引入了对 systemd cgroup driver 的支持。这意味着从 Docker 1.10 版
-本开始，你可以选择使用 systemd 作为 Docker 的 cgroup 驱动程序。在 Docker 1.13 版本之后，
-systemd 已成为 Docker 默认的 cgroup 驱动程序
-```
+
+当将 SystemdCgroup 设置为 no 时，containerd 将不再使用 systemd cgroup 驱动来管理容器的 cgroups。相反，它将使用其他可用的 cgroup 驱动程序。在大多数情况下，默认情况下，containerd 使用 cgroupfs 作为 cgroup 驱动程序。
+
+
+这通常用于确保容器的行为与系统上其他服务和进程的行为保持一致，以及利用 systemd 提供的更丰富的功能和工具来管理容器。
+
+
+Docker 从 1.10 版本开始引入了对 systemd cgroup driver 的支持。这意味着从 Docker 1.10 版本开始，你可以选择使用 systemd 作为 Docker 的 cgroup 驱动程序。在 Docker 1.13 版本之后，systemd 已成为 Docker 默认的 cgroup 驱动程序
+
 
 #### 3.5.4.2 二进制安装 Containerd
 
@@ -533,15 +403,14 @@ containerd-xxx ：不包含runC，需要单独安装runC cri-containerd-cni-xxx�
 
 **官方下载链接**
 
-```text
-https://github.com/containerd/containerd
-```
+
+- <https://github.com/containerd/containerd>
+
 
 ![原 PDF 第 124 页插图](assets/Kubernetes架构和部署/img-b6b981f90a63acad.png)
 
 范例: 安装包括runc的二进制包
-
-```text
+```bash
 #查看内容
 [root@node2 ~]#tar tf cri-containerd-cni-1.6.8-linux-amd64.tar.gz
 etc/
@@ -595,16 +464,13 @@ opt/cni/bin/bridge
 opt/cni/bin/dhcp
 opt/cni/bin/ptp
 opt/cni/bin/vrf
-```
 
-```text
 #解压缩至根目录
 [root@node2 ~]#tar xf cri-containerd-cni-1.6.8-linux-amd64.tar.gz  -C /
 ```
 
 范例:  安装不包含runc的二进制包
-
-```text
+```bash
 #如果是不包含runc的,还需要单独下载runc即可
 [root@node2 ~]#tar xf containerd-1.6.8-linux-amd64.tar.gz -C /
 #参考包安装的service手动创建service文件
@@ -616,15 +482,12 @@ https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
 ```
 
 ##### 3.5.4.2.2 配置 Containerd
-
-```text
+```bash
 #修改containerd配置,将 sandbox_image 镜像源设置为阿里云google_containers镜像源（所有节
 点）
 [root@node2 ~]#mkdir /etc/containerd/
 [root@node2 ~]#containerd config default > /etc/containerd/config.toml
-```
 
-```text
 #修改镜像地址,默认国内可能无法访问
 [root@node2 ~]#grep sandbox_image  /etc/containerd/config.toml
 #新版
@@ -635,26 +498,20 @@ https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
 [root@node2 ~]#sed -i
 "s#k8s.gcr.io/pause#registry.aliyuncs.com/google_containers/pause#g"
 /etc/containerd/config.toml
-```
 
-```text
 #配置containerd cgroup 驱动程序systemd
 [root@node1 ~]#sed -i 's#SystemdCgroup = false#SystemdCgroup = true#g'
 /etc/containerd/config.toml
 [root@node1 ~]#grep SystemdCgroup /etc/containerd/config.toml
 SystemdCgroup = true
-```
 
-```text
 #镜像加速(可选)
 [root@node1 ~]#vim /etc/containerd/config.toml
 #在此行下面加两行
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
 endpoint = ["https://registry.aliyuncs.com"]
-```
 
-```text
 [root@node4 ~]#systemctl daemon-reload
 [root@node4 ~]#systemctl status  containerd
 ● containerd.service - containerd container runtime
@@ -672,8 +529,7 @@ active
 ##### 3.5.4.2.3 安装 CNI 插件工具
 
 虽然 cri-containerd-cni-1.6.8-linux-amd64.tar.gz 包含了cni，但是无法和kubernetes 兼容，在创建Pod时会出错下面错误日志。
-
-```text
+```bash
 [root@node2 ~]#cat /var/log/syslog
 Sep  4 20:04:57 node4 containerd[62104]: time="2022-09-
 04T20:04:57.394576089+08:00" level=info msg="RunPodSandbox for
@@ -731,15 +587,12 @@ podUID=5dfc305b-d641-4d2c-8199-7655b7a1ba32
 ```
 
 范例：解决CNI问题
-
-```text
+```bash
 #下载链接：https://github.com/containernetworking/plugins/releases
 [root@node2 ~]#wget
 https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-
 plugins-linux-amd64-v1.1.1.tgz
-```
 
-```text
 #覆盖原有的文件
 [root@node2 ~]#tar xf cni-plugins-linux-amd64-v1.1.1.tgz  -C /opt/cni/bin/
 ```
@@ -748,31 +601,26 @@ plugins-linux-amd64-v1.1.1.tgz
 
 通过国内镜像站点阿里云安装的参考链接：
 
-```text
-https://developer.aliyun.com/mirror/kubernetes
-```
+
+- <https://developer.aliyun.com/mirror/kubernetes>
+
 
 范例：Ubuntu24.04 基于清华源安装
 
-```text
-https://mirrors.tuna.tsinghua.edu.cn/help/kubernetes/
-```
 
-```text
+- <https://mirrors.tuna.tsinghua.edu.cn/help/kubernetes/>
+
+```bash
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | gpg --
 dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-```
 
-```text
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]
 https://mirrors.tuna.tsinghua.edu.cn/kubernetes/core:/stable:/v1.32/deb/ /'  >
 /etc/apt/sources.list.d/kubernetes.list
 apt update
 #安装最新版
 apt install -y  kubeadm kubelet kubectl
-```
 
-```text
 #安装指定版本
 K8S_RELEASE_VERSION=1.32.3
 apt install -y  kubeadm=${K8S_RELEASE_VERSION}-1.1
@@ -780,8 +628,7 @@ kubelet=${K8S_RELEASE_VERSION}-1.1 kubectl=${K8S_RELEASE_VERSION}-1.1
 ```
 
 范例: Ubuntu 安装
-
-```text
+```bash
 apt-get update && apt-get install -y apt-transport-https
 #新版
 K8S_VERSION=1.29
@@ -791,26 +638,18 @@ gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]
 https://mirrors.aliyun.com/kubernetes-new/core/stable/v${K8S_VERSION}/deb/ /" |
 tee /etc/apt/sources.list.d/kubernetes.list
-```
 
-```text
 #旧版
 curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
-```
 
-```text
 for i in {102..106};do scp /etc/apt/sources.list.d/kubernetes.list
 10.0.0.$i:/etc/apt/sources.list.d/;done
-```
 
-```text
 apt-get update
-```
 
-```text
 #查看版本
 apt-cache madison kubeadm|head
 kubeadm |  1.25.0-00 | https://mirrors.aliyun.com/kubernetes/apt kubernetes-
@@ -821,9 +660,7 @@ kubeadm |  1.24.1-00 | https://mirrors.aliyun.com/kubernetes/apt kubernetes-
 xenial/main amd64 Packages
 kubeadm |  1.24.0-00 | https://mirrors.aliyun.com/kubernetes/apt kubernetes-
 xenial/main amd64 Packages
-```
 
-```text
 #安装指定版本
 #新版
 K8S_RELEASE_VERSION=1.29.3
@@ -831,16 +668,13 @@ apt install -y  kubeadm=${K8S_RELEASE_VERSION}-1.1
 kubelet=${K8S_RELEASE_VERSION}-1.1 kubectl=${K8S_RELEASE_VERSION}-1.1
 #旧版
 apt install -y  kubeadm=1.25.0-00 kubelet=1.25.0-00 kubectl=1.25.0-00
-```
 
-```text
 #安装最新版本
 apt-get install -y kubelet kubeadm kubectl
 ```
 
 ### 3.5.6 提前准备 Kubernetes 初始化所需镜像(可选)
-
-```text
+```bash
 ##Kubernetes-v1.24.X查看需要下载的镜像,发现k8s.gcr.io无法从国内直接访问
 [root@master1 ~]#kubeadm  config images list
 k8s.gcr.io/kube-apiserver:v1.25.0
@@ -850,9 +684,7 @@ k8s.gcr.io/kube-proxy:v1.25.0
 k8s.gcr.io/pause:3.7
 k8s.gcr.io/etcd:3.5.3-0
 k8s.gcr.io/coredns/coredns:v1.8.6
-```
 
-```text
 #Kubernetes-v1.25.0下载镜像地址调整为 registry.k8s.io,但仍然无法从国内直接访问
 [root@master1 ~]#kubeadm  config images list
 registry.k8s.io/kube-apiserver:v1.25.0
@@ -862,9 +694,7 @@ registry.k8s.io/kube-proxy:v1.25.0
 registry.k8s.io/pause:3.8
 registry.k8s.io/etcd:3.5.4-0
 registry.k8s.io/coredns/coredns:v1.9.3
-```
 
-```text
 #查看国内镜像
 [root@master1 ~]#kubeadm  config images list  --image-repository
 registry.aliyuncs.com/google_containers
@@ -875,15 +705,11 @@ registry.aliyuncs.com/google_containers/kube-proxy:v1.24.4
 registry.aliyuncs.com/google_containers/pause:3.7
 registry.aliyuncs.com/google_containers/etcd:3.5.3-0
 registry.aliyuncs.com/google_containers/coredns:v1.8.6
-```
 
-```text
 #从国内镜像站拉取镜像
 [root@master1 ~]#kubeadm  config images pull --kubernetes-version=v1.25.0 --
 image-repository registry.aliyuncs.com/google_containers
-```
 
-```text
 #查看拉取的镜像
 [root@master1 ~]#docker images
 REPOSITORY                                                        TAG       IMAGE
@@ -902,9 +728,7 @@ registry.aliyuncs.com/google_containers/pause                     3.7
 221177c6082a   5 months ago    711kB
 registry.aliyuncs.com/google_containers/coredns                   v1.8.6
 a4ca41631cc7   10 months ago   46.8MB
-```
 
-```text
 #导出镜像
 [root@master1 ~]#docker image save `docker image ls --format "{{.Repository}}:
 {{.Tag}}"` -o k8s-images-v1.25.0.tar
@@ -915,32 +739,8 @@ a4ca41631cc7   10 months ago   46.8MB
 
 **kubeadm init  命令参考说明**
 
-```text
---kubernetes-version：#kubernetes程序组件的版本号，它必须要与安装的kubelet程序包的版本号
-相同
---control-plane-endpoint：#多主节点必选项,用于指定控制平面的固定访问地址，可是IP地址或DNS名
-称，会被用于集群管理员及集群组件的kubeconfig配置文件的API Server的访问地址,如果是单主节点的控
-制平面部署时不使用该选项,注意:kubeadm 不支持将没有 --control-plane-endpoint 参数的单个控制
-平面集群转换为高可用性集群。
---pod-network-cidr：#Pod网络的地址范围，其值为CIDR格式的网络地址，通常情况下Flannel网络插
-件的默认为10.244.0.0/16，Calico网络插件的默认值为192.168.0.0/16
---service-cidr：#Service的网络地址范围，其值为CIDR格式的网络地址，默认为10.96.0.0/12；通
-常，仅Flannel一类的网络插件需要手动指定该地址
---service-dns-domain string #指定k8s集群域名，默认为cluster.local，会自动通过相应的DNS
-服务实现解析
---apiserver-advertise-address：#API 服务器所公布的其正在监听的 IP 地址。如果未设置，则使
-用默认网络接口。apiserver通告给其他组件的IP地址，一般应该为Master节点的用于集群内部通信的IP地
-址，0.0.0.0表示此节点上所有可用地址,非必选项
---image-repository string #设置镜像仓库地址，默认为 k8s.gcr.io,此地址国内可能无法访问,可
-以指向国内的镜像地址
---token-ttl #共享令牌（token）的过期时长，默认为24小时，0表示永不过期；为防止不安全存储等原因
-导致的令牌泄露危及集群安全，建议为其设定过期时长。未设定该选项时，在token过期后，若期望再向集群
-中加入其它节点，可以使用如下命令重新创建token，并生成节点加入命令。kubeadm token create --
-print-join-command
---ignore-preflight-errors=Swap” #若各节点未禁用Swap设备，还需附加选项“从而让kubeadm忽略
-该错误
---upload-certs #将控制平面证书上传到 kubeadm-certs Secret
-```
+
+--kubernetes-version：#kubernetes程序组件的版本号，它必须要与安装的kubelet程序包的版本号相同--control-plane-endpoint：#多主节点必选项,用于指定控制平面的固定访问地址，可是IP地址或DNS名称，会被用于集群管理员及集群组件的kubeconfig配置文件的API Server的访问地址,如果是单主节点的控制平面部署时不使用该选项,注意:kubeadm 不支持将没有 --control-plane-endpoint 参数的单个控制平面集群转换为高可用性集群。--pod-network-cidr：#Pod网络的地址范围，其值为CIDR格式的网络地址，通常情况下Flannel网络插件的默认为10.244.0.0/16，Calico网络插件的默认值为192.168.0.0/16--service-cidr：#Service的网络地址范围，其值为CIDR格式的网络地址，默认为10.96.0.0/12；通常，仅Flannel一类的网络插件需要手动指定该地址--service-dns-domain string #指定k8s集群域名，默认为cluster.local，会自动通过相应的DNS 服务实现解析--apiserver-advertise-address：#API 服务器所公布的其正在监听的 IP 地址。如果未设置，则使用默认网络接口。apiserver通告给其他组件的IP地址，一般应该为Master节点的用于集群内部通信的IP地址，0.0.0.0表示此节点上所有可用地址,非必选项--image-repository string #设置镜像仓库地址，默认为 k8s.gcr.io,此地址国内可能无法访问,可以指向国内的镜像地址--token-ttl #共享令牌（token）的过期时长，默认为24小时，0表示永不过期；为防止不安全存储等原因导致的令牌泄露危及集群安全，建议为其设定过期时长。未设定该选项时，在token过期后，若期望再向集群中加入其它节点，可以使用如下命令重新创建token，并生成节点加入命令。kubeadm token create --print-join-command--ignore-preflight-errors=Swap” #若各节点未禁用Swap设备，还需附加选项“从而让kubeadm忽略该错误--upload-certs #将控制平面证书上传到 kubeadm-certs Secret
 
 ```text
 --cri-socket  #v1.24版之后指定连接cri的socket文件路径,注意;不同的CRI连接文件不同
@@ -951,8 +751,7 @@ print-join-command
 ```
 
 范例: 初始化集群
-
-```text
+```bash
 #新版
 [root@master1 ~]#K8S_RELEASE_VERSION=1.33.3
 [root@master1 ~]#K8S_RELEASE_VERSION=1.33.1
@@ -960,77 +759,53 @@ print-join-command
 [root@master1 ~]#K8S_RELEASE_VERSION=1.30.2
 [root@master1 ~]#K8S_RELEASE_VERSION=1.30.0
 [root@master1 ~]#kubeadm init --kubernetes-version=v${K8S_RELEASE_VERSION} --
-control-plane-endpoint="kubeapi.wang.org"   --pod-network-cidr=10.244.0.0/16 --
+control-plane-endpoint="kubeapi.bowen.org"   --pod-network-cidr=10.244.0.0/16 --
 service-cidr=10.96.0.0/12 --token-ttl=0  --image-repository
 registry.aliyuncs.com/google_containers  --upload-certs
 .....
 [addons] Applied essential addon: kube-proxy
-```
 
-```text
 Your Kubernetes control-plane has initialized successfully!
-```
 
-```text
 To start using your cluster, you need to run the following as a regular user:
-```
 
-```text
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
-```text
 Alternatively, if you are the root user, you can run:
-```
 
-```text
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
-```text
-You should now deploy a pod network to the cluster.
-Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-https://kubernetes.io/docs/concepts/cluster-administration/addons/
-```
+
+You should now deploy a pod network to the cluster. Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+
+<https://kubernetes.io/docs/concepts/cluster-administration/addons/>
 
 ```text
 You can now join any number of control-plane nodes running the following command
 on each as root:
-```
 
-```text
-kubeadm join kubeapi.wang.org:6443 --token BOOTSTRAP_TOKEN \
+kubeadm join kubeapi.bowen.org:6443 --token BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH \
 --control-plane --certificate-key
 CERTIFICATE_KEY
 ```
 
-```text
-Please note that the certificate-key gives access to cluster sensitive data, keep
-it secret!
-As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you
-can use
-"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
-```
 
-```text
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret! As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
+
+```bash
 Then you can join any number of worker nodes by running the following on each as
 root:
-```
 
-```text
-kubeadm join kubeapi.wang.org:6443 --token BOOTSTRAP_TOKEN \
-```
+kubeadm join kubeapi.bowen.org:6443 --token BOOTSTRAP_TOKEN \
 
-```text
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH
-```
 
-```text
 [root@master1 ~]#crictl images
 WARN[0000] Config "/etc/crictl.yaml" does not exist, trying next:
 "/usr/bin/crictl.yaml"
@@ -1054,93 +829,66 @@ registry.aliyuncs.com/google_containers/kube-scheduler            v1.32.3
 b4260bf5078ab       20.7MB
 registry.aliyuncs.com/google_containers/pause                     3.10
 873ed75102791       320kB
-```
 
-```text
 #新版
 [root@master1 ~]#K8S_RELEASE_VERSION=1.29.3
-[root@master1 ~]#kubeadm init --control-plane-endpoint="kubeapi.wang.org" --
+[root@master1 ~]#kubeadm init --control-plane-endpoint="kubeapi.bowen.org" --
 kubernetes-version=v${K8S_RELEASE_VERSION}  --pod-network-cidr=10.244.0.0/16 --
 service-cidr=10.96.0.0/12 --token-ttl=0  --image-repository
 registry.aliyuncs.com/google_containers  --upload-certs
-```
 
-```text
 #旧版
 [root@master1 ~]#K8S_RELEASE_VERSION=1.25.0
-[root@master1 ~]#kubeadm init --control-plane-endpoint="kubeapi.wang.org" --
+[root@master1 ~]#kubeadm init --control-plane-endpoint="kubeapi.bowen.org" --
 kubernetes-version=v${K8S_RELEASE_VERSION}  --pod-network-cidr=10.244.0.0/16 --
 service-cidr=10.96.0.0/12 --token-ttl=0  --image-repository
 registry.aliyuncs.com/google_containers  --upload-certs
-```
 
-```text
 [addons] Applied essential addon: CoreDNS
 [addons] Applied essential addon: kube-proxy
-```
 
-```text
 Your Kubernetes control-plane has initialized successfully!
-```
 
-```text
 To start using your cluster, you need to run the following as a regular user:
-```
 
-```text
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
-```text
 Alternatively, if you are the root user, you can run:
-```
 
-```text
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
-```text
-You should now deploy a pod network to the cluster.
-Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-https://kubernetes.io/docs/concepts/cluster-administration/addons/
-```
+
+You should now deploy a pod network to the cluster. Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+
+<https://kubernetes.io/docs/concepts/cluster-administration/addons/>
 
 ```text
 You can now join any number of the control-plane node running the following
 command on each as root:
-```
 
-```text
-kubeadm join kubeapi.wang.org:6443 --token BOOTSTRAP_TOKEN \
+kubeadm join kubeapi.bowen.org:6443 --token BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH \
 --control-plane --certificate-key
 CERTIFICATE_KEY
 ```
 
-```text
-Please note that the certificate-key gives access to cluster sensitive data, keep
-it secret!
-As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you
-can use
-"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
-```
+
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret! As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
 
 ```text
 Then you can join any number of worker nodes by running the following on each as
 root:
-```
 
-```text
-kubeadm join kubeapi.wang.org:6443 --token BOOTSTRAP_TOKEN \
+kubeadm join kubeapi.bowen.org:6443 --token BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH
 ```
 
 如果想重新初始化,可以执行下面
-
 ```text
 #如果有工作节点,先在工作节点执行,再在control节点执行下面操作
 kubeadm reset -f
@@ -1153,8 +901,7 @@ reboot
 kubectl是kube-apiserver的命令行客户端程序，实现了除系统部署之外的几乎全部的管理操作，是kubernetes管理员使用最多的命令之一。kubectl需经由API server认证及授权后方能执行相应的管理操作，kubeadm部署的集群为其生成了一个具有管理员权限的认证配置文件/etc/kubernetes/admin.conf，它可由kubectl通过默认的“$HOME/.kube/config”的路径进行加载。当然，用户也可在kubectl命令上使用--kubeconfig选项指定一个别的位置。
 
 下面复制认证为Kubernetes系统管理员的配置文件至目标用户（例如当前用户root）的家目录下：
-
-```text
+```bash
 #可复制4.8的结果执行下面命令
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -1164,7 +911,6 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ### 3.5.9 实现 kubectl 命令补全
 
 kubectl 命令功能丰富,默认不支持命令补会,可以用下面方式实现。
-
 ```text
 kubectl completion bash > /etc/profile.d/kubectl_completion.sh
 . /etc/profile.d/kubectl_completion.sh
@@ -1180,63 +926,42 @@ Kubernetes系统上Pod网络的实现依赖于第三方插件进行，这类插�
 提示：下载flanneld的地址为 https://github.com/flannel-io/flannel/releases
 
 随后，在初始化的第一个master节点k8s-master01上运行如下命令，向Kubernetes部署kube-flannel。
-
-```text
+```bash
 #默认没有网络插件,所以显示如下状态
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS     ROLES           AGE   VERSION
-master1.wang.org   NotReady   control-plane   17m   v1.25.0
-```
+master1.bowen.org   NotReady   control-plane   17m   v1.25.0
 
-```text
 [root@master1 ~]#kubectl apply -f https://raw.githubusercontent.com/flannel-
 io/flannel/master/Documentation/kube-flannel.yml
-```
 
-```text
 #稍等一会儿,可以看到下面状态
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS   ROLES           AGE   VERSION
-master1.wang.org   Ready    control-plane   23m   v1.25.0
+master1.bowen.org   Ready    control-plane   23m   v1.25.0
 ```
 
 ### 3.5.11 将所有 worker 节点加入 Kubernetes 集群
 
 在所有worker节点执行下面操作,加上集群
-
-```text
+```bash
 #复制上面第4.8步的执行结果,额外添加--cri-socket选项修改为下面执行
-[root@node1 ~]#kubeadm join kubeapi.wang.org:6443 --token
+[root@node1 ~]#kubeadm join kubeapi.bowen.org:6443 --token
 BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH  --cri-
 socket unix:///run/cri-dockerd.sock
 ```
 
-```text
-[preflight] Running pre-flight checks
-[preflight] Reading configuration from the cluster...
-[preflight] FYI: You can look at this config file with 'kubectl -n kube-system
-get cm kubeadm-config -o yaml'
-[kubelet-start] Writing kubelet configuration to file
-"/var/lib/kubelet/config.yaml"
-[kubelet-start] Writing kubelet environment file with flags to file
-"/var/lib/kubelet/kubeadm-flags.env"
-[kubelet-start] Starting the kubelet
-[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
-```
 
-```text
-This node has joined the cluster:
-* Certificate signing request was sent to apiserver and a response was received.
-* The Kubelet was informed of the new secure connection details.
-```
+[preflight] Running pre-flight checks[preflight] Reading configuration from the cluster...[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'[kubelet-start] Writing kubelet configuration to file"/var/lib/kubelet/config.yaml"[kubelet-start] Writing kubelet environment file with flags to file"/var/lib/kubelet/kubeadm-flags.env"[kubelet-start] Starting the kubelet[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
 
-```text
+
+This node has joined the cluster:* Certificate signing request was sent to apiserver and a response was received.* The Kubelet was informed of the new secure connection details.
+
+```bash
 Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
-```
 
-```text
 [root@node1 ~]#docker images
 REPOSITORY                                           TAG       IMAGE ID
 CREATED         SIZE
@@ -1250,9 +975,7 @@ registry.aliyuncs.com/google_containers/pause        3.7       221177c6082a   5
 months ago    711kB
 registry.aliyuncs.com/google_containers/coredns      v1.8.6    a4ca41631cc7   10
 months ago   46.8MB
-```
 
-```text
 #可以将镜像导出到其它worker节点实现加速
 [root@node1 ~]#docker image save `docker image ls --format "{{.Repository}}:
 {{.Tag}}"` -o k8s-images-v1.25.0.tar
@@ -1260,15 +983,13 @@ months ago   46.8MB
 [root@node1 ~]#scp k8s-images-v1.25.0.tar.gz node2:
 [root@node1 ~]#scp k8s-images-v1.25.0.tar.gz node3:
 [root@node2 ~]#docker load -i k8s-images-v1.25.0.tar.gz
-```
 
-```text
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS   ROLES           AGE   VERSION
-master1.wang.org   Ready    control-plane   58m   v1.25.0
-node1.wang.org     Ready    <none>          44m   v1.25.0
-node2.wang.org     Ready    <none>          18m   v1.25.0
-node3.wang.org     Ready    <none>          65s   v1.25.0
+master1.bowen.org   Ready    control-plane   58m   v1.25.0
+node1.bowen.org     Ready    <none>          44m   v1.25.0
+node2.bowen.org     Ready    <none>          18m   v1.25.0
+node3.bowen.org     Ready    <none>          65s   v1.25.0
 ```
 
 ### 3.5.12 测试应用编排及服务访问
@@ -1276,53 +997,40 @@ node3.wang.org     Ready    <none>          65s   v1.25.0
 至此一个master附带有三个worker的kubernetes集群基础设施已经部署完成，用户随后即可测试其核心功能。
 
 demoapp是一个web应用,可将demoapp以Pod的形式编排运行于集群之上，并通过在集群外部进行访问：
-
-```text
+```bash
 [root@master1 ~]#kubectl create deployment demoapp --
 image=ikubernetes/demoapp:v1.0 --replicas=3
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                       READY   STATUS    RESTARTS   AGE     IP           NODE
 NOMINATED NODE   READINESS GATES
 demoapp-78b49597cf-7pdww   1/1     Running   0          2m39s   10.244.2.2
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 demoapp-78b49597cf-wcjkp   1/1     Running   0          2m39s   10.244.2.3
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 demoapp-78b49597cf-zmlmv   1/1     Running   0          2m39s   10.244.1.4
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#curl 10.244.2.2
 iKubernetes demoapp v1.0 !! ClientIP: 10.244.0.0, ServerName: demoapp-
 78b49597cf-7pdww, ServerIP: 10.244.2.2!
-```
 
-```text
 [root@master1 ~]#curl 10.244.2.3
 iKubernetes demoapp v1.0 !! ClientIP: 10.244.0.0, ServerName: demoapp-
 78b49597cf-wcjkp, ServerIP: 10.244.2.3!
 [root@master1 ~]#curl 10.244.1.4
 iKubernetes demoapp v1.0 !! ClientIP: 10.244.0.0, ServerName: demoapp-
 78b49597cf-zmlmv, ServerIP: 10.244.1.4!
-```
 
-```text
 #使用如下命令了解Service对象demoapp使用的NodePort，格式:<集群端口>:<POd端口>,以便于在集群
 外部进行访问
 [root@master1 ~]#kubectl create service nodeport demoapp --tcp=80:80
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
 demoapp      NodePort    10.110.101.190   <none>        80:30037/TCP   102s
 kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP        67m
-```
 
-```text
 [root@master1 ~]#curl 10.110.101.190
 iKubernetes demoapp v1.0 !! ClientIP: 10.244.0.0, ServerName: demoapp-
 78b49597cf-wcjkp, ServerIP: 10.244.2.3!
@@ -1332,9 +1040,7 @@ iKubernetes demoapp v1.0 !! ClientIP: 10.244.0.0, ServerName: demoapp-
 [root@master1 ~]#curl 10.110.101.190
 iKubernetes demoapp v1.0 !! ClientIP: 10.244.0.0, ServerName: demoapp-
 78b49597cf-7pdww, ServerIP: 10.244.2.2!
-```
 
-```text
 #用户可以于集群外部通过“http://NodeIP:30037”这个URL访问demoapp上的应用，例如于集群外通过浏
 览器访问“http://<kubernetes-node>:30037”。
 [root@rocky8 ~]#curl 10.0.0.100:30037
@@ -1346,9 +1052,7 @@ iKubernetes demoapp v1.0 !! ClientIP: 10.244.1.0, ServerName: demoapp-
 [root@rocky8 ~]#curl 10.0.0.102:30037
 iKubernetes demoapp v1.0 !! ClientIP: 10.244.2.0, ServerName: demoapp-
 78b49597cf-zmlmv, ServerIP: 10.244.1.4!
-```
 
-```text
 #扩容
 [root@master1 ~]#kubectl scale deployment demoapp --replicas 5
 deployment.apps/demoapp scaled
@@ -1359,29 +1063,21 @@ demoapp-78b49597cf-45jd8   1/1     Running   0          9s
 demoapp-78b49597cf-49js5   1/1     Running   0          41m
 demoapp-78b49597cf-9lw2z   1/1     Running   0          9s
 demoapp-78b49597cf-jtwkt   1/1     Running   0          41m
-```
 
-```text
 #缩容
 [root@master1 ~]#kubectl scale deployment demoapp --replicas 2
 deployment.apps/demoapp scaled
-```
 
-```text
 #可以看到销毁pod的过程
 [root@master1 ~]#kubectl get pod
 NAME                       READY   STATUS        RESTARTS   AGE
 demoapp-78b49597cf-44hqj   1/1     Terminating   0          41m
-```
 
-```text
 demoapp-78b49597cf-45jd8   1/1     Terminating   0          53s
 demoapp-78b49597cf-49js5   1/1     Running       0          41m
 demoapp-78b49597cf-9lw2z   1/1     Terminating   0          53s
 demoapp-78b49597cf-jtwkt   1/1     Running       0          41m
-```
 
-```text
 #再次查看,最终缩容成功
 [root@master1 ~]#kubectl get pod
 NAME                       READY   STATUS    RESTARTS   AGE
@@ -1390,31 +1086,26 @@ demoapp-78b49597cf-jtwkt   1/1     Running   0          42m
 ```
 
 问题：如果出现创建的Pod在10.88.0.0/网段，导致无法访问Pod。
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod -o wide
 NAME                       READY   STATUS    RESTARTS   AGE     IP           NODE
 NOMINATED NODE   READINESS GATES
 demoapp-55c5f88dcb-8jqfv   1/1     Running   0          5m25s   10.88.0.2
-node4.wang.org   <none>           <none>
-```
+node4.bowen.org   <none>           <none>
 
-```text
 [root@node4 ~]#rm -f /etc/cni/net.d/10-containerd-net.conflis
 [root@node4 ~]#reboot
 ```
 
 ### 3.5.13 扩展 Kubernetes 集群为多主模式
-
 ```text
 https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-
 availability/#manual-certs
 ```
 
 在 master2 和 master3 重复上面的 4.2-4.5 步后,再执行下面操作加入集群。
-
-```text
-[root@master2 ~]#kubeadm join kubeapi.wang.org:6443 --token
+```bash
+[root@master2 ~]#kubeadm join kubeapi.bowen.org:6443 --token
 BOOTSTRAP_TOKEN \
 --discovery-token-ca-cert-hash
 sha256:CA_CERT_HASH --
@@ -1422,57 +1113,42 @@ control-plane \
 --certificate-key
 CERTIFICATE_KEY \
 --cri-socket unix:///run/cri-dockerd.sock
-```
 
-```text
 This node has joined the cluster and a new control plane instance was created:
 ```
 
-```text
-* Certificate signing request was sent to apiserver and approval was received.
-* The Kubelet was informed of the new secure connection details.
-* Control plane label and taint were applied to the new node.
-* The Kubernetes control plane instances scaled up.
-* A new etcd member was added to the local/stacked etcd cluster.
-```
 
-```text
+* Certificate signing request was sent to apiserver and approval was received.* The Kubelet was informed of the new secure connection details.* Control plane label and taint were applied to the new node.* The Kubernetes control plane instances scaled up.* A new etcd member was added to the local/stacked etcd cluster.
+
+```bash
 To start administering your cluster from this node, you need to run the
 following as a regular user:
-```
 
-```text
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
-```text
 Run 'kubectl get nodes' to see this node join the cluster.
-```
 
-```text
 [root@master2 ~]#mkdir -p $HOME/.kube
 [root@master2 ~]#sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 [root@master2 ~]#sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
-```text
 [root@master1 ~]#kubectl get nodes
 NAME               STATUS     ROLES           AGE     VERSION
-master1.wang.org   Ready      control-plane   29m     v1.25.0
-master2.wang.org   Ready      control-plane   26m     v1.25.0
-master3.wang.org   Ready      control-plane   3m48s   v1.25.0
-node1.wang.org     Ready      <none>          19m     v1.25.0
-node2.wang.org     Ready      <none>          18m     v1.25.0
-node3.wang.org     Ready      <none>          18m     v1.25.0
+master1.bowen.org   Ready      control-plane   29m     v1.25.0
+master2.bowen.org   Ready      control-plane   26m     v1.25.0
+master3.bowen.org   Ready      control-plane   3m48s   v1.25.0
+node1.bowen.org     Ready      <none>          19m     v1.25.0
+node2.bowen.org     Ready      <none>          18m     v1.25.0
+node3.bowen.org     Ready      <none>          18m     v1.25.0
 ```
 
 浏览器访问验证,用户名密码: admin:123456。
 
-```text
-http://kubeapi.wang.org:8888/status
-```
+
+- <http://kubeapi.bowen.org:8888/status>
+
 
 ![原 PDF 第 139 页插图](assets/Kubernetes架构和部署/img-9878d3f017c7f1ed.png)
 
@@ -1486,9 +1162,8 @@ containerd 的客户端工具有ctr,crictl和 nerdctl。
 
 ctr 是由 containerd 提供的一个客户端工具。crictl 是 CRI 兼容的容器运行时命令行接口，和containerd无关，可以使用它来检查和调试 k8s 节点上的容器运行时和应用程序。 由 kubernetes-sigs (Special Interest Groups)提供。
 
-```text
-https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/
-```
+
+- <https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/>
 
 ```text
 cat  /etc/crictl.yaml
@@ -1500,12 +1175,11 @@ debug: true
 
 **SIGs 介绍**
 
-```text
-https://github.com/kubernetes-sigs
-Special Interest Groups (SIGs) 是 Kubernetes 社区内的子组，专注于 Kubernetes 开发的特
-定领域或领域。它们由对项目的特定方面有共同兴趣的个人和组织组成。SIG 负责推动设计提案、审查和批准
-新功能、维护和发展现有功能，以及为更广泛的 Kubernetes 社区提供指导和支持。
-```
+
+<https://github.com/kubernetes-sigs>
+
+Special Interest Groups (SIGs) 是 Kubernetes 社区内的子组，专注于 Kubernetes 开发的特定领域或领域。它们由对项目的特定方面有共同兴趣的个人和组织组成。SIG 负责推动设计提案、审查和批准新功能、维护和发展现有功能，以及为更广泛的 Kubernetes 社区提供指导和支持。
+
 
 ![原 PDF 第 140 页插图](assets/Kubernetes架构和部署/img-0e4a40ecfa1536ea.png)
 
@@ -1566,19 +1240,14 @@ nerdctl 官方发布包包含两个安装版本:
 ##### 3.5.14.2.2 nerdctl 安装和使用
 
 ###### 3.5.14.2.2.1 在单机使用 nerdctl 和 containerd 代替 Docker 服务器和客户端
-
-```text
+```bash
 #https://github.com/containerd/nerdctl/releases
-```
 
-```text
 #在新主机使用nerdctl/代替docker
 [root@ubuntu2004 ~]#wget
 https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-full-
 0.22.2-linux-amd64.tar.gz
-```
 
-```text
 #查看文件内容
 [root@ubuntu2004 ~]#tar tf nerdctl-full-0.22.2-linux-amd64.tar.gz
 bin/
@@ -1626,9 +1295,7 @@ libexec/cni/macvlan
 libexec/cni/portmap
 libexec/cni/ptp
 libexec/cni/sbr
-```
 
-```text
 libexec/cni/static
 libexec/cni/tuning
 libexec/cni/vlan
@@ -1660,41 +1327,20 @@ share/doc/nerdctl/docs/stargz.md
 share/doc/nerdctl-full/
 share/doc/nerdctl-full/README.md
 share/doc/nerdctl-full/SHA256SUMS
-```
 
-```text
 [root@ubuntu2004 ~]#tar Cxvf /usr/local nerdctl-full-0.22.2-linux-amd64.tar.gz
 [
 #查看用法
 [root@ubuntu2004 ~]#nerdctl --help
 nerdctl is a command line interface for containerd
-```
 
-```text
 Config file ($NERDCTL_TOML): /etc/nerdctl/nerdctl.toml
 ```
 
-```text
-Usage:
-nerdctl [flags]
-nerdctl [command]
-Management commands:
-apparmor    Manage AppArmor profiles
-builder     Manage builds
-container   Manage containers
-image       Manage images
-ipfs        Distributing images on IPFS
-namespace   Manage containerd namespaces
-network     Manage networks
-system      Manage containerd
-volume      Manage volumes
-Commands:
-build       Build an image from a Dockerfile. Needs buildkitd to be running.
-commit      Create a new image from a container's changes
-completion  Generate the autocompletion script for the specified shell
-```
 
-```text
+Usage: nerdctl [flags] nerdctl [command] Management commands: apparmor    Manage AppArmor profiles builder     Manage builds container   Manage containers image       Manage images ipfs        Distributing images on IPFS namespace   Manage containerd namespaces network     Manage networks system      Manage containerd volume      Manage volumes Commands: build       Build an image from a Dockerfile. Needs buildkitd to be running. commit      Create a new image from a container's changes completion  Generate the autocompletion script for the specified shell
+
+```sql
 compose     Compose
 cp          Copy files/folders between a running container and the local
 filesystem.
@@ -1753,9 +1399,7 @@ prefix [$CONTAINERD_ADDRESS] (default "/run/containerd/containerd.sock")
 (default "/opt/cni/bin")
 --data-root string         Root directory of persistent nerdctl state
 (managed by nerdctl, not by containerd) (default "/var/lib/nerdctl")
-```
 
-```text
 --debug                    debug mode
 --debug-full               debug mode (with full output)
 -h, --help                     help for nerdctl
@@ -1774,9 +1418,7 @@ Docker, "k8s.io" for Kubernetes [$CONTAINERD_NAMESPACE] (default "default")
 --storage-driver string    Alias of --snapshotter (default "overlayfs")
 -v, --version                  version for nerdctl
 Use "nerdctl [command] --help" for more information about a command.
-```
 
-```text
 [root@ubuntu2004 ~]#nerdctl run -d --name nginx -p 80:80 nginx:alpine
 [root@ubuntu2004 ~]#nerdctl ps
 CONTAINER ID    IMAGE                             COMMAND
@@ -1787,19 +1429,14 @@ seconds ago    Up        0.0.0.0:80->80/tcp    nginx
 ```
 
 ###### 3.5.14.2.2.2 在 Kubernetes 集群中使用 nerdctl 客户端
-
-```text
+```bash
 #在已安装并使用containerd服务的kubernetes环境中安装nerdctl
-```
 
-```text
 #加速下载
 [root@master1 ~]#wget
 https://mirror.ghproxy.com/https://github.com/containerd/nerdctl/releases/downlo
 ad/v1.7.6/nerdctl-1.7.6-linux-amd64.tar.gz
-```
 
-```text
 #直接下载
 [root@node2 ~]#wget
 https://github.com/containerd/nerdctl/releases/download/v1.7.6/nerdctl-1.7.6-
@@ -1807,36 +1444,26 @@ linux-amd64.tar.gz
 [root@node2 ~]#wget
 https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-0.22.2-
 linux-amd64.tar.gz
-```
 
-```text
 #查看文件内容
 [root@node2 ~]#tar tf nerdctl-0.22.2-linux-amd64.tar.gz
 nerdctl
 containerd-rootless-setuptool.sh
 containerd-rootless.sh
-```
 
-```text
 #安装至指定目录
 [root@node2 ~]#tar xf nerdctl-0.22.2-linux-amd64.tar.gz  -C /usr/local/bin/
 [root@node2 ~]#ls /usr/local/bin/
 containerd-rootless-setuptool.sh  containerd-rootless.sh  nerdctl
-```
 
-```text
 #注意：kubernetes所有容器默认在k8s.io名称空间，因此需要指定k8s.io名称空间才能查看到k8s的容器
 #加-n k8s.io 选项才能查看到k8s的名称空间的镜像和容器
-```
 
-```text
 #方法1：查看k8s名称空间的镜像
 [root@node2 ~]#nerdctl -n k8s.io images
 #查看k8s名称空间的容器
 [root@node2 ~]#nerdctl -n k8s.io ps
-```
 
-```text
 #方法2：创建配置文件指定k8s.io为默认名称空间，执行命令就可以省略-n k8s.io
 [root@node2 ~]#mkdir /etc/nerdctl/
 [root@node2 ~]#vim /etc/nerdctl/nerdctl.toml
@@ -1844,36 +1471,24 @@ namespace = "k8s.io" # 指定默认的名称空间
 debug = false
 debug_full = false
 insecure_registry = true  # 启用非安全的镜像仓库
-```
 
-```text
 #查看指定名称空间的镜像
 nerdctl -n k8s.io images
-```
 
-```text
 #查看默认名称空间的镜像
 [root@node2 ~]#nerdctl images
-```
 
-```text
 #查看默认名称空间的容器
 [root@node2 ~]#nerdctl ps
-```
 
-```text
 #导入镜像到默认的名称空间
 [root@master1 ~]#nerdctl  load -i flannel-v0.26.7.tar
 #导入镜像到指定的名称空间
 [root@master1 ~]#nerdctl -n k8s.io load -i flannel-v0.26.7.tar
-```
 
-```text
 #如果是使用apt安装的cni插件创建容器时会出下面错误
 [root@node2 ~]#nerdctl run -d --name nginx -p 80:80 nginx:alpine
-```
 
-```text
 #新版已经无此问题
 FATA[0010] failed to create shim: OCI runtime create failed: runc create failed:
 unable to start container process: error during container init: error running
@@ -1885,9 +1500,7 @@ Failed to write to log, write
 /var/lib/nerdctl/1935db59/containers/default/206d99263af985df7dce896e29451d8ee31
 234fd0a55b19eb3bde39d2b1bfdd9/oci-hook.createRuntime.log: file already closed:
 unknown
-```
 
-```text
 #containerd指定的cni的目录为/opt/cni/bin
 [root@node2 ~]#grep cni /etc/containerd/config.toml
 [plugins."io.containerd.grpc.v1.cri".cni]
@@ -1899,37 +1512,25 @@ cni_conf_dir = ""
 cni_max_conf_num = 0
 cni_conf_dir = ""
 cni_max_conf_num = 0
-```
 
-```text
 #移走原有文件
 [root@node2 ~]#ls /opt/cni/bin/
-```
 
-```text
 bandwidth  dhcp   firewall  host-device  ipvlan    macvlan  ptp  static  tuning
 vrf
 bridge     dummy  flannel   host-local   loopback  portmap  sbr  tap     vlan
 [root@node2 ~]#mv /opt/cni/bin/ /srv
-```
 
-```text
 #下载新版的cni插件
 [root@node2 ~]#wget
 https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-
 plugins-linux-amd64-v1.1.1.tgz
-```
 
-```text
 [root@node2 ~]#tar xf cni-plugins-linux-amd64-v1.1.1.tgz  -C /opt/cni/bin/
-```
 
-```text
 #启动成功
 [root@node2 ~]#nerdctl start nginx
-```
 
-```text
 #或者删除再启动成功
 [root@node2 ~]#nerdctl run -d --name nginx -p 80:80 nginx:alpine
 FATA[0000] name "nginx" is already used by ID
@@ -1938,9 +1539,7 @@ FATA[0000] name "nginx" is already used by ID
 nginx
 [root@node2 ~]#nerdctl run -d --name nginx -p 80:80 nginx:alpine
 6b7ea18022d3e1293a5149f316742af093e061f3a968eb80762d5fd976dec595
-```
 
-```text
 [root@node2 ~]#nerdctl ps
 CONTAINER ID    IMAGE                             COMMAND
 CREATED          STATUS    PORTS                 NAMES
@@ -1965,8 +1564,7 @@ buildkitd（服务端），目前支持runc和containerd作为镜像构建环境
 **安装buildkit**
 
 软件包下载地址：https://github.com/moby/buildkit/releases
-
-```text
+```ini
 [root@master1 ~]# wget
 https://github.com/moby/buildkit/releases/download/v0.13.2/buildkit-
 v0.13.2.linux-amd64.tar.gz
@@ -1989,35 +1587,25 @@ bin/buildkit-runc
 bin/buildkitd
 [root@master ~]# cd bin/
 [root@master bin]# cp * /usr/local/bin/
-```
 
-```text
 #创建service脚本
 [root@master ~]# cat /etc/systemd/system/buildkitd.service
 [Unit]
 Description=BuildKit
 Documentation=https://github.com/moby/buildkit
-```
 
-```text
 [Service]
 ExecStart=/usr/local/bin/buildkitd --oci-worker=false --containerd-worker=true
-```
 
-```text
 [Install]
 WantedBy=multi-user.target
-```
 
-```text
 #新增buildkitd配置文件，添加镜像仓库使用http访问
 [root@master bin]# vim /etc/buildkit/buildkitd.toml
-[registry."harbor.wang.org"]
+[registry."harbor.bowen.org"]
 http = false
 insecure = true
-```
 
-```text
 #启动buildkitd
 [root@master bin]# systemctl daemon-reload
 [root@master bin]# systemctl start buildkitd
@@ -2025,28 +1613,23 @@ insecure = true
 ```
 
 **构建镜像并测试**
-
-```text
+```dockerfile
 [root@master ~]# cat Dockerfile
 FROM busybox
 CMD ["echo","hello","container"]
-[root@master ~]# nerdctl build -t harbor.wang.org/example/busybox:v1
+[root@master ~]# nerdctl build -t harbor.bowen.org/example/busybox:v1
 [root@master ~]# nerdctl images
 REPOSITORY    TAG    IMAGE ID        CREATED               PLATFORM       SIZE
 BLOB SIZE
-```
 
-```text
 busybox       v1     fb6a2dfc7899    About a minute ago    linux/amd64    4.1
 MiB    2.1 MiB
 [root@master ~]# nerdctl run busybox:v1
 hello container
-```
 
-```text
 #推送至Harbor仓库
-[root@master ~]# nerdctl tag busybox:v1 harbor.wang.org/example/busybox:v1
-[root@master ~]# nerdctl push harbor.wang.org/example/busybox:v1
+[root@master ~]# nerdctl tag busybox:v1 harbor.bowen.org/example/busybox:v1
+[root@master ~]# nerdctl push harbor.bowen.org/example/busybox:v1
 ```
 
 {% endraw %}

@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Service 访问与负载分发'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -17,9 +18,9 @@ syntax_highlight: true
 
 ### 1.1.1 Service 说明
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/>
+
 
 说到外部用户来访问集群内部的场景，肯定能想到传统的负载均衡的案例：
 
@@ -30,7 +31,6 @@ https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/
 通过对Pod及其工作负载的控制资源RC和Deployment的学习，所有的应用服务都是工作在pod资源中，由于每个Pod都有独立的ip地址，而随着Pod的大量的动态创建和销毁操作后，会导致Pod的名称和IP很有可能发生了变化。假设有前端应用的pod和后端应用的pod，那么在频繁变动的场景中，集群中的应用之间该如何相互通信呢？难道是让我们以类似nginx负载均衡的方式手工定制pod ip然后进行一一管理么？显然这是很难做到的。Kubernetes集群提供了这样的一个资源对象Service，它定义了一组Pod的逻辑集合和一个用于访问它们的入口策略。Service 可以基于标签的方式自动找到对应的pod应用，而无需关心pod的ip地址变化与否，从而实现了类似负载均衡的效果。
 
 Service 本质上就是一个四层的反向代理，集群内和外的客户端可以通过如下流程最终实现访问Pod应用。
-
 ```text
 集群内部Client --> service网络 -->Pod网络 -->容器应用
 集群外部Client --> 主机节点网络--> service网络 -->Pod网络 -->容器应用
@@ -69,14 +69,11 @@ Service 核心功能
 **服务发现**：利用标签选择器，在同一个namespace中筛选符合条件的Pod, 从面实现发现一组提供了相同服务的Pod，可以结合readiness探针实现健康性检查负载均衡: Service作为流量入口和负载均衡器，其入口为ClusterIP, 这组筛选出的Pod的IP地址，将作为该Service的后端服务器名称解析: 利用Cluster DNS，为该组Pod所代表的服务提供一个名称, 在DNS中 对于每个Service，自动生成一个A、PTR和SRV记录。
 
 范例: 查看Kubernetes 内置的Service
-
-```text
+```yaml
 [root@master1 ~]#kubectl get svc
 NAME         TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
 kubernetes   ClusterIP      10.96.0.1     <none>        443/TCP        72d
-```
 
-```text
 [root@master1 ~]#kubectl get svc kubernetes -o yaml
 apiVersion: v1
 kind: Service
@@ -106,9 +103,7 @@ sessionAffinity: None
 type: ClusterIP
 status:
 loadBalancer: {}
-```
 
-```text
 #对应同名的Endpoint
 [root@master1 ~]#kubectl describe  ep kubernetes
 Name:         kubernetes
@@ -155,21 +150,16 @@ Endpoints
 EndpointSlice并未取代Endpoints，二者同时存在
 
 范例: 查看 Service, Endpoints 和 EndpointSlices
-
-```text
+```bash
 [root@master1 ~]#kubectl get svc,ep,endpointslices -n demo
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
 AGE
 service/nfs-server   ClusterIP   10.99.201.239   <none>        2049/TCP,111/UDP
 2d2h
-```
 
-```text
 NAME                   ENDPOINTS                        AGE
 endpoints/nfs-server   10.244.1.3:2049,10.244.1.3:111   2d2h
-```
 
-```text
 NAME                                              ADDRESSTYPE   PORTS
 ENDPOINTS    AGE
 endpointslice.discovery.k8s.io/nfs-server-mtzqk   IPv4          111,2049
@@ -237,8 +227,7 @@ kubernetes v1.8 引入 ipvs 代理模块
 kubernetes v1.9 ipvs 代理模块成为 beta 版本。kubernetes v1.11 ipvs 代理模式 GA，成为默认设置。请求流量的调度功能由ipvs实现，余下的其他功能仍由iptables完成。ipvs流量转发速度快，规则同步性能好。IPVS默认基于rr算法调度，同时也支持众多调度算法，如rr/lc/dh/sh/sed/nq等。
 
 二进制Kubernetes的安装方式修改模式：
-
-```text
+```bash
 echo 'KUBE_PROXY_MODE=ipvs' >> /etc/sysconfig/kubelet
 ```
 
@@ -249,32 +238,23 @@ echo 'KUBE_PROXY_MODE=ipvs' >> /etc/sysconfig/kubelet
 注意：对于kubeadm方式安装Kubernetes集群来说，它会首先检测当前主机上是否已经包含了ipvs模块，如果加载了，就直接用ipvs中NAT模式，如果没有加载ipvs模块的话，会自动使用iptables模式。
 
 范例: kubeadm方式将默认的iptables模式修改为IPVS模式
-
-```text
+```bash
 #查看当前模式,默认为iptables
 [root@master1 ~]#curl 127.0.0.1:10249/proxyMode
 iptables
-```
 
-```text
 [root@master1 ~]#apt install ipvsadm
 [root@master1 ~]#ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
 Prot LocalAddress:Port Scheduler Flags
 -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
-```
 
-```text
 [root@master1 ~]#kubectl edit configmap kube-proxy -n kube-system
 mode: "ipvs"   #修改此行,默认为""
-```
 
-```text
 #删除所有kube-proxy对应的Pod,建议reboot生效
 [root@master1 ~]#kubectl delete pod -n kube-system -l   k8s-app=kube-proxy
-```
 
-```text
 #查看Pod 自动创建
 [root@master1 ~]#kubectl get pod -n kube-system -l k8s-app=kube-proxy
 NAME               READY   STATUS    RESTARTS   AGE
@@ -284,15 +264,11 @@ kube-proxy-g6svk   1/1     Running   0          42s
 kube-proxy-lzlbn   1/1     Running   0          43s
 kube-proxy-m55ts   1/1     Running   0          43s
 kube-proxy-t94ff   1/1     Running   0          43s
-```
 
-```text
 #验证结果
 [root@master1 ~]#curl 127.0.0.1:10249/proxyMode
 ipvs
-```
 
-```text
 #每个节点都生成kube-ipvs0的虚拟网卡
 [root@master1 ~]#ip a show kube-ipvs0
 7: kube-ipvs0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default
@@ -301,9 +277,7 @@ inet 10.96.0.10/32 scope global kube-ipvs0
 valid_lft forever preferred_lft forever
 inet 10.106.205.83/32 scope global kube-ipvs0
 valid_lft forever preferred_lft forever
-```
 
-```text
 inet 10.0.0.11/32 scope global kube-ipvs0
 valid_lft forever preferred_lft forever
 inet 10.107.246.153/32 scope global kube-ipvs0
@@ -320,9 +294,7 @@ inet 10.0.0.10/32 scope global kube-ipvs0
 valid_lft forever preferred_lft forever
 inet 10.105.92.154/32 scope global kube-ipvs0
 valid_lft forever preferred_lft forever
-```
 
-```text
 #再次查看出现IPVS规则
 [root@master1 ~]#ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
@@ -344,8 +316,7 @@ UDP  10.96.0.10:53 rr
 ```
 
 范例: 二进制安装Kubernetes修改默认的iptables模式修改为IPVS模式
-
-```text
+```bash
 #修改文件路径
 [root@node1 ~]#vim /var/lib/kube-proxy/kube-proxy-config.yaml
 .....
@@ -371,7 +342,6 @@ iptables或ipvs会根据情况挑选一个合适的endpoint地址。
 ### 1.2.3 Service 类型
 
 对于Kubernetes 可以实现内部服务的自由通信,也可以将平台内部的服务发布到外部环境。Service主要有四种类型，实现不同的网络通信功能。
-
 ```text
 https://kubernetes.io/docs/concepts/services-networking/service/#publishing-
 services-service-types
@@ -407,10 +377,9 @@ ExternalName
 
 `In client → Cluster ServiceName → CName → External Service Name`
 
-这种 Service 没有 selector，因此不会创建同名的 Endpoints 资源对象。例如，MySQL Service 的集群内部域名为 `mysql.default.svc.cluster.local`，外部域名为 `mysql.wang.org`；访问路径为 `In Client → mysql.default.svc.cluster.local → mysql.wang.org → 集群外的 MySQL IP`。
+这种 Service 没有 selector，因此不会创建同名的 Endpoints 资源对象。例如，MySQL Service 的集群内部域名为 `mysql.default.svc.cluster.local`，外部域名为 `mysql.bowen.org`；访问路径为 `In Client → mysql.default.svc.cluster.local → mysql.bowen.org → 集群外的 MySQL IP`。
 
 ### 1.2.4 ExternalIP
-
 ```text
 https://kubernetes.io/docs/concepts/services-networking/service/#external-ips
 https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/#external-
@@ -422,8 +391,7 @@ ips
 external IP所在的节点故障后，该流量入口失效，除非将该IP地址转移配置到其它节点。external IP是除了LoadBalancer和NodePort外，接入外部流量的又一种方式。定义 Service 时，你可以为任何服务类型externalIPs。由于 externalIPs 是绑定在某一个节点上,而此节点存在单点问题,可以通过Keepalived等方式实现高可用。
 
 在下面的例子中，名为 my-service 的服务可以在 " 198.51.100.32:80 " （根据.spec.externalIPs[] 和 .spec.ports[].port 得出）上被客户端使用 TCP 协议访问。还需要在某个节点绑定此IP 1.2.3.4 到网卡上。
-
-```text
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -444,9 +412,9 @@ externalIPs:
 
 ### 1.3.1 创建 Service 方式说明
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/>
+
 
 对于Service的创建有两种方法：
 
@@ -454,30 +422,23 @@ https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/
 
 #### 1.3.1.1 命令行方法
 
-```text
-http://docs.kubernetes.org.cn/564.html
-```
+
+- <http://docs.kubernetes.org.cn/564.html>
+
 
 **基础语法**
-
 ```text
 #创建命令1：
 kubectl create service [flags] NAME [--tcp=port:targetPort] [--dry-run]
-```
 
-```text
 #作用：单独创建一个service服务
 flags 参数详解：
 ```
 
-```text
-clusterip       Create a ClusterIP service.将集群专用服务接口
-nodeport        创建一个 NodePort service.将集群内部服务以端口形式对外提供
-loadbalancer    创建一个 LoadBalancer service.主要针对公有云服务
-externalname    Create an ExternalName service.将集群外部服务引入集群内部
-```
 
-```text
+clusterip       Create a ClusterIP service.将集群专用服务接口 nodeport        创建一个 NodePort service.将集群内部服务以端口形式对外提供 loadbalancer    创建一个 LoadBalancer service.主要针对公有云服务 externalname    Create an ExternalName service.将集群外部服务引入集群内部
+
+```bash
 #创建命令2：
 kubectl expose (-f FILENAME | TYPE NAME) [--port=port] [--protocol=TCP|UDP|SCTP]
 [--target-port=number-or-name] [--name=name] [--external-ip=external-ip-of-
@@ -490,19 +451,13 @@ service] [--type=type] [options]
 LoadBalancer,ExternalName
 --cluster-ip=''      #设定对外的ClusterIP地址
 --name=''            #创建service对外的svc名称
-```
 
-```text
 #创建命令3：创建自主式Pod时动创建Service
 kubectl run  <Pod_name> --image 镜像 --expose --port <容器端口>
-```
 
-```text
 #查看命令：
 kubectl get svc
-```
 
-```text
 #查看更多信息的命令是一个通用的命令，一般常用两种方法显示更多的内容：yaml和json
 #语法：
 kubectl get 资源类型 [类型名称] -o yaml
@@ -513,60 +468,46 @@ kubectl get svc <service-name> -o yaml
 在spec.ports的定义中，targetPort属性就是用来确定提供该服务的容器所暴露(EXPORT)的端口号，即
 通过targetPort端口来访问业务进程在容器。
 默认情况下targetPort跟我们容器定义的port一致。
-```
 
-```text
 #删除 service
 kubectl delete svc <svc_name> [ -n <namespace>[] [--all]
 ```
 
 范例：基于自主式Pod自动创建Service
-
-```text
+```bash
 [root@master1 ~]#kubectl run myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --expose --port 80
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --expose --port 80
 service/myapp created
 pod/myapp created
-```
 
-```text
 [root@master1 ~]#kubectl get svc,pod
 NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP
 PORT(S)             AGE
 service/myapp                        ClusterIP      10.109.23.81     <none>
 80/TCP              99s
-```
 
-```text
 NAME                                          READY   STATUS    RESTARTS
 AGE
 pod/myapp                                     1/1     Running   0
 99s
-```
 
-```text
 [root@master1 ~]#kubectl get ep myapp
 NAME    ENDPOINTS         AGE
 myapp   10.244.1.114:80   3m8s
-```
 
-```text
 [root@master1 ~]#curl 10.109.23.81
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp, ServerIP:
 10.244.1.114!
 ```
 
 范例: kubectl create 创建 service
-
-```text
+```bash
 #简单示例
 [root@master1 ~]#kubectl create service clusterip my-service1 --tcp=5678:80
 [root@master1 ~]#kubectl create service clusterip my-service2 --clusterip="None"
 [root@master1 ~]#kubectl create service clusterip my-service3 --
 clusterip="192.168.100.100" --tcp="999"
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get svc
 NAME          TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)    AGE
@@ -576,50 +517,37 @@ my-service2   ClusterIP   None              <none>        <none>     58s
 my-service3   ClusterIP   192.168.100.100   <none>        999/TCP    2s
 ```
 
-```text
-#结果显示：
-cluster-ip是自动生成的，如果不需要，值指定为None
-如果要自定义cluster-ip，必须是集群初始化指定的IP范围，默认是 10.96.0.0/12
-```
+
+#结果显示：cluster-ip是自动生成的，如果不需要，值指定为None 如果要自定义cluster-ip，必须是集群初始化指定的IP范围，默认是 10.96.0.0/12
+
 
 范例：kubectl expose 创建 service
-
-```text
+```bash
 #对已存在Deployment创建service
 [root@master1 ~]#kubectl create deployment myweb01 --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 
-```text
 [root@master1 ~]#kubectl create deployment myweb02 --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --replicas 3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --replicas 3
 
-```text
 [root@master1 ~]#kubectl expose deployment myweb01 --port=81 --target-port=80
 [root@master1 ~]#kubectl create svc clusterip myweb01 --tcp=81:80
 [root@master1 ~]#kubectl expose deployment myweb02 --port=82 --target-port=80 --
 type=NodePort
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
 kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP        4m22s
 myweb01     ClusterIP   10.98.236.20   <none>        81/TCP         11s
 myweb02     NodePort    10.99.187.62   <none>        82:30084/TCP   3s
-```
 
-```text
 #自动生成同名的Endpoint
 [root@master1 ~]#kubectl get endpoints
 NAME         ENDPOINTS                                      AGE
 kubernetes   10.0.0.200:6443                                5m54s
 myweb01     10.244.1.92:81,10.244.2.63:81,10.244.3.31:81   103s
 myweb02     10.244.1.93:82,10.244.2.64:82,10.244.3.32:82   95s
-```
 
-```text
 [root@master1 ~]#kubectl describe service myweb01
 Name:              myweb01
 Namespace:         default
@@ -636,9 +564,7 @@ TargetPort:        81/TCP
 Endpoints:         10.244.1.92:81,10.244.2.63:81,10.244.3.31:81
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 [root@master1 ~]#kubectl describe service myweb02
 Name:                     myweb02
 Namespace:                default
@@ -657,68 +583,52 @@ Endpoints:                10.244.1.93:82,10.244.2.64:82,10.244.3.32:82
 Session Affinity:         None
 External Traffic Policy:  Cluster
 Events:                   <none>
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete deployments.apps myweb0{1,2}
 [root@master1 ~]#kubectl delete svc myweb0{1,2}
 ```
 
 范例:
-
-```text
+```bash
 #一步实现创建所有pod和相应的service
 [root@master1 ~]#kubectl run pod-test --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --expose=true --port=80
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --expose=true --port=80
 service/pod-test created
 pod/pod-test created
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME           READY   STATUS    RESTARTS   AGE
 pod/pod-test   1/1     Running   0          7s
-```
 
-```text
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes   ClusterIP   192.168.0.1     <none>        443/TCP   21h
 service/pod-test     ClusterIP   192.168.76.54   <none>        80/TCP    7s
-```
 
-```text
 [root@master1 ~]#kubectl get pod --show-labels  -o wide
 NAME       READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES   LABELS
-pod-test   1/1     Running   0          73s   172.16.2.90   node3.wang.org
+pod-test   1/1     Running   0          73s   172.16.2.90   node3.bowen.org
 <none>           <none>            run=pod-test
-```
 
-```text
 [root@master1 ~]#curl 192.168.76.54
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-test, ServerIP:
 172.16.2.90!
 ```
 
 范例:
-
-```text
+```bash
 #两步实现
 [root@master1 ~]#kubectl create deployment web --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 [root@master1 ~]#kubectl expose deployment web --name=web-service --port=80
 [root@master1 ~]#kubectl expose deployment web --name=web-nodeport --port=999 --
 target-port='80' --type='NodePort'
-```
 
-```text
 [root@master1 ~]#kubectl get all
 NAME                      READY   STATUS    RESTARTS   AGE
 pod/web-65655fc68-cr2z7   1/1     Running   0          116s
-```
 
-```text
 NAME                   TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)
 AGE
 service/kubernetes     ClusterIP   192.168.0.1       <none>        443/TCP
@@ -727,25 +637,17 @@ service/web-nodeport   NodePort    192.168.86.207    <none>        999:30959/TCP
 3s
 service/web-service    ClusterIP   192.168.108.144   <none>        80/TCP
 62s
-```
 
-```text
 NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/web   1/1     1            1           116s
-```
 
-```text
 NAME                            DESIRED   CURRENT   READY   AGE
 replicaset.apps/web-65655fc68   1         1         1       116s
-```
 
-```text
 [root@master1 ~]#curl 192.168.108.144
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: web-65655fc68-
 cr2z7, ServerIP: 172.16.2.91!
-```
 
-```text
 #注意：NodePort类型的Service会在当前集群的所有主机上开放一个服务端口，这个服务端口是随机的
 [root@master1 ~]#curl 192.168.86.207:999
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: web-65655fc68-
@@ -756,61 +658,46 @@ cr2z7, ServerIP: 172.16.2.91!
 [root@master1 ~]#curl 10.0.0.106:30959
 kubernetes pod-test v0.1!! ClientIP: 172.16.2.1, ServerName: web-65655fc68-
 cr2z7, ServerIP: 172.16.2.91!
-```
 
-```text
 #清理还原环境
 [root@master1 ~]#kubectl delete deployments.apps web
 [root@master1 ~]#kubectl delete svc web-nodeport web-service
 ```
 
 范例:
-
-```text
+```bash
 [root@master1 ~]#kubectl create deployment deployment-test --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 2
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 2
 
-```text
 #查看pod信息
 [root@master1 ~]#kubectl get pod -o wide
 NAME                             READY   STATUS    RESTARTS       AGE     IP
 NODE             NOMINATED NODE   READINESS GATES
 deployment-test-f96bdbc9-cxbm5   1/1     Running   0              57s
-10.244.2.86   node2.wang.org   <none>           <none>
+10.244.2.86   node2.bowen.org   <none>           <none>
 deployment-test-f96bdbc9-rhwrc   1/1     Running   0              57s
-10.244.3.62   node3.wang.org   <none>           <none>
-```
+10.244.3.62   node3.bowen.org   <none>           <none>
 
-```text
 #对已有的Deployment创建对应的service
 [root@master1 ~]#kubectl expose deployment deployment-test --port 80
-```
 
-```text
 #查看service
 [root@master1 ~]#kubectl get svc
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 deployment-test   ClusterIP   10.111.116.76   <none>        80/TCP    4s
 kubernetes        ClusterIP   10.96.0.1       <none>        443/TCP   22d
-```
 
-```text
 #可以看到后端的两个Pod的IP地址
 [root@master1 ~]#kubectl get ep
 NAME              ENDPOINTS                       AGE
 deployment-test   10.244.2.86:80,10.244.3.62:80   9s
 kubernetes        10.0.0.200:6443                 22d
-```
 
-```text
 #测试名称解析，10.96.0.10为coredns服务器地址
 [root@master1 ~]#dig -t A deployment-test.default.svc.cluster.local @10.96.0.10
 +short
 10.97.30.140
-```
 
-```text
 #通过service的IP访问后端的Pod
 [root@master1 ~]#curl 10.111.116.76
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-test-
@@ -818,48 +705,35 @@ f96bdbc9-rhwrc, ServerIP: 10.244.3.62!
 [root@master1 ~]#curl 10.111.116.76
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-test-
 f96bdbc9-cxbm5, ServerIP: 10.244.2.86!
-```
 
-```text
 #创建测试的Pod
 [root@master1 ~]#kubectl run busybox --image busybox:1.30.0  -- sleep 3600
-```
 
-```text
 #测试访问service
 [root@master1 ~]#kubectl exec -it busybox -- sh
 #无法ping通
 / # ping -c1 deployment-test
 PING deployment-test (10.111.116.76): 56 data bytes
-```
 
-```text
 --- deployment-test ping statistics ---
 1 packets transmitted, 0 packets received, 100% packet loss
-```
 
-```text
 #可以通过sevice名称访问http服务
 / # wget -qO - deployment-test
 ```
 
-```text
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.59, ServerName: deployment-test-
-f96bdbc9-cxbm5, ServerIP: 10.244.2.86!
-/ # wget -qO - deployment-test
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.59, ServerName: deployment-test-
-f96bdbc9-rhwrc, ServerIP: 10.244.3.62!
-```
+
+kubernetes pod-test v0.1!! ClientIP: 10.244.3.59, ServerName: deployment-test-f96bdbc9-cxbm5, ServerIP: 10.244.2.86!/ # wget -qO - deployment-test kubernetes pod-test v0.1!! ClientIP: 10.244.3.59, ServerName: deployment-test-f96bdbc9-rhwrc, ServerIP: 10.244.3.62!
+
 
 #### 1.3.1.2 文件方式
 
-```text
-https://kubernetes.io/docs/concepts/services-networking/service/
-```
+
+- <https://kubernetes.io/docs/concepts/services-networking/service/>
+
 
 **语法解析**
-
-```text
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -899,15 +773,12 @@ IP不由 Kubernetes管理。用户负责确保流量到达具有此 IP 的节点
 ### 1.3.2 ClusterIP Service 实现
 
 范例：查看集群内默认 Service
-
-```text
+```bash
 #在集群内kubeapi对应的SVC默认占用Service 网络的第一个IP
 [root@master1 ~]#kubectl get svc kubernetes
 NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   410d
-```
 
-```text
 #DNS对应的SVc，默认占用Service网络的第10个IP
 [root@master1 ~]#kubectl get svc -n kube-system
 NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
@@ -915,31 +786,26 @@ kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   410d
 ```
 
 范例:  单端口应用
-
-```text
+```yaml
 #如果基于资源配置文件创建资源，依赖于后端pod的标签，才可以关联后端的资源
 #准备多个后端pod对象
 [root@master1 ~]#kubectl create deployment myweb --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get pod --show-labels -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP             NODE
 NOMINATED NODE   READINESS GATES   LABELS
 myweb-5df49fdd5-cd8b4   1/1     Running   0          18s   172.16.1.56
-node2.wang.org   <none>           <none>            app=myweb,pod-template-
+node2.bowen.org   <none>           <none>            app=myweb,pod-template-
 hash=5df49fdd5
 myweb-5df49fdd5-mvmrt   1/1     Running   0          18s   172.16.3.106
-node1.wang.org   <none>           <none>            app=myweb,pod-template-
+node1.bowen.org   <none>           <none>            app=myweb,pod-template-
 hash=5df49fdd5
 myweb-5df49fdd5-s2k5w   1/1     Running   0          18s   172.16.2.93
-node3.wang.org   <none>           <none>            app=myweb,pod-template-
+node3.bowen.org   <none>           <none>            app=myweb,pod-template-
 hash=5df49fdd5
-```
 
-```text
 #创建service对象
 [root@master1 ~]#cat  service-clusterip-test.yaml
 kind: Service
@@ -959,59 +825,41 @@ ports:
 protocol: TCP
 port: 80             #Service的端口
 targetPort: 80       #后端Pod对应的端口
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-clusterip-test.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get all
-```
 
-```text
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/myweb-5df49fdd5-cd8b4   1/1     Running   0          2m16s
 pod/myweb-5df49fdd5-mvmrt   1/1     Running   0          2m16s
 pod/myweb-5df49fdd5-s2k5w   1/1     Running   0          2m16s
-```
 
-```text
 NAME                             TYPE        CLUSTER-IP       EXTERNAL-IP
 PORT(S)   AGE
 service/kubernetes               ClusterIP   192.168.0.1      <none>
 443/TCP   21h
 service/service-clusterip-test   ClusterIP   192.168.64.158   <none>
 80/TCP    2s
-```
 
-```text
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/myweb   3/3     3            3           2m16s
-```
 
-```text
 NAME                               DESIRED   CURRENT   READY   AGE
 replicaset.apps/myweb-5df49fdd5   3         3         3       2m16s
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
 kubernetes             ClusterIP   192.168.0.1      <none>        443/TCP   21h
 service-cluster-test   ClusterIP   192.168.64.158   <none>        80/TCP    75s
-```
 
-```text
 #自动创建同名的endpoint
 [root@master1 ~]#kubectl get ep
 NAME                     ENDPOINTS                                     AGE
 kubernetes               10.0.0.200:6443                               9d
 service-clusterip-test   172.16.1.56:80,172.16.2.93:80,172.16.3.106:80 5s
-```
 
-```text
 #查看service信息
 [root@master1 ~]#kubectl describe svc service-clusterip-test
 Name:              service-clusterip-test
@@ -1031,9 +879,7 @@ Endpoints:         172.16.1.56:80,172.16.2.93:80,172.16.3.106:80  #对应后端P
 Session Affinity:  None
 Events:            <none>
 #结果显示：service 自动关联了四个Endpoints
-```
 
-```text
 #访问验证
 [root@master1 ~]#curl 192.168.64.158
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
@@ -1041,26 +887,22 @@ cd8b4, ServerIP: 172.16.1.56!
 [root@master1 ~]#curl 192.168.64.158
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 mvmrt, ServerIP: 172.16.3.106!
-[root@master1 ~]#curl 192.168.64.158
 ```
+```bash
+[root@master1 ~]#curl 192.168.64.158
 
-```text
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
 #结果显示：后端随机代理到不同的pod应用了
-```
 
-```text
 #在测试从其它Pod通过service名称访问,内部通过修改目标IP的DNAT实现,但源地址不变
 [root@master1 ~]#kubectl run client-test-$RANDOM --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 --restart=Never --rm -it --
+beijing.aliyuncs.com/bowen/admin-box:v0.1 --restart=Never --rm -it --
 command -- /bin/bash
 root@client-test-12345~# curl  service-clusterip-test
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 cd8b4, ServerIP: 172.16.1.56!
-```
 
-```text
 #测试从Service的自身的Pod访问Service
 #注意:当访问Pod访问自已所对应的Service时,恰恰被调度到自身Pod时会修改源IP为其它IP(相当于
 FULLNAT),而被调度到其它的Pod时则保留其源IP,相当于只DNAT
@@ -1073,55 +915,41 @@ kubernetes pod-test v0.1!! ClientIP: 172.16.1.56, ServerName: myweb-5df49fdd5-
 mvmrt, ServerIP: 172.16.3.106!
 kubernetes pod-test v0.1!! ClientIP: 172.16.1.56, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
-```
 
-```text
 #如果跨namespace,可以用<service>.<namespace>格式访问,一般用于公共的基础服务,比如:数据
 库,MQ服务等
 root@client-test-12345~# curl  service-clusterip-test.default
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 mvmrt, ServerIP: 172.16.3.106!
-```
 
-```text
 #删除并重建Pod
 [root@master1 ~]#kubectl delete myweb-5df49fdd5-cd8b4 myweb-5df49fdd5-mvmrt
 myweb-5df49fdd5-s2k5w
-```
 
-```text
 #通过原来的service名称和IP都还可访问,说明service比Pod地址更加稳定,可以用于Pod之间的访问
 root@client-test-12345~# / # wget -qO - http://service-test
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.11, ServerName: myweb-f95974cf4-
 zqbzd, ServerIP: 10.244.3.12!
-```
 
-```text
 #kubernetes-v1.29版之后，采用nftable方式查看各种规则
 [root@node1 ~]#nft  list ruleset|head
 table ip nat {
 chain DOCKER {
 iifname "docker0" counter packets 0 bytes 0 return
 }
-```
 
-```text
 chain POSTROUTING {
 type nat hook postrouting priority srcnat; policy accept;
 counter packets 66 bytes 5249 jump KUBE-POSTROUTING
 oifname != "docker0" ip saddr 172.17.0.0/16 counter packets 0 bytes 0
 masquerade
 counter packets 56 bytes 4649 jump FLANNEL-POSTRTG
-```
 
-```text
 #查看Pod的调度算法RANDOM和DNAT的策略
 [root@master1 ~]#iptables -vnL -t nat |grep random
 0     0 MASQUERADE  all  --  *      *       10.244.0.0/16       !224.0.0.0/4
 /* flanneld masq */ random-fully
-```
 
-```text
 0     0 MASQUERADE  all  --  *      *      !10.244.0.0/16
 10.244.0.0/16        /* flanneld masq */ random-fully
 0     0 MASQUERADE  all  --  *      *       0.0.0.0/0            0.0.0.0/0
@@ -1141,9 +969,7 @@ statistic mode random probability 0.50000000000
 0     0 KUBE-SEP-W3WEMR74BBVQWX4B  all  --  *      *       0.0.0.0/0
 0.0.0.0/0            /* kube-system/kube-dns:dns -> 10.244.1.74:53 */
 statistic mode random probability 0.50000000000
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f  service-clusterip-test.yaml
 ```
@@ -1151,8 +977,7 @@ statistic mode random probability 0.50000000000
 范例: 多端口实现
 
 有很多服务都会同时开启多个端口，典型的比如：tomcat三个端口，接下来实现创建多端口的Service。
-
-```text
+```yaml
 #资源定义文件
 [root@master1 ~]#cat service-clusterip-multi-port.yaml
 kind: Service
@@ -1173,22 +998,16 @@ port: 443
 targetPort: 443
 #关键点：只能有一个ports属性，多了会覆盖,每一个子port必须有一个name属性,由于service是基于标
 签的方式来管理pod的，所以必须有标签选择器
-```
 
-```text
 #创建服务service
 [root@master1 ~]#kubectl apply -f service-clusterip-multi-port.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME                 TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)
 AGE
 kubernetes           ClusterIP   192.168.0.1       <none>        443/TCP
 21h
-```
 
-```text
 service-clusterip-multi-port   ClusterIP   192.168.134.142   <none>
 80/TCP,443/TCP   3s
 ```
@@ -1198,14 +1017,11 @@ service-clusterip-multi-port   ClusterIP   192.168.134.142   <none>
 ClusterIP 类型只能支持集群内容访问，如何想从集群外部访问，可以使用 externalIPs实现。
 
 注意：externalIPs 可以应用在所有的service模式下的
-
-```text
+```yaml
 #在集群中的某个节点添加一个公网ip
 [root@node3 ~]#ip a a 10.0.0.66/24 dev eth0 label eth0:1
 #注意：这里的模拟外网ip，必须被宿主机能够访问，而且与Kubernetes的集群Pod网段不一样
-```
 
-```text
 #配置清单文件
 [root@master1 ~]#cat service-clusterip-externalip.yaml
 apiVersion: v1
@@ -1224,14 +1040,10 @@ targetPort: 80
 externalIPs:
 - 10.0.0.66
 #注意：这里的externalIPs对于使用哪种Service类型，其实关联度不大。
-```
 
-```text
 #创建
 [root@master1 ~]#kubectl apply -f service-clusterip-externalip.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get svc service-test-externalip
 NAME                        TYPE             CLUSTER-IP        EXTERNAL-IP
@@ -1239,9 +1051,7 @@ PORT(S)     AGE
 service-clusterip-externalip     ClusterIP   192.168.213.247   10.0.0.66
 80:32267/TCP   9s
 #结果显示：EXTERNAL-IP 已经指定了公网能够正常访问的ip地址
-```
 
-```text
 #使用externalIPs和标准端口即可访问
 [root@master1 ~]#curl 10.0.0.66
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
@@ -1253,9 +1063,7 @@ s2k5w, ServerIP: 172.16.2.93!
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 cd8b4, ServerIP: 172.16.1.56!
 #结果显示：对于EXTERNAL-IP来说，可以直接通过该ip和容器端口来进行服务访问，而无需通过其他端口
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f service-clusterip-externalip.yaml
 ```
@@ -1271,17 +1079,14 @@ NodePort会在所有节点主机上，向外暴露一个指定或者随机的端
 生产中建议使用Ingress方式向外暴露集群内的服务。
 
 范例：修改NodePort端口范围
-
-```text
-[root@master1 ~]#kubectl exec -it -n kube-system  kube-apiserver-master1.wang.org
+```bash
+[root@master1 ~]#kubectl exec -it -n kube-system  kube-apiserver-master1.bowen.org
 -- kube-apiserver --help |grep port-range
 --service-node-port-range portRange         A port range to reserve for
 services with NodePort visibility.  This must not overlap with the ephemeral port
 range on nodes.  Example: '30000-32767'. Inclusive at both ends of the range.
 (default 30000-32767)
-```
 
-```text
 [root@master1 ~]#cp /etc/kubernetes/manifests/kube-apiserver.yaml .
 [root@master1 ~]#vim /etc/kubernetes/manifests/kube-apiserver.yaml
 ......
@@ -1290,9 +1095,7 @@ range on nodes.  Example: '30000-32767'. Inclusive at both ends of the range.
 image: registry.aliyuncs.com/google_containers/kube-apiserver:v1.32.0
 .......
 [root@master1 ~]#reboot
-```
 
-```text
 [root@master1 ~]#kubectl create svc nodeport myweb --tcp=80:80
 service/myweb created
 [root@master1 ~]#kubectl get svc myweb
@@ -1333,8 +1136,7 @@ cluster 模式
 ![原 PDF 第 29 页插图](assets/Kubernetes服务发现和名称解析/img-fbcc89bc5ff3df43.png)
 
 范例:  nodePort 类型
-
-```text
+```yaml
 [root@master1 ~]#cat service-nodeport.yaml
 kind: Service
 apiVersion: v1
@@ -1342,9 +1144,7 @@ metadata:
 name: service-nodeport
 spec:
 type: NodePort   #指定service的类型,默认值为ClusterIP
-```
 
-```text
 #externalTrafficPolicy: Local #默认值为Cluster,如果是Local只能被当前运行Pod的节点处理
 流量.并且可以获取客户端真实IP
 selector:
@@ -1356,28 +1156,20 @@ port: 80
 targetPort: 80
 nodePort: 30066  #指定固定端口（30000-32767）,使用NodePort类型且不指定nodeport，会
 自动分配随机端口向外暴露
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply  -f service-nodeport.yaml
-```
 
-```text
 #查看有两个端口,集群内访问192.168.91.192:80,集群外访问任意节点的30066
 [root@master1 ~]#kubectl get svc
 NAME            TYPE        CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
 service-nodeport   NodePort    192.168.91.192   <none>        80:30066/TCP   9s
-```
 
-```text
 #访问service的地址
 [root@master1 ~]#curl 192.168.91.192
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 mvmrt, ServerIP: 172.16.3.106!
-```
 
-```text
 #默认externalTrafficPolicy: Cluster，所以使用访问集群中任意一个物理节点的地址都可以
 [root@master1 ~]#curl 10.0.0.101:30066
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
@@ -1389,25 +1181,19 @@ s2k5w, ServerIP: 172.16.2.93!
 kubernetes pod-test v0.1!! ClientIP: 172.16.2.1, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
 #访问指定主机的指定端口，还会跳转到其他主机
-```
 
-```text
 externalTrafficPolicy  <string> #外部流量策略处理方式，Local表示由当前节点处理，Cluster
 表示向集群范围调度，默认的外部流量调度策略是 cluster
 #限制：Local 将外网访问的请求都转发到当前主机节点上，但是依赖于当前主机必须有对应的pod资源，否
 则会出现问题
 #注意:如果当前节点有多个pod,仍然还会负载均衡
-```
 
-```text
 #从集群外访问，如果是externalTrafficPolicy为cluster，则Pod不能看到真实客户端IP
 [root@master1 ~]#kubectl logs -f myweb-5d78b4dcbd-6rgv4
 * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
 10.244.1.0 - - [08/Apr/2023 03:55:57] "GET / HTTP/1.1" 200 -
 10.244.2.1 - - [08/Apr/2023 03:56:42] "GET / HTTP/1.1" 200 -
-```
 
-```text
 #新版使用nft規則
 [root@master1 ~]#nft list ruleset |grep 66
 meta l4proto tcp ip daddr 127.0.0.0/8  tcp dport 30066 # nfacct-name
@@ -1417,33 +1203,24 @@ meta l4proto tcp  tcp dport 30066 counter packets 1 bytes 60 jump KUBE-
 EXT-75TCIBBYN24S2RET
 ct state new  counter packets 90567 bytes 6601175 jump KUBE-PROXY-
 FIREWALL
-```
 
-```text
 ct state new  counter packets 90567 bytes 6601175 jump KUBE-SERVICES
-```
 
-```text
 #查看生成的iptables规则，旧版
 [root@master1 ~]#echo 'obase=16;30066'|bc
 7572
 [root@master1 ~]#iptables -vnL -t nat | grep -iE "30066|7572"
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-nodeport.yaml
 ```
 
 范例:  流量调度策略 Local
-
-```text
+```yaml
 [root@master1 ~]#kubectl get svc service-nodeport  -o yaml | grep TrafficPolicy
 externalTrafficPolicy: Cluster
 internalTrafficPolicy: Cluster
-```
 
-```text
 #创建配置,指定流量调度策略是Local
 [root@master1 ~]#cat service-nodeport-local.yaml
 apiVersion: v1
@@ -1458,13 +1235,9 @@ ports:
 nodePort: 30099
 selector:
 app: myweb
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-nodeport-local.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
 AGE
@@ -1472,31 +1245,23 @@ kubernetes               ClusterIP   192.168.0.1     <none>        443/TCP
 22h
 service-nodeport-local   NodePort    192.168.1.192   <none>        80:30099/TCP
 6s
-```
 
-```text
 [root@master1 ~]#curl 10.0.0.101:30099
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 mvmrt, ServerIP: 172.16.3.106!
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP             NODE
 NOMINATED NODE   READINESS GATES
 myweb-5df49fdd5-cd8b4   1/1     Running   0          39m   172.16.1.56
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myweb-5df49fdd5-mvmrt   1/1     Running   0          39m   172.16.3.106
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 myweb-5df49fdd5-s2k5w   1/1     Running   0          39m   172.16.2.93
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #多次访问返回当前主机的一个pod
-```
 
-```text
 [root@master1 ~]#curl 10.0.0.106:30099
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.101, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
@@ -1506,9 +1271,7 @@ s2k5w, ServerIP: 172.16.2.93!
 [root@master1 ~]#curl 10.0.0.106:30099
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.101, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
-```
 
-```text
 #发现master2，3节点无法访问
 [root@master1 ~]#curl 10.0.0.102:30099
 ^C
@@ -1517,9 +1280,7 @@ kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
 [root@master1 ~]#curl 10.0.0.103:30099
 ^C
-```
 
-```text
 #访问其它节点,则
 [root@master1 ~]#curl 10.0.0.104:30099
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.101, ServerName: myweb-5df49fdd5-
@@ -1531,52 +1292,38 @@ cd8b4, ServerIP: 172.16.1.56!
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.101, ServerName: myweb-5df49fdd5-
 s2k5w, ServerIP: 172.16.2.93!
 #结果显示：外部流量定向到当前主机，而且不影响当前主机级别的负载均衡策略
-```
 
-```text
 #缩减Pod数
 [root@master1 ~]#kubectl scale deployment myweb --replicas 1
-```
 
-```text
 #查看Pod所在的节点,此有Pod的节点可以访问,其它无Pod的节点,将无法访问
 [root@master1 ~]#kubectl get pod -o wide
 [root@master1 services]#kubectl get pod -o wide
 NAME                     READY   STATUS             RESTARTS        AGE     IP
 NODE             NOMINATED NODE   myweb-5d775c669c-q6kq8   1/1
-Running            0               20m     10.244.1.121   node1.wang.org
+Running            0               20m     10.244.1.121   node1.bowen.org
 <none>           <none>
-```
 
-```text
-C:\Users\Wang>curl 10.0.0.104:30099
+C:\Users\Bowen>curl 10.0.0.104:30099
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myweb-5d775c669c-
 q6kq8, ServerIP: 10.244.1.121!
-C:\Users\Wang>curl 10.0.0.105:30099
+C:\Users\Bowen>curl 10.0.0.105:30099
 ^C
-C:\Users\Wang>curl 10.0.0.106:30099
+C:\Users\Bowen>curl 10.0.0.106:30099
 ^C
-```
 
-```text
 #从集群外访问，如果是externalTrafficPolicy为Local，则Pod可以看到真实客户端IP
 C:\Users\lbtoo>curl 10.0.0.104:30066
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myweb-5d78b4dcbd-
 96r94, ServerIP: 10.244.1.85!
-```
 
-```text
 #访问日志显示真实客户端IP
 [root@master1 ~]#kubectl logs -f myweb-5df49fdd5-mvmrt
 * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
-```
 
-```text
 10.0.0.204 - - [08/Apr/2023 03:50:47] "GET / HTTP/1.1" 200 -
 10.0.0.1 - - [08/Apr/2023 03:51:44] "GET / HTTP/1.1" 200 -
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-nodeport-local.yaml
 ```
@@ -1592,8 +1339,7 @@ Loadbalancer 可以获取用户访问的Service对应的Pod在哪个节点上,�
 #### 1.3.4.1 LoadBalancer 类型但没有 loadBalancerIP
 
 范例:  LoadBalancer 类型默认无法获取loadBalancerIP
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat service-loadbalancer.yaml
 apiVersion: v1
@@ -1612,45 +1358,31 @@ port: 80
 targetPort: 80
 #loadBalancerIP: 6.6.6.6  #指定地址后，还需要连接云服务商的LBaaS服务才能真正获得此地
 址，否则为pending状态
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-loadbalancer.yaml
-```
 
-```text
 #结果显示：svc的外网负载EXTERNAL-IP一直在pending状态
-```
 
-```text
 [root@master1 ~]#kubectl get svc service-loadbalancer
 NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)
 AGE
 service-loadbalancer   LoadBalancer   192.168.180.31   <pending>
 80:31677/TCP   11s
 #注意：LoadBalancer 本身是一个增强的NodePort类型的Service。
-```
 
-```text
 #注意：虽然EXTERNAL-IP处理Pending状态，但是CLUSTER-IP：31677端口仍然可以访问
-C:\Users\Wang>curl 10.0.0.201:31677
+C:\Users\Bowen>curl 10.0.0.201:31677
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.0, ServerName: myweb-5d775c669c-
 q6kq8, ServerIP: 10.244.1.121!
-```
 
-```text
-C:\Users\Wang>curl 10.0.0.202:31677
+C:\Users\Bowen>curl 10.0.0.202:31677
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.0, ServerName: myweb-5d775c669c-
 q6kq8, ServerIP: 10.244.1.121!
-```
 
-```text
-C:\Users\Wang>curl 10.0.0.203:31677
+C:\Users\Bowen>curl 10.0.0.203:31677
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.0, ServerName: myweb-5d775c669c-
 q6kq8, ServerIP: 10.244.1.121!
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-loadbalancer.yaml
 ```
@@ -1664,14 +1396,11 @@ q6kq8, ServerIP: 10.244.1.121!
 当前的Kubernetes集群，假如只有某个节点上绑定了一个对外的公网ip，其他主机则没有，那么我们可以通过指定的此主机上的公网ip使用标准端口来接入外部流量。可以借助于 externalIPs 属性来为当前的service指定公网ip地址即可。
 
 范例: LoadBalancer 类型同时指定externalIPs
-
-```text
+```yaml
 #为局域网内的某台主机添加一个公网ip
 [root@node3 ~]#ip a a 10.0.0.66/24 dev eth0 label eth0:1
 #注意：这里的模拟的外网ip，必须被宿主机能够访问，而且与Kubernetes的集群Pod网段不一样
-```
 
-```text
 #配置清单文件
 [root@master1 ~]#cat service-loadbalancer-externalip.yml
 apiVersion: v1
@@ -1683,21 +1412,15 @@ type: LoadBalancer
 ports:
 - port: 80
 selector:
-```
 
-```text
 app: myweb
 externalIPs:
 - 10.0.0.66
 #注意：这里的externalIPs对于使用哪种Service类型无关
-```
 
-```text
 #创建
 [root@master1 ~]#kubectl apply -f service-loadbalancer-externalip.yml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get svc service-loadbalancer-externalip
 NAME                              TYPE           CLUSTER-IP        EXTERNAL-IP
@@ -1705,9 +1428,7 @@ PORT(S)        AGE
 service-loadbalancer-externalip   LoadBalancer   192.168.213.247   10.0.0.66
 80:32267/TCP   9s
 #结果显示：EXTERNAL-IP 已经指定了公网能够正常访问的ip地址
-```
 
-```text
 #使用externalIPs和标准端口即可访问
 [root@master1 ~]#curl 10.0.0.66
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
@@ -1719,9 +1440,7 @@ s2k5w, ServerIP: 172.16.2.93!
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 cd8b4, ServerIP: 172.16.1.56!
 #结果显示：对于EXTERNAL-IP来说，可以直接通过该ip和容器端口来进行服务访问，而无需通过其他端口
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-loadbalancer-externalip.yml
 ```
@@ -1734,10 +1453,10 @@ OpenELB 是一个开源的云原生负载均衡器实现。可以在基于裸金
 
 官网:
 
-```text
-https://openelb.io/
-https://github.com/openelb/openelb
-```
+
+- <https://openelb.io/>
+- <https://github.com/openelb/openelb>
+
 
 ![原 PDF 第 36 页插图](assets/Kubernetes服务发现和名称解析/img-3f9c917e02fb5437.png)
 
@@ -1752,21 +1471,17 @@ BGP模式和二层网络模式下的负载均衡ECMP路由和负载均衡IP地�
 ##### 1.3.4.3.2 OpenELB 实现
 
 **安装说明**
-
 ```text
 https://openelb.github.io/docs/getting-started/installation/install-openelb-on-
 kubernetes/
 ```
 
 范例: 部署和使用 OpenELB
-
-```text
+```yaml
 #使用kubectl部署OpenELB至Kubernetes集群
 [root@master1 ~]#wget
 https://raw.githubusercontent.com/openelb/openelb/master/deploy/openelb.yaml
-```
 
-```text
 #查看创建的资源类型
 [root@master1 ~]#grep ^kind openelb.yaml
 kind: Namespace
@@ -1775,9 +1490,7 @@ kind: CustomResourceDefinition
 kind: CustomResourceDefinition
 kind: ServiceAccount
 kind: ServiceAccount
-```
 
-```text
 kind: Role
 kind: Role
 kind: ClusterRole
@@ -1794,41 +1507,31 @@ kind: Job
 kind: Job
 kind: MutatingWebhookConfiguration
 kind: ValidatingWebhookConfiguration
-```
 
-```text
 #查看镜像地址,有些镜像国内可能无法下载，可以通过代理服务https://dockerproxy.com/下载镜像
 [root@master1 ~]#grep image: openelb.yaml
 image: kubesphere/openelb:v0.5.1
 image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1
 image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1
-```
 
-```text
 #镜像如果无法下载,修改镜像地址
 [root@master1 ~]#vim openelb.yaml
 #image: kubesphere/openelb:v0.5.1
-registry.cn-beijing.aliyuncs.com/wangxiaochun/kubesphere/openelb:v0.5.1
-#image: wangxiaochun/ingress-nginx-kube-webhook-certgen:v1.1.1
+registry.cn-beijing.aliyuncs.com/bowen/kubesphere/openelb:v0.5.1
+#image: bowen/ingress-nginx-kube-webhook-certgen:v1.1.1
 #image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/ingress-nginx-kube-
+image: registry.cn-beijing.aliyuncs.com/bowen/ingress-nginx-kube-
 webhook-certgen:v1.1.1
-```
 
-```text
 [root@master1 ~]#kubectl apply -f openelb.yaml
-```
 
-```text
 #查看创建的CRD自定义资源类型
 [root@master1 ~]#kubectl get crd
 NAME                             CREATED AT
 bgpconfs.network.kubesphere.io   2022-11-23T01:57:23Z
 bgppeers.network.kubesphere.io   2022-11-23T01:57:23Z
 eips.network.kubesphere.io       2022-11-23T01:57:23Z
-```
 
-```text
 #确认openelb-manager Pod已经处于Running状态，且容器已经Ready。
 [root@master1 ~]#kubectl get pods -n openelb-system
 NAME                              READY   STATUS      RESTARTS   AGE
@@ -1838,17 +1541,13 @@ openelb-keepalive-vip-5gmp2       1/1     Running     0          4m38s
 openelb-keepalive-vip-bv8z9       1/1     Running     0          4m38s
 openelb-keepalive-vip-s7vlp       1/1     Running     0          4m38s
 openelb-manager-d6df4dfc4-tpwz9   1/1     Running     0          5m33s
-```
 
-```text
 #创建了一个Eip资源对象，它提供了一个地址池给LoadBalancer Service使用。
 [root@master1 ~]#cat service-loadbalancer-eip-pool.yaml
 apiVersion: network.kubesphere.io/v1alpha2
 kind: Eip
 metadata:
-```
 
-```text
 name: eip-pool
 annotations:
 eip.openelb.kubesphere.io/is-default-eip: "true" # 指定当前Eip作为向
@@ -1861,21 +1560,15 @@ protocol: layer2             #指定OpenELB模式，支持bgp(需要硬件支持
 interface: eth0              # OpenELB侦听ARP或NDP请求时使用的网络接口名称，仅layer2
 模式下有效
 disable: false
-```
 
-```text
 #创建资源
 [root@master1 ~]#kubectl apply -f service-loadbalancer-eip-pool.yaml
-```
 
-```text
 #查看结果
 [root@master1 ~]#kubectl get  eip
 NAME       CIDR                  USAGE   TOTAL
 eip-pool   10.0.0.10-10.0.0.50           41
-```
 
-```text
 [root@master1 ~]#kubectl describe  eip eip-pool
 Name:         eip-pool
 Namespace:
@@ -1913,9 +1606,7 @@ f:finalizers:
 .:
 v:"finalizer.ipam.kubesphere.io/v1alpha1":
 Manager:      openelb-manager
-```
 
-```text
 Operation:    Update
 Time:
 API Version:  network.kubesphere.io/v1alpha2
@@ -1946,8 +1637,7 @@ Ready:      true
 v4:         true
 Events:       <none>
 ```
-
-```text
+```yaml
 [root@master1 ~]#kubectl get eip eip-pool -o yaml
 apiVersion: network.kubesphere.io/v1alpha2
 kind: Eip
@@ -1976,16 +1666,12 @@ lastIP: 10.0.0.50
 poolSize: 11
 ready: true
 v4: true
-```
 
-```text
 #创建Deployment和LoadBalancer类型的Service，测试地址池是否能给Service分配LoadBalancer
 IP
 [root@master1 ~]#kubectl create deployment myapp --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-```text
 #方法1
 #清单文件
 [root@master1 ~]#cat service-loadbalancer-lbaas.yaml
@@ -2003,32 +1689,24 @@ ports:
 protocol: TCP
 port: 80
 targetPort: 80
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-loadbalancer-lbaas.yaml
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl create service loadbalancer myapp --tcp=80:80
-```
 
-```text
 #查看service资源对象myapp是否自动获得了External IP。
 [root@master1 ~]#kubectl get svc myapp
 NAME    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 myapp   LoadBalancer   10.110.50.151   10.0.0.10     80:31491/TCP   36s
-```
 
-```text
 [root@master1 ~]#kubectl get svc myapp -o yaml
 apiVersion: v1
 kind: Service
 metadata:
 annotations:
 eip.openelb.kubesphere.io/v1alpha2: eip-pool
-layer2.openelb.kubesphere.io/v1alpha1: master1.wang.org
+layer2.openelb.kubesphere.io/v1alpha1: master1.bowen.org
 lb.kubesphere.io/v1alpha1: openelb
 protocol.openelb.kubesphere.io/v1alpha1: layer2
 creationTimestamp: ""
@@ -2046,9 +1724,7 @@ allocateLoadBalancerNodePorts: true
 clusterIP: 10.97.180.0
 clusterIPs:
 - 10.97.180.0
-```
 
-```text
 externalTrafficPolicy: Cluster
 internalTrafficPolicy: Cluster
 ipFamilies:
@@ -2068,49 +1744,37 @@ status:
 loadBalancer:
 ingress:
 - ip: 10.0.0.10
-```
 
-```text
 #查看Service对应后端Pod的地址
+```
+```bash
 [root@master1 ~]#kubectl get ep
 NAME         ENDPOINTS                                      AGE
 kubernetes   10.0.0.200:6443                                76d
 myapp        10.244.1.79:80,10.244.2.85:80,10.244.3.75:80   3m28s
-```
 
-```text
 #从集群外部的客户端上通过Service对应EXTERNAL-IPIP地址10.0.0.10对myapp服务发起访问
-C:\Users\Wang>curl 10.0.0.10
+C:\Users\Bowen>curl 10.0.0.10
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
 qffnr, ServerIP: 10.244.1.79!
-```
 
-```text
-C:\Users\Wang>curl 10.0.0.10
+C:\Users\Bowen>curl 10.0.0.10
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
 f7fbk, ServerIP: 10.244.2.85!
-```
 
-```text
-C:\Users\Wang>curl 10.0.0.10
+C:\Users\Bowen>curl 10.0.0.10
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
 vmdb2, ServerIP: 10.244.3.75!
-```
 
-```text
 #缩减Pod
 [root@master1 ~]#kubectl scale deployment myapp --replicas 1
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                     READY   STATUS        RESTARTS   AGE     IP
 NODE             NOMINATED NODE   READINESS GATES
 myapp-7dbd45d496-kvvjk   1/1     Running       0          6m12s   10.244.3.96
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #所有节点的NodePOrt都可以访问
 C:\Windows\System32>curl 10.0.0.201:31491
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myapp-7dbd45d496-
@@ -2121,20 +1785,14 @@ kvvjk, ServerIP: 10.244.3.96!
 C:\Windows\System32>curl 10.0.0.203:31491
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myapp-7dbd45d496-
 kvvjk, ServerIP: 10.244.3.96!
-```
 
-```text
 #修改配置externalTrafficPolicy为Local
 [root@master1 ~]#kubectl edit svc service-loadbalancer
 externalTrafficPolicy: Local
-```
 
-```text
 #集群内所有节点访问都可以
 [root@master1 ~]#curl 10.0.0.10
-```
 
-```text
 #集群外访问失败
 C:\Users\lbtoo>curl 10.0.0.10
 curl: (28) Failed to connect to 10.0.0.10 port 80 after 21043 ms: Couldn't
@@ -2147,10 +1805,10 @@ connect to server
 
 ![原 PDF 第 42 页插图](assets/Kubernetes服务发现和名称解析/img-e588209861280200.png)
 
-```text
-https://github.com/metallb/metallb
-https://metallb.universe.tf/
-```
+
+- <https://github.com/metallb/metallb>
+- <https://metallb.universe.tf/>
+
 
 A network load-balancer implementation for Kubernetes using standard routing protocols
 
@@ -2174,24 +1832,22 @@ LoadBalancer IP地址配置在某一个节点上，并使用ARP(IPv4)或NDP(IPv6
 
 **安装说明**
 
-```text
-https://metallb.universe.tf/installation/
-https://metallb.io/installation/
-```
+
+- <https://metallb.universe.tf/installation/>
+- <https://metallb.io/installation/>
+
 
 **部署MetalLB 前准备**
 
 如果 kube-proxy工作于ipvs模式，必须使用严格ARP（StrictARP）模式，因此若有必要，先运行如下命令，配置kube-proxy。
-
-```text
+```bash
 kubectl get configmap kube-proxy -n kube-system -o yaml | \
 sed -e "s/strictARP: false/strictARP: true/" | \
 kubectl apply -f - -n kube-system
 ```
 
 **部署MetalLB至Kubernetes集群**
-
-```text
+```bash
 METALLB_VERSION='v0.14.9'
 METALLB_VERSION='v0.14.4'
 kubectl apply -f
@@ -2202,8 +1858,7 @@ fests/metallb-native.yaml
 创建地址池
 
 注意: IPAddressPool 必须使用Kuberetes集群节点的IP地址段。
-
-```text
+```yaml
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
@@ -2217,8 +1872,7 @@ avoidBuggyIPs: true
 ```
 
 **创建二层公告机制**
-
-```text
+```yaml
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
@@ -2236,8 +1890,7 @@ interfaces:
 创建Deployment和LoadBalancer类型的Service，测试地址池是否能给Service分配LoadBalancer IP。
 
 范例：
-
-```text
+```yaml
 #下载最新版
 [root@master1 ~]#wget
 https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-
@@ -2246,9 +1899,7 @@ native.yaml
 [root@master1 ~]#wget
 https://mirror.ghproxy.com/https://raw.githubusercontent.com/metallb/metallb/mai
 n/config/manifests/metallb-native.yaml
-```
 
-```text
 #指定版本
 [root@master1 ~]#METALLB_VERSION='v0.15.2'
 [root@master1 ~]#METALLB_VERSION='v0.14.9'
@@ -2285,25 +1936,19 @@ deployment.apps/controller created
 daemonset.apps/speaker created
 validatingwebhookconfiguration.admissionregistration.k8s.io/metallb-webhook-
 configuration created
-```
 
-```text
 #创建CRD
 [root@master1 ~]#kubectl get crd
 NAME                                       CREATED AT
 bfdprofiles.metallb.io                     2024-04-18T12:25:37Z
 bgpadvertisements.metallb.io               2024-04-18T12:25:37Z
 bgppeers.metallb.io                        2024-04-18T12:25:37Z
-```
 
-```text
 communities.metallb.io                     2024-04-18T12:25:37Z
 ipaddresspools.metallb.io                  2024-04-18T12:25:37Z
 l2advertisements.metallb.io                2024-04-18T12:25:37Z
 servicel2statuses.metallb.io               2024-04-18T12:25:37Z
-```
 
-```text
 #指定IP地址池
 [root@master1 ~]#cat service-metallb-IPAddressPool.yaml
 apiVersion: metallb.io/v1beta1
@@ -2316,9 +1961,7 @@ addresses:
 - 10.0.0.10-10.0.0.50
 autoAssign: true
 avoidBuggyIPs: true
-```
 
-```text
 [root@master1 ~]#cat service-metallb-L2Advertisement.yaml
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -2330,14 +1973,10 @@ ipAddressPools:
 - localip-pool
 interfaces:
 - eth0
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-metallb-IPAddressPool.yaml  -f service-
 metallb-L2Advertisement.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get all -n metallb-system
 NAME                              READY   STATUS    RESTARTS   AGE
 pod/controller-5bcdb8f48c-6t8zr   1/1     Running   0          6m59s
@@ -2345,49 +1984,34 @@ pod/speaker-2slfb                 1/1     Running   0          6m59s
 pod/speaker-7q5zd                 1/1     Running   0          6m59s
 pod/speaker-fzvdk                 1/1     Running   0          11s
 pod/speaker-k7tnm                 1/1     Running   0          6m59s
-```
 
-```text
 NAME                              TYPE        CLUSTER-IP      EXTERNAL-IP
 PORT(S)   AGE
 service/metallb-webhook-service   ClusterIP   10.104.137.39   <none>
 443/TCP   6m59s
-```
 
-```text
 NAME                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE
 NODE SELECTOR            AGE
 daemonset.apps/speaker   4         4         4       4            4
 kubernetes.io/os=linux   6m59s
-```
 
-```text
 NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/controller   1/1     1            1           6m59s
-```
 
-```text
 NAME                                    DESIRED   CURRENT   READY   AGE
 replicaset.apps/controller-5bcdb8f48c   1         1         1       6m59s
 ```
-
-```text
+```yaml
 [root@master1 ~]#kubectl get IPAddressPool -n metallb-system
-```
 
-```text
 NAME           AUTO ASSIGN   AVOID BUGGY IPS   ADDRESSES
 localip-pool   true          true              ["10.0.0.10-10.0.0.50"]
-```
 
-```text
 #创建Deployment和LoadBalancer类型的Service，测试地址池是否能给Service分配LoadBalancer
 IP
 [root@master1 ~]#kubectl create deployment myapp --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-```text
 [root@master1 ~]#cat service-loadbalancer-lbaas.yaml
 apiVersion: v1
 kind: Service
@@ -2403,49 +2027,35 @@ ports:
 protocol: TCP
 port: 80
 targetPort: 80
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-loadbalancer-lbaas.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get ep
 NAME                         ENDPOINTS                                      AGE
 service-loadbalancer-lbaas   10.244.1.43:80,10.244.2.41:80,10.244.3.31:80   6m8s
-```
 
-```text
 #查看到分配了外部IP：10.0.0.11
 [root@master1 ~]#kubectl get svc
 NAME                         TYPE           CLUSTER-IP       EXTERNAL-IP
 PORT(S)             AGE
 service-loadbalancer-lbaas   LoadBalancer   10.108.1.1       10.0.0.11
 80:30729/TCP        5s
-```
 
-```text
 #生成iptables规则
 [root@master1 ~]#iptables -vnL -t nat |grep 30729
 0     0 KUBE-EXT-RAUC225Z5NF5JX4F  tcp  --  *      *       0.0.0.0/0
 0.0.0.0/0            /* default/service-loadbalancer-lbaas:http */ tcp
 dpt:30729
-```
 
-```text
 #从集群外可以访问
 C:\Users\lbtoo>curl 10.0.0.11
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myapp-7dbd45d496-
 8d6nx, ServerIP: 10.244.3.31!
-```
 
-```text
 C:\Users\lbtoo>curl 10.0.0.11
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myapp-7dbd45d496-
 8d6nx, ServerIP: 10.244.3.31!
-```
 
-```text
 C:\Users\lbtoo>curl 10.0.0.11
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.1, ServerName: myapp-7dbd45d496-
 8d6nx, ServerIP: 10.244.3.31!
@@ -2464,8 +2074,7 @@ Service 不仅可以实现Kubernetes集群内Pod应用之间的相互访问以�
 在生产环境中Pod 希望使用某个固定的名称而非IP地址进行访问集群外部的服务使用Service指向另一个Namespace中或其它Kubernetes集群中的服务某个项目正在迁移至Kubernetes集群，但是一部分服务仍然在集群外部，此时可以使用service代理至k8s集群外部的服务。
 
 范例：使用 ExternalName Service 实现代理外部服务
-
-```text
+```html
 #创建文件
 [root@master1 ~]#cat service-externalname-web.yaml
 kind: Service
@@ -2475,7 +2084,7 @@ name: svc-externalname-web
 namespace: default
 spec:
 type: ExternalName
-externalName: www.wangxiaochun.com   #外部服务的FQDN,不支持IP
+externalName: www.bowen.com   #外部服务的FQDN,不支持IP
 #externalName: myapp.demo.svc.cluster.local   #也可以是另一个Service的名称
 ports:                               #以下行都可选
 - protocol: TCP
@@ -2483,78 +2092,54 @@ port: 80
 targetPort: 80                    #外部服务端口
 nodePort: 0
 selector: {}                         #没有标签选择器，表示不关联任何Pod
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f service-externalname-web.yaml
-```
 
-```text
 #注意: service没有Cluster-IP,即为无头服务Headless Service
 [root@master1 ~]#kubectl get svc
 NAME                  TYPE           CLUSTER-IP EXTERNAL-IP          PORT(S) AGE
-svc-externalname-web  ExternalName   <none>     www.wangxiaochun.com 80/TCP  10s
-```
+svc-externalname-web  ExternalName   <none>     www.bowen.com 80/TCP  10s
 
-```text
 #注意：ExternalName没有对应同名的Endpoints
 [root@master1 ~]#kubectl get endpoints
 NAME         ENDPOINTS         AGE
 kubernetes   10.0.0.200:6443   34d
-```
 
-```text
 #解析
 [root@master1 ~]#kubectl run pod-$RANDOM --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --command -- /bin/bash
 root@pod-12181 /# host svc-externalname-web
 svc-externalname-web.default.svc.cluster.local is an alias for
-www.wangxiaochun.com.
-```
+www.bowen.com.
 
-```text
-www.wangxiaochun.com has address 123.56.174.200
-```
+www.bowen.com has address 123.56.174.200
 
-```text
 root@pod-12181 /# nslookup svc-externalname-web
 Server:     10.96.0.10
 Address:    10.96.0.10#53
-```
 
-```text
 svc-externalname-web.default.svc.cluster.local  canonical name =
-www.wangxiaochun.com.
-Name:   www.wangxiaochun.com
+www.bowen.com.
+Name:   www.bowen.com
 Address: 123.56.174.200
-```
 
-```text
 root@pod-12181 /# ping -c1 svc-externalname-web
 PING svc-externalname-web (123.56.174.200): 56 data bytes
 64 bytes from 123.56.174.200: seq=0 ttl=127 time=11.929 ms
-```
 
-```text
 --- svc-externalname-web ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 11.929/11.929/11.929 ms
-```
 
-```text
 / # ping -c1 svc-externalname-web
 PING svc-externalname-web (123.56.174.200): 56 data bytes
 64 bytes from 123.56.174.200: seq=0 ttl=127 time=10.082 ms
-```
 
-```text
 --- svc-externalname-web ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 10.082/10.082/10.082 ms
-```
 
-```text
 root@pod-12181 /# curl svc-externalname-web
 <html>
 <head><title>302 Found</title></head>
@@ -2563,9 +2148,7 @@ root@pod-12181 /# curl svc-externalname-web
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-externalname-web.yaml
 ```
@@ -2573,27 +2156,20 @@ root@pod-12181 /# curl svc-externalname-web
 范例:  使用自建的Endpoint实现基于ClusterIP类型的Service代理集群外部服务
 
 手动创建一个Endpoints资源对象，直接把外部端点的IP地址，放入可用地址列表额外创建一个不带selector的同名的Service对象。
-
-```text
+```yaml
 #在K8s集群外安装redis
 [root@master1 ~]#apt update && apt -y install redis
 [root@master1 ~]#vim /etc/redis/redis.conf
 bind 0.0.0.0
 requirepass 123456 #因为保护模式，需要设置密码
-```
 
-```text
 [root@master1 ~]#systemctl restart redis
-```
 
-```text
 [root@master1 ~]#cat service-endpoints.yaml
 ---
 kind: Endpoints
 apiVersion: v1
-```
 
-```text
 metadata:
 name: service-redis   #和下面的service必须同名
 namespace: default
@@ -2619,28 +2195,20 @@ ports:
 port: 6379
 protocol: TCP
 targetPort: 6379
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-endpoints.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME            TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
 kubernetes      ClusterIP   10.96.0.1     <none>        443/TCP        46d
 service-redis   ClusterIP   10.103.7.0    <none>        6379/TCP       45m
-```
 
-```text
 [root@master1 ~]#kubectl get ep
 NAME                                          ENDPOINTS
 AGE
 service-redis                                 10.0.0.101:6379
 46m
-```
 
-```text
 [root@master1 ~]#kubectl describe svc service-redis
 Name:              service-redis
 Namespace:         default
@@ -2657,15 +2225,11 @@ TargetPort:        6379/TCP
 Endpoints:         10.0.0.101:6379
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 #测试访问
-```
 
-```text
 [root@master1 ~]#kubectl run pod-$RANDOM --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 root@pod-4372 /# host service-redis              #将service解析为Cluster-IP
 service-redis.default.svc.cluster.local has address 10.103.7.0
@@ -2681,16 +2245,13 @@ redis_build_id:66bd629f924ac924
 redis_mode:standalone
 os:Linux 5.4.0-131-generic x86_64
 .....
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-endpoints.yaml
 ```
 
 范例：使用ClusterIP Service基于Headless Service 的自建的Endpoint代理外部服务
-
-```text
+```yaml
 [root@master1 ~]#cat service-endpoints-headless.yaml
 kind: Endpoints
 apiVersion: v1
@@ -2718,27 +2279,19 @@ ports:
 port: 6379
 protocol: TCP
 targetPort: 6379
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-endpoints-headless.yaml
-```
 
-```text
 #注意:CLUSTER-IP为None
 [root@master1 ~]#kubectl get svc
-```
 
-```text
 NAME                   TYPE           CLUSTER-IP   EXTERNAL-IP            PORT(S)
 AGE
 kubernetes             ClusterIP      10.96.0.1    <none>
 443/TCP    34d
 service-redis          ClusterIP      None         <none>
 6379/TCP   7s
-```
 
-```text
 [root@master1 ~]#kubectl describe svc service-redis
 Name:              service-redis
 Namespace:         default
@@ -2755,19 +2308,15 @@ TargetPort:        6379/TCP
 Endpoints:         10.0.0.101:6379
 Session Affinity:  None
 Events:            <none>
-```
 
-```text
 [root@master1 ~]#kubectl get endpoints
 NAME            ENDPOINTS         AGE
 kubernetes      10.0.0.200:6443   34d
 service-redis   10.0.0.101:6379   15s
-```
 
-```text
 #测试访问
 [root@master1 ~]#kubectl run pod-$RANDOM --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 root@pod-4321 /# host service-redis
 service-redis.default.svc.cluster.local has address 10.0.0.101
@@ -2783,9 +2332,7 @@ redis_mode:standalone
 os:Linux 5.4.0-131-generic x86_64
 arch_bits:64
 ....
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f service-endpoints-headless.yaml
 ```
@@ -2798,13 +2345,8 @@ kubernetes的Service默认是按照轮询机制进行转发至后端的多个pod
 
 **属性解析**
 
-```text
-#属性信息
-service.spec.sessionAffinity，#定义粘性会话的类型，可为 None 和 ClientIP,默认值为None即
-不开启会话沾滞
-service.spec.sessionAffinityConfig.clientIP.timeoutSeconds #配置会话保持时长，默认
-10800s即3小时，范围 1-86400
-```
+
+#属性信息 service.spec.sessionAffinity，#定义粘性会话的类型，可为 None 和 ClientIP,默认值为None即不开启会话沾滞 service.spec.sessionAffinityConfig.clientIP.timeoutSeconds #配置会话保持时长，默认 10800s即3小时，范围 1-86400
 
 ```text
 #配置格式
@@ -2815,14 +2357,11 @@ timeoutSeconds: 10800
 ```
 
 范例：默认没有开启会话粘滞
-
-```text
+```yaml
 #准备效果
 [root@master1 ~]#kubectl create deployment myweb --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-```text
 [root@master1 ~]#cat service-test.yaml
 kind: Service
 apiVersion: v1
@@ -2836,31 +2375,21 @@ ports:
 protocol: TCP
 port: 80
 targetPort: 80
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-test.yaml
-```
 
-```text
 #默认效果
 [root@master1 ~]#kubectl get svc service-test
 NAME           TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)   AGE
 service-test   ClusterIP   192.168.193.236   <none>        80/TCP    23h
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                     READY   STATUS    RESTARTS      AGE
 myweb-5df49fdd5-brxcp   1/1     Running   1 (84m ago)   23h
 myweb-5df49fdd5-xnrt4   1/1     Running   1 (84m ago)   23h
-```
 
-```text
 myweb-5df49fdd5-z7d67   1/1     Running   1 (84m ago)   23h
-```
 
-```text
 #结果显示：每次访问的都不一样
 [root@master1 ~]#for i in {1..3};do curl 192.168.193.236;done
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
@@ -2872,8 +2401,7 @@ z7d67, ServerIP: 172.16.2.95!
 ```
 
 范例: 实现会话粘滞
-
-```text
+```yaml
 #修改service对象的会话配置
 [root@master1 ~]#cat service-session.yaml
 apiVersion: v1
@@ -2890,9 +2418,7 @@ sessionAffinity: ClientIP  #客户端IP的亲缘性,实现1800s内的会话保�
 sessionAffinityConfig:
 clientIP:
 timeoutSeconds: 1800  #默认值为10800，即3小时
-```
 
-```text
 #应用资源效果
 [root@master1 ~]#kubectl apply  -f service-session.yaml
 service/service-session created
@@ -2901,9 +2427,7 @@ NAME              TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)
 AGE
 service-session   LoadBalancer   192.168.122.22   <pending>     80:30380/TCP
 8s
-```
 
-```text
 #查看效果,每次访问是同一个pod
 [root@master1 ~]#for i in {1..5};do curl  192.168.122.22;done
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
@@ -2916,9 +2440,7 @@ kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 xnrt4, ServerIP: 172.16.3.108!
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: myweb-5df49fdd5-
 xnrt4, ServerIP: 172.16.3.108!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete  -f service-session.yaml
 ```
@@ -2938,13 +2460,10 @@ ipvs会在每个节点上创建一个名为kube-ipvs0的虚拟接口，并将集
 注意：Kubernetes-v1.29版本后，不再使用iptables，而使用nftables framework，工具使用nft list ruleset 查看。
 
 **更改kube-proxy为IPVS模式方法说明**
-
-```text
+```yaml
 #方法1： 在集群创建的时候，修改kubeadm-init.yml 添加如下配置，此方法是生产中推荐
 [root@master1 ~]#kubeadm config print init-defaults > kubeadm-init.yaml
-```
 
-```text
 #在文件最后面添加以下几行
 [root@master1 ~]#vim  kubeadm-init.yaml
 ---
@@ -2953,9 +2472,7 @@ kind: KubeProxyConfiguration
 featureGates:
 SupportIPVSProxyMode: true
 mode: ipvs
-```
 
-```text
 #方法2：在测试环境中，临时修改一下configmap中proxy的基本属性，此方式在测试环境中推荐使用
 root@master1:~# kubectl edit configmap kube-proxy -n kube-system
 ...
@@ -2963,32 +2480,25 @@ mode: "ipvs"  #修改此行，默认为空”“表示iptables模式
 ...
 ```
 
-```text
-#所有的规则都是 ipvs本身的调度规则，可以在node节点上查看效果(master也可以)
-ipvsadm -Ln
-nft list ruleset
-```
+
+#所有的规则都是 ipvs本身的调度规则，可以在node节点上查看效果(master也可以) ipvsadm -Ln nft list ruleset
+
 
 范例：查看默认模式 Iptables
-
-```text
+```bash
 #查看所有节点的当前模式
 [root@master1 ~]#curl 127.0.0.1:10249/proxyMode
 iptables
 [root@node1 ~]#curl 127.0.0.1:10249/proxyMode
 iptables
-```
 
-```text
 [root@master1 ~]#kubectl get pod -n kube-system  -l k8s-app=kube-proxy
 NAME               READY   STATUS    RESTARTS   AGE
 kube-proxy-gh528   1/1     Running   0          2m28s
 kube-proxy-hpl88   1/1     Running   0          2m28s
 kube-proxy-nglzg   1/1     Running   0          2m27s
 kube-proxy-tg4ss   1/1     Running   0          23s
-```
 
-```text
 #查看日志，可以看到默认使用iptables模式
 [root@master1 ~]#kubectl logs kube-proxy-gh528 -n kube-system
 I0409 03:29:31.160269       1 node.go:163] Successfully retrieved node IP:
@@ -3002,14 +2512,10 @@ stack mode" ipFamily=IPv4
 I0409 03:29:31.175361       1 server_others.go:184] "Creating dualStackProxier
 for iptables"
 .....
-```
 
-```text
 #在Kubernetes集群中，关于kube-proxy的所有属性信息，可以通过 configmap 的资源对象实现
 [root@master1 ~]#kubectl describe configmap kube-proxy -n kube-system
-```
 
-```text
 Name:         kube-proxy
 Namespace:    kube-system
 Labels:       app=kube-proxy
@@ -3035,25 +2541,20 @@ mode: ""                            # 默认没有指定，就使用 iptables �
 ```
 
 范例: 修改为IPVS模式
-
-```text
+```bash
 #查看当前模式
 [root@master1 ~]#curl 127.0.0.1:10249/proxyMode
 iptables
 [root@node1 ~]#curl 127.0.0.1:10249/proxyMode
 iptables
-```
 
-```text
 #所有节点查看，当前没有IPVS规则
 [root@master1 ~]#apt update && apt -y install ipvsadm && ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
 Prot LocalAddress:Port Scheduler Flags
 -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
 [root@master1 ~]#
-```
 
-```text
 #查看默认的configmap
 [root@master1 ~]#kubectl get cm -n kube-system
 NAME                                 DATA   AGE
@@ -3063,9 +2564,7 @@ kube-proxy                           2      419d
 kube-root-ca.crt                     1      419d
 kubeadm-config                       1      419d
 kubelet-config                       1      419d
-```
 
-```text
 #方法1：
 [root@master1 ~]#kubectl get configmap kube-proxy -n kube-system -o yaml > kube-
 proxy.yaml
@@ -3074,9 +2573,7 @@ proxy.yaml
 mode: "ipvs" #修改此行，默认为 “” 表示iptables
 ...
 [root@master1 ~]#kubectl apply -f kube-proxy.yaml
-```
 
-```text
 #方法2：在线修改一下configmap中proxy的基本属性
 [root@master1 ~]#kubectl edit configmap kube-proxy -n kube-system
 ...
@@ -3093,9 +2590,7 @@ kind: KubeProxyConfiguration
 metricsBindAddress: ""
 mode: "ipvs"          #修改此行，默认为 “” 表示iptables
 ...
-```
 
-```text
 #查看kube-proxy对应Pod的标签
 [root@master1 ~]#kubectl get  pod -n kube-system --show-labels  |grep kube-proxy
 kube-proxy-7p8vr                           1/1     Running   5 (99m ago)    33d
@@ -3104,22 +2599,16 @@ generation=1
 kube-proxy-fn6mt                           1/1     Running   8 (10h ago)    33d
 controller-revision-hash=85648747bd,k8s-app=kube-proxy,pod-template-
 generation=1
-```
 
-```text
 kube-proxy-tb7gh                           1/1     Running   9 (10h ago)    33d
 controller-revision-hash=85648747bd,k8s-app=kube-proxy,pod-template-
 generation=1
 kube-proxy-xpxnt                           1/1     Running   9 (10h ago)    33d
 controller-revision-hash=85648747bd,k8s-app=kube-proxy,pod-template-
 generation=1
-```
 
-```text
 #需要稍等一会儿才能生效
-```
 
-```text
 #如果想立即生效可以重启所有的kube-proxy pod对象
 #方法1：重启相关Pod
 [root@master1 ~]#kubectl get ds -n kube-system
@@ -3136,9 +2625,7 @@ kube-proxy-xpxnt   1/1     Running   7 (7h5m ago)   412d
 、
 [root@master1 ~]#kubectl rollout restart daemonset -n kube-system kube-proxy
 daemonset.apps/kube-proxy restarted
-```
 
-```text
 #查看Pod重启
 [root@master1 ~]#kubectl get pod -n kube-system -l k8s-app=kube-proxy
 NAME               READY   STATUS    RESTARTS   AGE
@@ -3146,19 +2633,17 @@ kube-proxy-cl6zt   1/1     Running   0          1s
 kube-proxy-km245   1/1     Running   0          5s
 kube-proxy-lrdcv   1/1     Running   0          7s
 kube-proxy-vm49z   1/1     Running   0          3s
-```
 
-```text
 #方法2：
 #新版
 [root@master1 ~]#kubectl delete pod -n kube-system -l k8s-app=kube-proxy
 #旧版
 [root@master1 ~]#kubectl delete pod -n kube-system -l kubernetes-app=kube-proxy
-```
 
-```text
 #检查效果
 #新版
+```
+```yaml
 [root@master1 ~]#kubectl get pod -n kube-system -l k8s-app=kube-proxy -o wide
 #旧版
 [root@master1 ~]#kubectl get pod -n kube-system -l kubernetes-app=kube-proxy -o
@@ -3166,31 +2651,25 @@ wide
 NAME               READY   STATUS    RESTARTS   AGE   IP           NODE
 NOMINATED NODE   READINESS GATES
 kube-proxy-bflzm   1/1     Running   0          50s   10.0.0.106
-node3.wang.org     <none>           <none>
+node3.bowen.org     <none>           <none>
 kube-proxy-czlg2   1/1     Running   0          50s   10.0.0.103
 master3.cluster.local   <none>           <none>
 kube-proxy-j7szq   1/1     Running   0          50s   10.0.0.104
-node1.wang.org     <none>           <none>
+node1.bowen.org     <none>           <none>
 kube-proxy-mb2hn   1/1     Running   0          50s   10.0.0.105
-node2.wang.org     <none>           <none>
+node2.bowen.org     <none>           <none>
 kube-proxy-rlwx9   1/1     Running   0          51s   10.0.0.102
 master2.cluster.local   <none>           <none>
-```
 
-```text
 kube-proxy-w4swc   1/1     Running   0          50s   10.0.0.101
 master1.cluster.local   <none>           <none>
-```
 
-```text
 #验证模式修改IPVS
 [root@master1 ~]#curl 127.0.0.1:10249/proxyMode
 ipvs
 [root@node1 ~]#curl 127.0.0.1:10249/proxyMode
 ipvs
-```
 
-```text
 #查看日志
 [root@master1 ~]#kubectl logs  kube-proxy-bflzm   -n kube-system
 I0320 13:57:28.952304       1 node.go:172] Successfully retrieved node IP:
@@ -3202,9 +2681,7 @@ I0320 13:57:28.970305       1 server_others.go:274] Using ipvs Proxier.
 I0320 13:57:28.970394       1 server_others.go:276] creating dualStackProxier
 for ipvs.
 .......
-```
 
-```text
 #查看到默认为RR算法
 [root@master1 ~]#ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
@@ -3223,9 +2700,7 @@ TCP  192.168.0.10:9153 rr
 UDP  192.168.0.10:53 rr
 -> 172.16.1.27:53               Masq    1      0          0
 -> 172.16.3.71:53               Masq    1      0          0
-```
 
-```text
 #创建servcie观察结果
 [root@master1 ~]#cat service-test.yaml
 kind: Service
@@ -3240,17 +2715,11 @@ ports:
 protocol: TCP
 port: 80
 targetPort: 80
-```
 
-```text
 [root@master1 ~]#kubectl apply -f service-test.yaml
-```
 
-```text
 #查看IPVS规则
-```
 
-```text
 [root@master1 ~]#ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
 Prot LocalAddress:Port Scheduler Flags
@@ -3272,9 +2741,7 @@ TCP  192.168.68.146:80 rr
 UDP  192.168.0.10:53 rr
 -> 172.16.1.27:53               Masq    1      0          0
 -> 172.16.3.71:53               Masq    1      0          0
-```
 
-```text
 [root@master1 ~]#cat service-nodeport.yaml
 kind: Service
 apiVersion: v1
@@ -3291,12 +2758,9 @@ port: 80
 targetPort: 80
 nodePort: 30066
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl apply -f service-nodeport.yaml
-```
 
-```text
 #查看IPVS规则
 [root@master1 ~]#ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
@@ -3315,9 +2779,7 @@ TCP  192.168.0.1:443 rr
 -> 10.0.0.102:6443              Masq    1      0          0
 -> 10.0.0.103:6443              Masq    1      0          0
 TCP  192.168.0.10:53 rr
-```
 
-```text
 -> 172.16.1.27:53               Masq    1      0          0
 -> 172.16.3.71:53               Masq    1      0          0
 TCP  192.168.0.10:9153 rr
@@ -3341,16 +2803,13 @@ UDP  192.168.0.10:53 rr
 ```
 
 ## 1.4 综合案例：wordpress
-
-```text
+```yaml
 [root@master1 ~]#cat wordpress-mysql-svc-deployment.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
 name: demo
-```
 
-```text
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -3368,7 +2827,7 @@ labels:
 app: mysql
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+- image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 name: mysql
 env:
 - name: MYSQL_ROOT_PASSWORD
@@ -3379,9 +2838,7 @@ value: "wordpress"
 value: wordpress
 - name: MYSQL_PASSWORD
 value: "123456"
-```
 
-```text
 ---
 apiVersion: v1
 kind: Service
@@ -3395,9 +2852,7 @@ protocol: TCP
 targetPort: 3306
 selector:
 app: mysql
-```
 
-```text
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -3415,7 +2870,7 @@ labels:
 app: wordpress
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/wordpress:php8.2-
+- image: registry.cn-beijing.aliyuncs.com/bowen/wordpress:php8.2-
 apache
 name: wordpress
 env:
@@ -3428,9 +2883,7 @@ value: wordpress
 value: "123456"
 - name: WORDPRESS_DB_NAME
 value: wordpress
-```
 
-```text
 ---
 apiVersion: v1
 kind: Service
@@ -3443,9 +2896,7 @@ ports:
 protocol: TCP
 targetPort: 80
 selector:
-```
 
-```text
 app: wordpress
 #type: NodePort
 type: LoadBalancer #有前提，需要部署LoadBalancer軟件

@@ -2,6 +2,7 @@
 layout: default
 title: Kubernetes 学习笔记
 subject_page: true
+kubernetes_notes: true
 ---
 
 # Kubernetes 学习笔记

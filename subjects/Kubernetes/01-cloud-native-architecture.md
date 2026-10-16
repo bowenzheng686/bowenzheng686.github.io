@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · 云原生生态与 Kubernetes 架构'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -58,21 +59,19 @@ Kubernetes 成为容器战争胜利者标志着后微服务时代的开端，但
 
 ![原 PDF 第 4 页插图](assets/Kubernetes架构和部署/img-b09f5ebb7b7c203b.png)
 
-```text
+
 2006年：在2006年12月19由Avi Kivity宣告了KVM的诞生，而在2007年2月，KVM发布到内核2.6.20中
-2007年：cgroups最早是由Google的工程师在2006年发起，早期名称为proccess containers，为了和
-其他Linux内核的名词产生混乱，2007年被重命名为cgroup，合并到了2.6.24版的内核中。LXC正式在
-cgroups和namespace的基础上实现的隔离与控制。
+
+2007年：cgroups最早是由Google的工程师在2006年发起，早期名称为proccess containers，为了和其他Linux内核的名词产生混乱，2007年被重命名为cgroup，合并到了2.6.24版的内核中。LXC正式在 cgroups和namespace的基础上实现的隔离与控制。
+
 2013年：docker诞生。
-2014年：coreos与docker分道扬镳，另起炉灶起了一套容器的机制Rocket，并得到了Google等公司的大
-力支持。而随后也直接成为CNCF的项目之一，然而现在已经由于无人更新淡出人们的视野了，也成为了CNCF
-第一个剔除的项目。
-2015年：在2015年，由Docker和Linux基金会携手发布了OCP（Open Container Project），后来此项
-目被Linux基金会的执行董事Jim Zemlin宣布更名为开放容器计划OCI（Open Container
-Initiative），后续有更多的公司诸如CoreOS、Redhat等加入一起支持该计划，维护并推进Docker的规
-范，以建立一个容器的通用标准。
+
+2014年：coreos与docker分道扬镳，另起炉灶起了一套容器的机制Rocket，并得到了Google等公司的大力支持。而随后也直接成为CNCF的项目之一，然而现在已经由于无人更新淡出人们的视野了，也成为了CNCF 第一个剔除的项目。
+
+2015年：在2015年，由Docker和Linux基金会携手发布了OCP（Open Container Project），后来此项目被Linux基金会的执行董事Jim Zemlin宣布更名为开放容器计划OCI（Open Container Initiative），后续有更多的公司诸如CoreOS、Redhat等加入一起支持该计划，维护并推进Docker的规范，以建立一个容器的通用标准。
+
 2015年：CNCF成立，建议以Kubernetes为中心的云原生解决方案。
-```
+
 
 ### 技术的发展带来的变迁
 
@@ -84,37 +83,29 @@ Initiative），后续有更多的公司诸如CoreOS、Redhat等加入一起支�
 
 #### 最小构建单位的变迁
 
-```text
-https://blog.csdn.net/liumiaocn/article/details/100749302
-```
+
+- <https://blog.csdn.net/liumiaocn/article/details/100749302>
+
 
 ![原 PDF 第 4 页插图](assets/Kubernetes架构和部署/img-386e26a44cfd66ef.png)
 
-```text
-2000年：应用程序的运行还是在物理机上运行的时代，以sun的非虚拟化的硬件为代表，当我们需要启动一个
-新的应用时，往往需要购买一台或者多台新的物理服务器来解决所需要的资源问题，物理机器是构建应用的最
-小单元。
-2001年：vmware的虚拟技术使得构建应用的最小单元变成了一台虚拟机，可以通过在一台物理机器上运行多
-个VM，意味着使用者需要更少的硬件资源投入。
-2006年：在这一年，Amazon的AWS（Amazon Web Services）通过EC2（Elastic Compute Cloud）在
-IaaS获得成功，虽然构建应用的最小单元仍然是VM（被成为AMI：Amazon Machine Image），已经可以做
-到按小时来出租服务器。
-2009年：在这一年Heroku在PaaS（Platform-as-a-Service）获得成功，构建应用的最小单位被成为
-buildpack，在buildpack中应用满足12要素，部署新的版本在Heroku上已经非常简单，只需要执行git
-push heroku即可。
-2010年：OpenStack召集了大量的供应商提供了开源的IaaS与AWS和VMWare来进行对抗，而构建应用的最小
-单位仍然是VM。
-2011年：Pivotal提供了一个开源的可以与Heroku的PaaS相抗衡的开源PaaS，这就是后来2014年启动的
-CF（Cloud Foundry），在这种方式下，构建应用的最小单位被称为Garden containers，其中可以包含
-Heroku的buildpack、Docker容器甚至非Linux操作系统。
-2013年：Docker将LXC、Union File System和cgroups结合起来形成了容器标准，得到了全世界数百万
-开发者的极大认可，几乎是一夜之间红遍大江南北，使得隔离、重用性以及一致性得到了保证，构建应用的最
-小单位变成了容器。
-2015年：CNCF成立，云原生计算通过使用一系列的开源软件实现了三个主要的目的
-将应用拆分为微服务方式
-将每一部分打包形成各自的容器
-提供动态编排机制从而对容器的资源利用率进行优化
-```
+
+2000年：应用程序的运行还是在物理机上运行的时代，以sun的非虚拟化的硬件为代表，当我们需要启动一个新的应用时，往往需要购买一台或者多台新的物理服务器来解决所需要的资源问题，物理机器是构建应用的最小单元。
+
+2001年：vmware的虚拟技术使得构建应用的最小单元变成了一台虚拟机，可以通过在一台物理机器上运行多个VM，意味着使用者需要更少的硬件资源投入。
+
+2006年：在这一年，Amazon的AWS（Amazon Web Services）通过EC2（Elastic Compute Cloud）在 IaaS获得成功，虽然构建应用的最小单元仍然是VM（被成为AMI：Amazon Machine Image），已经可以做到按小时来出租服务器。
+
+2009年：在这一年Heroku在PaaS（Platform-as-a-Service）获得成功，构建应用的最小单位被成为 buildpack，在buildpack中应用满足12要素，部署新的版本在Heroku上已经非常简单，只需要执行git push heroku即可。
+
+2010年：OpenStack召集了大量的供应商提供了开源的IaaS与AWS和VMWare来进行对抗，而构建应用的最小单位仍然是VM。
+
+2011年：Pivotal提供了一个开源的可以与Heroku的PaaS相抗衡的开源PaaS，这就是后来2014年启动的 CF（Cloud Foundry），在这种方式下，构建应用的最小单位被称为Garden containers，其中可以包含 Heroku的buildpack、Docker容器甚至非Linux操作系统。
+
+2013年：Docker将LXC、Union File System和cgroups结合起来形成了容器标准，得到了全世界数百万开发者的极大认可，几乎是一夜之间红遍大江南北，使得隔离、重用性以及一致性得到了保证，构建应用的最小单位变成了容器。
+
+2015年：CNCF成立，云原生计算通过使用一系列的开源软件实现了三个主要的目的将应用拆分为微服务方式将每一部分打包形成各自的容器提供动态编排机制从而对容器的资源利用率进行优化
+
 
 **美国国家标准与技术研究院（NIST）定义**：云计算是一种按使用量付费的模式，这种模式提供可用的、便捷的、按需的网络访问， 进入可配置的计算资源共享池（资源包括网络，服务器，存储，应用软件，服务），这些资源能够被快速提供，只需投入很少的管理工作，或与服务供应商进行很少的交互。
 
@@ -140,9 +131,9 @@ CNCF 这个组织的作用是推广技术，形成社区，开源项目管理与
 
 当前CNCF的成员有:
 
-```text
-https://landscape.cncf.io/?group=members
-```
+
+- <https://landscape.cncf.io/?group=members>
+
 
 CNCF 组织由以下部分组成：
 
@@ -158,9 +149,9 @@ CNCF 组织由以下部分组成：
 
 2013年：Pivotal公司的Matt Stine于首次提出此概念
 
-```text
-https://www.mattstine.com/
-```
+
+- <https://www.mattstine.com/>
+
 
 ![原 PDF 第 7 页插图](assets/Kubernetes架构和部署/img-8933658e995098d8.jpeg)
 
@@ -173,7 +164,6 @@ https://www.mattstine.com/
 2018年：CNCF 把服务网格(Service Mesh)和声明式API给加入到云原生的概念中。
 
 **CNCF 官方定义云原生**
-
 ```text
 https://github.com/cncf/toc/blob/main/DEFINITION.md#%E4%B8%AD%E6%96%87%E7%89%88%
 E6%9C%AC
@@ -193,22 +183,17 @@ E6%9C%AC
 
 **Vmware 云原生定义**
 
-```text
-https://tanzu.vmware.com/cloud-native
-什么是云原生，什么是云原生应用？
-云原生是一种构建和运行应用程序的方法，它利用了云计算交付模型的优势。当公司使用云原生架构构建和运
-营应用程序时，他们可以更快地将新想法推向市场，并更快地响应客户需求。
-```
 
-```text
-虽然公共云已经影响了几乎每个行业的基础设施投资思维，但类似云的交付并不是公共环境独有的。云原生开
-发适用于公有云和私有云；它是关于如何创建和部署应用程序，而不是在哪里。
-```
+<https://tanzu.vmware.com/cloud-native>
 
-```text
-更重要的是能够为开发人员提供对计算能力的按需访问以及现代数据和应用程序服务。云原生开发融合了
-DevOps、持续交付、微服务和容器的概念。
-```
+什么是云原生，什么是云原生应用？云原生是一种构建和运行应用程序的方法，它利用了云计算交付模型的优势。当公司使用云原生架构构建和运营应用程序时，他们可以更快地将新想法推向市场，并更快地响应客户需求。
+
+
+虽然公共云已经影响了几乎每个行业的基础设施投资思维，但类似云的交付并不是公共环境独有的。云原生开发适用于公有云和私有云；它是关于如何创建和部署应用程序，而不是在哪里。
+
+
+更重要的是能够为开发人员提供对计算能力的按需访问以及现代数据和应用程序服务。云原生开发融合了 DevOps、持续交付、微服务和容器的概念。
+
 
 云原生技术出现的背景是组织在推行云计算时，由于公有云、私有云和混合云的复杂环境已经变得越来越普及，所以在这种基础架构之下如何保证松耦合的系统能够更好地被监控和管理，是云原生技术需要面对和解决的问题。
 
@@ -222,10 +207,10 @@ CNCF是旨在推动以容器为中心的云原生系统。从 2016 年 11 月，
 
 **CNCF 云原生相关参考资料**
 
-```text
-http://dockone.io/article/3006
-https://www.kubernetes.org.cn/5482.html
-```
+
+- <http://dockone.io/article/3006>
+- <https://www.kubernetes.org.cn/5482.html>
+
 
 #### 1.3.3.1 CNCF 全景图
 
@@ -237,52 +222,51 @@ https://landscape.cncf.io/images/landscape.png
 
 https://landscape.cncf.io/
 
-```text
-https://landscape.cncf.io/
-https://github.com/cncf/landscape
-https://landscape.cncf.io/images/landscape.png
-```
+
+- <https://landscape.cncf.io/>
+- <https://github.com/cncf/landscape>
+- <https://landscape.cncf.io/images/landscape.png>
+
 
 ![原 PDF 第 9 页插图](assets/Kubernetes架构和部署/img-5d222506546b7ef8.png)
 
 **CNCF 项目分类**
+**应用开发和管理解决方案集合**
+- Database
+- streaming & message
+- Application Definition & image build
+- Continuous Integration & Delivery
 
-```text
-应用开发和管理解决方案集合
-Database
-streaming & message
-Application Definition & image build
-Continuous Integration & Delivery
-编排管理解决方案集合
-Scheduling & Orchestration
-Coordination & Service Discovery
-Remote Procedure Call
-Service Proxy
-API Gateway
-Service Mesh
-运行时解决方案集合
-Cloud Native Storage
-Container Runtime
-Cloud Native Network
-基础功能解决方案集合
-Automation & Configuration
-Container Registry
-Security & Compliance
-```
+**编排管理解决方案集合**
+- Scheduling & Orchestration
+- Coordination & Service Discovery
+- Remote Procedure Call
+- Service Proxy
+- API Gateway
+- Service Mesh
 
-```text
-Key Management
-平台解决方案集合
-Certified Kubernetes - Distribution
-Certified Kubernetes - Hosted
-Certified Kubernetes - Installer
-PaaS/Container Service
-检测和分析解决方案集合
-Monitoring
-Logging
-Tracing
-Chaos Engineering
-```
+**运行时解决方案集合**
+- Cloud Native Storage
+- Container Runtime
+- Cloud Native Network
+
+**基础功能解决方案集合**
+- Automation & Configuration
+- Container Registry
+- Security & Compliance
+- Key Management
+
+**平台解决方案集合**
+- Certified Kubernetes - Distribution
+- Certified Kubernetes - Hosted
+- Certified Kubernetes - Installer
+- PaaS/Container Service
+
+**检测和分析解决方案集合**
+- Monitoring
+- Logging
+- Tracing
+- Chaos Engineering
 
 #### 1.3.3.2 CNCF 项目成熟度分级
 
@@ -304,107 +288,74 @@ CNCF各个项目成熟度查询链接: https://www.cncf.io/projects/
 
 ### 1.3.4 CNCF 路线图 Trail Map
 
-```text
-https://github.com/cncf/landscape/blob/master/README.md#trail-map
-https://blog.csdn.net/liumiaocn/article/details/100653635
-```
+
+- <https://github.com/cncf/landscape/blob/master/README.md#trail-map>
+- <https://blog.csdn.net/liumiaocn/article/details/100653635>
+
 
 在复杂的基础架构之上如何推动云原生应用的更好落地，从而更好地适应环境与业务的发展，CNCF给出了路线图Trail Map用于对于用户在整体上给出了指导建议，分成十个步骤进行实施，而在不同的步骤都可以结合Landscape中列出的产品或服务进行选择。
 
 步骤1: 容器化
 
-```text
-方式：虽然容器化可以选择多种方式，一般仍以Docker为主要方式进行容器化。
-类型：各种类型应用和依赖（甚至模拟器上运行的代码）都可以进行容器化，容器化的类型得到广泛的支持
-演进：对于新的功能，可以进行应用的分割并将其进行微服务化
-```
+
+方式：虽然容器化可以选择多种方式，一般仍以Docker为主要方式进行容器化。类型：各种类型应用和依赖（甚至模拟器上运行的代码）都可以进行容器化，容器化的类型得到广泛的支持演进：对于新的功能，可以进行应用的分割并将其进行微服务化
+
 
 步骤2: CI/CD
 
-```text
-容器化：创建持续集成CI与持续部署CD环境，从而使得代码的修改可以自动从源码进行容器化的构建和测试，
-并可以部署至准生产或者生产环境。
-自动化：创建可以用于自动部署、自动回滚和自动测试的方式
-```
+
+容器化：创建持续集成CI与持续部署CD环境，从而使得代码的修改可以自动从源码进行容器化的构建和测试，并可以部署至准生产或者生产环境。自动化：创建可以用于自动部署、自动回滚和自动测试的方式
+
 
 步骤3: 应用定义与编排
 
-```text
-应用编排：Kubernetes作为容器化的应用编排的解决方案，在目前的市场上处于领先地位。
-管理应用：Helm Charts能帮助使用者对复杂的Kubernetes应用进行定义、安装和升级。
-CNCF项目：Kubernetes（已毕业）、HELM（孵化中,当前已毕业）
-```
+
+应用编排：Kubernetes作为容器化的应用编排的解决方案，在目前的市场上处于领先地位。管理应用：Helm Charts能帮助使用者对复杂的Kubernetes应用进行定义、安装和升级。CNCF项目：Kubernetes（已毕业）、HELM（孵化中,当前已毕业）
+
 
 步骤4: 监控&分析
 
-```text
-范围：解决方案应该包含监控、日志和追踪
-工具：推荐的工具可以选择使用Prometheus进行监控和告警，Fluentd用于日志，而Jaeger则用于调用链
-的跟踪
-兼容性：调用链跟踪建议选择诸如Jaeger那样对OpenTracing有兼容性的方案或者工具
-CNCF项目：Prometheus（已毕业）、fluentd（孵化中，已毕业）、OPENTRACING（孵化中）、
-JAEGER（孵化中）
-```
+
+范围：解决方案应该包含监控、日志和追踪工具：推荐的工具可以选择使用Prometheus进行监控和告警，Fluentd用于日志，而Jaeger则用于调用链的跟踪兼容性：调用链跟踪建议选择诸如Jaeger那样对OpenTracing有兼容性的方案或者工具 CNCF项目：Prometheus（已毕业）、fluentd（孵化中，已毕业）、OPENTRACING（孵化中）、JAEGER（孵化中）
+
 
 注意：步骤4开始为可选内容。
 
 步骤5: 服务代理、服务发现和服务网格。
 
-```text
-服务发现：可以使用CoreDNS进行服务发现，兼具快速和灵活的特点。
-服务网格：Envoy和Linkerd都能够提供服务网格的相关能力。
-管理功能：提供健康检查、请求陆游以及负载均衡等常用功能。
-CNCF项目：envoy（已毕业）、CoreDNS（已毕业）、LINKERD（孵化中）
-```
+
+服务发现：可以使用CoreDNS进行服务发现，兼具快速和灵活的特点。服务网格：Envoy和Linkerd都能够提供服务网格的相关能力。管理功能：提供健康检查、请求陆游以及负载均衡等常用功能。CNCF项目：envoy（已毕业）、CoreDNS（已毕业）、LINKERD（孵化中）
+
 
 步骤6: 网络&策略
 
-```text
-网络兼容：为了能够更加灵活地对应网络需求，使用CNI兼容的网络解决方案诸如Calico、Flannel或者
-Weave Net等。
-策略：OPA（Open Policy Agent）秉承着“策略即代码”的原则，完成了一个通用的策略引擎的基本功能，
-可以帮助使用者控制策略和权限以保证合规性。
-CNCF项目：CNI（孵化中）、Open Policy Agent（孵化中）
-```
+
+网络兼容：为了能够更加灵活地对应网络需求，使用CNI兼容的网络解决方案诸如Calico、Flannel或者 Weave Net等。策略：OPA（Open Policy Agent）秉承着“策略即代码”的原则，完成了一个通用的策略引擎的基本功能，可以帮助使用者控制策略和权限以保证合规性。CNCF项目：CNI（孵化中）、Open Policy Agent（孵化中）
+
 
 步骤7: 分布式数据库与存储
 
-```text
-横向扩展性：当需要获取更多的弹性和横向扩展性时，相较于从单一数据库来获取信息，通过sharding的方
-式保证MySQL的横向扩展性，Vitess是一个不错的选择。
-存储编排：通过集成多种Kubernetes的存储解决方案，可以使用提供了存储的编排方式的Rook进行管理。
-数据存储：作为Kubernetes的“大脑”，etcd提供了在集群中以可靠的方式存储数据的能力。
-KV存储：当需要key-value存储方案时，可以考虑使用TiKV，TiKV使用Rust编写的高性能的分布式事务级
-key-value解决方案。
-CNCF项目：Vitess（孵化中）、ROOK（孵化中）、etcd（孵化中）、TiKV（孵化中）
-```
+
+横向扩展性：当需要获取更多的弹性和横向扩展性时，相较于从单一数据库来获取信息，通过sharding的方式保证MySQL的横向扩展性，Vitess是一个不错的选择。存储编排：通过集成多种Kubernetes的存储解决方案，可以使用提供了存储的编排方式的Rook进行管理。数据存储：作为Kubernetes的“大脑”，etcd提供了在集群中以可靠的方式存储数据的能力。KV存储：当需要key-value存储方案时，可以考虑使用TiKV，TiKV使用Rust编写的高性能的分布式事务级 key-value解决方案。CNCF项目：Vitess（孵化中）、ROOK（孵化中）、etcd（孵化中）、TiKV（孵化中）
+
 
 步骤8: 流与消息处理
 
-```text
-性能需求：当需要比JSON-RESt更高的性能时，gRPC或者NATS能够助你一臂之力。
-通用框架：gRPC时一个通用的RPC框架。而NATS是一个包含了请求/大幅、发布/订阅和负载均衡队列的多模
-型消息系统。
-CNCF项目：gRPC（孵化中）、NATS（孵化中）
-```
+
+性能需求：当需要比JSON-RESt更高的性能时，gRPC或者NATS能够助你一臂之力。通用框架：gRPC时一个通用的RPC框架。而NATS是一个包含了请求/大幅、发布/订阅和负载均衡队列的多模型消息系统。CNCF项目：gRPC（孵化中）、NATS（孵化中）
+
 
 步骤9: 镜像私库&运行环境
 
-```text
-镜像私库：可以使用Harbor作为镜像私库进行存储以及对镜像的内容进行扫描。
-运行环境：容器并非仅仅Docker一种，容器的运行环境更是如此，可以选择不同的容器运行环境，但需要注意
-选择具有OCI兼容性的的方案，比如containerd或者cri-o
-CNCF项目：containerd（已孵化）、HABOR（孵化中）、cri-o（孵化中）
-```
+
+镜像私库：可以使用Harbor作为镜像私库进行存储以及对镜像的内容进行扫描。运行环境：容器并非仅仅Docker一种，容器的运行环境更是如此，可以选择不同的容器运行环境，但需要注意选择具有OCI兼容性的的方案，比如containerd或者cri-o CNCF项目：containerd（已孵化）、HABOR（孵化中）、cri-o（孵化中）
+
 
 步骤10: 软件分发
 
-```text
-安全性：TLS能够保护通信的安全，但是当服务器出现问题后，自然就会出现问题。而使用Notary可以解决这
-一问题，是的软件的分发和更新更加安全。TUF项目则是Notary所基于的项目，也是针对软件分发和更新的安
-全性的解决方案。
-CNCF项目：Notary（孵化中）、TUF（孵化中）
-```
+
+安全性：TLS能够保护通信的安全，但是当服务器出现问题后，自然就会出现问题。而使用Notary可以解决这一问题，是的软件的分发和更新更加安全。TUF项目则是Notary所基于的项目，也是针对软件分发和更新的安全性的解决方案。CNCF项目：Notary（孵化中）、TUF（孵化中）
+
 
 ## 1.4 容器编排工具
 
@@ -453,7 +404,6 @@ github：https://github.com/kubernetes/kubernetes
 ![原 PDF 第 15 页插图](assets/Kubernetes架构和部署/img-ba873a4fe412b8fb.png)
 
 **Kubernetes 特性**
-
 ```text
 https://kubernetes.io/zh-cn/
 https://kubernetes.io/zh-cn/docs/concepts/overview/#why-you-need-kubernetes-and-
@@ -502,9 +452,9 @@ Kubernetes 会分步骤地将针对应用或其配置的更改上线，同时监
 
 **kubernetes设计架构参考**
 
-```text
-https://www.kubernetes.org.cn/kubernetes%E8%AE%BE%E8%AE%A1%E6%9E%B6%E6%9E%84
-```
+
+- <https://www.kubernetes.org.cn/kubernetes%E8%AE%BE%E8%AE%A1%E6%9E%B6%E6%9E%84>
+
 
 ![原 PDF 第 17 页插图](assets/Kubernetes架构和部署/img-750d25e45de2e085.png)
 
@@ -530,9 +480,9 @@ Kubernetes将所有worker工作节点的资源集结在一起形成一台逻辑�
 
 ## 2.3 Kubernetes 组件
 
-```text
-https://kubernetes.io/zh/docs/concepts/overview/components/
-```
+
+- <https://kubernetes.io/zh/docs/concepts/overview/components/>
+
 
 ![原 PDF 第 18 页插图](assets/Kubernetes架构和部署/img-62c63cfa608b0c3a.png)
 
@@ -568,7 +518,6 @@ https://kubernetes.io/zh/docs/concepts/overview/components/
 控制平面的组件做出有关集群的全局决策（例如，调度），以及检测和响应集群事件（例如，当部署的replicas 无法达到要求时，自动启动新的Pod）。Control Plane组件可以在群集中的任何计算机上运行。但是，为简单起见，通常在同一台计算机上启动所有Control Plane组件，并且不在该计算机上运行用户容器。
 
 #### 2.3.1.1 kube-apiserver
-
 ```text
 https://github.com/kubernets/kube-apiserver
 https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-
@@ -586,7 +535,6 @@ Kubernetes API Server 是整个集群的访问入口，负责验证和配置 Pod
 **状态存储**：API Server 本身无状态，集群数据存储在 etcd 中。
 
 #### 2.3.1.2 kube-controller-manager
-
 ```text
 https://github.com/kubernetes/kube-controller-manager
 https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-
@@ -598,7 +546,6 @@ Controller Manager 是集群内部的管理控制中心，负责 Node、Pod 副�
 **控制回路**：Controller Manager 根据客户端通过 API 提交的终态声明，持续驱动 API 对象的“实际状态”接近“期望状态”。它作为守护进程运行，对应的程序是 `kube-controller-manager`；内嵌的控制回路不断通过 API Server 监视集群共享状态并作出调整。Kubernetes 自带的控制器包括副本控制器、节点控制器、命名空间控制器和服务账号控制器等。它可比作公司的管理层或大管家，负责管理集群资源。
 
 #### 2.3.1.3 kube-scheduler
-
 ```text
 https://github.com/kubernetes/kube-scheduler
 https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-
@@ -629,9 +576,9 @@ kube-scheduler 调度器负责根据当前集群状态，为 Pod 选择最合适
 
 #### 2.3.1.4 Cluster Store (etcd)
 
-```text
-https://github.com/etcd-io/etcd
-```
+
+- <https://github.com/etcd-io/etcd>
+
 
 Kubernetes 需要使用 key/value数据存储系统 Clustrer Store， 用于保存所有集群状态数据， 支持分布式集群功能。通常为奇数个节点实现,如3,5,7等,通过节点间通过 raft 协议进行选举。Kubernetes 当前使用etcd来实现集群数据存储功能,生产环境使用时需要为 etcd数据提供定期备份机制。etcd 由CoreOS公司用GO语言开发,仅会同API Server交互。
 
@@ -639,9 +586,9 @@ etcd 对应的程序为 etcd
 
 **Etcd 硬件要求**
 
-```text
-https://etcd.io/docs/v3.5/op-guide/hardware/
-```
+
+- <https://etcd.io/docs/v3.5/op-guide/hardware/>
+
 
 ![原 PDF 第 25 页插图](assets/Kubernetes架构和部署/img-00569bc0c391d26a.png)
 
@@ -667,10 +614,10 @@ cloud-controller-manager运行与基础云提供商交互的控制器。cloud-co
 
 #### 2.3.2.1 kubelet
 
-```text
-https://github.com/kubernetes/kubelet
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet/
-```
+
+- <https://github.com/kubernetes/kubelet>
+- <https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet/>
+
 
 ![原 PDF 第 26 页插图](assets/Kubernetes架构和部署/img-82759389b0784a4f.png)
 
@@ -680,18 +627,17 @@ https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet/
 
 #### 2.3.2.2 kube-proxy
 
-```text
-https://github.com/kubernetes/kube-proxy
-https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-proxy/
-```
+
+- <https://github.com/kubernetes/kube-proxy>
+- <https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-proxy/>
+
 
 **kube-proxy** 是运行在每个 Node 节点上的网络代理，对应程序为 kube-proxy。它将 Service 资源的定义转换为节点本地的网络规则，在主机上维护规则并执行连接转发，使 Service 网络中的流量能够到达后端 Pod，同时承担相应的负载均衡工作。
 
 **代理模式**有两种。**iptables 模式**将 Service 定义转换为适配当前节点的 iptables 规则。**IPVS 模式**将其转换为适配当前节点的 IPVS 规则，并辅以少量 iptables 规则。
 
 范例: 查看当前的模式
-
-```text
+```bash
 [root@master1 ~]#curl 127.0.0.1:10249/proxyMode
 iptables
 ```
@@ -739,17 +685,14 @@ OpenELB 是适用于非云端部署的Kubernetes环境的负载均衡器，可�
 ![原 PDF 第 28 页插图](assets/Kubernetes架构和部署/img-3ebfad6c528fff81.png)
 
 **Kubernetes集群中有三套CA机制**：etcd-ca   ETCD集群内部的 TLS 通信kubernetes-ca  kubernetes集群内部节点间的双向 TLS 通信front-proxy-ca Kubernetes集群与外部扩展服务简单双向 TLS 通信。
-
-```text
+```bash
 [root@master1 ~]#kubeadm  certs  check-expiration
 [check-expiration] Reading configuration from the cluster...
 [check-expiration] FYI: You can look at this config file with 'kubectl -n kube-
 system get cm kubeadm-config -o yaml'
 [check-expiration] Error reading configuration from the Cluster. Falling back to
 default configuration
-```
 
-```text
 CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
 AUTHORITY   EXTERNALLY MANAGED
 admin.conf                 Apr 16, 2025 01:07 UTC   356d            ca
@@ -772,9 +715,7 @@ front-proxy-client         Apr 16, 2025 01:07 UTC   356d            front-proxy-
 ca          no
 scheduler.conf             Apr 16, 2025 01:07 UTC   356d            ca
 no
-```
 
-```text
 CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
 MANAGED
 ca                      Mar 04, 2033 04:30 UTC   8y              no
@@ -991,7 +932,6 @@ dockershim, containerd 和cri-o都是遵循CRI的容器运行时，称为高层�
 ![原 PDF 第 37 页插图](assets/Kubernetes架构和部署/img-ebea990cc7fb1309.jpeg)
 
 **Kubernetes 和容器运行时通信的方式**
-
 ```text
 unix:///var/run/dockershim.sock   #基于docker,k8s-v1.23前
 unix:///var/run/cri-dockerd.sock  #基于docker,k8s-v1.24后
@@ -1016,7 +956,6 @@ unix:///var/run/crio/crio.sock             #基于cri-o
 2022年5月3日，Kubernetes v1.24正式发布，此版本提供了很多重要功能。该版本涉及46项增强功能：其中14项已升级为稳定版，15项进入beta阶段，13项则刚刚进入alpha阶段。此外，另有2项功能被弃用、2项功能被删除。v1.24 之前的 Kubernetes 版本包括与 Docker Engine 的直接集成，使用名为dockershim 的组件。  值得注意的是v1.24 的 Kubernetes 正式移除对Dockershim的支持，即默认不再支持 docker
 
 **官方说明**
-
 ```text
 https://kubernetes.io/zh-cn/docs/setup/production-environment/container-
 runtimes/
@@ -1026,79 +965,44 @@ runtimes/
 
 **移除 Dockershim 的说明**
 
-```text
-https://kubernetes.io/zh-cn/blog/2022/02/17/dockershim-faq/
-```
+
+- <https://kubernetes.io/zh-cn/blog/2022/02/17/dockershim-faq/>
+
 
 **Dockershim的历史背景**
 
-```text
-https://mp.weixin.qq.com/s/elkfBVzN8-zC30111zFpMw
-```
+
+- <https://mp.weixin.qq.com/s/elkfBVzN8-zC30111zFpMw>
 
 ```text
 Kubernetes CNCF 2022-05-03 10:40 发表于香港
 作者：Kat Cosgrove
 ```
 
-```text
-从 Kubernetes v1.24 开始，Dockershim 会给移除，这对于项目来说是个积极的举措。然而，无论是在
-社会上，还是在软件开发中，上下文对于完全理解某些东西都是很重要的，这值得更深入的研究。在
-Kubernetes v1.24 中移除 dockershim 的同时，我们在社区中看到了一些困惑（有时达到恐慌的程
-度），和对这一决定的不满，很大程度上是由于缺乏关于这移除的上下文。弃用并最终将 dockershim 从
-Kubernetes 移除的决定，并不是迅速或轻率做出的。尽管如此，它已经操作了很长时间，以至于今天的许多
-用户都比这个决定更新，当然也比导致 dockershim 首先成为必要的选择更新。
-```
+
+从 Kubernetes v1.24 开始，Dockershim 会给移除，这对于项目来说是个积极的举措。然而，无论是在社会上，还是在软件开发中，上下文对于完全理解某些东西都是很重要的，这值得更深入的研究。在 Kubernetes v1.24 中移除 dockershim 的同时，我们在社区中看到了一些困惑（有时达到恐慌的程度），和对这一决定的不满，很大程度上是由于缺乏关于这移除的上下文。弃用并最终将 dockershim 从 Kubernetes 移除的决定，并不是迅速或轻率做出的。尽管如此，它已经操作了很长时间，以至于今天的许多用户都比这个决定更新，当然也比导致 dockershim 首先成为必要的选择更新。
 
 ```text
 那么，dockershim 是什么，为什么它会消失？
 ```
 
-```text
-在 Kubernetes 的早期，我们只支持一个容器运行时。那个运行时是 Docker Engine。当时，没有太多其
-他选择，Docker 是处理容器的主要工具，所以这不是个有争议的选择。最终，我们开始添加更多的容器运行
-时，比如 rkt 和 hypernetes，很明显 Kubernetes 用户希望选择最适合他们的运行时。因此
-Kubernetes 需要种方法，来允许集群操作者灵活地使用他们选择的任何运行时。
-```
 
-```text
-发布CRI[1]（Container Runtime Interface，容器运行时接口）就是为了提供这种灵活性。CRI 的引
-入对项目和用户来说都很棒，但它也引入了一个问题：Docker Engine 作为容器运行时的使用早于 CRI，
-Docker Engine 与 CRI 不兼容。为了解决这个问题，引入了一个小软件垫片（"shim"，dockershim）
-作为 kubelet 组件的一部分，专门用于填补 Docker Engine 和 CRI 之间的空白，允许集群运营商继续
-使用 Docker Engine 作为他们的容器运行时，基本上不会给中断。
-```
+在 Kubernetes 的早期，我们只支持一个容器运行时。那个运行时是 Docker Engine。当时，没有太多其他选择，Docker 是处理容器的主要工具，所以这不是个有争议的选择。最终，我们开始添加更多的容器运行时，比如 rkt 和 hypernetes，很明显 Kubernetes 用户希望选择最适合他们的运行时。因此 Kubernetes 需要种方法，来允许集群操作者灵活地使用他们选择的任何运行时。
 
-```text
-然而，这个小小的软件垫片从来就不是永久的解决方案。多年来，它的存在给 kubelet 本身带来了许多不必
-要的复杂性。由于这个垫片，Docker 的一些集成实现不一致，导致维护人员的负担增加，并且维护特定于供
-应商的代码不符合我们的开源理念。为了减少这种维护负担，并向一个支持开放标准的更具协作性的社区发
-展，KEP-2221 获引入[2]，它建议去掉 dockershim。随着 Kubernetes v1.20 的发布，这一弃用成为
-正式。
-```
 
-```text
-我们没有很好地传达这一点，不幸的是，弃用声明导致了社区内的一些恐慌。对于 Docker 作为一家公司来
-说这意味着什么，由 Docker 构建的容器镜像能否运行，以及 Docker Engine 实际是什么导致了社交媒
-体上的一场大火。这是我们的过失；我们应该更清楚地沟通当时发生了什么以及原因。为了解决这个问题，我
-们发布了一个博客[3]和相关的常见问题[4]，以减轻社区的恐惧，并纠正一些关于 Docker 是什么，以及容
-器如何在 Kubernetes 中工作的误解。由于社区的关注，Docker 和 Mirantis 共同同意以cri-
-docker[5]的形式继续支持 dockershim 代码，允许你在需要时继续使用 Docker Engine 作为你的容器
-运行时。为了让那些想尝试其他运行时（如 containerd 或 cri-o）的用户感兴趣，编写了迁移文档[6]。
-```
+发布CRI[1]（Container Runtime Interface，容器运行时接口）就是为了提供这种灵活性。CRI 的引入对项目和用户来说都很棒，但它也引入了一个问题：Docker Engine 作为容器运行时的使用早于 CRI，Docker Engine 与 CRI 不兼容。为了解决这个问题，引入了一个小软件垫片（"shim"，dockershim）作为 kubelet 组件的一部分，专门用于填补 Docker Engine 和 CRI 之间的空白，允许集群运营商继续使用 Docker Engine 作为他们的容器运行时，基本上不会给中断。
 
-```text
-我们后来对社区进行了调查[7]，发现仍然有许多用户有问题和顾虑[8]。作为回应，Kubernetes 维护者和
-CNCF 致力于通过扩展文档和其他程序来解决这些问题。事实上，这篇博文就是这个计划的一部分。随着如此
-多的最终用户成功地迁移到其他运行时，以及文档的改进，我们相信现在每个人都有了迁移的道路。
-```
 
-```text
-无论是作为工具还是作为公司，Docker 都不会消失。它是云原生社区和 Kubernetes 项目历史的重要组成
-部分。没有他们我们不会有今天。也就是说，从 kubelet 中移除 dockershim 最终对社区、生态系统、项
-目和整个开源都有好处。这是我们所有人一起支持开放标准的机会，我们很高兴在 Docker 和社区的帮助下
-这样做。
-```
+然而，这个小小的软件垫片从来就不是永久的解决方案。多年来，它的存在给 kubelet 本身带来了许多不必要的复杂性。由于这个垫片，Docker 的一些集成实现不一致，导致维护人员的负担增加，并且维护特定于供应商的代码不符合我们的开源理念。为了减少这种维护负担，并向一个支持开放标准的更具协作性的社区发展，KEP-2221 获引入[2]，它建议去掉 dockershim。随着 Kubernetes v1.20 的发布，这一弃用成为正式。
+
+我们没有很好地传达这一点，不幸的是，弃用声明导致了社区内的一些恐慌。对于 Docker 作为一家公司来说这意味着什么，由 Docker 构建的容器镜像能否运行，以及 Docker Engine 实际是什么导致了社交媒体上的一场大火。这是我们的过失；我们应该更清楚地沟通当时发生了什么以及原因。为了解决这个问题，我们发布了一个博客[3]和相关的常见问题[4]，以减轻社区的恐惧，并纠正一些关于 Docker 是什么，以及容器如何在 Kubernetes 中工作的误解。由于社区的关注，Docker 和 Mirantis 共同同意以cri-docker[5]的形式继续支持 dockershim 代码，允许你在需要时继续使用 Docker Engine 作为你的容器运行时。为了让那些想尝试其他运行时（如 containerd 或 cri-o）的用户感兴趣，编写了迁移文档[6]。
+
+
+我们后来对社区进行了调查[7]，发现仍然有许多用户有问题和顾虑[8]。作为回应，Kubernetes 维护者和 CNCF 致力于通过扩展文档和其他程序来解决这些问题。事实上，这篇博文就是这个计划的一部分。随着如此多的最终用户成功地迁移到其他运行时，以及文档的改进，我们相信现在每个人都有了迁移的道路。
+
+
+无论是作为工具还是作为公司，Docker 都不会消失。它是云原生社区和 Kubernetes 项目历史的重要组成部分。没有他们我们不会有今天。也就是说，从 kubelet 中移除 dockershim 最终对社区、生态系统、项目和整个开源都有好处。这是我们所有人一起支持开放标准的机会，我们很高兴在 Docker 和社区的帮助下这样做。
+
 
 **Docker 的运行机制**
 
@@ -1110,19 +1014,12 @@ CNCF 致力于通过扩展文档和其他程序来解决这些问题。事实上
 
 **cri-dockerd 项目**
 
-```text
-https://github.com/Mirantis/cri-dockerd
-```
 
-```text
-Mirantis 和 Docker 已同意合作，在 Kubernetes 之外独立维护 shim 代码，作为 Docker 引擎
-API 的一致 CRI 接口。 对于 Mirantis 客户，这意味着 Docker Engine 的商业支持版本 Mirantis
-Container Runtime (MCR) 将符合 CRI。 这意味着您可以像以前一样继续基于 Docker 引擎构建
-Kubernetes，只需从内置的 dockershim 切换到外部的。
-Mirantis 和 Docker 打算共同努力确保它继续像以前一样工作，并且它通过所有一致性测试并继续像内置
-版本一样工作。 Mirantis 将在 Mirantis Kubernetes Engine 中使用它，而 Docker 将继续在
-Docker Desktop 中发布这个 shim。
-```
+- <https://github.com/Mirantis/cri-dockerd>
+
+
+Mirantis 和 Docker 已同意合作，在 Kubernetes 之外独立维护 shim 代码，作为 Docker 引擎 API 的一致 CRI 接口。 对于 Mirantis 客户，这意味着 Docker Engine 的商业支持版本 Mirantis Container Runtime (MCR) 将符合 CRI。 这意味着您可以像以前一样继续基于 Docker 引擎构建 Kubernetes，只需从内置的 dockershim 切换到外部的。Mirantis 和 Docker 打算共同努力确保它继续像以前一样工作，并且它通过所有一致性测试并继续像内置版本一样工作。 Mirantis 将在 Mirantis Kubernetes Engine 中使用它，而 Docker 将继续在 Docker Desktop 中发布这个 shim。
+
 
 **Kubernetes的CRI方案**
 

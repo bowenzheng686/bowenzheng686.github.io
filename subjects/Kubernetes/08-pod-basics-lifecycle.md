@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Pod 基础与工作机制'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -13,10 +14,10 @@ syntax_highlight: true
 
 # 3 Pod 资源
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/>
+- <https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/>
+
 
 ## 3.1  Pod 资源基础
 
@@ -24,9 +25,9 @@ https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/
 
 Pod 是 Kubernetes API 中最常见最核心资源类型。Pod 是一个或多个容器的集合，因而也可称为容器集，但却是Kubernetes调度、部署和运行应用的原子单元。Pod 的容器运行时只要符合CRI标准即可,而非必须为Docker。
 
-```text
-https://kubernetes.io/docs/setup/production-environment/container-runtimes/
-```
+
+- <https://kubernetes.io/docs/setup/production-environment/container-runtimes/>
+
 
 同一Pod内的所有容器都将运行于由Scheduler选定的同一个worker节点上。在同一个pod内的容器共享的存储资源、网络协议栈及容器的运行控制策略等。每个Pod中的容器依赖于一个特殊名为pause容器事先创建出可被各应用容器共享的基础环境，包括Network、IPC和UTS名称空间共享给Pod中各个容器，PID名称空间也可以共享，但需要用户显式定义,Mount和User是不共享的,每个容器有独立的Mount,User的名称空间。Docker 容器主要有六个名称空间实现容器间的资源隔离: User,Mount,Pid,IPC,Network,UTS。
 
@@ -67,15 +68,12 @@ Pod 资源分类：
 通过kubectl 命令行工具指定选项创建 Pod，适合临时性工作。
 
 **基本语法**
-
-```text
+```bash
 kubectl run NAME --image=image [--port=port] [--replicas=replicas]
 kubectl run NAME --image=image [--env="key=value"] [--port=port] [--dry-
 run=server|client] [--overrides=inline-json] [--command] -- [COMMAND] [args...]
 [options]
-```
 
-```text
 #参数详解
 --image=''      #指定容器要运行的镜像
 --port=''       #设定容器暴露的端口
@@ -92,54 +90,43 @@ run=server|client] [--overrides=inline-json] [--command] -- [COMMAND] [args...]
 ```
 
 范例:
-
-```text
+```bash
 #初始化一个Pod对象，包含一个nginx容器
 [root@master1 ~]#kubectl run nginx01 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+beijing.aliyuncs.com/bowen/nginx:1.20.0
 pod/nginx01 created
-```
 
-```text
 #查看pod状态
 [root@master1 ~]#kubectl get pod nginx01
 NAME      READY   STATUS              RESTARTS   AGE
 nginx01   0/1     ContainerCreating   0          19s
-```
 
-```text
 #创建Busybox的Pod,默认busybox没有前台进程,需要指定前台程序才能持继运行
 [root@master1 ~]#kubectl run busybox --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0 -- sleep 3600
+beijing.aliyuncs.com/bowen/busybox:1.32.0 -- sleep 3600
 [root@master1 ~]#kubectl get pod busybox
 NAME      READY   STATUS    RESTARTS   AGE
 busybox   1/1     Running   0          9m37s
 ```
 
 范例：在命令行创建pod 引用环境变量，之后可以通过$(VAR_NAME)在容器中获取变量
-
-```text
+```bash
 #运行pod时定义一个变量
 [root@master1 ~]#kubectl run pod-conf --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 --env="NAME=wangxiaochun"
-```
+beijing.aliyuncs.com/bowen/nginx:1.20.0 --env="NAME=bowen"
 
-```text
 #验证变量
 [root@master1 ~]#kubectl exec -it pod-conf -- sh
 # echo $NAME
-wangxiaochun
-```
+bowen
 
-```text
 [root@master1 ~]#kubectl delete pod pod-conf
 ```
 
 范例: 启动一个Pod，并交互
-
-```text
+```bash
 [root@master1 ~]#kubectl run pod-$RANDOM --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --command -- /bin/bash
+beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --command -- /bin/bash
 If you don't see a command prompt, try pressing enter.
 root@pod-4372 /#
 ```
@@ -421,8 +408,7 @@ spec.hostNetwork Boolean
 网桥,同时设置了true将无法在同一台宿主机上启动第二个副本。
 
 ##### 3.1.2.2.4 yaml格式的pod清单文件示例的完整说明
-
-```text
+```yaml
 # yaml格式的pod定义文件完整内容：
 apiVersion: v1          #必选，版本号，例如v1
 kind: Pod               #必选，Pod
@@ -446,9 +432,7 @@ command: [string]           #可选,容器的启动命令列表，如不指定�
 args: [string]              #可选,容器的启动命令参数列表
 containers:               #必选，Pod中容器列表
 - name: string                #必选，容器名称
-```
 
-```text
 image: string               #必选，容器的镜像名称
 imagePullPolicy: [Always | Never | IfNotPresent] #获取镜像的策略 Alawys表示下载镜
 像 IfnotPresent表示优先使用本地镜像，否则下载镜像，Nerver表示仅使用本地镜像
@@ -507,9 +491,7 @@ port: number
 initialDelaySeconds: 0           #容器启动完成后首次探测的时间，单位为秒
 timeoutSeconds: 0                #对容器健康检查探测等待响应的超时时间，单位秒，默
 认1秒
-```
 
-```text
 periodSeconds: 0                 #对容器监控检查的定期探测时间设置，单位秒，默认
 10秒一次
 successThreshold: 0
@@ -551,8 +533,7 @@ path: string
 ##### 3.1.2.2.5 创建pod资源清单文件
 
 ###### 3.1.2.2.5.1 手动创建pod资源清单文件
-
-```text
+```yaml
 [root@master1 ~]#vim  pod-test1.yaml
 [root@master1 ~]#cat  pod-test1.yaml
 apiVersion: v1   #指定API版本,此为固定值
@@ -563,23 +544,20 @@ namespace: default    #指定名称空间,如果不指定为default
 spec:            #表述信息
 containers:    #容器信息
 - name: nginx-web01    #容器名称为APP
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0   #运行的是
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0   #运行的是
 nginx 镜像,可以同时运行多个容器
 ```
 
 ###### 3.1.2.2.5.2 利用已有pod生成资源清单文件
 
 自己编写资源定义文件有些繁琐，可以利用现有的pod生成yaml清单文件,再修改即可。
-
-```text
+```yaml
 [root@master1 ~]#kubectl get pod pod-test1 -o yaml --export > pod-test1-
 export.yaml
 #命令解析
 -o yaml    #以yaml的格式显示当前资源的所有属性信息。
 --export   #在导出信息的时候，会忽略掉有系统生成的信息,这个功能在1.19版本之后被移除了
-```
 
-```text
 #修改生成的文件,只保留需要的内容
 [root@master1 ~]#vim pod-test1-export.yaml
 [root@master1 ~]#cat pod-test1-export.yaml
@@ -589,15 +567,14 @@ metadata:
 name: pod-test2
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 name: nginx-web02
 ```
 
 #### 3.1.2.3 指令式对象配置管理方式
 
 ##### 3.1.2.3.1 创建 Pod 资源
-
-```text
+```yaml
 [root@master1 ~]#cat pod-test1.yaml
 apiVersion: v1   #指定API版本,此为固定值
 kind: Pod        #指定资源类型 pod
@@ -605,69 +582,56 @@ metadata:        #元数据类型
 name: pod-test1       # 指定pod名称
 namespace: default    #指定名称空间,如果不指定为default
 annotations:          #指定注解信息
-wang.org/author: "wangxiaochun"
+bowen.org/author: "bowen"
 spec:            #表述信息
 containers:    #容器信息
 - name: nginx-web01    #容器名称为APP
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 #运行的是
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0 #运行的是
 nginx 镜像,可以同时运行多个容器
 #command: ["/bin/sh","c","sleep 100"] #可以指定运行的命令,而非镜像内的命令
 #command: ["/bin/sh"]                 #也可以用下面格式
 #args: ["-c","sleep 100"]
 #注意：一个资源清单文件中可以同时写多个Pod对象，彼此间使用"---"隔开就可以
-```
 
-```text
 [root@master1 ~]#kubectl create -f /data/kubernetes/yaml/pod-test1.yaml
 pod/pod-test1 created
 ```
 
 ##### 3.1.2.3.2 更新 Pod 资源
-
-```text
+```bash
 #方法1
 #导出配置
 [root@master1 ~]#kubectl get pods pod-test1 -o yaml pod-test1-update.yaml
-```
 
-```text
 # 编辑导出的配置清单
 [root@master1 ~]#vim pod-test1-update.yaml
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.18.0 #修改版本
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.18.0 #修改版本
 
-```text
 #更新
 #幂等性
 [root@master1 ~]#kubectl apply -f pod-test1-update.yaml
 #没有幂等性
 [root@master1 ~]#kubectl replace -f pod-test1-update.yaml
 pod/pod-test1 replaced
-```
 
-```text
 #验证是否修改
 [root@master1 ~]#kubectl describe -f pod-test1.yaml
-```
 
-```text
 #方法2
 #此方法在线直接编辑,生产不建议使用
 [root@master1  ~]#kubectl edit pod pod-test1
 [root@master1  ~]#kubectl edit pod/pod-test1
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx::1.22.0 #修改镜像版
+- image: registry.cn-beijing.aliyuncs.com/bowen/nginx::1.22.0 #修改镜像版
 本
-```
 
-```text
 #验证立即生效
 [root@master1 ~]#kubectl get pod pod-test1 -o wide
 NAME        READY   STATUS    RESTARTS        AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-test1   1/1     Running   1 (2m34s ago)   3m50s   172.16.3.15
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 [root@master1 ~]#curl -I 172.16.3.15
 HTTP/1.1 200 OK
 Server: nginx/1.16.0
@@ -685,21 +649,16 @@ Accept-Ranges: bytes
 在指令式对象配置管理方式中，同时指定的资源必须进行同一种操作，而且kubectl replace 命令是通过完全替换现有的活动对象来进行资源的更新，对于生产环境并非理想的做法。而声明式对象配置操作在管理资源对象时将配置信息保存于目标对象的注解中，并通过比较活动对象的当前配置、前一次管理操作时保存于注解中的配置及当前命令提供的配置生成更新补丁，从而完成活动对象的补丁式更新操作。常用的命令有kubectl apply 和kubectl patch 等。
 
 范例: 创建 Pod 资源对象
-
-```text
+```bash
 [root@master1 ~]#kubectl apply  -f  pod-test1.yaml
 pod/pod-test1 created
-```
 
-```text
 [root@master1 ~]#kubectl get -f pod-test1.yaml -o wide
 NAME        READY   STATUS    RESTARTS   AGE    IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-test1   1/1     Running   0          5m8s   172.16.3.13   node1.wang.org
+pod-test1   1/1     Running   0          5m8s   172.16.3.13   node1.bowen.org
 <none>           <none>
-```
 
-```text
 [root@master1 ~]#curl 172.16.3.13 -I
 HTTP/1.1 200 OK
 Server: nginx/1.21.5
@@ -713,8 +672,7 @@ Accept-Ranges: bytes
 ```
 
 范例: 更新应用版本
-
-```text
+```yaml
 #更新对象的操作，可以直接在原有的资源清单文件上修改后再执行kubectl apply
 [root@master1 ~]#vim pod-test1.yaml
 [root@master1 ~]#cat pod-test1.yaml
@@ -728,21 +686,17 @@ version: v1.0
 spec:
 containers:
 - name: nginx-web01
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0 #修改此行
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0 #修改此行
 
-```text
 #应用更新
 [root@master1 ~]#kubectl apply  -f  pod-test1.yaml
 pod/pod-test1 configured
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl get -f pod-test1.yaml -o wide
 NAME        READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-test1   1/1     Running   0          5m33s   172.16.3.13   node1.wang.org
+pod-test1   1/1     Running   0          5m33s   172.16.3.13   node1.bowen.org
 <none>           <none>
 [root@master1 ~]#curl 172.16.3.13 -I
 HTTP/1.1 200 OK
@@ -759,53 +713,39 @@ Accept-Ranges: bytes
 ### 3.1.3 查看 Pod 信息
 
 可以通过以下命令查看Pod 状态
-
-```text
+```bash
 kubectl get pod <pod_name> [(-o|--output=)json|yaml|jsonpath] [-n namespace]
 kubectl describe pod  <pod_name> [-n namespace]
 ```
 
 范例
-
-```text
+```yaml
 #查看当前名称空间的所有pod
 [root@master1 ~]#kubectl get pod
-```
 
-```text
 #查看所有空间的所有pod
 [root@master1 ~]#kubectl get pod -A
-```
 
-```text
 #查看指定空间的所有pod
 [root@master1 ~]#kubectl get pod -n kube-system
-```
 
-```text
 #查看指定pod当前状态信息
 [root@master1 ~]#kubectl get -f pod-test1.yaml
 [root@master1 ~]#kubectl get pod  pod-test1
 [root@master1 ~]#kubectl get po  pod-test1 #支持缩写po
 NAME        READY   STATUS    RESTARTS   AGE
 pod-test1   1/1     Running   0          67s
-```
 
-```text
 #持续查看pod状态
 [root@master1 ~]#kubectl  get pods pod-test1 -w
-```
 
-```text
 #查看扩展信息
 [root@master1 ~]#kubectl get pod pod-test1 -o wide
 NAME        READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-test1   1/1     Running   0          88s   172.16.3.12   node1.wang.org
+pod-test1   1/1     Running   0          88s   172.16.3.12   node1.bowen.org
 <none>           <none>
-```
 
-```text
 #通过 -o yaml 的方式来进行查看yaml格式的详细信息
 [root@master1 ~]#kubectl get pod pod-test -o yaml
 apiVersion: v1
@@ -814,16 +754,12 @@ metadata:
 annotations:
 kubectl.kubernetes.io/last-applied-configuration: |
 ......
-```
 
-```text
 #查看pod上面的label
 [root@master1 ~]#kubectl get pod pod-test1  --show-labels
 NAME        READY   STATUS    RESTARTS       AGE   LABELS
 pod-test1   1/1     Running   7 (7h4m ago)   14d   app=test1,version=v2.0
-```
 
-```text
 #定制化显示
 #定制格式的语法：自定义字段名:属性获取命令
 #多个自定义字段显示时，可以使用逗号","隔开
@@ -831,42 +767,31 @@ pod-test1   1/1     Running   7 (7h4m ago)   14d   app=test1,version=v2.0
 columns=NAME:metadata.name,STATUS:status.phase
 NAME        STATUS
 pod-test1   Running
-```
 
-```text
 #查看指定pod的详细信息
 [root@master1 ~]#kubectl describe pod pod-test1
 Name:         pod-test1
 Namespace:    default
 Priority:     0
-Node:         node1.wang.org/10.0.0.104
-```
+Node:         node1.bowen.org/10.0.0.104
 
-```text
 ......
 ```
 
 范例: 按Json格式查看Pod 信息
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod pod-test-5558f75445-9mhrt -o jsonpath=
 {.metadata.name}
 pod-test-5558f75445-9mhrt
-```
 
-```text
 [root@master1 ~]#kubectl get pod pod-test-5558f75445-9mhrt -o jsonpath=
 {.spec.containers[0].name}
 pod-test
-```
 
-```text
 [root@master1 ~]#kubectl get pod mynginx -o yaml  -o jsonpath=
 {.spec.containers[0].image}
-registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.26.0
-```
+registry.cn-beijing.aliyuncs.com/bowen/nginx:1.26.0
 
-```text
 [root@master1 ~]#kubectl get pod myapp -o jsonpath={.status.podIP}
 10.244.4.6
 ```
@@ -874,28 +799,19 @@ registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.26.0
 ### 3.1.4 查看 Pod 中指定容器应用的日志
 
 查看 Pod 日志格式如下：
-
 ```text
 kubectl logs [-f] (POD | TYPE/NAME) [-c CONTAINER] [options]
 ```
 
-```text
-# 选项
--f, --follow=true    #跟踪日志
--p , --previous=true #默认只能查看到当前容器此次重启后生成的日志，此选项可以查看前一个已退出
-的容器的日志
---all-containers=true #所有容器
---tail=N #最后N个日志
-```
+
+# 选项-f, --follow=true    #跟踪日志-p , --previous=true #默认只能查看到当前容器此次重启后生成的日志，此选项可以查看前一个已退出的容器的日志--all-containers=true #所有容器--tail=N #最后N个日志
+
 
 范例：容器无法启动错误查看
-
-```text
+```bash
 [root@master1 ~]#kubectl  run mysql --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
-```
+beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 
-```text
 [root@master1 ~]#kubectl logs mysql
 2024-12-27 03:32:06+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL
 Server 8.0.29-1.el8 started.
@@ -909,59 +825,32 @@ You need to specify one of the following:
 - MYSQL_ROOT_PASSWORD
 - MYSQL_ALLOW_EMPTY_PASSWORD
 - MYSQL_RANDOM_ROOT_PASSWORD
-```
 
-```text
 [root@master1 ~]#kubectl logs --tail=3  mysql
 - MYSQL_ROOT_PASSWORD
 - MYSQL_ALLOW_EMPTY_PASSWORD
 - MYSQL_RANDOM_ROOT_PASSWORD
-```
 
-```text
 [root@master1 ~]#kubectl  run mysql --env="MYSQL_ALLOW_EMPTY_PASSWORD=yes" --
-image registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+image registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 pod/mysql created
-```
 
-```text
 [root@master1 ~]#kubectl get pod mysql  -o wide
 NAME    READY   STATUS    RESTARTS   AGE     IP           NODE
 NOMINATED NODE   READINESS GATES
-mysql   1/1     Running   0          2m16s   10.244.4.9   node3.wang.org
+mysql   1/1     Running   0          2m16s   10.244.4.9   node3.bowen.org
 <none>           <none>
-```
 
-```text
 #
 [root@master1 ~]#apt update && apt -y install mysql-client
-```
 
-```text
 [root@master1 ~]#mysql -uroot -h10.244.4.9 -e status
 --------------
 mysql  Ver 8.0.40-0ubuntu0.22.04.1 for Linux on x86_64 ((Ubuntu))
 ```
 
-```text
-Connection id:      9
-Current database:
-Current user:       root@10.244.0.0
-SSL:            Cipher in use is TLS_AES_256_GCM_SHA384
-Current pager:      stdout
-Using outfile:      ''
-Using delimiter:    ;
-Server version:     8.0.29 MySQL Community Server - GPL
-Protocol version:   10
-Connection:     10.244.4.9 via TCP/IP
-Server characterset:    utf8mb4
-Db     characterset:    utf8mb4
-Client characterset:    utf8mb4
-Conn.  characterset:    utf8mb4
-TCP port:       3306
-Binary data as:     Hexadecimal
-Uptime:         1 min 47 sec
-```
+
+Connection id:      9 Current database: Current user:       root@10.244.0.0 SSL:            Cipher in use is TLS_AES_256_GCM_SHA384 Current pager:      stdout Using outfile:      ''Using delimiter:    ; Server version:     8.0.29 MySQL Community Server - GPL Protocol version:   10 Connection:     10.244.4.9 via TCP/IP Server characterset:    utf8mb4 Db     characterset:    utf8mb4 Client characterset:    utf8mb4 Conn.  characterset:    utf8mb4 TCP port:       3306 Binary data as:     Hexadecimal Uptime:         1 min 47 sec
 
 ```text
 Threads: 2  Questions: 8  Slow queries: 0  Opens: 118  Flush tables: 3  Open
@@ -970,15 +859,12 @@ tables: 37  Queries per second avg: 0.074
 ```
 
 范例:
-
-```text
+```bash
 #查看名为pod-test1的pod中nginx-web01的容器的日志
 [root@master1 ~]#kubectl logs  pod-test1 -c nginx-web01
 172.16.0.0 - - [03/Mar/2021:02:01:52 +0000] "GET / HTTP/1.1" 200 612 "-"
 "curl/7.68.0" "-"
-```
 
-```text
 #进入容器内执行操作
 [root@master1 ~]#kubectl exec  pod-test  -- ps aux
 PID   USER     TIME  COMMAND
@@ -987,39 +873,29 @@ PID   USER     TIME  COMMAND
 ```
 
 ### 3.1.5 进入Pod 执行命令
-
 ```text
 kubectl exec (POD | TYPE/NAME) [-c CONTAINER] [flags] -- COMMAND [args...]
 [options]
 ```
 
 范例
-
-```text
+```bash
 [root@ubuntu2204 ~]#kubectl exec -h
 Execute a command in a container.
-```
 
-```text
 Examples:
 # Get output from running the 'date' command from pod mypod, using the first
 container by default
 kubectl exec mypod -- date
-```
 
-```text
 # Get output from running the 'date' command in ruby-container from pod mypod
 kubectl exec mypod -c ruby-container -- date
-```
 
-```text
 # Switch to raw terminal mode; sends stdin to 'bash' in ruby-container from
 pod mypod
 # and sends stdout/stderr from 'bash' back to the client
 kubectl exec mypod -c ruby-container -i -t -- bash -il
-```
 
-```text
 # List contents of /usr from the first container of pod mypod and sort by
 modification time
 # If the command you want to execute in the pod has any flags in common (e.g.
@@ -1029,110 +905,67 @@ modification time
 # unless that is how you would execute it normally (i.e., do ls -t /usr, not
 "ls -t /usr")
 kubectl exec mypod -i -t -- ls -t /usr
-```
 
-```text
 # Get output from running 'date' command from the first pod of the deployment
 mydeployment, using the first container
 by default
 kubectl exec deploy/mydeployment -- date
-```
 
-```text
 # Get output from running 'date' command from the first pod of the service
 myservice, using the first container by
 default
 kubectl exec svc/myservice -- date
 ```
 
-```text
-Options:
--c, --container='':
-Container name. If omitted, use the kubectl.kubernetes.io/default-container
-annotation for selecting the
-container to be attached or the first container in the pod will be chosen
-```
+
+Options:-c, --container='': Container name. If omitted, use the kubectl.kubernetes.io/default-container annotation for selecting the container to be attached or the first container in the pod will be chosen
 
 ```text
 -f, --filename=[]:
 to use to exec into the resource
-```
 
-```text
 --pod-running-timeout=1m0s:
 The length of time (like 5s, 2m, or 3h, higher than zero) to wait until at
 least one pod is running
-```
 
-```text
 -q, --quiet=false:
 Only print output from the remote session
-```
 
-```text
 -i, --stdin=false:
 Pass stdin to the container
-```
 
-```text
 -t, --tty=false:
 Stdin is a TTY
-```
 
-```text
 Usage:
 kubectl exec (POD | TYPE/NAME) [-c CONTAINER] [flags] -- COMMAND [args...]
 [options]
 ```
 
 范例：
-
-```text
+```bash
 [root@master1 ~]#kubectl  run mysql  --env="MYSQL_ALLOW_EMPTY_PASSWORD=yes" --
-image registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+image registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 pod/mysql created
 [root@master1 ~]#kubectl exec mysql -- date
 Mon Mar 24 01:08:13 UTC 2025
-```
 
-```text
 [root@master1 ~]#kubectl  run mysql --env="TZ=Asia/Shanghai" --
 env="MYSQL_ALLOW_EMPTY_PASSWORD=yes" --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 pod/mysql created
-```
 
-```text
 [root@master1 ~]#kubectl exec mysql -- date
 Fri Dec 27 11:47:13 CST 2024
-```
 
-```text
 [root@master1 ~]#kubectl exec -it mysql -- sh
 sh-4.4# mysql -uroot -e status
 --------------
 mysql  Ver 8.0.29 for Linux on x86_64 (MySQL Community Server - GPL)
 ```
 
-```text
-Connection id:      8
-Current database:
-Current user:       root@localhost
-SSL:            Not in use
-Current pager:      stdout
-Using outfile:      ''
-Using delimiter:    ;
-Server version:     8.0.29 MySQL Community Server - GPL
-Protocol version:   10
-Connection:     Localhost via UNIX socket
-Server characterset:    utf8mb4
-Db     characterset:    utf8mb4
-Client characterset:    latin1
-Conn.  characterset:    latin1
-UNIX socket:        /var/run/mysqld/mysqld.sock
-Binary data as:     Hexadecimal
-Uptime:         48 sec
-```
+
+Connection id:      8 Current database: Current user:       root@localhost SSL:            Not in use Current pager:      stdout Using outfile:      ''Using delimiter:    ; Server version:     8.0.29 MySQL Community Server - GPL Protocol version:   10 Connection:     Localhost via UNIX socket Server characterset:    utf8mb4 Db     characterset:    utf8mb4 Client characterset:    latin1 Conn.  characterset:    latin1 UNIX socket:        /var/run/mysqld/mysqld.sock Binary data as:     Hexadecimal Uptime:         48 sec
 
 ```text
 Threads: 2  Questions: 5  Slow queries: 0  Opens: 117  Flush tables: 3  Open
@@ -1145,55 +978,39 @@ tables: 36  Queries per second avg: 0.104
 删除资源对象推荐使用指令式管理命令kubectl delete。
 
 格式:
-
 ```text
 kubectl delete pod <pod_name>  ... [--force --grace-period=0]
 ```
 
 范例
-
-```text
+```bash
 #优雅删除
 [root@master1 ~]#kubectl delete pod pod-test1
-```
 
-```text
 #立即删除
 [root@master1 ~]#kubectl delete pod pod-test1 --force --grace-period=0
 warning: Immediate deletion does not wait for confirmation that the running
 resource has been terminated. The resource may continue to run on the cluster
 indefinitely.
 pod "pod-test1" force deleted
-```
 
-```text
 #删除多个资源
 [root@master1 ~]#kubectl  delete -f  pod-test1.yaml -f pod-test2.yaml
-```
 
-```text
 #删除指定目录下的资源
 [root@master1 ~]#kubectl delete  -f /data/kubernetes/yaml/
-```
 
-```text
 #删除demo名称空间的所有Pod
 [root@master1 ~]#kubectl delete pod --all -n demo
-```
 
-```text
 #删除所有pod
 [root@master1 ~]#kubectl get po|cut -d" " -f1 | tail -n +2 |xargs kubectl delete
 pod
-```
 
-```text
 #快速删除所有pod
 [root@master1 ~]#kubectl get pod|awk 'NR!=1{print $1}'|xargs -i kubectl delete
 pod {} --force --grace-period=0
-```
 
-```text
 [root@master1 ~]#vim .bashrc
 alias rmpod="kubectl get pod|awk 'NR!=1{print \$1}'|xargs -i kubectl delete pod
 {} --force --grace-period=0"
@@ -1217,16 +1034,14 @@ kubernets 支持多种定制 Pod 的实现方法
 每个环境变量需要通过pod.spec.containers.env.name给出指定的名称传递的值则定义在pod.spec.containers.env.value字段上。
 
 范例: 启动容器时指定env环境变量
-
-```text
+```bash
 [root@master1 ~]#kubectl  run mysql --env="TZ=Asia/Shanghai" --
 env="MYSQL_ALLOW_EMPTY_PASSWORD=yes" --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 ```
 
 范例: 实现 LAMP的应用wordpress
-
-```text
+```yaml
 #mysql
 [root@master1 ~]#cat pod-mysql.yaml
 apiVersion: v1
@@ -1237,7 +1052,7 @@ namespace: default
 spec:
 containers:
 - name: mysql
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 env:
 - name: MYSQL_ROOT_PASSWORD
 value: "654321"             #注意如果是数字必须加""引起来
@@ -1247,22 +1062,16 @@ value: wordpress
 value: wpuser
 - name: MYSQL_PASSWORD
 value: "123456"            #注意如果是数字必须加""引起来
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  pod-mysql.yaml
-```
 
-```text
 #查看MySQL对应Pod的IP
 [root@master1 ~]#kubectl get pod mydb  -o wide
 NAME   READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-mydb   1/1     Running   0          5m46s   10.244.1.6   node3.wang.org   <none>
+mydb   1/1     Running   0          5m46s   10.244.1.6   node3.bowen.org   <none>
 <none>
-```
 
-```text
 #wordpress
 [root@master1 ~]#cat pod-wordpress.yaml
 apiVersion: v1
@@ -1274,10 +1083,8 @@ spec:
 hostNetwork: true            #使用容器所在宿主机网络的IP和Port
 containers:
 - name: wordpress
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/wordpress:php8.2-apache
-```
+image: registry.cn-beijing.aliyuncs.com/bowen/wordpress:php8.2-apache
 
-```text
 #ports:                   #或者使用宿主机的指定端口
 #- name: http             #不支持大写字母
 #  containerPort: 80
@@ -1293,21 +1100,15 @@ value: wordpress
 value: wpuser
 - name: WORDPRESS_DB_PASSWORD
 value: "123456"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-wordpress.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod wordpress -o wide
 NAME        READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-wordpress   1/1     Running   0          5m12s   10.0.0.201   node1.wang.org
+wordpress   1/1     Running   0          5m12s   10.0.0.201   node1.bowen.org
 <none>           <none>
-```
 
-```text
 #打开浏览器访问
 http://10.0.0.201
 ```
@@ -1315,18 +1116,15 @@ http://10.0.0.201
 ![原 PDF 第 70 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-a2c6a813bef55543.png)
 
 范例
-
-```text
+```yaml
 [root@master1 ~]#kubectl run mypod --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 pod/mypod created
 [root@master1 ~]#kubectl get pod
 NAME                                      READY   STATUS    RESTARTS       AGE
 mypod                                     1/1     Running   0              4s
 nfs-client-provisioner-695dc47789-h4hfl   1/1     Running   16 (29m ago)   259d
-```
 
-```text
 [root@master1 ~]#kubectl exec mypod -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=mypod
@@ -1342,15 +1140,11 @@ DEPLOYENV=Production
 RELEASE=Stable
 PS1=[\u@\h \w]\$
 HOME=/root
-```
 
-```text
 [root@master1 ~]#kubectl exec mypod -- ss -ntl
 State    Recv-Q   Send-Q     Local Address:Port     Peer Address:Port  Process
 LISTEN   0        128              0.0.0.0:80            0.0.0.0:*
-```
 
-```text
 #准备清单文件
 [root@master1 ~]#cat pod-with-env.yaml
 apiVersion: v1
@@ -1360,33 +1154,25 @@ name: pod-env-demo
 spec:
 containers:
 - name: demo-env
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 env:
 - name: HOST
 value: "127.0.0.1"
 - name: PORT
 value: "9999"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-env.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                                      READY   STATUS    RESTARTS       AGE
 mypod                                     1/1     Running   0              75s
 nfs-client-provisioner-695dc47789-h4hfl   1/1     Running   16 (31m ago)   259d
 pod-env-demo                              1/1     Running   0              2s
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-env-demo -- ss -ntl
 State    Recv-Q   Send-Q     Local Address:Port     Peer Address:Port  Process
 LISTEN   0        128            127.0.0.1:9999          0.0.0.0:*
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-env-demo -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=pod-env-demo
@@ -1396,9 +1182,7 @@ KUBERNETES_SERVICE_HOST=10.96.0.1
 KUBERNETES_SERVICE_PORT=443
 KUBERNETES_SERVICE_PORT_HTTPS=443
 KUBERNETES_PORT=tcp://10.96.0.1:443
-```
 
-```text
 KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
 KUBERNETES_PORT_443_TCP_PROTO=tcp
 KUBERNETES_PORT_443_TCP_PORT=443
@@ -1418,8 +1202,7 @@ command ：对应覆盖 Docker 中的 `ENTRYPOINT``
 `args ：对应覆盖 Docker 中的 CMD
 
 示倒:
-
-```text
+```yaml
 containers:
 - name: redis
 image: redis
@@ -1428,7 +1211,6 @@ args: ["--port", "6380"]   # 覆盖 CMD
 ```
 
 这相当于在 Docker 中执行：
-
 ```text
 docker run --entrypoint "redis-server" redis --port 6380
 ```
@@ -1438,34 +1220,25 @@ docker run --entrypoint "redis-server" redis --port 6380
 注意: args中使用环境变量,需要使用格式: $(环境变量名)。
 
 范例: 修改默认进程
-
-```text
+```yaml
 #默认busybox无法启动
 [root@master1 ~]#docker history  registry.cn-
-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+beijing.aliyuncs.com/bowen/busybox:1.32.0
 IMAGE          CREATED       CREATED BY                                      SIZE
 COMMENT
 219ee5171f80   4 years ago   /bin/sh -c #(nop)  CMD ["sh"]                   0B
-```
 
-```text
 <missing>      4 years ago   /bin/sh -c #(nop) ADD file:85e5bcb27fcc24f6a…
 1.23MB
-```
 
-```text
 [root@master1 ~]#kubectl run mybusybox --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+beijing.aliyuncs.com/bowen/busybox:1.32.0
 #k8s自动重启
 [root@master1 ~]#kubectl get pod
 NAME        READY   STATUS             RESTARTS      AGE
-```
 
-```text
 mybusybox   0/1     CrashLoopBackOff   5 (50s ago)   3m53s
-```
 
-```text
 #用自定义的命令替换sh
 [root@master1 ~]#cat pod-with-cmd-admin-box.yaml
 apiVersion: v1
@@ -1474,26 +1247,20 @@ metadata:
 name: admin-box
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
-#image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
+#image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 name: admin-box
 command: ['sleep','inf']
 #command: ['sleep']
 #args: ['inf']
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-with-cmd-admin-box.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get pod admin-box
 NAME        READY   STATUS    RESTARTS   AGE
 admin-box   1/1     Running   0          20s
-```
 
-```text
 [root@master1 ~]#kubectl exec admin-box -- pstree -p
 sleep(1)
 [root@master1 ~]#kubectl exec admin-box -- ps aux
@@ -1503,19 +1270,16 @@ PID   USER     TIME  COMMAND
 ```
 
 范例:  添加运行参数
-
-```text
+```yaml
 #原镜像的启动命令
-[root@node1 ~]#docker pull registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-
+[root@node1 ~]#docker pull registry.cn-beijing.aliyuncs.com/bowen/pod-
 test:v0.1
 [root@node1 ~]#docker history --no-trunc registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 |grep ENTRYPOINT
+beijing.aliyuncs.com/bowen/pod-test:v0.1 |grep ENTRYPOINT
 <missing>                                                                 5
 years ago   /bin/sh -c #(nop)  ENTRYPOINT ["/bin/sh" "-c" "python3
 /usr/local/bin/demo.py"]                                           0B
-```
 
-```text
 [root@master1 ~]#cat pod-with-cmd-and-args.yaml
 apiVersion: v1
 kind: Pod
@@ -1524,44 +1288,33 @@ name: pod-with-cmd-and-args
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 command: ['/bin/sh','-c']
 args: ['python3 /usr/local/bin/demo.py -p 8080']
-```
 
-```text
 [root@master1 ~]#kubectl get pod  pod-with-cmd-and-args  -o wide
-```
 
-```text
 NAME                    READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-with-cmd-and-args   1/1     Running   0          70s   172.16.4.39
-node2.wang.org   <none>           <none>
-```
+node2.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#kubectl exec  pod-with-cmd-and-args  -- ps aux
 PID   USER     TIME  COMMAND
 1 root      0:00 python3 /usr/local/bin/demo.py -p 8080
 9 root      0:00 ps aux
-```
 
-```text
 [root@master1 ~]#kubectl exec  pod-with-cmd-and-args  -- hostname -i
 172.16.4.39
-```
 
-```text
 [root@master1 ~]#curl 172.16.4.39:8080
 kubernetes pod-test v0.1!! ClientIP: 172.16.0.0, ServerName: pod-with-cmd-and-
 args, ServerIP: 172.16.4.39!
 ```
 
 范例：添加运行命令，参数和环境变量
-
-```text
+```yaml
 [root@master1 ~]#cat pod-with-cmd-and-args.yaml
 apiVersion: v1
 kind: Pod
@@ -1570,7 +1323,7 @@ name: pod-with-cmd-and-args
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 command: ['/bin/sh','-c']
 #args: ['python3 /usr/local/bin/demo.py -p $PORT']
@@ -1587,8 +1340,7 @@ value: "8888"
 注意: 都要避免端口冲突
 
 范例：直接使用容器所在宿主机网络
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat pod-hostnetwork.yaml
 apiVersion: v1
@@ -1596,40 +1348,31 @@ kind: Pod
 metadata:
 name: pod-hostnetwork-demo
 spec:
-#nodeName: node2.wang.org
+#nodeName: node2.bowen.org
 hostNetwork: true  #直接使用容器所在宿主机网络
 containers:
-```
 
-```text
 - name: demo-env
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 env:
 - name: PORT
 value: "9999"  #要确保此端口在宿主机不能被占用
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-hostnetwork.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME  READY   STATUS    RESTARTS       AGE    IP        NODE       NOMINATED NODE
 READINESS GATES
 pod-hostnetwork-demo    1/1     Running   0    9s     10.0.0.203
-node3.wang.org   <none>   <none>
-```
+node3.bowen.org   <none>   <none>
 
-```text
 [root@master1 ~]#curl 10.0.0.203:9999
-kubernetes pod-test v0.1!! ClientIP: 10.0.0.200, ServerName: node3.wang.org,
+kubernetes pod-test v0.1!! ClientIP: 10.0.0.200, ServerName: node3.bowen.org,
 ServerIP: 10.0.0.203!
 ```
 
 范例：使用容器所在宿主机指定的端口
-
-```text
+```yaml
 [root@master1 ~]#cat pod-hostport.yaml
 apiVersion: v1
 kind: Pod
@@ -1638,7 +1381,7 @@ name: pod-hostport-demo
 spec:
 containers:
 - name: demo-env
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 env:
 - name: PORT             #镜像的环境变量可以指定容器运行时使用的端口
 value: "9999"
@@ -1646,29 +1389,21 @@ ports:
 - name: http             #不支持大写字母
 containerPort: 9999    #使用上面变量相同的端口
 hostPort: 8888         #使用宿主机的指定端口
-```
 
-```text
 [root@master1 ~]#kubectl apply -f pod-hostport.yaml
 pod/pod-hostport-demo created
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME    READY   STATUS    RESTARTS        AGE    IP         NODE     NOMINATED
 NODE   READINESS GATES
 pod-hostport-demo    1/1     Running   0   5s     10.244.168.202
-node3.wang.org   <none>        <none>
-```
+node3.bowen.org   <none>        <none>
 
-```text
 #访问容器所在宿主机IP和指定的端口
 [root@master1 ~]#curl 10.0.0.203:8888
 kubernetes pod-test v0.1!! ClientIP: 10.0.0.200, ServerName: pod-hostport-demo,
 ServerIP: 10.244.168.202!
-```
 
-```text
 #本质上就是通过宿主机的DNAT策略实现
 [root@node3 ~]#iptables -vnL -t nat|grep DNAT|grep 8888
 1    60 DNAT       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0
@@ -1677,9 +1412,9 @@ tcp dpt:8888 to:10.244.168.202:9999
 
 ### 3.1.9 临时容器 Ephemeral Containers（了解）
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/ephemeral-containers/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/ephemeral-containers/>
+
 
 #### 3.1.9.1 了解临时容器
 
@@ -1698,7 +1433,6 @@ Kubernetes v1.16推出临时容器, Kubernetes v1.25稳定可用, 就是在原�
 当由于容器崩溃或容器镜像不包含调试工具而导致 kubectl exec 无用时， 临时容器对于交互式故障排查很有用。尤其是，Distroless 镜像允许用户部署最小的容器镜像，从而减少攻击面并减少故障和漏洞的暴露。 由于 distroless 镜像不包含 Shell 或任何的调试工具，因此很难单独使用 kubectl exec 命令进行故障排查。使用临时容器时，启用 进程名字空间共享 很有帮助，可以查看其他容器中的进程。
 
 **开启EphemeralContainers特性**
-
 ```text
 https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/feature-
 gates/
@@ -1707,8 +1441,7 @@ gates/
 ![原 PDF 第 77 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1f025ee3f293395d.png)
 
 范例: 如果是v1.22版前需要手动开启EphemeralContainers
-
-```text
+```ini
 #在所有节点修改相关的sevice文件,包括,api-server,controller-manger,scheduler等
 [root@master1 ~]#vim /lib/systemd/system/kubelet.service
 [Service]
@@ -1719,8 +1452,7 @@ ExecStart=/usr/bin/kubelet --featrue-gates="EphemeralContainers=true"  #修改�
 ```
 
 范例: 查看Pod配置
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pod.spec
 shareProcessNamespace    <boolean>
 Share a single process namespace between all of the containers in a pod.
@@ -1731,207 +1463,139 @@ be set. Optional: Default to false.
 ```
 
 #### 3.1.9.2 使用临时容器
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/debug/debug-application/debug-running-
 pod/#ephemeral-container
 ```
 
 **kubectl debug 命令用法**
-
-```text
+```bash
 [root@master1 ~]#kubectl debug --help
 Debug cluster resources using interactive debugging containers.
-```
 
-```text
 'debug' provides automation for common debugging tasks for cluster objects
 identified by resource and name. Pods will
 be used by default if no resource is specified.
-```
 
-```text
 The action taken by 'debug' varies depending on what resource is specified.
 Supported actions include:
 ```
 
-```text
-*  Workload: Create a copy of an existing pod with certain attributes changed,
-for example changing the image tag to a
-new version.
-*  Workload: Add an ephemeral container to an already running pod, for example
-to add debugging utilities without
-restarting the pod.
-*  Node: Create a new pod that runs in the node's host namespaces and can
-access the node's filesystem.
-```
 
-```text
+*  Workload: Create a copy of an existing pod with certain attributes changed, for example changing the image tag to a new version.*  Workload: Add an ephemeral container to an already running pod, for example to add debugging utilities without restarting the pod.*  Node: Create a new pod that runs in the node's host namespaces and can access the node's filesystem.
+
+```bash
 Examples:
 # Create an interactive debugging session in pod mypod and immediately attach
 to it.
 # (requires the EphemeralContainers feature to be enabled in the cluster)
 kubectl debug mypod -it --image=busybox
-```
 
-```text
 # Create a debug container named debugger using a custom automated debugging
 image.
 # (requires the EphemeralContainers feature to be enabled in the cluster)
 kubectl debug --image=myproj/debug-tools -c debugger mypod
-```
 
-```text
 # Create a copy of mypod adding a debug container and attach to it
 kubectl debug mypod -it --image=busybox --copy-to=my-debugger
-```
 
-```text
 # Create a copy of mypod changing the command of mycontainer
 kubectl debug mypod -it --copy-to=my-debugger --container=mycontainer -- sh
-```
 
-```text
 # Create a copy of mypod changing all container images to busybox
 kubectl debug mypod --copy-to=my-debugger --set-image=*=busybox
-```
 
-```text
 # Create a copy of mypod adding a debug container and changing container
 images
 kubectl debug mypod -it --copy-to=my-debugger --image=debian --set-
 image=app=app:debug,sidecar=sidecar:debug
-```
 
-```text
 # Create an interactive debugging session on a node and immediately attach to
 it.
 # The container will run in the host namespaces and the host's filesystem will
 be mounted at /host
 kubectl debug node/mynode -it --image=busybox
-```
 
-```text
 Options:
 --arguments-only=false:
 If specified, everything after -- will be passed to the new container as
 Args instead of Command.
 ```
 
-```text
---attach=false:
-If true, wait for the container to start running, and then attach as if
-'kubectl attach ...' were called.
-Default false, unless '-i/--stdin' is set, in which case the default is
-true.
-```
+
+--attach=false: If true, wait for the container to start running, and then attach as if'kubectl attach ...' were called. Default false, unless '-i/--stdin' is set, in which case the default is true.
 
 ```text
 -c, --container='':
 Container name to use for debug container.
-```
 
-```text
 --copy-to='':
-```
 
-```text
 Create a copy of the target Pod with this name.
-```
 
-```text
 --env=[]:
 Environment variables to set in the container.
-```
 
-```text
 --image='':
 Container image to use for debug container.
 ```
 
-```text
---image-pull-policy='':
-The image pull policy for the container. If left empty, this value will not
-be specified by the client and
-defaulted by the server.
-```
 
-```text
+--image-pull-policy='': The image pull policy for the container. If left empty, this value will not be specified by the client and defaulted by the server.
+
+```bash
 -q, --quiet=false:
 If true, suppress informational messages.
-```
 
-```text
 --replace=false:
 When used with '--copy-to', delete the original Pod.
-```
 
-```text
 --same-node=false:
 When used with '--copy-to', schedule the copy of target Pod on the same
 node.
-```
 
-```text
 --set-image=[]:
 When used with '--copy-to', a list of name=image pairs for changing
 container images, similar to how 'kubectl
 set image' works.
-```
 
-```text
 --share-processes=true:
 When used with '--copy-to', enable process namespace sharing in the copy.
-```
 
-```text
 -i, --stdin=false:
 Keep stdin open on the container(s) in the pod, even if nothing is attached.
-```
 
-```text
 --target='':
 When using an ephemeral container, target processes in this container name.
-```
 
-```text
 -t, --tty=false:
 Allocate a TTY for the debugging container.
-```
 
-```text
 Usage:
 kubectl debug (POD | TYPE[[.VERSION].GROUP]/NAME) [ -- COMMAND [args...] ]
 [options]
-```
 
-```text
 Use "kubectl options" for a list of global command-line options (applies to all
 commands).
 ```
 
 范例:
-
-```text
-[root@master1 ~]#kubectl run ephemeral-demo --image=wangxiaochun/pause:3.1 --
+```bash
+[root@master1 ~]#kubectl run ephemeral-demo --image=bowen/pause:3.1 --
 restart=Never
 [root@master1 ~]#kubectl run ephemeral-demo --
 image=registry.aliyuncs.com/google_containers/pause:3.9 --restart=Never
 [root@master1 ~]#kubectl get pod ephemeral-demo
 NAME             READY   STATUS    RESTARTS   AGE
 ephemeral-demo   1/1     Running   0          57s
-```
 
-```text
 #如果你尝试使用 kubectl exec 来创建一个 shell，你将会看到一个错误，因为这个容器镜像中没有
 shell。
 [root@master1 ~]#kubectl exec -it ephemeral-demo -- sh
 OCI runtime exec failed: exec failed: unable to start container process: exec:
 "sh": executable file not found in $PATH: unknown
 command terminated with exit code 126
-```
 
-```text
 #通过kubectl debug 添加调试容器。 如果你指定 -i 或者 --interactive 参数，kubectl 将自动
 挂接到临时容器的控制台。
 [root@master1 ~]#kubectl debug -it ephemeral-demo --image=busybox:1.32.0 --
@@ -1954,25 +1618,21 @@ valid_lft forever preferred_lft forever
 link/ether 4e:06:00:4c:8f:79 brd ff:ff:ff:ff:ff:ff
 inet 10.244.3.51/24 brd 10.244.3.255 scope global eth0
 valid_lft forever preferred_lft forever
-```
 
-```text
 #只显示一个容器
 [root@master1 ~]#kubectl get pod ephemeral-demo  -o wide
 NAME             READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
 ephemeral-demo   1/1     Running   0          8m35s   10.244.3.51
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #查看到临时容器信息
 [root@master1 ~]#kubectl describe pod ephemeral-demo
 Name:             ephemeral-demo
 Namespace:        default
 Priority:         0
 Service Account:  default
-Node:             node3.wang.org/10.0.0.203
+Node:             node3.bowen.org/10.0.0.203
 Start Time:       Sun, 27 Nov 2022 22:28:24 +0800
 Labels:           run=ephemeral-demo
 Annotations:      <none>
@@ -1984,12 +1644,10 @@ Containers:
 ephemeral-demo:
 Container ID:
 docker://28b533485ead026d26536fc6319a25f35a782d7d0cb9995eec946da9f0f3bd5c
-Image:          wangxiaochun/pause:3.1
-```
+Image:          bowen/pause:3.1
 
-```text
 Image ID:       docker-
-pullable://wangxiaochun/pause@sha256:fcaff905397ba63fd376d0c3019f1f1cb6e75061313
+pullable://bowen/pause@sha256:fcaff905397ba63fd376d0c3019f1f1cb6e75061313
 89edbcb3d22719f1ae54d
 Port:           <none>
 Host Port:      <none>
@@ -2041,14 +1699,12 @@ Events:
 Type    Reason     Age    From               Message
 ----    ------     ----   ----               -------
 Normal  Scheduled  4m30s  default-scheduler  Successfully assigned
-default/ephemeral-demo to node3.wang.org
+default/ephemeral-demo to node3.bowen.org
 Normal  Pulling    4m30s  kubelet            Pulling image
-"wangxiaochun/pause:3.1"
+"bowen/pause:3.1"
 Normal  Pulled     4m3s   kubelet            Successfully pulled image
-"wangxiaochun/pause:3.1" in 26.563175958s
-```
+"bowen/pause:3.1" in 26.563175958s
 
-```text
 Normal  Created    4m3s   kubelet            Created container ephemeral-demo
 Normal  Started    4m3s   kubelet            Started container ephemeral-demo
 Normal  Pulling    109s   kubelet            Pulling image "busybox:1.32.0"
@@ -2056,9 +1712,7 @@ Normal  Pulled     108s   kubelet            Successfully pulled image
 "busybox:1.32.0" in 1.721851652s
 Normal  Created    108s   kubelet            Created container debugger-84tq7
 Normal  Started    108s   kubelet            Started container debugger-84tq7
-```
 
-```text
 #在运行Pod的宿主机可以看到两个容器
 [root@node3 ~]#docker ps
 CONTAINER ID   IMAGE                                               COMMAND
@@ -2066,16 +1720,15 @@ CREATED          STATUS          PORTS     NAMES
 47db81563672   busybox                                             "sh"
 4 minutes ago    Up 4 minutes              k8s_debugger-
 84tq7_ephemeral-demo_default_d870ecf8-707f-437d-ae91-1af9c21413a9_0
-28b533485ead   wangxiaochun/pause                                  "/pause"
+28b533485ead   bowen/pause                                  "/pause"
 6 minutes ago    Up 6 minutes              k8s_ephemeral-
 demo_ephemeral-demo_default_d870ecf8-707f-437d-ae91-1af9c21413a9_0
 ```
 
 范例：调试nginx服务
-
-```text
+```bash
 [root@master1 ~]#kubectl run mynginx --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.22.0
+beijing.aliyuncs.com/bowen/nginx:1.22.0
 [root@master1 ~]#kubectl exec -it mynginx -- sh
 # ip a
 sh: 2: ip: not found
@@ -2083,11 +1736,9 @@ sh: 2: ip: not found
 sh: 3: ps: not found
 # exit
 command terminated with exit code 127
-```
 
-```text
 [root@master1 ~]#kubectl debug -it mynginx --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0 --target=mynginx
+beijing.aliyuncs.com/bowen/busybox:1.32.0 --target=mynginx
 Targeting container "mynginx". If you don't see processes from this container it
 may be because the container runtime doesn't support this feature.
 Defaulting debug container name to debugger-4x574.
@@ -2112,12 +1763,10 @@ PID   USER     TIME  COMMAND
 Session ended, the ephemeral container will not be restarted but may be
 reattached using 'kubectl attach mynginx -c debugger-lvspb -i -t' if it is still
 running
-```
 
-```text
 [root@master1 ~]#kubectl get pod mynginx -o yaml |grep -A10 ephemeralContainers
 ephemeralContainers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 imagePullPolicy: IfNotPresent
 name: debugger-4x574
 resources: {}
@@ -2126,7 +1775,7 @@ targetContainerName: mynginx
 terminationMessagePath: /dev/termination-log
 terminationMessagePolicy: File
 tty: true
-nodeName: node3.wang.org
+nodeName: node3.bowen.org
 ```
 
 ## 3.2 Pod 工作机制
@@ -2238,14 +1887,11 @@ pod
 多节点内多Pod通信 - 跨主机网络解决方案(overlay模型),利用网络插件flannel,calico等实现。
 
 范例: 查看pause容器
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod -o wide |grep node1
-pod-test1   1/1     Running   7 (7h41m ago)   14d   172.16.3.39   node1.wang.org
+pod-test1   1/1     Running   7 (7h41m ago)   14d   172.16.3.39   node1.bowen.org
 <none>           <none>
-```
 
-```text
 #有几个pod就有几个对应的pause容器
 [root@node1 ~]#docker ps |grep pod-test1
 701b0cb33630   ae893c58d83f
@@ -2288,23 +1934,20 @@ http方式：
 
 参考资料：
 
-```text
-https://kubernetes.io/zh/docs/tasks/administer-cluster/static-pod/
-https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/static-pod/
-```
+
+- <https://kubernetes.io/zh/docs/tasks/administer-cluster/static-pod/>
+- <https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/static-pod/>
+
 
 范例: 信息查看
-
-```text
+```ini
 #软件组成
 [root@master1 ~]#dpkg -L kubelet
 ...
 /lib/systemd/system/kubelet.service
 ...
 /usr/bin/kubelet
-```
 
-```text
 #服务状态
 [root@master1 ~]#systemctl status kubelet
 ● kubelet.service - kubelet: The Kubernetes Node Agent
@@ -2316,15 +1959,11 @@ Active: active (running)
 ...
 #结果显示：kubelet服务，系统服务文件是kubelet.service，但是在启动服务时候，还加载了
 kubelet.service.d目录下的10-kubeadm.conf文件的内容
-```
 
-```text
 #查看加载文件内容
 [root@master1 ~]#ls /lib/systemd/system/kubelet.service.d
 10-kubeadm.conf
-```
 
-```text
 [root@master1 ~]# cat /lib/systemd/system/kubelet.service.d/10-kubeadm.conf
 # Note: This dropin only works with kubeadm and kubelet v1.11+
 [Service]
@@ -2334,37 +1973,25 @@ Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
 EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
 ...
 #结果显示：kubelet的配置参数主要是在/var/lib/kubelet/config.yaml文件中定义
-```
 
-```text
 #查看kubelet配置参数
 [root@master1 ~]#grep static /var/lib/kubelet/config.yaml
 staticPodPath: /etc/kubernetes/manifests
 ```
 
-```text
-#结果显示：该文件是一个yaml格式的，里面设置了大量的配置参数，其中有一项关键的就是
-staticPodPath。其实我们还可以直接  在/etc/kubernetes/kubelet.conf文件中使用 --pod-
-manifest-path=<the directory>的方式指定静态pod的路径。
-```
 
-```text
-#以上观察可以看出对于kubeadm的环境，默认情况下已经配置好了静态pod的专用目
-录/etc/kubernetes/manifests，而我们没有看到静态pod的效果，主要是该目录中并没有任何资源对象
-文件。
-```
+#结果显示：该文件是一个yaml格式的，里面设置了大量的配置参数，其中有一项关键的就是 staticPodPath。其实我们还可以直接  在/etc/kubernetes/kubelet.conf文件中使用 --pod-manifest-path=<the directory>的方式指定静态pod的路径。
 
-```text
+
+#以上观察可以看出对于kubeadm的环境，默认情况下已经配置好了静态pod的专用目录/etc/kubernetes/manifests，而我们没有看到静态pod的效果，主要是该目录中并没有任何资源对象文件。
+
+```bash
 #node节点查看效果,没有静态pod
 [root@node1 ~]# ls /etc/kubernetes/manifests/
 [root@node1 ~]#
-```
 
-```text
 #master节点查看效果
-```
 
-```text
 [root@master ~]# ls /etc/kubernetes/manifests/
 etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-
 scheduler.yaml
@@ -2372,14 +1999,11 @@ scheduler.yaml
 ```
 
 范例: 创建和删除静态pod
-
-```text
+```yaml
 #master查看集群当前效果
 [root@master1 ~]# kubectl get pod
 No resources found.
-```
 
-```text
 #直接在node3节点的/etc/kubernetes/manifests 目录下创建资源对象文件即可
 [root@node3 ~]#cat >/etc/kubernetes/manifests/pod-static.yaml <<EOF
 apiVersion: v1
@@ -2389,60 +2013,44 @@ name: pod-static
 spec:
 containers:
 - name: nginx01
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.22.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.22.0
 EOF
-```
 
-```text
 #保存文件后，不apply该文件，直接回到master节点上检查效果
-[root@master1 ~]#kubectl get pod pod-static-master1.wang.org
+[root@master1 ~]#kubectl get pod pod-static-master1.bowen.org
 NAME                            READY   STATUS    RESTARTS   AGE
-pod-static-master1.wang.org    1/1     Running   0          58s
+pod-static-master1.bowen.org    1/1     Running   0          58s
 #结果显示：静态pod目录，只要配置文件发生变化，立刻都会显示出来。
-```
 
-```text
 #删除静态pod该文件
-[root@master1 ~]#kubectl get pod pod-static-master1.wang.org  -o wide
+[root@master1 ~]#kubectl get pod pod-static-master1.bowen.org  -o wide
 NAME                          READY   STATUS    RESTARTS   AGE   IP
 NODE               NOMINATED NODE   READINESS GATES
-pod-static-master1.wang.org    1/1     Running   0          56s   172.16.7.36
-node3.wang.org   <none>           <none>
-```
+pod-static-master1.bowen.org    1/1     Running   0          56s   172.16.7.36
+node3.bowen.org   <none>           <none>
 
-```text
 #无法用下面方式删除静态pod
-[root@master1 ~]# kubectl delete pod pod-static-master1.wang.org
-```
+[root@master1 ~]# kubectl delete pod pod-static-master1.bowen.org
 
-```text
 #删除后会自动重新创建
-[root@master1 ~]#kubectl get pod pod-static-master1.wang.org  -o wide
+[root@master1 ~]#kubectl get pod pod-static-master1.bowen.org  -o wide
 NAME                          READY   STATUS    RESTARTS   AGE   IP
 NODE               NOMINATED NODE   READINESS GATES
-pod-static-master1.wang.org    1/1     Running   0          56s   172.16.7.36
-node3.wang.org   <none>           <none>
+pod-static-master1.bowen.org    1/1     Running   0          56s   172.16.7.36
+node3.bowen.org   <none>           <none>
 #结果显示:由于删除pod的增删主要是基于节点上的kubelet来实现的，重新创建的pod的ip什么的属性都没
 发生变化。
-```
 
-```text
 #编辑该对象
-[root@master ~]# kubectl edit pod pod-static-master1.wang.org
-```
+[root@master ~]# kubectl edit pod pod-static-master1.bowen.org
 
-```text
 #检查效果
 [root@master ~]# kubectl get pod -o wide
 #结果显示：静态pod没有办法被kubectl进行编辑
-```
 
-```text
 #回到node3节点上移除资源定义文件
 [root@node3 ~]# mv /etc/kubernetes/manifests/pod-static.yaml /tmp/
-```
 
-```text
 #回到master节点上，查看效果
 [root@master ~]# kubectl get pod
 No resources found.
@@ -2455,43 +2063,24 @@ Kubernetes资源对象Pod在它实现的内部有一套独有的设计理念和�
 
 **应用交付**
 
-```text
-Kubernetes是一个自动化的容器管理平台，存在的目的就是快速管理各种业务应用。所以它所面对的本质上
-就是业务应用。
-随着应用的进一步拆分和微服务架构的设计，一个应用被拆分成了多个独立的子模块应用。
-虽然Kubernetes将这些应用的各个子模块单独部署在容器上，但是Kubernetes不再是对一个个子应用容器
-进行管理，它是将这些子应用容器放在一个逻辑单元pod中，而这个逻辑单元针对的是应用或服务，通过对逻
-辑单元的操作，达到对应用快速管理，从而实现业务的快速交付。
-所以说Pod面向的是应用或服务，而不是具体的应用容器或者子应用容器。
-```
+
+Kubernetes是一个自动化的容器管理平台，存在的目的就是快速管理各种业务应用。所以它所面对的本质上就是业务应用。随着应用的进一步拆分和微服务架构的设计，一个应用被拆分成了多个独立的子模块应用。虽然Kubernetes将这些应用的各个子模块单独部署在容器上，但是Kubernetes不再是对一个个子应用容器进行管理，它是将这些子应用容器放在一个逻辑单元pod中，而这个逻辑单元针对的是应用或服务，通过对逻辑单元的操作，达到对应用快速管理，从而实现业务的快速交付。所以说Pod面向的是应用或服务，而不是具体的应用容器或者子应用容器。
+
 
 **资源管理**
 
-```text
-kubernetes是一个分布式的资源管理平台，分布的特点就是资源分散，所以Kubernetes的应用，肯定会出
-现业务应用的不同模块被分配到多个Node工作节点，那么随之而来，就会出现两种问题：
-1)需要设计一个复杂的资源调度算法，根据业务需求，从不同Node上获取所有特定的数据
-2)强耦合的业务应用，被分配到了不同节点，可能造成不可预测的功能缺失或潜在问题
-```
 
-```text
-所以，与其花费大力气解决上述两个问题，还不如把这些功能直接打包到一个逻辑单元pod中：
-对内：所有的子应用容器可以在Pod内部进行单独管理，即使pod在调度到其他Node节点，Pod内部的所有子
-应用容器仍可以正常运行。
-对外：对于整个业务系统来说，面向的是一个个的应用或业务功能(即Pod)，可以轻松实现管理。
-```
+kubernetes是一个分布式的资源管理平台，分布的特点就是资源分散，所以Kubernetes的应用，肯定会出现业务应用的不同模块被分配到多个Node工作节点，那么随之而来，就会出现两种问题：1)需要设计一个复杂的资源调度算法，根据业务需求，从不同Node上获取所有特定的数据 2)强耦合的业务应用，被分配到了不同节点，可能造成不可预测的功能缺失或潜在问题
+
+
+所以，与其花费大力气解决上述两个问题，还不如把这些功能直接打包到一个逻辑单元pod中：对内：所有的子应用容器可以在Pod内部进行单独管理，即使pod在调度到其他Node节点，Pod内部的所有子应用容器仍可以正常运行。对外：对于整个业务系统来说，面向的是一个个的应用或业务功能(即Pod)，可以轻松实现管理。
+
 
 实现细节
 
-```text
-应用业务下放权力到Pod内部了，那么Pod如何管理子应用呢？
-通信机制：Pod内有个Pause容器，它有独立的ip地址，其他子应用容器基于container网络模式实现统一的
-对外服务，大大简化了关联业务容器之间的通信问题。
-存储机制：Pod内有专用的数据存储资源对象，其他子应用容器共享该数据卷，实现多容器数据信息的统一存
-储。
-管理机制：所有子应用容器的信息都保存在pause容器中，通过对pause容器的管理，达到管理所有容器效
-果。
-```
+
+应用业务下放权力到Pod内部了，那么Pod如何管理子应用呢？通信机制：Pod内有个Pause容器，它有独立的ip地址，其他子应用容器基于container网络模式实现统一的对外服务，大大简化了关联业务容器之间的通信问题。存储机制：Pod内有专用的数据存储资源对象，其他子应用容器共享该数据卷，实现多容器数据信息的统一存储。管理机制：所有子应用容器的信息都保存在pause容器中，通过对pause容器的管理，达到管理所有容器效果。
+
 
 #### 3.2.2.3 Pod 管理机制
 
@@ -2524,7 +2113,6 @@ Kubernetes 集群通过pod实现了大量业务应用容器的统一管理。
 用户可以通过多种方式向 Master节点上的 API Server 发起创建一个 Pod 的请求,检查权限通过后才允许继续API Server 将该信息写入 etcd 后,并同步到其它etcd数据库etcd 通过Watch机制发现数据变化则主动通知给所有API Server，API Server再返回成功结果给用户Scheduler 通过Watch检测到 API Server上有建立Pod请求更新，开始通知 API Server 调度该Pod请求到合适的Node,这期间存在选择哪个合适节点的复杂过程，Scheduler 通知API Server 更新信息到所有 etcd，etcd 返回结果给API Server API Server 通知 kubelet 有新的 Pod 调度，kubelet 通过容器引擎运行该 Pod 对象kubelet 通过 container runtime 取到 Pod 状态，并同步信息到 API Server，最终由 API Server更新信息到 etcd。
 
 #### 3.2.2.2 Pod 生命周期
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-
 lifecycle/#container-probes
@@ -2614,7 +2202,6 @@ Startup probe :  启动探针Liveiness probe: 判断当前pod是否处于存活�
 7. 接收用户请求
 
 ##### 3.2.2.2.3  关闭 Pod 流程
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-
 termination
@@ -2643,16 +2230,13 @@ termination
 ![原 PDF 第 96 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1cf78dc8950f652d.png)
 
 **设置终止宽限期**
-
 ```text
 spec.terminationGracePeriodSecond
 #spec.terminationGracePeriod
 #默认为30s,此值为优雅终止宽限期
 #如果程序的关闭时间和在Pod配置的preStop Hook之和超过30秒，应将
 terminationGracePeriodSeconds重新设置，调整为大于30秒，确保容器优雅退出。
-```
 
-```text
 #删除命令：kubectl delete pod mypod --grace-period=5
 #强制删除：kubectl delete pod mypod --grace-period=0 --force
 ```
@@ -2684,83 +2268,49 @@ Pod中容器删除宽限期terminationGracePeriodSeconds 默认为30秒。
 2. Endpoint Controller从Endpoint对象中删除Pod的IP。
 
 范例：
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pod.spec.terminationGracePeriodSeconds
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    terminationGracePeriodSeconds <integer>
 ```
 
-```text
-DESCRIPTION:
-Optional duration in seconds the pod needs to terminate gracefully. May be
-decreased in delete request. Value must be non-negative integer. The value
-zero indicates stop immediately via the kill signal (no opportunity to shut
-down). If this value is nil, the default grace period will be used instead.
-The grace period is the duration in seconds after the processes running in
-the pod are sent a termination signal and the time when the processes are
-forcibly halted with a kill signal. Set this value longer than the expected
-cleanup time for your process. Defaults to 30 seconds.
-```
 
-```text
+DESCRIPTION: Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). If this value is nil, the default grace period will be used instead. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. Defaults to 30 seconds.
+
+```bash
 [root@master1 ~]#kubectl explain
 pod.spec.containers.livenessProbe.terminationGracePeriodSeconds
 KIND:       Pod
 VERSION:    v1
-```
 
-```text
 FIELD: terminationGracePeriodSeconds <integer>
 ```
 
-```text
-DESCRIPTION:
-Optional duration in seconds the pod needs to terminate gracefully upon
-probe failure. The grace period is the duration in seconds after the
-processes running in the pod are sent a termination signal and the time when
-the processes are forcibly halted with a kill signal. Set this value longer
-than the expected cleanup time for your process. If this value is nil, the
-pod's terminationGracePeriodSeconds will be used. Otherwise, this value
-overrides the value provided by the pod spec. Value must be non-negative
-integer. The value zero indicates stop immediately via the kill signal (no
-opportunity to shut down). This is a beta field and requires enabling
-ProbeTerminationGracePeriod feature gate. Minimum value is 1.
-spec.terminationGracePeriodSeconds is used if unset.
-```
+
+DESCRIPTION: Optional duration in seconds the pod needs to terminate gracefully upon probe failure. The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this value overrides the value provided by the pod spec. Value must be non-negative integer. The value zero indicates stop immediately via the kill signal (no opportunity to shut down). This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate. Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+
 
 示例：
-
-```text
+```yaml
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-
 liveness-readiness-startup-
 probes/#%E6%8E%A2%E9%92%88%E5%B1%82%E9%9D%A2%E7%9A%84-
 terminationgraceperiodseconds
-```
 
-```text
 spec:
 terminationGracePeriodSeconds: 3600  # Pod 级别设置
 containers:
 - name: test
 image: ...
-```
 
-```text
 ports:
-```
 
-```text
 - name: liveness-port
 containerPort: 8080
 hostPort: 8080
-```
 
-```text
 livenessProbe:
 httpGet:
 path: /healthz
@@ -2772,7 +2322,6 @@ terminationGracePeriodSeconds: 60
 ```
 
 ##### 3.2.2.2.4 两种钩子PostStart和PreStop
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/attach-handler-
 lifecycle-event/
@@ -2795,228 +2344,147 @@ Exec，在钩子事件触发时，直接在当前容器中运行由用户定义�
 exec httpGet tcpSocket
 
 属性信息：kubectl explain pods.spec.containers.lifecycle
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pods.spec.containers.lifecycle
 KIND:       Pod
 VERSION:    v1
-```
 
-```text
 FIELD: lifecycle <Lifecycle>
 ```
 
-```text
-DESCRIPTION:
-Actions that the management system should take in response to container
-lifecycle events. Cannot be updated.
-Lifecycle describes actions that the management system should take in
-response to container lifecycle events. For the PostStart and PreStop
-lifecycle handlers, management of the container blocks until the action is
-complete, unless the container process fails, in which case the handler is
-aborted.
-```
 
-```text
-FIELDS:
-postStart <LifecycleHandler>
-PostStart is called immediately after a container is created. If the handler
-fails, the container is terminated and restarted according to its restart
-policy. Other management of the container blocks until the hook completes.
-More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
+DESCRIPTION: Actions that the management system should take in response to container lifecycle events. Cannot be updated. Lifecycle describes actions that the management system should take in response to container lifecycle events. For the PostStart and PreStop lifecycle handlers, management of the container blocks until the action is complete, unless the container process fails, in which case the handler is aborted.
+
+
+FIELDS: postStart <LifecycleHandler>PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
 hooks/#container-hooks
-```
 
-```text
-preStop   <LifecycleHandler>
-PreStop is called immediately before a container is terminated due to an API
-request or management event such as liveness/startup probe failure,
-preemption, resource contention, etc. The handler is not called if the
-container crashes or exits. The Pod's termination grace period countdown
-begins before the PreStop hook is executed. Regardless of the outcome of the
-handler, the container will eventually terminate within the Pod's
-termination grace period (unless delayed by finalizers). Other management of
-the container blocks until the hook completes or until the termination grace
-period is reached. More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
+
+preStop   <LifecycleHandler>PreStop is called immediately before a container is terminated due to an API request or management event such as liveness/startup probe failure, preemption, resource contention, etc. The handler is not called if the container crashes or exits. The Pod's termination grace period countdown begins before the PreStop hook is executed. Regardless of the outcome of the handler, the container will eventually terminate within the Pod's termination grace period (unless delayed by finalizers). Other management of the container blocks until the hook completes or until the termination grace period is reached. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
 hooks/#container-hooks
-```
 
-```text
+```bash
 [root@master1 ~]#kubectl explain pods.spec.containers.lifecycle.postStart
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 RESOURCE: postStart <Object>
 ```
 
-```text
-DESCRIPTION:
-PostStart is called immediately after a container is created. If the
-handler fails, the container is terminated and restarted according to its
-restart policy. Other management of the container blocks until the hook
-completes. More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
+
+DESCRIPTION: PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
 hooks/#container-hooks
-```
 
 ```text
 LifecycleHandler defines a specific action that should be taken in a
 lifecycle hook. One and only one of the fields, except TCPSocket must be
 specified.
-```
 
-```text
 FIELDS:
 exec <Object>
 Exec specifies the action to take.
-```
 
-```text
 httpGet  <Object>
 HTTPGet specifies the http request to perform.
 ```
 
-```text
-tcpSocket    <Object>
-Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for
-the backward compatibility. There are no validation of this field and
-lifecycle hooks will fail in runtime when tcp handler is specified.
-```
+
+tcpSocket    <Object>Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for the backward compatibility. There are no validation of this field and lifecycle hooks will fail in runtime when tcp handler is specified.
 
 ```text
 #新版
 exec  <ExecAction>
 Exec specifies a command to execute in the container.
-```
 
-```text
 httpGet   <HTTPGetAction>
-```
 
-```text
 HTTPGet specifies an HTTP GET request to perform.
-```
 
-```text
 sleep <SleepAction> #新功能
 Sleep represents a duration that the container should sleep.
 ```
 
-```text
-tcpSocket <TCPSocketAction>
-Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for
-backward compatibility. There is no validation of this field and lifecycle
-hooks will fail at runtime when it is specified.
-```
 
-```text
+tcpSocket <TCPSocketAction>Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for backward compatibility. There is no validation of this field and lifecycle hooks will fail at runtime when it is specified.
+
+```bash
 [root@master1 ~]#kubectl explain pods.spec.initContainers.lifecycle
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 RESOURCE: lifecycle <Object>
-```
 
-```text
 DESCRIPTION:
 Actions that the management system should take in response to container
 lifecycle events. Cannot be updated.
 ```
 
-```text
-Lifecycle describes actions that the management system should take in
-response to container lifecycle events. For the PostStart and PreStop
-lifecycle handlers, management of the container blocks until the action is
-complete, unless the container process fails, in which case the handler is
-aborted.
-```
 
-```text
-FIELDS:
-postStart    <Object>
-PostStart is called immediately after a container is created. If the
-handler fails, the container is terminated and restarted according to its
-restart policy. Other management of the container blocks until the hook
-completes. More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
-hooks/#container-hooks
-```
+Lifecycle describes actions that the management system should take in response to container lifecycle events. For the PostStart and PreStop lifecycle handlers, management of the container blocks until the action is complete, unless the container process fails, in which case the handler is aborted.
 
-```text
-preStop  <Object>
-PreStop is called immediately before a container is terminated due to an
-API request or management event such as liveness/startup probe failure,
-preemption, resource contention, etc. The handler is not called if the
-container crashes or exits. The Pod's termination grace period countdown
-begins before the PreStop hook is executed. Regardless of the outcome of
-the handler, the container will eventually terminate within the Pod's
-termination grace period (unless delayed by finalizers). Other management
-of the container blocks until the hook completes or until the termination
-grace period is reached. More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
+
+FIELDS: postStart    <Object>PostStart is called immediately after a container is created. If the handler fails, the container is terminated and restarted according to its restart policy. Other management of the container blocks until the hook completes. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
 hooks/#container-hooks
-```
+
+
+preStop  <Object>PreStop is called immediately before a container is terminated due to an API request or management event such as liveness/startup probe failure, preemption, resource contention, etc. The handler is not called if the container crashes or exits. The Pod's termination grace period countdown begins before the PreStop hook is executed. Regardless of the outcome of the handler, the container will eventually terminate within the Pod's termination grace period (unless delayed by finalizers). Other management of the container blocks until the hook completes or until the termination grace period is reached. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
+hooks/#container-hooks
+
 
 范例:
-
-```text
+```yaml
 [root@master1 ~]#cat pod-poststart.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-```
 
-```text
 name: pod-poststart
 spec:
 containers:
 - name: busybox
 #image: busybox:1.32.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 lifecycle:
 postStart:
 exec:
 command: ["/bin/sh","-c","echo lifecycle poststart at $(date) >
 /tmp/poststart.log"]
 command: ['sh', '-c', 'echo The app is running at $(date) && sleep 3600']
-```
 
-```text
 #启动文件
 [root@master1 ~]#kubectl apply  -f  pod-poststart.yaml
 pod/pod-poststart created
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME            READY   STATUS    RESTARTS   AGE
 pod-poststart   1/1     Running   0          3s
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl exec pod-poststart -- ls /tmp/
 poststart.log
-```
 
-```text
 #观察Pod启动时运行的命令和poststart定义的指令是同时执行的
 [root@master1 ~]#kubectl  logs pod-poststart
 lifecycle poststart at Mon Jul 15 09:37:05 UTC 2024
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-poststart -- cat  /tmp/poststart.log
 lifecycle poststart at Mon Jul 15 09:37:05 UTC 2024
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl  delete -f  pod-poststart.yaml
 pod "pod-poststart" deleted
@@ -3031,111 +2499,73 @@ pod "pod-poststart" deleted
 exec httpGet tcpSocket
 
 钩子处理程序的日志不会在 Pod 事件中公开。 如果处理程序由于某种原因失败，它将播放一个事件。对于 PostStart，这是 FailedPostStartHook 事件，对于 PreStop，这是 FailedPreStopHook 事件。可以通过运行 kubectl describe pod <pod_name> 命令来查看这些事件。
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pods.spec.containers.lifecycle.preStop
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 RESOURCE: preStop <Object>
-```
 
-```text
 DESCRIPTION:
 ```
 
-```text
-PreStop is called immediately before a container is terminated due to an
-API request or management event such as liveness/startup probe failure,
-preemption, resource contention, etc. The handler is not called if the
-container crashes or exits. The Pod's termination grace period countdown
-begins before the PreStop hook is executed. Regardless of the outcome of
-the handler, the container will eventually terminate within the Pod's
-termination grace period (unless delayed by finalizers). Other management
-of the container blocks until the hook completes or until the termination
-grace period is reached. More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
+
+PreStop is called immediately before a container is terminated due to an API request or management event such as liveness/startup probe failure, preemption, resource contention, etc. The handler is not called if the container crashes or exits. The Pod's termination grace period countdown begins before the PreStop hook is executed. Regardless of the outcome of the handler, the container will eventually terminate within the Pod's termination grace period (unless delayed by finalizers). Other management of the container blocks until the hook completes or until the termination grace period is reached. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
 hooks/#container-hooks
-```
 
 ```text
 LifecycleHandler defines a specific action that should be taken in a
 lifecycle hook. One and only one of the fields, except TCPSocket must be
 specified.
-```
 
-```text
 FIELDS:
 exec <Object>
 Exec specifies the action to take.
-```
 
-```text
 httpGet  <Object>
 HTTPGet specifies the http request to perform.
 ```
 
-```text
-tcpSocket    <Object>
-Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for
-the backward compatibility. There are no validation of this field and
-lifecycle hooks will fail in runtime when tcp handler is specified.
-```
 
-```text
+tcpSocket    <Object>Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for the backward compatibility. There are no validation of this field and lifecycle hooks will fail in runtime when tcp handler is specified.
+
+```bash
 [root@master1 ~]#kubectl explain pods.spec.initContainers.lifecycle.preStop
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 RESOURCE: preStop <Object>
 ```
 
-```text
-DESCRIPTION:
-PreStop is called immediately before a container is terminated due to an
-API request or management event such as liveness/startup probe failure,
-preemption, resource contention, etc. The handler is not called if the
-container crashes or exits. The Pod's termination grace period countdown
-begins before the PreStop hook is executed. Regardless of the outcome of
-the handler, the container will eventually terminate within the Pod's
-termination grace period (unless delayed by finalizers). Other management
-of the container blocks until the hook completes or until the termination
-grace period is reached. More info:
-https://kubernetes.io/docs/concepts/containers/container-lifecycle-
+
+DESCRIPTION: PreStop is called immediately before a container is terminated due to an API request or management event such as liveness/startup probe failure, preemption, resource contention, etc. The handler is not called if the container crashes or exits. The Pod's termination grace period countdown begins before the PreStop hook is executed. Regardless of the outcome of the handler, the container will eventually terminate within the Pod's termination grace period (unless delayed by finalizers). Other management of the container blocks until the hook completes or until the termination grace period is reached. More info:
+
+<https://kubernetes.io/docs/concepts/containers/container-lifecycle->
+
 hooks/#container-hooks
-```
 
 ```text
 LifecycleHandler defines a specific action that should be taken in a
 lifecycle hook. One and only one of the fields, except TCPSocket must be
 specified.
-```
 
-```text
 FIELDS:
 exec <Object>
 Exec specifies the action to take.
-```
 
-```text
 httpGet  <Object>
 HTTPGet specifies the http request to perform.
 ```
 
-```text
-tcpSocket    <Object>
-Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for
-the backward compatibility. There are no validation of this field and
-lifecycle hooks will fail in runtime when tcp handler is specified.
-```
+
+tcpSocket    <Object>Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for the backward compatibility. There are no validation of this field and lifecycle hooks will fail in runtime when tcp handler is specified.
+
 
 范例:
-
-```text
+```yaml
 #由于默认情况下，删除的动作和日志我们都没有办法看到，那么我们这里采用一种间接的方法，在删除动作之
 前，给本地目录创建第一个文件，输入一些内容
 [root@master1 ~]#cat pod-prestop.yaml
@@ -3150,7 +2580,7 @@ hostPath:
 path: /tmp
 containers:
 - name: prestop-pod-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 volumeMounts:
 - name: vol-prestop
 mountPath: /tmp
@@ -3164,44 +2594,30 @@ preStop:
 exec:
 command: ['/bin/sh', '-c', 'echo lifecycle prestop at $(date)  >
 /tmp/prestop.log']
-```
 
-```text
 #运行前确定所有节点目录文件列表
 [root@node1 ~]#ls /tmp
-```
 
-```text
 #启动Pod
 [root@master1 ~]#kubectl apply -f pod-prestop.yaml
-```
 
-```text
 #查看到此pod运行在node1节点上
 [root@master1 ~]#kubectl get pod -o wide
 NAME          READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
-pod-prestop   1/1     Running   0          25s   172.16.3.22   node1.wang.org
+pod-prestop   1/1     Running   0          25s   172.16.3.22   node1.bowen.org
 <none>           <none>
-```
 
-```text
 #查看到node1的目录下生成文件
 [root@node1 ~]#ls /tmp
 poststart.log
-```
 
-```text
 [root@node1 ~]#cat /tmp/poststart.log
 lifecycle poststart at Mon Jul 15 09:40:05 UTC 2024
-```
 
-```text
 #删除pod
 [root@master1 ~]#kubectl delete  -f pod-prestop.yaml
-```
 
-```text
 #再查看文件
 [root@node1 ~]#ls /tmp
 poststart.log prestop.log
@@ -3210,8 +2626,7 @@ lifecycle prestop at Mon Jul 15 09:42:15 UTC 2024
 ```
 
 范例: 后端Pod滚动升级时平滑下线Pod
-
-```text
+```yaml
 #清单文件
 cat pod-prestop-demo.yaml
 apiVersion: apps/v1
@@ -3230,7 +2645,7 @@ app: prestop-demo
 spec:
 containers:
 - name: prestop-demo
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 ports:
 - containerPort: 80
 lifecycle:  # 设置preStop Hook函数，使kube-apiserver等待10秒后再向Pod发送
@@ -3256,17 +2671,13 @@ protocol: TCP
 selector:
 app: prestop-demo
 type: NodePort
-```
 
-```text
 #test.sh
 #!/bin/bash
 HOST="SVC_IP"
-#HOST="demo.wang.org"
+#HOST="demo.bowen.org"
 printf "Response Code|| TIME \n" >> log.txt
-```
 
-```text
 while true; do
 #RESPONSE=$(curl -H Host:$HOST  -s -o /dev/null -w "%{http_code}" -m 1
 http://$HOST/)
@@ -3276,28 +2687,22 @@ TIMESTAMP=$(date +%Y-%m-%d_%H:%M:%S)
 echo "$TIMESTAMP - $RESPONSE" >> log.txt
 sleep 1
 done
-```
 
-```text
 #运行test.sh
 bash test.sh
-```
 
-```text
 #重新部署应用，触发Pod滚动升级
 kubectl rollout restart deploy prestop-demo
-```
 
-```text
 #查看log.txt
 cat log.txt
 ```
 
 #### 3.2.2.3 Pod 状态
 
-```text
-https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
-```
+
+- <https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/>
+
 
 ##### 3.2.2.3.1 Pod 状态说明
 
@@ -3310,7 +2715,6 @@ https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
 业务运行过程中不可避免会出现意外，这个时候有三种策略对Pod进行管理：   OnFailure，Never和Always（默认）。
 
 ##### 3.2.2.3.2 Pod  phase 阶段 （相位）
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#pod-
 phase
@@ -3329,50 +2733,29 @@ phase
 **Failed**：Pod 中的所有容器均已终止，其中至少一个因故障终止，即以非零状态退出或被系统终止。
 
 **Unknown**：因与 Pod 所在节点通信发生错误等原因，暂时无法获取 Pod 状态。
-
-```text
+```bash
 #查看状态说明
 [root@master1 ~]#kubectl explain pods.status.phase
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    phase <string>
 ```
 
-```text
-DESCRIPTION:
-The phase of a Pod is a simple, high-level summary of where the Pod is in
-its lifecycle. The conditions array, the reason and message fields, and the
-individual container status arrays contain more detail about the pod's
-status. There are five possible phase values:
-```
 
-```text
-Pending: The pod has been accepted by the Kubernetes system, but one or
-more of the container images has not been created. This includes time
-before being scheduled as well as time spent downloading images over the
-network, which could take a while. Running: The pod has been bound to a
-node, and all of the containers have been created. At least one container
-is still running, or is in the process of starting or restarting.
-Succeeded: All containers in the pod have terminated in success, and will
-not be restarted. Failed: All containers in the pod have terminated, and at
-least one container has terminated in failure. The container either exited
-with non-zero status or was terminated by the system. Unknown: For some
-reason the state of the pod could not be obtained, typically due to an
-error in communicating with the host of the pod.
-```
+DESCRIPTION: The phase of a Pod is a simple, high-level summary of where the Pod is in its lifecycle. The conditions array, the reason and message fields, and the individual container status arrays contain more detail about the pod's status. There are five possible phase values:
+
+
+Pending: The pod has been accepted by the Kubernetes system, but one or more of the container images has not been created. This includes time before being scheduled as well as time spent downloading images over the network, which could take a while. Running: The pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting. Succeeded: All containers in the pod have terminated in success, and will not be restarted. Failed: All containers in the pod have terminated, and at least one container has terminated in failure. The container either exited with non-zero status or was terminated by the system. Unknown: For some reason the state of the pod could not be obtained, typically due to an error in communicating with the host of the pod.
 
 ```text
 More info:
 ```
 
-```text
-https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-phase
-```
 
-```text
+- <https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-phase>
+
+```bash
 #查看
 [root@master1 ~]#kubectl get pod pod-test -o yaml |grep -A 2 phase
 phase: Running
@@ -3393,45 +2776,30 @@ Waiting容器处于 Running 和Terminated 状态之前的状态
 Running容器能够正常的运行状态
 
 Terminated容器已经被成功的关闭了
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pods.status.containerStatuses.state
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 RESOURCE: state <Object>
-```
 
-```text
 DESCRIPTION:
 Details about the container's current condition.
-```
 
-```text
 ContainerState holds a possible state of container. Only one of its members
 may be specified. If none of them is specified, the default one is
 ContainerStateWaiting.
-```
 
-```text
 FIELDS:
 running  <Object>
 Details about a running container
-```
 
-```text
 terminated   <Object>
 Details about a terminated container
-```
 
-```text
 waiting  <Object>
 Details about a waiting container
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get pod pod-test -o yaml |grep -A 2 state
 state:
@@ -3441,9 +2809,9 @@ startedAt: "2020-03-17T06:32:12Z"
 
 ##### 3.2.2.3.4 Pod 的启动流程状态
 
-```text
-https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions
-```
+
+- <https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions>
+
 
 ![原 PDF 第 108 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-6223c64ace8e0bca.png)
 
@@ -3458,25 +2826,18 @@ https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions
 **Unschedulable**：因资源等限制，Pod 暂时无法被调度。
 
 **ContainersReady**：Pod 中所有容器均已准备就绪。
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pods.status.conditions.type
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    type <string>
-```
 
-```text
 DESCRIPTION:
 Type is the type of the condition. More info:
 https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-
 conditions
-```
 
-```text
 [root@master1 ~]#kubectl get pod pod-test -o yaml |grep -A 15 conditions
 conditions:
 - lastProbeTime: null
@@ -3488,9 +2849,7 @@ lastTransitionTime: "2022-03-17T06:32:13Z"
 status: "True"
 type: Ready
 - lastProbeTime: null
-```
 
-```text
 lastTransitionTime: "2022-03-17T06:32:13Z"
 status: "True"
 type: ContainersReady
@@ -3500,7 +2859,6 @@ status: "True"
 ```
 
 ##### 3.2.2.3.5  Pod 重启策略
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/pod-lifecycle/#restart-
 policy
@@ -3519,34 +2877,29 @@ Always无论退出码exit code是否为0，都要重启，即只要退出就重�
 OnFailure容器终止运行退出码exit code不为0时才重启,重启次数并没有限制。
 
 Never无论何种退出码exit code,Pod都不重启。主要针对Job和CronJob。
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pods.spec.restartPolicy
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    restartPolicy <string>
 ```
 
-```text
-DESCRIPTION:
-Restart policy for all containers within the pod. One of Always, OnFailure,
-Never. Default to Always. More info:
-https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-
-policy
-```
 
-```text
+DESCRIPTION: Restart policy for all containers within the pod. One of Always, OnFailure, Never. Default to Always. More info:
+
+<https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart->
+
+policy
+
+```bash
 #查看
 [root@master1 ~]#kubectl get pod pod-test -o yaml |grep restartPolicy
 restartPolicy: Always
 ```
 
 范例：
-
-```text
+```yaml
 [root@master1 ~]#cat pod-restart-policy.yaml
 apiVersion: v1
 kind: Pod
@@ -3557,24 +2910,18 @@ name: myapp
 namespace: default
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 name: myapp
 restartPolicy: OnFailure #默认Always策略，会不断重启
-```
 
-```text
 #默认Always策略会不断重启，状态 CrashLoopBackOff
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS             RESTARTS      AGE
 myapp   0/1     CrashLoopBackOff   6 (62s ago)   6m46s
-```
 
-```text
 #指定OnFailure策略，退出码为0，不会重启
 [root@master1 ~]#kubectl apply -f  pod-test.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS      RESTARTS   AGE
 myapp   0/1     Completed   0          85s
@@ -3593,34 +2940,27 @@ IfNotPresent此为默认值，如果本地不存在的话，再拉取新镜像�
 latest，仍会重新拉取镜像
 
 Never只使用本地的镜像，从不获取新镜像。
-
-```text
+```bash
 [root@master1 ~]#kubectl explain pod.spec.containers.imagePullPolicy
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 FIELD:    imagePullPolicy <string>
 ```
 
-```text
-DESCRIPTION:
-Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always
-if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated.
-More info:
-https://kubernetes.io/docs/concepts/containers/images#updating-images
-```
 
-```text
+DESCRIPTION: Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated. More info:
+
+<https://kubernetes.io/docs/concepts/containers/images#updating-images>
+
+```bash
 #查看发现IfNotPresent是默认值
 [root@master1 ~]#kubectl get pod pod-test -o yaml |grep imagePullPolicy
 imagePullPolicy: IfNotPresent
 ```
 
 范例：
-
-```text
+```yaml
 [root@master1 pod]#cat pod-imagePullPolicy.yaml
 apiVersion: v1
 kind: Pod
@@ -3631,20 +2971,14 @@ name: myapp
 namespace: default
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/busybox:1.32.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/busybox:1.32.0
 imagePullPolicy: Never
 name: myapp
-```
 
-```text
 restartPolicy: OnFailure
-```
 
-```text
 [root@master1 pod]#kubectl apply -f  pod-imagePullPolicy.yaml
-```
 
-```text
 #如果没有镜像，会出现下面错误
 [root@master1 pod]#kubectl  get pod
 NAME    READY   STATUS              RESTARTS   AGE
@@ -3688,8 +3022,7 @@ myapp   0/1     ErrImageNeverPull   0          3s
 - **DockerDaemonNotReady**：节点上的 Docker 服务异常。
 
 范例：Pending状态
-
-```text
+```bash
 #如果所有worker无法工作，会导致pod无法调度，出现pending
 [root@master1 pod]#kubectl  describe pod myapp
 Events:

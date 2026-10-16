@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · StatefulSet 与有状态应用'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -14,7 +15,6 @@ syntax_highlight: true
 # 1 StatefulSet
 
 ## 1.1 StatefulSet 机制
-
 ```text
 https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/
 https://kubernetes.io/zh-cn/docs/tasks/run-application/run-single-instance-
@@ -86,13 +86,10 @@ StatefulSet 最早在 Kubernetes 1.5 版本中引入，作为一个 alpha 特性
 每个StatefulSet对象一般会对应于一个专用的Headless Service 对象使用 Headless service 给每一个StatufulSet控制的Pod提供一个唯一的DNS域名来作为每个成员的网络标识每个Pod都一个从0开始，从小到的序号的名称，创建和扩容时序号从小到大，删除，缩容和更新镜像时从大到小通过ClusterDNS解析为Pod的地址，从而实现集群内部成员之间使用域名通信。
 
 每个Pod对应的DNS域名格式：
-
 ```text
 $(statefulset_name)-$(orederID).$(headless_service_name).$(namespace_name).svc.c
 luster.local
-```
 
-```text
 #示例
 mysql-0.mysql.wordpress.svc.cluster.local
 mysql-1.mysql.wordpress.svc.cluster.local
@@ -168,8 +165,7 @@ StatefulSet本身的代码无法考虑周全到所有的集群状态机制Statef
 注意：StatefulSet除了需要定义自身的标签选择器和Pod模板等属性字段，StatefulSet必须要配置一个专用的Headless Service，而且还可能要根据需要，编写代码完成扩容、缩容等功能所依赖的必要操作步骤。
 
 **属性解析**
-
-```text
+```yaml
 apiVersion: apps/v1                 # API群组及版本
 kind: StatefulSet                   # 资源类型的特有标识
 metadata:
@@ -211,8 +207,7 @@ storage: 1Gi
 ```
 
 范例:  简单 statefulset 案例
-
-```text
+```yaml
 [root@master1 ~]#cat statefulset-demo.yaml
 apiVersion: v1
 kind: Service
@@ -220,9 +215,7 @@ metadata:
 name: nginx
 labels:
 app: nginx
-```
 
-```text
 spec:
 ports:
 - port: 80
@@ -249,17 +242,13 @@ app: nginx
 spec:
 containers:
 - name: nginx
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 ports:
 - containerPort: 80
 name: http
-```
 
-```text
 [root@master1 ~]#kubectl apply -f statefulset-demo.yaml
-```
 
-```text
 #观察到Pod按顺序创建
 [root@master1 ~]#kubectl get pod -w
 NAME    READY   STATUS              RESTARTS   AGE
@@ -267,54 +256,37 @@ web-0   0/1     ContainerCreating   0          63s
 web-0   1/1     Running             0          30s
 web-1   0/1     ContainerCreating   0          20s
 web-1   1/1     Running             0          3s
-```
 
-```text
 #测试名称解析
 #方式1:创建测试pod
 [root@master1 ~]#kubectl run busybox --image busybox:1.30 -- sleep 3600; kubectl
 exec -it busybox -- sh
 #方式2:创建临时Pod测试
 [root@master1 ~]#kubectl run client-test-$RANDOM --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 --restart=Never --rm -it --
+beijing.aliyuncs.com/bowen/admin-box:v0.1 --restart=Never --rm -it --
 command -- /bin/bash
 #利用serivce名称解析
 / # host nginx
 nginx.default.svc.cluster.local has address 10.244.3.92
 nginx.default.svc.cluster.local has address 10.244.2.110
-```
 
-```text
 #访问完整的service名称,注意最后的点号
 / # curl  nginx.default.svc.cluster.local.
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-1, ServerIP:
 10.244.2.110!
 ```
 
-```text
-/ # curl  nginx.default.svc.cluster.local.
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-0, ServerIP:
-10.244.3.92!
-/ # curl  nginx
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-0, ServerIP:
-10.244.3.92!
-/ # curl  nginx
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-1, ServerIP:
-10.244.2.110!
-```
 
-```text
+/ # curl  nginx.default.svc.cluster.local. kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-0, ServerIP: 10.244.3.92!/ # curl  nginx kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-0, ServerIP: 10.244.3.92!/ # curl  nginx kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-1, ServerIP: 10.244.2.110!
+
+```bash
 #观察扩容和缩容都按顺序
 [root@master1 ~]#kubectl scale sts web --replicas 5
 statefulset.apps/web scaled
-```
 
-```text
 [root@master1 ~]#kubectl scale sts web --replicas 3
 statefulset.apps/web scaled
-```
 
-```text
 #查看扩容和缩容的过程,扩容是Pod编号从小到大,缩容正好反之
 [root@master1 ~]#kubectl get pod -w
 NAME    READY   STATUS    RESTARTS   AGE
@@ -343,39 +315,29 @@ web-3   1/1     Terminating         0          23s
 web-3   0/1     Terminating         0          24s
 web-3   0/1     Terminating         0          24s
 web-3   0/1     Terminating         0          24s
-```
 
-```text
 #观察到新的pod的名称按顺序命名
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS    RESTARTS   AGE
 web-0   1/1     Running   0          2m49s
 web-1   1/1     Running   0          2m48s
 web-2   1/1     Running   0          23s
-```
 
-```text
 #观察到service为无头服务
 [root@master1 ~]#kubectl get svc nginx
 NAME    TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 nginx   ClusterIP   None         <none>        80/TCP    34s
-```
 
-```text
 #查看statefulsets
 [root@master1 ~]#kubectl get statefulsets.apps
 NAME   READY   AGE
 web    3/3     3m38s
-```
 
-```text
 #支持缩写
 [root@master1 ~]#kubectl get sts
 NAME   READY   AGE
 web    3/3     3m41s
-```
 
-```text
 #查看主机名和host解析
 [root@master1 ~]#kubectl exec -it web-0 -- hostname
 web-0
@@ -383,9 +345,7 @@ web-0
 web-1
 [root@master1 ~]#kubectl exec -it web-2 -- hostname
 web-2
-```
 
-```text
 [root@master1 ~]#kubectl exec -it web-0 -- cat /etc/hosts
 # Kubernetes-managed hosts file.
 127.0.0.1   localhost
@@ -395,76 +355,56 @@ fe00::0 ip6-mcastprefix
 fe00::1 ip6-allnodes
 fe00::2 ip6-allrouters
 10.244.2.9  web-0.nginx.default.svc.cluster.local   web-0
-```
 
-```text
 #创建测试pod
 [root@master1 ~]#kubectl run busybox --image busybox:1.30 -- sleep 3600
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME      READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
-busybox   1/1     Running   0          104s    10.244.2.11   node2.wang.org
+busybox   1/1     Running   0          104s    10.244.2.11   node2.bowen.org
 <none>           <none>
-web-0     1/1     Running   0          11m     10.244.2.9    node2.wang.org
+web-0     1/1     Running   0          11m     10.244.2.9    node2.bowen.org
 <none>           <none>
-web-1     1/1     Running   0          11m     10.244.1.14   node1.wang.org
+web-1     1/1     Running   0          11m     10.244.1.14   node1.bowen.org
 <none>           <none>
-web-2     1/1     Running   0          9m33s   10.244.3.12   node3.wang.org
+web-2     1/1     Running   0          9m33s   10.244.3.12   node3.bowen.org
 <none>           <none>
-```
 
-```text
 #测试Pod的名称解析
 [root@master1 ~]#kubectl exec -it busybox -- sh
 / # ping -c1 web-0.nginx
 PING web-0.nginx (10.244.2.9): 56 data bytes
 64 bytes from 10.244.2.9: seq=0 ttl=64 time=0.116 ms
-```
 
-```text
 --- web-0.nginx ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.116/0.116/0.116 ms
 / # ping -c1 web-1.nginx
 PING web-1.nginx (10.244.1.14): 56 data bytes
 64 bytes from 10.244.1.14: seq=0 ttl=62 time=0.427 ms
-```
 
-```text
 --- web-1.nginx ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
-```
 
-```text
 round-trip min/avg/max = 0.427/0.427/0.427 ms
 / # ping -c1 web-2.nginx
 PING web-2.nginx (10.244.3.12): 56 data bytes
 64 bytes from 10.244.3.12: seq=0 ttl=62 time=0.692 ms
-```
 
-```text
 --- web-2.nginx ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.692/0.692/0.692 ms
-```
 
-```text
 #完整名称
 / # ping -c1  web-0.nginx.default.svc.cluster.local
 PING web-0.nginx.default.svc.cluster.local (10.244.2.9): 56 data bytes
 64 bytes from 10.244.2.9: seq=0 ttl=64 time=0.470 ms
-```
 
-```text
 --- web-0.nginx.default.svc.cluster.local ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.470/0.470/0.470 ms
-```
 
-```text
 #通过名称访问nginx服务
 / # wget -qO - web-0.nginx
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-0, ServerIP:
@@ -472,59 +412,42 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.3.88, ServerName: web-0, ServerIP:
 ```
 
 范例: 级联删除和非级联删除
-
-```text
+```bash
 #默认是级联删除,即删除sts同时删除Pod
 [root@master1 ~]#kubectl delete sts web
 statefulset.apps "web" deleted
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 No resources found in default namespace.
-```
 
-```text
 #恢复sts
 root@master1 ~]#kubectl apply  -f statefulset-demo.yaml
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS    RESTARTS   AGE
 web-0   1/1     Running   0          5s
 web-1   1/1     Running   0          4s
-```
 
-```text
 #非级联删除,即删除sts不同时删除Pod,选项--cascade=orphan(旧版false废弃)
 [root@master1 ~]#kubectl delete sts web --cascade=orphan
 [root@master1 ~]#kubectl delete sts web --cascade=false
 warning: --cascade=false is deprecated (boolean value) and can be replaced with
 --cascade=orphan.
 statefulset.apps "web" deleted
-```
 
-```text
 #查看sts删除,Pod仍在,但Pod为孤儿状态,即删除Pod,将不会被重建
 [root@master1 ~]#kubectl get sts
 No resources found in default namespace.
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS    RESTARTS   AGE
 web-0   1/1     Running   0          2m34s
 web-1   1/1     Running   0          2m33s
-```
 
-```text
 #删除Pod查看是否被重建
 [root@master1 ~]#kubectl delete pod web-0
-```
 
-```text
 pod "web-0" deleted
-```
 
-```text
 #发现不会重建
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS    RESTARTS   AGE
@@ -534,7 +457,6 @@ web-1   1/1     Running   0          5m41s
 ### 1.1.4 StatefulSet 更新策略
 
 更新策略可以实现滚动更新发布
-
 ```text
 updateStrategy <Object>            # 滚动更新策略
 type <string>                   # 滚动更新类型，可用值有OnDelete和Rollingupdate
@@ -543,8 +465,7 @@ partition <integer>           # 分区指示索引值，默认为0,一般用于�
 ```
 
 范例: 更新策略
-
-```text
+```bash
 #查看更新策略
 [root@master1 ~]#kubectl get sts  web  -o yaml
 .....
@@ -555,15 +476,11 @@ partition: 0 #此编号表示更新时只更新大于等于此编号对应的Pod
 修改此值,可以实现滚动更新策略
 type: RollingUpdate
 ......
-```
 
-```text
 #升级image版本
 [root@master1 ~]#kubectl edit sts web
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-```
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 
-```text
 #观察更新顺序,发现Pod编号从大到小更新
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS              RESTARTS   AGE
@@ -585,13 +502,9 @@ NAME    READY   STATUS    RESTARTS   AGE
 web-0   1/1     Running   0          64s
 web-1   1/1     Running   0          87s
 web-2   1/1     Running   0          109s
-```
 
-```text
 #跟踪更新过程
-```
 
-```text
 [root@master1 ~]#kubectl rollout status sts web
 Waiting for 1 pods to be ready...
 Waiting for partitioned roll out to finish: 2 out of 3 new pods have been
@@ -599,18 +512,14 @@ updated...
 Waiting for 1 pods to be ready...
 Waiting for 1 pods to be ready...
 partitioned roll out complete: 3 new pods have been updated...
-```
 
-```text
 #扩容为5个Pod
 [root@master1 ~]#kubectl scale sts web --replicas 5
-```
 
-```text
 #修改更新策略partition为4
 [root@master1 ~]#kubectl edit sts web
 .....
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3  #修改
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3  #修改
 镜像版本
 .....
 updateStrategy:
@@ -618,23 +527,19 @@ rollingUpdate:
 partition: 4  #将此处的0修改为4
 type: RollingUpdate
 .....
-```
 
-```text
 #确认web-4以下Pod不更新
 [root@master1 ~]#kubectl get pod web-4 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 [root@master1 ~]#kubectl get pod web-3 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 [root@master1 ~]#kubectl get pod web-2 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 [root@master1 ~]#kubectl get pod web-1 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 [root@master1 ~]#kubectl get pod web-0 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
-```
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 
-```text
 #修改更新策略为1
 [root@master1 ~]#kubectl edit sts web
 ......
@@ -643,9 +548,7 @@ rollingUpdate:
 partition: 1  #修改此处为1
 type: RollingUpdate
 ......
-```
 
-```text
 #观察结果,发现web-1以上都更新
 [root@master1 ~]#kubectl get pod -w
 NAME    READY   STATUS    RESTARTS   AGE
@@ -660,9 +563,7 @@ web-4   0/1     Terminating   0          42s
 web-4   0/1     Terminating   0          42s
 web-4   0/1     Pending       0          0s
 web-4   0/1     Pending       0          0s
-```
 
-```text
 web-4   0/1     ContainerCreating   0          0s
 web-4   1/1     Running             0          1s
 web-3   1/1     Terminating         0          42s
@@ -690,8 +591,7 @@ web-1   0/1     Pending             0          0s
 web-1   0/1     ContainerCreating   0          0s
 web-1   1/1     Running             0          1s
 ```
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod
 NAME    READY   STATUS    RESTARTS   AGE
 web-0   1/1     Running   0          8m40s
@@ -700,43 +600,35 @@ web-2   1/1     Running   0          3s
 web-3   1/1     Running   0          5s
 web-4   1/1     Running   0          4m30s
 [root@master1 ~]#kubectl get pod web-0 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 [root@master1 ~]#kubectl get pod web-1 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 [root@master1 ~]#kubectl get pod web-2 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 [root@master1 ~]#kubectl get pod web-3 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 [root@master1 ~]#kubectl get pod web-4 -o yaml|grep -m1  image
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
-```
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 
-```text
 #修改更新策略为OnDelete,表示只有删除时才更新
 [root@master1 ~]#kubectl edit sts web
 .......
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.4  #修改
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.4  #修改
 版本
 ....
 updateStrategy:
 type: OnDelete           #修改更新策略
 .......
-```
 
-```text
 #观察到没有变化
-```
 
-```text
 [root@master1 ~]#kubectl get pod -w
 NAME    READY   STATUS    RESTARTS   AGE
 web-0   1/1     Running   0          70m
 web-1   1/1     Running   0          71m
 web-2   1/1     Running   0          71m
-```
 
-```text
 #删除指定Pod
 [root@master1 ~]#kubectl delete pod web-0
 pod "web-0" deleted
@@ -745,27 +637,21 @@ NAME    READY   STATUS              RESTARTS   AGE
 web-0   0/1     ContainerCreating   0          13s
 web-1   1/1     Running             0          74m
 web-2   1/1     Running             0          75m
-```
 
-```text
 #发现只有删除的Pod才更新镜像
 [root@master1 ~]#kubectl get pod web-0 -o yaml|grep image:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.4
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.4
 [root@master1 ~]#kubectl get pod web-1 -o yaml|grep image:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 [root@master1 ~]#kubectl get pod web-2 -o yaml|grep image:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.3
-```
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.3
 
-```text
 #全部删除
 [root@master1 ~]#kubectl delete pod web-{0..2}
 pod "web-0" deleted
 pod "web-1" deleted
 pod "web-2" deleted
-```
 
-```text
 #查看按顺序创建Pod
 [root@master1 ~]#kubectl get pod -w
 NAME    READY   STATUS        RESTARTS   AGE
@@ -790,38 +676,27 @@ web-2   1/1     Running             0          1s
 ## 1.2 案例：StatefulSet 简单案例
 
 ### 1.2.1 准备NFS服务
-
-```text
+```bash
 #准备NFS服务
 [root@master1 ~]#apt install -y nfs-kernel-server
-```
 
-```text
 #方法1：有动态置备的SC，如下配置
 [root@master1 ~]#cat /etc/exports
 /data/sc-nfs *(rw,no_root_squash)
-```
 
-```text
 [root@master1 ~]#exportfs -r
-```
 
-```text
 #方法2：没有动态置备的SC，如下配置
 [root@master1 ~]#mkdir /nfs-data/v{1,2,3,4} -p
 [root@master1 ~]#for i in {1..4} ;do echo "/nfs-data/v$i *
 (rw,no_root_squash,sync)" >> /etc/exports;done
-```
 
-```text
 [root@master1 ~]#cat /etc/exports
 /nfs-data/v1 *(rw,no_root_squash,sync)
 /nfs-data/v2 *(rw,no_root_squash,sync)
 /nfs-data/v3 *(rw,no_root_squash,sync)
 /nfs-data/v4 *(rw,no_root_squash,sync)
-```
 
-```text
 [root@master1 ~]#exportfs -r
 [root@master1 ~]#exportfs
 /nfs-data       <world>
@@ -829,9 +704,7 @@ web-2   1/1     Running             0          1s
 /nfs-data/v2    <world>
 /nfs-data/v3    <world>
 /nfs-data/v4    <world>
-```
 
-```text
 #在所有客户端安装NFS客户端软件
 [root@node1 ~]#apt -y install nfs-common
 ```
@@ -839,8 +712,7 @@ web-2   1/1     Running             0          1s
 ### 1.2.2 准备 PV 和 Service资源
 
 #### 1.2.2.1 有动态置备的SC的配置
-
-```text
+```yaml
 #如果有动态置备的SC，如下配置
 #无需手动创建PV,基于在statefulset中定义名称为sc-nfs的StorageClass实现PV的动态置备
 #只需需创建headless service 即可
@@ -856,13 +728,9 @@ ports:
 clusterIP: None
 selector:
 app: myapp-pod
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f statefulset-service.yaml
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl get svc
 NAME                   TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
@@ -871,8 +739,7 @@ statefulset-headless   ClusterIP   None          <none>        80/TCP    11s
 ```
 
 #### 1.2.2.2  没有动态置备的SC配置（可选）
-
-```text
+```yaml
 #如果没有动态置备的SC，如下配置
 [root@master1 ~]#cat statefulset-pv-service.yaml
 apiVersion: v1
@@ -882,7 +749,7 @@ name: pv001
 spec:
 nfs:
 path: /nfs-data/v1
-server: nfs.wang.org
+server: nfs.bowen.org
 accessModes: ["ReadWriteOnce"]
 capacity:
 storage: 1Gi
@@ -894,7 +761,7 @@ name: pv002
 spec:
 nfs:
 path: /nfs-data/v2
-server: nfs.wang.org
+server: nfs.bowen.org
 accessModes: ["ReadWriteOnce"]
 capacity:
 storage: 1Gi
@@ -906,7 +773,7 @@ name: pv003
 spec:
 nfs:
 path: /nfs-data/v3
-server: nfs.wang.org
+server: nfs.bowen.org
 accessModes: ["ReadWriteOnce"]
 capacity:
 storage: 2Gi
@@ -918,17 +785,13 @@ name: pv004
 spec:
 nfs:
 path: /nfs-data/v4
-server: nfs.wang.org
+server: nfs.bowen.org
 accessModes: ["ReadWriteOnce"]
-```
 
-```text
 capacity:
 storage: 2Gi
 ---
-```
 
-```text
 #准备无头服务
 apiVersion: v1
 kind: Service
@@ -940,13 +803,9 @@ ports:
 clusterIP: None
 selector:
 app: myapp-pod
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f statefulset-pv-service.yaml
-```
 
-```text
 #验证结果
 [root@master1 ~]#kubectl get pv
 NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM
@@ -959,9 +818,7 @@ pv003   2Gi        RWO            Retain           Available
 6s
 pv004   2Gi        RWO            Retain           Available
 6s
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME                   TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
 kubernetes             ClusterIP   192.168.0.1   <none>        443/TCP   4d18h
@@ -969,8 +826,7 @@ statefulset-headless   ClusterIP   None          <none>        80/TCP    11s
 ```
 
 ### 1.2.3 创建 statefulset 资源
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat statefulset-test.yaml
 apiVersion: apps/v1
@@ -988,12 +844,10 @@ metadata:
 labels:
 app: myapp-pod
 spec:
-```
 
-```text
 containers:
 - name: myapp
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 volumeMounts:
 - name: myappdata
 mountPath: /usr/share/nginx/html
@@ -1006,29 +860,24 @@ storageClassName: "sc-nfs" #如果有动态置备的StorageClass,可以指定名
 resources:
 requests:
 storage: 1Gi
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f statefulset-test.yaml
 ```
 
 ### 1.2.4 验证结果
-
-```text
+```bash
 #结果显示：所有的资源对象(pod+pv)都是按照顺序创建的，而且每个pv都有自己独有的标识符
 [root@master1 ~]#kubectl get pod -o wide
 NAME      READY   STATUS    RESTARTS   AGE    IP            NODE
 NOMINATED NODE   READINESS GATES
-myapp-0   1/1     Running   0          19m    172.16.3.14   node3.wang.org
+myapp-0   1/1     Running   0          19m    172.16.3.14   node3.bowen.org
 <none>           <none>
-myapp-1   1/1     Running   0          5m5s   172.16.2.7    node2.wang.org
+myapp-1   1/1     Running   0          5m5s   172.16.2.7    node2.bowen.org
 <none>           <none>
-myapp-2   1/1     Running   0          5m4s   172.16.1.18   node1.wang.org
+myapp-2   1/1     Running   0          5m4s   172.16.1.18   node1.bowen.org
 <none>           <none>
-```
 
-```text
 [root@master1 ~]#kubectl get pvc
 NAME                STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS
 AGE
@@ -1038,9 +887,7 @@ myappdata-myapp-1   Bound    pv002    1Gi        RWO
 59s
 myappdata-myapp-2   Bound    pv003    2Gi        RWO
 55s
-```
 
-```text
 #如果是动态置备，可以看到下面PV
 [root@master1 ~]#kubectl get pv
 kubectl get pv
@@ -1053,15 +900,11 @@ Bound    default/myappdata-myapp-0   sc-nfs         <unset>
 pvc-ff524a4e-2a40-4283-ab38-00d6caba80a0   1Gi        RWO            Delete
 Bound    default/myappdata-myapp-2   sc-nfs         <unset>
 14s
-```
 
-```text
 pvc-ffd32f67-3308-4914-92cc-9aa4d9182552   1Gi        RWO            Delete
 Bound    default/myappdata-myapp-1   sc-nfs         <unset>
 16s
-```
 
-```text
 #如果是静态置备，可以看到下面PV
 [root@master1 ~]#kubectl get pv
 NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM
@@ -1074,28 +917,20 @@ pv003   2Gi        RWO            Retain           Bound       default/myappdata
 myapp-2                           6m26s
 pv004   2Gi        RWO            Retain           Available
 6m26s
-```
 
-```text
 #有动态置备的SC，如下配置
 [root@master1 ~]#for i in {1..4};do echo  statefulset website  > /data/sc-
 nfs/index.html;done
-```
 
-```text
 [root@master1 ~]#kubectl run client-test-$RANDOM --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 --restart=Never --rm -it --
+beijing.aliyuncs.com/bowen/admin-box:v0.1 --restart=Never --rm -it --
 command -- /bin/bash
 curl 172.16.3.14
-```
 
-```text
 #没有动态置备的SC，生成测试数据
 [root@master1 ~]#for i in {1..4};do echo  /nfs-data/v$i/index.html > /nfs-
 data/v$i/index.html;done
-```
 
-```text
 [root@master1 ~]#curl 172.16.3.14
 /nfs-data/v1/index.html
 [root@master1 ~]#curl 172.16.1.17
@@ -1109,8 +944,7 @@ data/v$i/index.html;done
 缩容和扩容都是按一定的顺序进行的
 
 扩容是从编号为0到N的顺序创建Pod。缩容正好相反, 是从编号N到0的顺序销毁Pod。
-
-```text
+```bash
 #缩容
 [root@master1 ~]#kubectl scale statefulset myapp  --replicas=1 ; kubectl get pod
 -w
@@ -1121,17 +955,13 @@ myapp-1   1/1     Running       0          13m
 myapp-2   1/1     Terminating   0          13m
 myapp-2   0/1     Terminating   0          13m
 myapp-2   0/1     Terminating   0          13m
-```
 
-```text
 myapp-2   0/1     Terminating   0          13m
 myapp-1   1/1     Terminating   0          13m
 myapp-1   0/1     Terminating   0          13m
 myapp-1   0/1     Terminating   0          13m
 myapp-1   0/1     Terminating   0          13m
-```
 
-```text
 [root@master1 ~]#kubectl get pv
 NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM
 STORAGECLASS   REASON   AGE
@@ -1144,9 +974,7 @@ myapp-2                           27m
 #可以看到：pod的删除不影响pv和pvc，说明pod的状态数据没有丢失，而且pvc指定的名称不变，只要是同
 一个statufulset创建的pod，会自动找到根据指定的pvc找到具体的pv
 #pvc 的名称是 <PVC_name>-<POD_name>的组合，所以pod可以直接找到绑定的pvc
-```
 
-```text
 #扩容
 [root@master1 ~]#kubectl scale statefulset myapp  --replicas=4 ; kubectl get pod
 -w
@@ -1164,24 +992,20 @@ myapp-3   0/1     Pending             0          0s
 myapp-3   0/1     Pending             0          1s
 myapp-3   0/1     ContainerCreating   0          1s
 myapp-3   1/1     Running             0          2s
-```
 
-```text
 #数据访问顺序没有变化
 [root@master1 ~]#kubectl get pod -o wide
 NAME      READY   STATUS    RESTARTS   AGE    IP            NODE
 NOMINATED NODE   READINESS GATES
-myapp-0   1/1     Running   0          19m    172.16.3.14   node3.wang.org
+myapp-0   1/1     Running   0          19m    172.16.3.14   node3.bowen.org
 <none>           <none>
-myapp-1   1/1     Running   0          5m5s   172.16.2.7    node2.wang.org
+myapp-1   1/1     Running   0          5m5s   172.16.2.7    node2.bowen.org
 <none>           <none>
-myapp-2   1/1     Running   0          5m4s   172.16.1.18   node1.wang.org
+myapp-2   1/1     Running   0          5m4s   172.16.1.18   node1.bowen.org
 <none>           <none>
-myapp-3   1/1     Running   0          5m2s   172.16.3.15   node3.wang.org
+myapp-3   1/1     Running   0          5m2s   172.16.3.15   node3.bowen.org
 <none>           <none>
-```
 
-```text
 [root@master1 ~]#curl 172.16.3.14
 /nfs-data/v1/index.html
 [root@master1 ~]#curl 172.16.2.7
@@ -1190,17 +1014,14 @@ myapp-3   1/1     Running   0          5m2s   172.16.3.15   node3.wang.org
 /nfs-data/v3/index.html
 [root@master1 ~]#curl 172.16.3.15
 /nfs-data/v4/index.html
-```
 
-```text
 #缩容和扩容相反，逆序删除Pod
 [root@master1 ~]#kubectl scale statefulset myapp  --replicas=1 ; kubectl get pod
 -w
 ```
 
 ### 1.2.6 镜像更新
-
-```text
+```yaml
 [root@master1 ~]#vim statefulset-test.yaml
 apiVersion: apps/v1
 kind: StatefulSet
@@ -1225,7 +1046,7 @@ app: myapp-pod
 spec:
 containers:
 - name: myapp
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.22.0 #更新版
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.22.0 #更新版
 本
 volumeMounts:
 - name: myappdata
@@ -1239,14 +1060,10 @@ storageClassName: "sc-nfs" #如果有动态置备的StorageClass,可以指定名
 resources:
 requests:
 storage: 1Gi
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f statefulset-test.yaml
-```
 
-```text
 #观察结果
 [root@master1 ~]#kubectl get pod -l app=myapp-pod -w
 ```
@@ -1254,47 +1071,34 @@ storage: 1Gi
 ### 1.2.7 名称访问
 
 自动创建pod的名称默认是可以解析的
-
-```text
+```bash
 [root@master1 ~]#kubectl run client --image=busybox:1.32.0 -it --rm sh
 If you don't see a command prompt, try pressing enter.
 / # nslookup statefulset-headless #解析headless servcie名称到相应的pod的IP
 Server:     192.168.0.10
 Address:    192.168.0.10:53
-```
 
-```text
 Name:   statefulset-headless.default.svc.cluster.local
 Address: 172.16.3.14
 Name:   statefulset-headless.default.svc.cluster.local
 Address: 172.16.3.16
 Name:   statefulset-headless.default.svc.cluster.local
 Address: 172.16.1.19
-```
 
-```text
 / # nslookup 172.16.3.14 #反向解析Pod的IP
 Server:     192.168.0.10
 Address:    192.168.0.10:53
-```
 
-```text
 14.3.16.172.in-addr.arpa    name = myapp-0.statefulset-
 headless.default.svc.cluster.local
-```
 
-```text
 / # nslookup myapp-0.statefulset-headless.default.svc.cluster.local #解析pod名称
 Server:     192.168.0.10
 Address:    192.168.0.10:53
-```
 
-```text
 Name:   myapp-0.statefulset-headless.default.svc.cluster.local
 Address: 172.16.3.14
-```
 
-```text
 #注意：Pod可以直接解析自己的pod名称，解析其他pod的名称必须携带其无头服务的完整名称
 #完整名称格式：
 <statefulsetNmae>-<n>.<headless_name>.<ns_name>.svc.<k8s-clusterDoamin>
@@ -1305,7 +1109,6 @@ myapp-1.statefulset-headless.default.svc.cluster.local
 ## 1.3 案例：MySQL 主从复制集群
 
 注意: MySQL5.7.39失败,其它版本MySQL5.7.36，44 都成功
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/run-application/run-replicated-stateful-
 application/
@@ -1316,33 +1119,22 @@ application/
 ![原 PDF 第 25 页插图](assets/kubernetes有状态服务管理/img-2239ca15479613eb.png)
 
 ### 1.3.1 准备 NFS 服务
-
-```text
+```bash
 #在所有node节点安装NFS客户端
 [root@node1 ~]#apt update && apt -y install nfs-common
-```
 
-```text
 #在所有node节点下载镜像，可能需要科学上网,可选，后面修改国内镜像地址
 [root@node1 ~]#docker pull gcr.io/google-samples/xtrabackup:1.0
-```
 
-```text
 #在master节点安装NFS服务器
 [root@master1 ~]#apt -y install nfs-server
-```
 
-```text
 #方式1：有动态置备的SC
 准备一个sc-nfs的storageClass
-```
 
-```text
 #方式2：没有动态置备的SC，如下配置
 [root@master1 ~]#mkdir /nfs-data/data{1,2,3}
-```
 
-```text
 [root@master1 ~]#echo "/nfs-data *(rw,no_root_squash)" >> /etc/exports
 [root@master1 ~]#exportfs -r
 [root@master1 ~]#exportfs -v
@@ -1352,13 +1144,10 @@ h)
 ```
 
 ### 1.3.2 准备 StorageClass 或者 PV
-
-```text
+```yaml
 #方法1：准备StorageClass
 创建一个名为：sc-nfs的storageclass
-```
 
-```text
 #方法2：没有动态置备的SC，给三个节点分别准备PV
 [root@master1 ~]#cat storage-multi-pv.yaml
 apiVersion: v1
@@ -1385,9 +1174,7 @@ capacity:
 storage: 10Gi
 volumeMode: Filesystem
 accessModes:
-```
 
-```text
 - ReadWriteOnce
 persistentVolumeReclaimPolicy: Retain
 nfs:
@@ -1408,15 +1195,12 @@ persistentVolumeReclaimPolicy: Retain
 nfs:
 path:  "/nfs-data/data3"
 server: 10.0.0.200
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-multi-pv.yaml
 ```
 
 ### 1.3.3 创建 ConfigMap
-
-```text
+```yaml
 #https://k8s.io/examples/application/mysql/mysql-configmap.yaml
 #MySQL的配置
 [root@master1 statefulset]#cat statefulset-mysql-configmap.yaml
@@ -1440,23 +1224,16 @@ super-read-only
 ```
 
 ### 1.3.4 创建 Service
-
-```text
+```yaml
 # https://k8s.io/examples/application/mysql/mysql-services.yaml
-```
 
-```text
 # 为 StatefulSet 成员提供稳定的 DNS 表项的无头服务（Headless Service）
 # 主节点的对应的Service
-```
 
-```text
 [root@master1 statefulset]#cat statefulset-mysql-svc.yaml
 ---
 apiVersion: v1
-```
 
-```text
 kind: Service
 metadata:
 name: mysql
@@ -1492,12 +1269,9 @@ app: mysql
 ```
 
 ### 1.3.5 创建 statefulset
-
-```text
+```yaml
 #https://k8s.io/examples/application/mysql/mysql-statefulset.yaml
-```
 
-```text
 #StatefulSet
 [root@master1 statefulset]#cat statefulset-mysql-statefulset.yaml
 ---
@@ -1518,13 +1292,11 @@ labels:
 app: mysql
 app.kubernetes.io/name: mysql
 spec:
-```
 
-```text
 initContainers:
 - name: init-mysql
 #image: mysql:5.7
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:5.7
+image: registry.cn-beijing.aliyuncs.com/bowen/mysql:5.7
 command:
 - bash
 - "-c"
@@ -1550,7 +1322,7 @@ mountPath: /mnt/conf.d
 mountPath: /mnt/config-map
 - name: clone-mysql
 #image: gcr.io/google-samples/xtrabackup:1.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/xtrabackup:1.0
+image: registry.cn-beijing.aliyuncs.com/bowen/xtrabackup:1.0
 command:
 - bash
 - "-c"
@@ -1576,12 +1348,10 @@ mountPath: /etc/mysql/conf.d
 containers:
 - name: mysql
 #image: mysql:5.7
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:5.7
+image: registry.cn-beijing.aliyuncs.com/bowen/mysql:5.7
 env:
 - name: MYSQL_ALLOW_EMPTY_PASSWORD
-```
 
-```text
 value: "1"
 ports:
 - name: mysql
@@ -1611,7 +1381,7 @@ periodSeconds: 2
 timeoutSeconds: 1
 - name: xtrabackup
 #image: gcr.io/google-samples/xtrabackup:1.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/xtrabackup:1.0
+image: registry.cn-beijing.aliyuncs.com/bowen/xtrabackup:1.0
 ports:
 - name: xtrabackup
 containerPort: 3307
@@ -1621,9 +1391,7 @@ command:
 - |
 set -ex
 cd /var/lib/mysql
-```
 
-```text
 # 确定克隆数据的 binlog 位置（如果有的话）。
 if [[ -f xtrabackup_slave_info && "x$(<xtrabackup_slave_info)" != "x"
 ]]; then
@@ -1641,16 +1409,12 @@ rm -f xtrabackup_binlog_info xtrabackup_slave_info
 echo "CHANGE MASTER TO MASTER_LOG_FILE='${BASH_REMATCH[1]}',\
 MASTER_LOG_POS=${BASH_REMATCH[2]}" > change_master_to.sql.in
 fi
-```
 
-```text
 # 检查是否需要通过启动复制来完成克隆。
 if [[ -f change_master_to.sql.in ]]; then
 echo "Waiting for mysqld to be ready (accepting connections)"
 until mysql -h 127.0.0.1 -e "SELECT 1"; do sleep 1; done
-```
 
-```text
 echo "Initializing replication from clone position"
 mysql -h 127.0.0.1 \
 -e "$(<change_master_to.sql.in), \
@@ -1662,9 +1426,7 @@ START SLAVE;" || exit 1
 # 如果容器重新启动，最多尝试一次。
 mv change_master_to.sql.in change_master_to.sql.orig
 fi
-```
 
-```text
 # 当对等点请求时，启动服务器发送备份。
 exec ncat --listen --keep-open --send-only --max-conns=1 3307 -c \
 "xtrabackup --backup --slave-info --stream=xbstream --host=127.0.0.1
@@ -1697,8 +1459,7 @@ storage: 10Gi
 ```
 
 ### 1.3.6 验证
-
-```text
+```bash
 #官方
 [root@master1 ~]#kubectl apply -f
 https://k8s.io/examples/application/mysql/mysql-configmap.yaml
@@ -1707,32 +1468,24 @@ https://k8s.io/examples/application/mysql/mysql-services.yaml
 [root@master1 ~]#kubectl apply -f
 https://k8s.io/examples/application/mysql/mysql-statefulset.yaml
 #上面修改过的清单文件
-```
 
-```text
 [root@master1 ~]#kubectl apply -f mysql-configmap.yaml -f mysql-services.yaml -f
 mysql-statefulset.yaml
-```
 
-```text
 #跟踪查看
 [root@master1 ~]#kubectl get pods -l app=mysql --watch
 NAME      READY   STATUS    RESTARTS        AGE
 mysql-0   2/2     Running   0               12m
 mysql-1   2/2     Running   1 (9m45s ago)   10m
 mysql-2   2/2     Running   1 (9m2s ago)    9m39s
-```
 
-```text
 [root@master1 ~]#kubectl get pvc
 NAME           STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-mysql-0   Bound    pv-nfs-1   10Gi       RWO                           13m
 data-mysql-1   Bound    pv-nfs-2   10Gi       RWO                           10m
 data-mysql-2   Bound    pv-nfs-3   10Gi       RWO
 9m53s
-```
 
-```text
 [root@master1 ~]#kubectl get pv
 NAME       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM
 STORAGECLASS   REASON   AGE
@@ -1742,9 +1495,7 @@ pv-nfs-2   10Gi       RWO            Retain           Bound    default/data-
 mysql-1                           13m
 pv-nfs-3   10Gi       RWO            Retain           Bound    default/data-
 mysql-2                           13m
-```
 
-```text
 [root@master1 ~]#tree /nfs-data/ -d
 /nfs-data/
 ├── data1
@@ -1768,20 +1519,14 @@ mysql-2                           13m
 ├── performance_schema
 ├── sys
 └── xtrabackup_backupfiles
-```
 
-```text
 21 directories
-```
 
-```text
 #创建一个测试Pod
 [root@master1 ~]#kubectl run client-test-$RANDOM --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/ubuntu:22.04 --restart=Never --rm -it --command
+beijing.aliyuncs.com/bowen/ubuntu:22.04 --restart=Never --rm -it --command
 -- /bin/bash
-```
 
-```text
 root@client-test-7246:/#apt update && apt -y install mysql-client bind9-dnsutils
 bind9-host iputils-ping
 root@client-test-7246:/# host mysql-0.mysql.default.svc.cluster.local
@@ -1794,9 +1539,7 @@ hostname    mysql-2
 root@client-test-7246:/# mysql -h mysql-read  -e "show variables"|grep -i
 hostname
 hostname    mysql-1
-```
 
-```text
 # mysql -hmysql-read.default.svc.cluster.local -e 'select @@hostname'
 +------------+
 | @@hostname |
@@ -1815,9 +1558,7 @@ hostname    mysql-1
 +------------+
 | mysql-1    |
 +------------+
-```
 
-```text
 #验证主从关系
 [root@master1 ~]#kubectl exec -it pods/mysql-1 -- mysql -e 'show slave status\G'
 | head -13
@@ -1836,18 +1577,14 @@ Relay_Log_Pos: 478
 Relay_Master_Log_File: mysql-0-bin.000003
 Slave_IO_Running: Yes
 Slave_SQL_Running: Yes
-```
 
-```text
 #删除statefulset
 [root@master1 ~]#kubectl delete -f mysql-statefulset.yaml
 #重新创建statefulset
 [root@master1 ~]#kubectl apply -f mysql-statefulset.yaml
 [root@master1 ~]#kubectl get pod -w
 NAME                   READY   STATUS    RESTARTS      AGE
-```
 
-```text
 daemonset-demo-kk2b7   1/1     Running   1 (20m ago)   8h
 daemonset-demo-kxpf4   1/1     Running   1 (20m ago)   8h
 daemonset-demo-s2jd8   1/1     Running   2 (20m ago)   8h
@@ -1861,9 +1598,7 @@ mysql-2                0/2     Init:1/2   0             2s
 mysql-2                0/2     PodInitializing   0             3s
 mysql-2                1/2     Running           0             4s
 mysql-2                2/2     Running           0             8s
-```
 
-```text
 #查看原来的数据还在
 [root@master1 ~]#kubectl exec -it mysql-0 -- mysql -e 'show databases;'
 ```
@@ -1925,27 +1660,20 @@ mysql-2                2/2     Running           0             8s
 #### 1.4.1.2 创建NFS共享服务
 
 **准备 nfs服务器**
-
-```text
+```bash
 #清空之前的环境
 [root@master1 ~]#> /etc/exports
-```
 
-```text
 #配置共享目录
 [root@master1 ~]#mkdir /nfs-data/pv/redis{1..6} -p
 for i in {1..6}
 do
 echo "/nfs-data/pv/redis$i *(rw,no_root_squash,sync)" >> /etc/exports
 done
-```
 
-```text
 #启动服务
 [root@master1 ~]#systemctl restart nfs-kernel-server.service
-```
 
-```text
 #命令验证
 exportfs
 ```
@@ -1953,8 +1681,7 @@ exportfs
 #### 1.4.1.3 创建PV
 
 **在master主机上创建 PV**
-
-```text
+```yaml
 #同样的格式创建6个pv
 [root@master1 ~]#for i in {1..6};do cat >> statefulset-redis-pv.yaml <<-EOF
 ---
@@ -1972,14 +1699,10 @@ server: 10.0.0.101
 path: /nfs-data/pv/redis$i
 EOF
 done
-```
 
-```text
 #应用文件
 [root@master1 ~]#kubectl create -f statefulset-redis-pv.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get pv
 NAME          CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM
@@ -2001,8 +1724,7 @@ redis-pv006   200M       RWX            Retain           Available
 #### 1.4.1.4 准备 Redis 配置文件
 
 通过configmap环境实现Redis 配置
-
-```text
+```bash
 #因为redis的配置文件可能会改变,所以使用configmap的方式将核心的配置信息单独管理,便于后期统一升
 级管理。
 [root@master1 ~]#cat >> redis.conf <<-EOF
@@ -2015,37 +1737,27 @@ dir /var/lib/redis
 EOF
 ```
 
-```text
-#注意：cluster-conf-file: 选项设定了保存节点配置文件的路径,如果这个配置文件不存在,每个节点在
-启动的时候都为他自身指定了一个新的ID存档到这个文件中,实例会一直使用同一个ID,在集群中保持一个独一
-无二的(Unique)名字.每个节点都是用ID而不是IP或者端口号来记录其他节点,因为在Kubernetes中,IP地
-址是不固定的,而这个独一无二的标识符(Identifier)则会在节点的整个生命周期中一直保持不变,我们这个
-文件里面存放的是节点ID
-```
 
-```text
+#注意：cluster-conf-file: 选项设定了保存节点配置文件的路径,如果这个配置文件不存在,每个节点在启动的时候都为他自身指定了一个新的ID存档到这个文件中,实例会一直使用同一个ID,在集群中保持一个独一无二的(Unique)名字.每个节点都是用ID而不是IP或者端口号来记录其他节点,因为在Kubernetes中,IP地址是不固定的,而这个独一无二的标识符(Identifier)则会在节点的整个生命周期中一直保持不变,我们这个文件里面存放的是节点ID
+
+```bash
 #创建Configmap
 [root@master1 ~]#kubectl create configmap redis-conf --from-file=redis.conf
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get configmaps
 [root@master1 ~]#kubectl describe configmaps redis-conf
 ```
 
 #### 1.4.1.5 headless service
-
-```text
+```yaml
 #Headless service是StatefulSet实现稳定网络标识的基础，需要提前创建。准备文件headless-
 service.yml如下：
 [root@master1 ~]#cat  statefulset-redis-headlessservice.yaml <<-EOF
 apiVersion: v1
 kind: Service
 metadata:
-```
 
-```text
 name: redis-service
 labels:
 app: redis
@@ -2057,14 +1769,10 @@ clusterIP: None
 selector:
 app: redis
 appCluster: redis-cluster
-```
 
-```text
 #创建headless服务
 [root@master1 ~]#kubectl create -f statefulset-redis-headlessservice.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get svc redis-service
 NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
@@ -2072,8 +1780,7 @@ redis-service   ClusterIP   None         <none>        6379/TCP   12s
 ```
 
 #### 1.4.1.6 statefulset 配置
-
-```text
+```yaml
 #这是本案例的核心内容,创建文件
 [root@master1 ~]#cat  statefulset-redis-cluster.yaml
 apiVersion: apps/v1
@@ -2109,10 +1816,8 @@ topologyKey: kubernetes.io/hostname
 containers:
 - name: redis
 #image: redis:6.2.5
-```
 
-```text
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/redis:6.2.5
+image: registry.cn-beijing.aliyuncs.com/bowen/redis:6.2.5
 command:
 - "redis-server"
 args:
@@ -2152,9 +1857,7 @@ accessModes:
 resources:
 requests:
 storage: 200M
-```
 
-```text
 #注意：PodAntiAffinity:表示反亲和性，其决定了某个pod不可以和哪些Pod部署在同一拓扑域，可以用
 于将一个服务的POD分散在不同的主机或者拓扑域中，提高服务本身的稳定性。
 #matchExpressions:规定了Redis Pod要尽量不要调度到包含app为redis的Node上，也即是说已经存在
@@ -2162,58 +1865,42 @@ Redis的Node上尽量不要再分配Redis Pod了.
 ```
 
 根据StatefulSet的规则，生成的Redis的6个Pod的hostname会被依次命名为((statefulset名称)-)(序号)：
-
-```text
+```bash
 [root@master1 ~]##创建对象
 kubectl apply -f statefulset-redis-cluster.yml
-```
 
-```text
 #查看效果
 kubectl get pod -o wide
 NAME              READY   STATUS    RESTARTS   AGE   IP            NODE    ...
 redis-cluster-0   1/1     Running   0          69s   10.244.2.49   node2   ...
 redis-cluster-1   1/1     Running   0          61s   10.244.1.37   node1   ...
-```
 
-```text
 redis-cluster-2   1/1     Running   0          36s   10.244.1.38   node1   ...
 redis-cluster-3   1/1     Running   0          31s   10.244.2.50   node2   ...
 redis-cluster-4   1/1     Running   0          25s   10.244.1.39   node1   ...
 redis-cluster-5   1/1     Running   0          21s   10.244.2.51   node2   ...
-```
 
-```text
 #结果显示：这些Pods在部署时是以{0..N-1}的顺序依次创建的。
-```
 
-```text
 #dns记录检查
 [root@master1 ~]#kubectl run client --image=busybox:v0.1 -it --rm sh
 ```
 
-```text
-#结果显示：每个Pod都会得到集群内的一个DNS域名，格式为
-$(podname).$(service name).$(namespace).svc.cluster.local
-在Kubernetes集群内部，这些Pod就可以利用该域名互相通信。
-```
+
+#结果显示：每个Pod都会得到集群内的一个DNS域名，格式为$(podname).$(service name).$(namespace).svc.cluster.local 在Kubernetes集群内部，这些Pod就可以利用该域名互相通信。
+
 
 **集群节点更新**
 
 ![原 PDF 第 39 页插图](assets/kubernetes有状态服务管理/img-5aacb19eb7d7e8a9.png)
-
-```text
-#结果显示：若Redis Pod迁移或是重启（我们可以手动删除掉一个Redis Pod来测试），则IP是会改变的，
-但Pod的域名、SRV records、A record都不会改变。
-```
+结果显示：若Redis Pod迁移或是重启（我们可以手动删除掉一个Redis Pod来测试），则IP是会改变的，但Pod的域名、SRV records、A record都不会改变。
 
 **查看pv 和 pvc效果**
 
 ![原 PDF 第 39 页插图](assets/kubernetes有状态服务管理/img-162ac5b4d6fb2f5f.png)
 
 **查看当前所有节点的状态**
-
-```text
+```bash
 [root@master1 ~]#nodelist=$(kubectl get pod -o wide | grep -v NAME | awk '{print
 $1}')
 [root@master1 ~]#for i in $nodelist
@@ -2221,9 +1908,7 @@ do
 Role=$(kubectl exec -it $i -- redis-cli info Replication | grep role)
 echo "$i | $Role"
 done
-```
 
-```text
 #结果显示：目前所有的节点状态都是 master状态
 ```
 
@@ -2232,29 +1917,23 @@ done
 #### 1.4.1.7 创建Redis集群
 
 创建好6个Redis Pod后，我们还需要利用工具进行集群的初始化。由于Redis集群必须在所有节点启动后才能进行初始化，而如果将初始化逻辑写入Statefulset中，则是一件非常复杂而且低效的行为。我们可以在Kubernetes上创建一个额外的容器，专门用于进行Kubernetes集群内部某些服务的管理控制。
-
-```text
+```bash
 #启动一个Ubuntu的redis管理容器
 [root@master1 ~]#kubectl run -i --tty ubuntu --image=ubuntu:22.04 /bin/bash
 root@ubuntu:/#
 #更新软件源
 root@ubuntu:/# apt update
-```
 
-```text
 #集群工具
 apt -y install redis-server dnsutils
-```
 
-```text
 #获取集群节点ip
 ]# dig +short redis-cluster-0.redis-service.default.svc.cluster.local
 10.244.2.244
 ```
 
 **创建集群**
-
-```text
+```bash
 #创建集群
 [root@master1 ~]#redis-cli --cluster create  10.244.2.244:6379 10.244.1.25:6379
 10.244.0.6:6379 10.244.2.238:6379 10.244.0.7:6379 10.244.1.26:6379 --cluster-
@@ -2275,16 +1954,14 @@ service.default.svc.cluster.local:6379
 最后一句表示集群中的16384个槽都有至少一个主节点在处理， 集群运作正常.
 
 至此，我们的Redis集群就真正创建完毕了，连到任意一个Redis Pod中检验一下：
-
-```text
+```bash
 [root@master1 ~]#kubectl exec -it redis-cluster-0 -- /bin/bash
 redis-cli cluster info
 redis-cli cluster nodes
 ```
 
 ![原 PDF 第 41 页插图](assets/kubernetes有状态服务管理/img-2d7a16628a971446.png)
-
-```text
+```bash
 #查看Redis挂载的数据
 [root@master1 ~]#tree /nfs-data/
 /nfs-data/
@@ -2302,8 +1979,7 @@ redis-cli cluster nodes
 ```
 
 #### 1.4.1.8 创建访问service
-
-```text
+```yaml
 #前面我们创建了用于实现statefulset的headless service,但该service没有cluster IP,因此不能
 用于外界访问.所以我们还需要创建一个service,专用于为Redis集群提供访问和负载均衡:
 [root@master1 ~]#cat statefulset-redis-access-service.yaml
@@ -2324,14 +2000,10 @@ app: redis
 appCluster: redis-cluster
 #属性详解：Service名称为 redis-access-service，在Kubernetes集群中暴露6379端口，并且会对
 labels name为app: redis或appCluster: redis-cluster的pod进行负载均衡。
-```
 
-```text
 #创建service
 [root@master1 ~]#kubectl apply -f statefulset-redis-access-service.yaml
-```
 
-```text
 #检查效果
 [root@master1 ~]#kubectl get svc -l app=redis
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
@@ -2343,8 +2015,7 @@ redis-service          ClusterIP   None             <none>        6379/TCP   11h
 ```
 
 #### 1.4.1.9 简单测试
-
-```text
+```bash
 #在Kubernetes上搭建完好Redis集群后，我们最关心的就是其原有的高可用机制是否正常。
 #查看当前效果
 [root@master1 ~]#nodelist=$(kubectl get pod -o wide | grep -v NAME | awk '{print
@@ -2357,8 +2028,7 @@ done
 ```
 
 ![原 PDF 第 43 页插图](assets/kubernetes有状态服务管理/img-e8c3cc227b09650b.png)
-
-```text
+```bash
 #可以任意挑选一个Master的Pod来测试集群的主从切换机制，如redis-cluster-0(10.244.2.247)：
 [root@master1 ~]#kubectl get pods redis-cluster-0 -o wide
 NAME              READY   STATUS    RESTARTS   AGE    IP             NODE    ...
@@ -2376,8 +2046,7 @@ root@master1:~/statefulset# kubectl exec -it redis-cluster-0 -- redis-cli ROLE
 ### 1.4.2 Redis Cluster 管理
 
 #### 1.4.2.1 主从切换
-
-```text
+```bash
 #手动删除redis-cluster-0
 [root@master1 ~]#kubectl delete pods redis-cluster-0 ; kubectl get pod redis-
 cluster-0 -o wide -w
@@ -2389,24 +2058,17 @@ redis-cluster-0   0/1     ContainerCreating   0          0s    <none>   node2
 redis-cluster-0   1/1     Running             0          2s    10.244.2.248
 node2   ...
 #结果显示：ip已经改变
-```
 
-```text
 #重新进入，检查效果
 ```
 
 ![原 PDF 第 43 页插图](assets/kubernetes有状态服务管理/img-e16ba523c6c9ad38.png)
-
-```text
-#结果显示：原来的主角色已经发生改变，但是生成新的主角色与之前的效果一致，继承了从属于它之前的从节
-点10.244.0.7
-```
+结果显示：原来的主角色已经发生改变，但是生成新的主角色与之前的效果一致，继承了从属于它之前的从节点10.244.0.7
 
 #### 1.4.2.2 动态扩容
 
 现在这个集群中有6个节点三主三从,现在添加两个pod节点,达到4主4从。
-
-```text
+```bash
 #添加nfs共享目录
 mkdir /nfs-data/pv/redis{7..8}
 chmod 777 /nfs-data/pv/*
@@ -2418,8 +2080,7 @@ systemctl restart nfs-kernel-server.service
 ```
 
 **准备pv文件**
-
-```text
+```yaml
 #同样的格式创建6个pv
 for i in {7..8}
 do
@@ -2435,7 +2096,7 @@ storage: 200M
 accessModes:
 - ReadWriteMany
 nfs:
-server: nfs.wang.org
+server: nfs.bowen.org
 path: /nfs-data/pv/redis$i
 EOF
 done
@@ -2448,91 +2109,52 @@ kubectl get pv
 ![原 PDF 第 44 页插图](assets/kubernetes有状态服务管理/img-4f2db4934ebe8fd1.png)
 
 **添加redis节点**
-
-```text
+```bash
 #更改redis的yml文件里面的replicas:字段8
 kubectl patch statefulsets redis-cluster -p '{"spec":{"replicas":8}}'
 kubectl get pod -o wide
 ```
 
 ![原 PDF 第 45 页插图](assets/kubernetes有状态服务管理/img-0a60db2fece0f71a.png)
-
-```text
+```bash
 #添加集群节点 命令格式：
 redis-cli --cluster add-node 新节点ip:端口 集群节点ip:端口
-```
 
-```text
 kubectl exec -it ubuntu --  /bin/bash
 [root@ubuntu /]# redis-cli --cluster add-node 10.244.2.249:6379
 10.244.2.248:6379
 [root@ubuntu /]# redis-cli --cluster add-node 10.244.0.8:6379 10.244.2.248:6379
 #注意：add-node后面跟的是新节点的信息,后面是以前集群中的任意 一个节点
-```
 
-```text
 #查看redis节点状态
 kubectl exec -it redis-cluster-0 -- redis-cli CLUSTER INFO
 kubectl exec -it redis-cluster-0 -- redis-cli CLUSTER NODES
-```
 
-```text
 #结果显示：确认集群节点信息，可以看到新的节点已加入到集群中，默认为master角色
 ```
 
 ![原 PDF 第 45 页插图](assets/kubernetes有状态服务管理/img-cb7e640c1fecdb08.png)
-
-```text
+```bash
 #由于要设置redis-cluster-7(10.244.0.8)为master节点，就要为它分配槽位，新加入的节点是空的没
 有槽位的,需要登录到集群的一个主角色上面调整槽位，然后为其分配从角色节点即可。
-```
 
-```text
 #登录集群其中一个master主节点
 kubectl exec -it redis-cluster-0 -- redis-cli --cluster reshard
 10.244.2.248:6379
 ...
 [OK] All 16384 slots covered.
-```
 
-```text
 # 这里是指给他分配多少槽位
 How many slots do you want to move (from 1 to 16384)? 4096
-```
 
-```text
 # 这里是指分配给谁，填写集群node的ID，给redis-cluster-7分配，就写redis-cluster-7节点的ID
 What is the receiving node ID? 85cd6b08eb87bfd0e604c901e698599b963c7c68
-```
 
-```text
 # 这里是指从哪些节点分配，all表示从所有节点
 ```
 
-```text
-Please enter all the source node IDs.
-Type 'all' to use all the nodes as source nodes for the hash slots.
-Type 'done' once you entered all the source nodes IDs.
-Source node #1: all
-······
-省略输出内容
-······
-Moving slot 6449 from c5a1a0b0c08bd19461ab3732aade6e4100a11d61
-Moving slot 6450 from c5a1a0b0c08bd19461ab3732aade6e4100a11d61
-...
-Moving slot 12287 from 2cb29a63f93e4eb3ec0229257ea5cffbee0461ea
-# 上面是已经重新分配好的槽位，是否要执行上面的分配计划，这里输yes
-Do you want to proceed with the proposed reshard plan (yes/no)? yes
-······
-省略输出内容
-······
-Moving slot 5461 from 10.244.1.25:6379 to 10.244.0.8:6379:
-...
-Moving slot 927 from 10.244.2.248:6379 to 10.244.0.8:6379:
-...
-Moving slot 11055 from 10.244.0.6:6379 to 10.244.0.8:6379:
-#结果显示：从三个主角色节点上，分出一些插槽给新加入的主角色节点
-```
+
+Please enter all the source node IDs. Type 'all' to use all the nodes as source nodes for the hash slots. Type 'done' once you entered all the source nodes IDs. Source node #1: all······省略输出内容······Moving slot 6449 from c5a1a0b0c08bd19461ab3732aade6e4100a11d61 Moving slot 6450 from c5a1a0b0c08bd19461ab3732aade6e4100a11d61... Moving slot 12287 from 2cb29a63f93e4eb3ec0229257ea5cffbee0461ea# 上面是已经重新分配好的槽位，是否要执行上面的分配计划，这里输yes Do you want to proceed with the proposed reshard plan (yes/no)? yes······省略输出内容······Moving slot 5461 from 10.244.1.25:6379 to 10.244.0.8:6379:... Moving slot 927 from 10.244.2.248:6379 to 10.244.0.8:6379:... Moving slot 11055 from 10.244.0.6:6379 to 10.244.0.8:6379:#结果显示：从三个主角色节点上，分出一些插槽给新加入的主角色节点
 
 ```text
 #查看集群节点信息，确认刚才的槽位分配结果和redis-cluster-7节点角色
@@ -2540,60 +2162,45 @@ kubectl exec -it redis-cluster-0 -- redis-cli CLUSTER NODES
 ```
 
 ![原 PDF 第 46 页插图](assets/kubernetes有状态服务管理/img-f36cab44fb762fae.png)
-
-```text
-#结果显示：10.244.0.8:6379@16379 是master角色，分配的插槽范围：
-0-1364(1035个) 5461-6826(1366个) 10923-12287(1365个) 共计4096个
-```
+结果显示：10.244.0.8:6379@16379 是master角色，分配的插槽范围：0-1364(1035个) 5461-6826(1366个) 10923-12287(1365个) 共计4096个
 
 设置redis-cluster-6(10.244.2.249)节点为slave从节点。
-
 ```text
 # 登录redis-cluster-6节点，执行从节点的主节点id (这里id写redis-cluster-7主节点的id)
 root@master1:~/statefulset# kubectl exec -it redis-cluster-6 -- redis-cli cluster
 replicate 85cd6b08eb87bfd0e604c901e698599b963c7c68
 OK
-```
 
-```text
 #查看集群节点信息，确认7008 slave节点是否设置成功
 kubectl exec -it redis-cluster-0 -- redis-cli CLUSTER NODES
 ```
 
 ![原 PDF 第 46 页插图](assets/kubernetes有状态服务管理/img-53e51aedffe3ae32.png)
-
 ```text
 #结果显示：redis-cluster-6(10.244.2.249) 是 id为
 85cd6b08eb87bfd0e604c901e698599b963c7c68 (redis-cluster-7)的从角色了
 ```
 
 **尝试数据操作**
-
-```text
+```bash
 #对于redis集群来说，任何一个节点都可以添加数据
-```
 
-```text
 [root@master1 ~]#kubectl exec -it redis-cluster-6 -- redis-cli -c
-127.0.0.1:6379> set name wang
+127.0.0.1:6379> set name bowen
 -> Redirected to slot [6704] located at 10.244.0.8:6379
 OK
 10.244.0.8:6379> exit
-```
 
-```text
 #来另一个节点查看效果
 [root@master1 ~]# kubectl exec -it redis-cluster-7 -- redis-cli -c
 127.0.0.1:6379> keys *
 1) "name"
 127.0.0.1:6379> get redis-cluster
-"wang"
-```
+"bowen"
 
-```text
 #注意：这里连接redis集群一定要用 -c 参数来启动集群模式，否则就会发生如下报错
 [root@master1 ~]# kubectl exec -it redis-cluster-2 -- redis-cli
-127.0.0.1:6379> set name wang
+127.0.0.1:6379> set name bowen
 (error) MOVED 11081 10.244.0.8:6379
 ```
 
@@ -2601,12 +2208,8 @@ OK
 
 简介
 
-```text
-#redis cluster 集群节点在缩容的时候，一定要考虑如下原则：
-删除从节点：直接删除即可，就算有数据也无所谓。
-删除主节点：如果主节点有从节点，将从节点转移到其他主节点,如果主节点有slot，去掉分配的slot，然后
-在删除主节点
-```
+
+#redis cluster 集群节点在缩容的时候，一定要考虑如下原则：删除从节点：直接删除即可，就算有数据也无所谓。删除主节点：如果主节点有从节点，将从节点转移到其他主节点,如果主节点有slot，去掉分配的slot，然后在删除主节点
 
 ```text
 #删除命令：
@@ -2615,72 +2218,36 @@ redis-cli --cluster del-node 删除节点的ip:port 删除节点的id
 redis-cli --cluster reshard 转移节点的ip:port
 ```
 
-```text
-#根据我们刚才的实践：
-redis-cluster 这个key所在的插槽 6704 位于 10.244.0.8 节点上
-xxx 10.244.0.8:6379@16379 myself,master - 0 1633349457000 7 connected 0-1364
-5461-6826 10923-12287
-10.244.0.8 节点有一个从节点 10.244.2.249，我们准备把这两个节点都删除
-```
 
-```text
+#根据我们刚才的实践：redis-cluster 这个key所在的插槽 6704 位于 10.244.0.8 节点上 xxx 10.244.0.8:6379@16379 myself,master - 0 1633349457000 7 connected 0-1364 5461-6826 10923-12287 10.244.0.8 节点有一个从节点 10.244.2.249，我们准备把这两个节点都删除
+
+```bash
 #连接集群主角色，删除一个从节点 10.244.2.249
 kubectl exec -it redis-cluster-2 -- redis-cli --cluster del-node
 10.244.2.249:6379 f46332577ceb052cc18bb8546a790d22afc73e4c
-```
 
-```text
 #确认效果
 kubectl exec -it redis-cluster-7 -- redis-cli cluster nodes
-```
 
-```text
 #结果显示：10.244.2.249 已经从节点中被删除了
 ```
 
 ![原 PDF 第 47 页插图](assets/kubernetes有状态服务管理/img-76645fc5509e0c9b.png)
-
-```text
+```bash
 #移动10.244.0.8主节点的槽位到其他节点中
 kubectl exec -it redis-cluster-2 -- redis-cli --cluster reshard 10.244.0.8:6379
-```
 
-```text
 [OK] All 16384 slots covered.
-```
 
-```text
 # 10.244.0.8节点有多少槽位就写多少
 How many slots do you want to move (from 1 to 16384)? 4096
 ```
 
-```text
-# 要移动到哪个节点，写10.244.1.25主节点id
-What is the receiving node ID? c5a1a0b0c08bd19461ab3732aade6e4100a11d61
-Please enter all the source node IDs.
-Type 'all' to use all the nodes as source nodes for the hash slots.
-Type 'done' once you entered all the source nodes IDs.
-```
 
-```text
-# 从哪个节点移动，写10.244.0.8主节点id
-Source node #1: 85cd6b08eb87bfd0e604c901e698599b963c7c68
-Source node #2: done
-······
-忽略输出内容
-······
-Moving slot 12287 from 85cd6b08eb87bfd0e604c901e698599b963c7c68
-# 是否执行以上操作，输入yes确认执行
-Do you want to proceed with the proposed reshard plan (yes/no)? yes
-······
-忽略输出内容
-······
-Moving slot 65 from 10.244.0.8:6379 to 10.244.1.25:6379:
-...
-Moving slot 5670 from 10.244.0.8:6379 to 10.244.1.25:6379:
-...
-Moving slot 12287 from 10.244.0.8:6379 to 10.244.1.25:6379:
-```
+# 要移动到哪个节点，写10.244.1.25主节点id What is the receiving node ID? c5a1a0b0c08bd19461ab3732aade6e4100a11d61 Please enter all the source node IDs. Type 'all' to use all the nodes as source nodes for the hash slots. Type 'done' once you entered all the source nodes IDs.
+
+
+# 从哪个节点移动，写10.244.0.8主节点id Source node #1: 85cd6b08eb87bfd0e604c901e698599b963c7c68 Source node #2: done······忽略输出内容······Moving slot 12287 from 85cd6b08eb87bfd0e604c901e698599b963c7c68# 是否执行以上操作，输入yes确认执行 Do you want to proceed with the proposed reshard plan (yes/no)? yes······忽略输出内容······Moving slot 65 from 10.244.0.8:6379 to 10.244.1.25:6379:... Moving slot 5670 from 10.244.0.8:6379 to 10.244.1.25:6379:... Moving slot 12287 from 10.244.0.8:6379 to 10.244.1.25:6379:
 
 ```text
 #查看集群节点信息，确认10.244.0.8主节点没有槽位
@@ -2688,33 +2255,19 @@ kubectl exec -it redis-cluster-7 -- redis-cli cluster nodes
 ```
 
 ![原 PDF 第 48 页插图](assets/kubernetes有状态服务管理/img-46987b909a3ee30f.png)
-
-```text
-#结果显示：10.244.0.8 节点已经没有被分配的数据插槽了
-```
-
-```text
-#删除10.244.0.8主节点
-kubectl exec -it redis-cluster-2 -- redis-cli --cluster del-node 10.244.0.8:6379
-85cd6b08eb87bfd0e604c901e698599b963c7c68
-```
+结果显示：10.244.0.8 节点已经没有被分配的数据插槽了#删除10.244.0.8主节点 kubectl exec -it redis-cluster-2 -- redis-cli --cluster del-node 10.244.0.8:6379 85cd6b08eb87bfd0e604c901e698599b963c7c68
 
 ![原 PDF 第 48 页插图](assets/kubernetes有状态服务管理/img-e31ee52051ed0bd8.png)
-
-```text
-#结果显示：10.244.0.8 节点已经被移除集群了，但是Kubernetes集群中的节点数量没有变化，因为新加
-入的节点，没有添加到集群中
-```
+结果显示：10.244.0.8 节点已经被移除集群了，但是Kubernetes集群中的节点数量没有变化，因为新加入的节点，没有添加到集群中
 
 ![原 PDF 第 49 页插图](assets/kubernetes有状态服务管理/img-2089380338485a54.png)
 
 ## 1.5 案例：Nacos 集群
 
-```text
-https://github.com/nacos-group/nacos-k8s/blob/master/README-CN.md
-```
 
-```text
+- <https://github.com/nacos-group/nacos-k8s/blob/master/README-CN.md>
+
+```yaml
 ---
 apiVersion: v1
 kind: Service
@@ -2741,6 +2294,9 @@ targetPort: 7848
 clusterIP: None
 selector:
 app: nacos
+```
+
+```yaml
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -2760,16 +2316,14 @@ app: nacos
 annotations:
 pod.alpha.kubernetes.io/initialized: "true"
 prometheus.io/scrape: "true"
-```
 
-```text
 prometheus.io/port: "8848"
 prometheus.io/path: "/nacos/actuator/prometheus"
 spec:
 initContainers:
 - name: peer-finder-plugin-install
 #image: nacos/nacos-peer-finder-plugin:1.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nacos-peer-finder-
+image: registry.cn-beijing.aliyuncs.com/bowen/nacos-peer-finder-
 plugin:1.1
 imagePullPolicy: Always
 volumeMounts:
@@ -2780,7 +2334,7 @@ containers:
 - name: nacos
 imagePullPolicy: Always
 #image: nacos/nacos-server:v2.3.1-slim
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nacos-
+image: registry.cn-beijing.aliyuncs.com/bowen/nacos-
 server:v2.2.3-slim
 resources:
 requests:
@@ -2821,9 +2375,7 @@ key: database.name
 valueFrom:
 configMapKeyRef:
 name: nacos-cfg
-```
 
-```text
 key: mysql.port
 - name: MYSQL_SERVICE_USER
 valueFrom:
@@ -2873,7 +2425,7 @@ storage: 10Gi
 ---
 ```
 
-```text
+```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -2881,9 +2433,7 @@ metadata:
 name: nacos-cfg
 data:
 application.properties: |
-```
 
-```text
 # spring
 server.servlet.contextPath=${SERVER_SERVLET_CONTEXTPATH:/nacos}
 server.contextPath=/nacos
@@ -2905,9 +2455,7 @@ nacos.cmdb.eventTaskInterval=10
 nacos.cmdb.labelTaskInterval=300
 nacos.cmdb.loadDataAtStart=false
 db.num=${MYSQL_DATABASE_NUM:1}
-```
 
-```text
 db.url.0=jdbc:mysql://${MYSQL_SERVICE_HOST}:${MYSQL_SERVICE_PORT:3306}/${MYSQL_S
 ERVICE_DB_NAME}?
 ${MYSQL_SERVICE_DB_PARAM:characterEncoding=utf8&connectTimeout=1000&socketTimeou
@@ -2918,9 +2466,7 @@ db.password.0=${MYSQL_SERVICE_PASSWORD}
 nacos.core.auth.system.type=${NACOS_AUTH_SYSTEM_TYPE:nacos}
 # worked when nacos.core.auth.system.type=nacos
 # The token expiration in seconds:
-```
 
-```text
 nacos.core.auth.plugin.nacos.token.expire.seconds=${NACOS_AUTH_TOKEN_EXPIRE_SECO
 NDS:18000}
 # The default token:
@@ -2928,18 +2474,14 @@ nacos.core.auth.plugin.nacos.token.secret.key=${NACOS_AUTH_TOKEN:}
 # Turn on/off caching of auth information. By turning on this switch, the
 update of auth information would have a 15 seconds delay.
 nacos.core.auth.caching.enabled=${NACOS_AUTH_CACHE_ENABLE:false}
-```
 
-```text
 nacos.core.auth.enable.userAgentAuthWhite=${NACOS_AUTH_USER_AGENT_AUTH_WHITE_ENA
 BLE:false}
 nacos.core.auth.server.identity.key=${NACOS_AUTH_IDENTITY_KEY:}
 nacos.core.auth.server.identity.value=${NACOS_AUTH_IDENTITY_VALUE:}
 # spring security config
 # turn off security
-```
 
-```text
 nacos.security.ignore.urls=${NACOS_SECURITY_IGNORE_URLS:/,/error,/**/*.css,/**/*
 .js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.ico,/console-
 fe/public/**,/v1/auth/**,/v1/console/health/**,/actuator/**,/v1/console/server/*
@@ -2950,9 +2492,7 @@ management.endpoints.web.exposure.include=*
 management.metrics.export.elastic.enabled=false
 management.metrics.export.influx.enabled=false
 nacos.naming.distro.taskDispatchThreadCount=10
-```
 
-```text
 nacos.naming.distro.taskDispatchPeriod=200
 nacos.naming.distro.batchSyncKeyCount=1000
 nacos.naming.distro.initDataRatio=0.9
@@ -2965,8 +2505,7 @@ mysql.port: "3306"
 ```
 
 ## 1.6 案例：Elasticsearch 集群
-
-```text
+```yaml
 ---
 kind: Service
 apiVersion: v1
@@ -3012,9 +2551,7 @@ imagePullPolicy: IfNotPresent
 resources:
 limits:
 cpu: 1000m
-```
 
-```text
 requests:
 cpu: 100m
 ports:
@@ -3073,15 +2610,13 @@ resources:
 limits:
 cpu: 100m
 memory: 128Mi
-```
 
-```text
 requests:
 cpu: 25m
 memory: 64Mi
 initContainers:
 - name: fix-permissions
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 command: ["sh", "-c", "chown -R 1000:1000
 /usr/share/elasticsearch/data"]
 securityContext:
@@ -3090,12 +2625,12 @@ volumeMounts:
 - name: data
 mountPath: /usr/share/elasticsearch/data
 - name: increase-vm-max-map
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 command: ["sysctl", "-w", "vm.max_map_count=262144"]
 securityContext:
 privileged: true
 - name: increase-fd-ulimit
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/admin-box:v0.1
 command: ["sh", "-c", "ulimit -n 65536"]
 securityContext:
 privileged: true
@@ -3113,8 +2648,7 @@ storage: 10Gi
 ```
 
 ## 1.7 案例：MinIO 集群
-
-```text
+```yaml
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -3135,9 +2669,7 @@ labels:
 app: minio
 annotations:
 prometheus.io/scrape: "true"
-```
 
-```text
 prometheus.io/port: "9000"
 prometheus.io/path: "/minio/v2/metrics/node"
 #prometheus.io/path: "/minio/v2/metrics/cluster"
@@ -3196,14 +2728,10 @@ accessModes:
 resources:
 requests:
 storage: 10Gi
-```
 
-```text
 storageClassName: "sc-nfs"
 # This field references the existing StorageClass
-```
 
-```text
 ---
 kind: Service
 apiVersion: v1
@@ -3237,9 +2765,7 @@ name: http
 targetPort: 9001
 name: console
 ---
-```
 
-```text
 apiVersion: v1
 kind: Secret
 metadata:
@@ -3252,22 +2778,17 @@ MINIO_ROOT_PASSWORD: MTIzNDU2
 ```
 
 ## 1.8 案例：Redis 主从复制哨兵
-
-```text
+```yaml
 ---
 apiVersion: v1
-```
 
-```text
 kind: ConfigMap
 metadata:
 name: redis-conf
 data:
 # Variable needed for sentinel init container
 REDIS_NODES: "redis-0.redis,redis-1.redis,redis-2.redis"
-```
 
-```text
 # Config used in all redises
 redis.conf: |
 # Redis configuration file example.
@@ -3319,9 +2840,7 @@ runtime.
 #####################################
 # By default, if no "bind" configuration directive is specified, Redis
 listens
-```
 
-```text
 # for connections from all the network interfaces available on the server.
 # It is possible to listen to just one or multiple selected interfaces using
 # the "bind" configuration directive, followed by one or more IP addresses.
@@ -3380,9 +2899,7 @@ tcp-backlog 511
 #
 # unixsocket /tmp/redis.sock
 # unixsocketperm 700
-```
 
-```text
 # Close the connection after a client is idle for N seconds (0 to disable)
 timeout 10
 # TCP keepalive.
@@ -3441,9 +2958,7 @@ one
 # Use the following directive to enable TLS on replication links.
 #
 # tls-replication yes
-```
 
-```text
 # By default, the Redis Cluster bus uses a plain TCP connection. To enable
 # TLS for the bus protocol, use the following directive:
 #
@@ -3502,9 +3017,7 @@ daemonize no
 #   supervised auto    - detect upstart or systemd method based on
 #                        UPSTART_JOB or NOTIFY_SOCKET environment variables
 # Note: these supervision methods only signal "process is ready."
-```
 
-```text
 #       They do not enable continuous liveness pings back to your
 supervisor.
 supervised no
@@ -3563,9 +3076,7 @@ always-show-logo yes
 #   after 300 sec (5 min) if at least 10 keys changed
 #   after 60 sec if at least 10000 keys changed
 #
-```
 
-```text
 #   Note: you can disable saving completely by commenting out all "save"
 lines.
 #
@@ -3624,9 +3135,7 @@ environments
 rdb-del-sync-files no
 # The working directory.
 #
-```
 
-```text
 # The DB will be written inside this directory, with the filename specified
 # above using the 'dbfilename' configuration directive.
 #
@@ -3685,9 +3194,7 @@ replication
 will
 #    still reply to client requests, possibly with out of date data, or the
 #    data set may just be empty if this is the first synchronization.
-```
 
-```text
 #
 # 2) if replica-serve-stale-data is set to 'no' the replica will reply with
 #    an error "SYNC with master in progress" to all the kind of commands
@@ -3746,9 +3253,7 @@ instead
 # When diskless replication is used, the master waits a configurable amount
 of
 # time (in seconds) before starting the transfer in the hope that multiple
-```
 
-```text
 # replicas will arrive and the transfer can be parallelized.
 #
 # With slow disks and fast (large bandwidth) networks, diskless replication
@@ -3807,9 +3312,7 @@ kill.
 repl-diskless-load disabled
 # Replicas send PINGs to server in a predefined interval. It's possible to
 # change this interval with the repl_ping_replica_period option. The default
-```
 
-```text
 # value is 10 seconds.
 #
 appendonly no
@@ -3868,9 +3371,7 @@ backlog.
 #
 # repl-backlog-ttl 3600
 # The replica priority is an integer number published by Redis in the INFO
-```
 
-```text
 # output. It is used by Redis Sentinel in order to select a replica to
 promote
 # into a master if the master is no longer working correctly.
@@ -3929,9 +3430,7 @@ replicas
 #   Port: The port is communicated by the replica during the replication
 #   handshake, and is normally the port that the replica is using to
 #   listen for connections.
-```
 
-```text
 #
 # However when port forwarding or Network Address Translation (NAT) is
 # used, the replica may be actually reachable via different IP and port
@@ -3989,9 +3488,7 @@ clients
 ###################################
 # Warning: since Redis is pretty fast an outside user can try up to
 # 1 million passwords per second against a modern box. This means that you
-```
 
-```text
 # should use very strong passwords, otherwise they will be very easy to
 break.
 # Note that because the password is really a shared secret between the
@@ -4050,9 +3547,7 @@ currently
 #  ><password>  Add this passowrd to the list of valid password for the
 user.
 #               For example >mypass will add "mypass" to the list.
-```
 
-```text
 #               This directive clears the "nopass" flag (see later).
 #  <<password>  Remove this password from the list of valid passwords.
 #  nopass       All the set passwords of the user are removed, and the user
@@ -4111,9 +3606,7 @@ acllog-max-len 128
 #
 # The format of the external ACL user file is exactly the same as the
 # format that is used inside redis.conf to describe users.
-```
 
-```text
 #
 # aclfile /etc/redis/users.acl
 # IMPORTANT NOTE: starting with Redis 6 "requirepass" is just a compatiblity
@@ -4125,29 +3618,23 @@ acllog-max-len 128
 #
 ```
 
-```text
+```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
 name: sentinel-scripts
 data:
-```
 
-```text
 sentinel_init.sh: |
 #!/bin/bash
-```
 
-```text
 for i in ${REDIS_NODES//,/ }
 do
 echo "finding master at $i"
 MASTER=$(redis-cli --no-auth-warning --raw -h $i -a ${REDIS_PASSWORD}
 info replication | awk '{print $1}' | grep master_host: | cut -d ":" -f2)
-```
 
-```text
 if [ "${MASTER}" == "" ]; then
 echo "no master found"
 MASTER=
@@ -4155,13 +3642,9 @@ else
 echo "found ${MASTER}"
 break
 fi
-```
 
-```text
 done
-```
 
-```text
 #echo "sentinel monitor mymaster MASTER 6379 2" >> /tmp/master
 echo "port 5000
 sentinel resolve-hostnames yes
@@ -4175,50 +3658,30 @@ sentinel auth-pass mymaster ${REDIS_PASSWORD}
 requirepass ${REDIS_PASSWORD}
 sentinel announce-ip ${HOSTNAME}.sentinel
 sentinel announce-port 5000
-```
 
-```text
 " > /etc/redis/sentinel.conf
-```
 
-```text
 cat /etc/redis/sentinel.conf
-```
 
-```text
 sed -i "s@MASTER_HOST@${MASTER}@g" /etc/redis/sentinel.conf
-```
 
-```text
 redis_init.sh: |
-```
 
-```text
 #!/bin/bash
-```
 
-```text
 cp /tmp/redis/redis.conf /etc/redis/redis.conf
 echo "requirepass ${REDIS_PASSWORD}" >> /etc/redis/redis.conf
 echo "masterauth ${REDIS_PASSWORD}" >> /etc/redis/redis.conf
 echo "replica-announce-ip ${HOSTNAME}.redis" >> /etc/redis/redis.conf
 echo "replica-announce-port 6379 " >> /etc/redis/redis.conf
-```
 
-```text
 echo "finding master..."
-```
 
-```text
 if [ "$(timeout 5 redis-cli -h sentinel -p 5000 -a ${REDIS_PASSWORD} ping)"
 != "PONG" ]; then
-```
 
-```text
 echo "sentinel not found, defaulting to redis-0"
-```
 
-```text
 if [ ${HOSTNAME} == "redis-0" ]; then
 echo "this is redis-0, not updating config..."
 else
@@ -4227,20 +3690,14 @@ echo "repl-ping-replica-period 3" >> /etc/redis/redis.conf
 echo "slave-read-only no" >> /etc/redis/redis.conf
 echo "slaveof redis-0.redis 6379" >> /etc/redis/redis.conf
 fi
-```
 
-```text
 else
-```
 
-```text
 echo "sentinel found, finding master"
 MASTER="$(redis-cli -h sentinel -p 5000 -a ${REDIS_PASSWORD} sentinel get-
 master-addr-by-name mymaster | grep -E '(^redis-*)|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]
 {1,3}\.[0-9]{1,3})')"
-```
 
-```text
 if [ "${HOSTNAME}.redis" == ${MASTER} ]; then
 echo "this is master, not updating config..."
 else
@@ -4249,13 +3706,11 @@ echo "slave-read-only no" >> /etc/redis/redis.conf
 echo "slaveof ${MASTER} 6379" >> /etc/redis/redis.conf
 echo "repl-ping-replica-period 3" >> /etc/redis/redis.conf
 fi
-```
 
-```text
 fi
 ```
 
-```text
+```yaml
 ---
 kind: Secret
 apiVersion: v1
@@ -4265,14 +3720,10 @@ type: Opaque
 data:
 REDIS_PASSWORD: " MTIzNDU2"
 #REDIS_PASSWORD: "123456"
-```
 
-```text
 apiVersion: v1
 kind: Service
-```
 
-```text
 metadata:
 name: redis
 labels:
@@ -4287,9 +3738,7 @@ targetPort: 6379
 name: redis
 selector:
 app: redis
-```
 
-```text
 ---
 # Sentinel service used for project pod connection
 apiVersion: v1
@@ -4311,7 +3760,7 @@ selector:
 app: sentinel
 ```
 
-```text
+```yaml
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -4334,9 +3783,7 @@ prometheus.io/path: "/metrics"
 # Grafana Dashboard ID: 763
 spec:
 initContainers:
-```
 
-```text
 - name: config
 image: redis:7.2
 env:
@@ -4395,9 +3842,7 @@ items:
 - key: redis_init.sh
 path: redis_init.sh
 - name: config
-```
 
-```text
 configMap:
 name: redis-conf
 items:
@@ -4414,9 +3859,7 @@ storageClassName: sc-nfs
 resources:
 requests:
 storage: 10Gi
-```
 
-```text
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -4457,9 +3900,7 @@ containers:
 image: redis:7.0
 command: ["redis-sentinel"]
 args: ["/etc/redis/sentinel.conf"]
-```
 
-```text
 ports:
 - containerPort: 5000
 name: sentinel
@@ -4496,11 +3937,10 @@ storage: 10Gi
 
 ## 1.9 案例：ZooKeeper 集群
 
-```text
-https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/zookeeper/
-```
 
-```text
+- <https://kubernetes.io/zh-cn/docs/tutorials/stateful-application/zookeeper/>
+
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -4520,9 +3960,7 @@ app: zk
 apiVersion: v1
 kind: Service
 metadata:
-```
 
-```text
 name: zk-cs
 labels:
 app: zk
@@ -4575,15 +4013,13 @@ containers:
 - name: kubernetes-zookeeper
 imagePullPolicy: Always
 #image: "registry.k8s.io/kubernetes-zookeeper:1.0-3.4.10"
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kubernetes-
+image: registry.cn-beijing.aliyuncs.com/bowen/kubernetes-
 zookeeper:1.0-3.4.10
 resources:
 requests:
 memory: "1Gi"
 cpu: "0.5"
-```
 
-```text
 ports:
 - containerPort: 2181
 name: client

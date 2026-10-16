@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Ingress 流量治理与发布'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -12,7 +13,6 @@ syntax_highlight: true
 # 20 Ingress 流量治理与发布
 
 # 1 Ingress 原理
-
 ```text
 https://kubernetes.github.io/ingress-nginx/
 https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress/
@@ -128,9 +128,9 @@ ingress的pod如何引入外部流量。
 
 Ingress controller常见的实现方式有：
 
-```text
-https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
-```
+
+- <https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/>
+
 
 ![原 PDF 第 6 页插图](assets/Kubernetes流量调度Ingress_Password_Removed1/img-b9089aedb52a20df.png)
 
@@ -138,21 +138,20 @@ Kubernetes Ingress
 
 Kubernetes官方发布, Ingress-Nginx 自从k8s-v1.6版本引入，在k8s-v1.19 正式进入了一个稳定版本状态。
 
-```text
-http://github.com/kubernetes/ingress-nginx
-```
+
+- <http://github.com/kubernetes/ingress-nginx>
+
 
 Nginx Ingress
 
-```text
-http://github.com/nginxinc/kubernetes-ingress
-https://www.f5.com/products/nginx/nginx-ingress-controller
-```
+
+- <http://github.com/nginxinc/kubernetes-ingress>
+- <https://www.f5.com/products/nginx/nginx-ingress-controller>
+
 
 Nginx Ingress是NGINX开发的官方版本，它基于NGINX Plus商业版本，NGINX控制器具有很高的稳定性，持续的向后兼容性，没有任何第三方模块，并且由于消除了Lua代码而保证了较高的速度（与官方控制器相比）。相比官方控制器，它支持TCP/UDP的流量转发，付费版有很广泛的附加功能，主要缺点就是缺失了鉴权方式、流量调度等其他功能。
 
 Kong Ingress
-
 ```text
 github.com/Kong/kubernetes-ingress-controller
 ```
@@ -163,9 +162,9 @@ HAProxy  Ingress
 
 性能相对于nginx来说，较稳定
 
-```text
-http://github.com/jcmoraisjr/haproxy-ingress
-```
+
+- <http://github.com/jcmoraisjr/haproxy-ingress>
+
 
 **Envoy**：基于C++语言开发，本身就为动态环境设计的，支持配置动态加载的XDS API。
 
@@ -181,15 +180,14 @@ Traefik的设计目标是成为一个现代化的云原生应用反向代理和�
 
 由于Traefik专注于容器环境，并提供自动配置功能，对于那些熟悉Docker和Kubernetes的用户来说，使用Traefik可能更加容易上手。当前使用得较多的是 traefik 和 nginx-controller，traefik 的性能较 nginx-controller 差，但是配置使用要简单许多。
 
-```text
-https://traefik.io/
-https://github.com/containous/traefik
-https://github.com/traefik/traefik/releases
-https://github.com/traefik/traefik/tree/v1.7/examples/k8s
-```
+
+- <https://traefik.io/>
+- <https://github.com/containous/traefik>
+- <https://github.com/traefik/traefik/releases>
+- <https://github.com/traefik/traefik/tree/v1.7/examples/k8s>
+
 
 **各种 Ingress Controller 比较**
-
 ```text
 https://docs.google.com/spreadsheets/d/1DnsHtdHbxjvHmxvlu7VhzWcWgLAn_Mc5L1WlhLDA
 __k/edit?spm=a2c6h.12873639.article-detail.4.1eff3d8dO53Ifj#gid=0
@@ -202,14 +200,11 @@ __k/edit?spm=a2c6h.12873639.article-detail.4.1eff3d8dO53Ifj#gid=0
 ## 2.1 部署说明
 
 注意:  Ingress-nginx 有两个项目,一个Kubernetes维护和Nginx官方维护,下面以Kubernetes官方维护的项目为例。
-
 ```text
 #参考资料：
 https://github.com/kubernetes/ingress-nginx
 https://kubernetes.io/docs/concepts/services-networking/ingress/
-```
 
-```text
 #安装文档：
 https://github.com/kubernetes/ingress-nginx/blob/main/docs/deploy/index.md
 https://kubernetes.github.io/ingress-nginx/deploy/
@@ -217,9 +212,9 @@ https://kubernetes.github.io/ingress-nginx/deploy/
 
 **版本说明**
 
-```text
-https://github.com/kubernetes/ingress-nginx/
-```
+
+- <https://github.com/kubernetes/ingress-nginx/>
+
 
 ![原 PDF 第 8 页插图](assets/Kubernetes流量调度Ingress_Password_Removed1/img-67d7dd763a0fb73d.png)
 
@@ -246,19 +241,14 @@ with kubectl apply , using YAML manifests with Helm, using the project repositor
 ### 2.2.1 基于 YAML 部署
 
 范例:  基于 kubectl apply 部署
-
-```text
+```bash
 #获取配置文件,可能需要科学上网才能下载
 https://github.com/kubernetes/ingress-nginx/blob/main/docs/deploy/index.md
 https://kubernetes.github.io/ingress-nginx/deploy/
-```
 
-```text
 #选择版本
 https://github.com/kubernetes/ingress-nginx/
-```
 
-```text
 #新版
 [root@master1 ~]#VERSION=1.13.3
 [root@master1 ~]#VERSION=1.13.1
@@ -269,47 +259,31 @@ https://github.com/kubernetes/ingress-nginx/
 [root@master1 ~]#VERSION=1.8.0
 [root@master1 ~]#VERSION=1.7.0
 [root@master1 ~]#VERSION=1.4.0
-```
 
-```text
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v${VERSION}/deploy/static/provider/cloud/deploy.yaml
-```
 
-```text
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
-```
 
-```text
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
-```
 
-```text
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v1.7.0/deploy/static/provider/cloud/deploy.yaml
-```
 
-```text
 #旧版
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
-```
 
-```text
 #旧版
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v1.3.1/deploy/static/provider/cloud/deploy.yaml
-```
 
-```text
 #旧版
 [root@master1 ~]#wget https://raw.githubusercontent.com/kubernetes/ingress-
 nginx/controller-v1.0.3/deploy/static/provider/baremetal/deploy.yaml
-```
 
-```text
 #查看资源
 [root@master1 ~]#grep '^kind' deploy.yaml
 kind: Namespace
@@ -331,15 +305,11 @@ kind: Job
 kind: Job
 kind: IngressClass
 kind: ValidatingWebhookConfiguration
-```
 
-```text
 #1)默认的镜像可能无法下载,需要修改基础镜像
 #可以通过配置代理下载
 https://dockerproxy.com/
-```
 
-```text
 #版本:ingress-nginx-v1.12.3，修改三处image:地址
 [root@master1 ~]#vim deploy.yaml
 #image: registry.k8s.io/ingress-
@@ -352,17 +322,13 @@ certgen:v1.5.4@sha256:7a38cf0f8480775baaee71ab519c7465fd1dfeac66c421f28f087786e6
 31456e
 image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-webhook-
 certgen:v1.5.4
-```
 
-```text
 #image: registry.k8s.io/ingress-nginx/kube-webhook-
 certgen:v1.5.4@sha256:7a38cf0f8480775baaee71ab519c7465fd1dfeac66c421f28f087786e6
 31456e
 image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-webhook-
 certgen:v1.5.4
-```
 
-```text
 #版本:ingress-nginx-v1.12.1，修改三处image:地址
 [root@master1 ~]#vim deploy.yaml
 image: registry.cn-hangzhou.aliyuncs.com/google_containers/nginx-ingress-
@@ -385,10 +351,10 @@ certgen:v1.5.2
 webhook-certgen:v1.5.0
 #image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-
 webhook-certgen:v20230407
-```
 
-```text
 #版本:ingress-nginx-v1.12.0，修改三处image:地址
+```
+```yaml
 [root@master1 ~]#vim deploy.yaml
 image: registry.cn-hangzhou.aliyuncs.com/google_containers/nginx-ingress-
 controller:v1.12.0
@@ -408,58 +374,48 @@ image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-webhook-
 certgen:v1.5.0
 #image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-
 webhook-certgen:v20230407
-```
 
-```text
 #旧版
 [root@master1 ~]#vim deploy.yaml
 [root@master1 ~]#grep image: deploy.yaml
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/ingress-nginx-
+image: registry.cn-beijing.aliyuncs.com/bowen/ingress-nginx-
 controller:v1.8.0
-#image: registry.cn-beijing.aliyuncs.com/wangxiaochun/ingress-nginx-
+#image: registry.cn-beijing.aliyuncs.com/bowen/ingress-nginx-
 controller:v1.7.1
-```
 
-```text
 #image: registry.k8s.io/ingress-
 nginx/controller:v1.7.1@sha256:7244b95ea47bddcb8267c1e625fb163fc183ef55448855e3a
 c52a7b260a60407
-imgae: wangxiaochun/ingress-nginx-kube-webhook-certgen:v20230407
-#image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kube-webhook-
+imgae: bowen/ingress-nginx-kube-webhook-certgen:v20230407
+#image: registry.cn-beijing.aliyuncs.com/bowen/kube-webhook-
 certgen:v20230312-helm-chart-4.5.2-28-g66a760794
 #image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v20230312-
 helm-chart-4.5.2-28-
 g66a760794@sha256:01d181618f270f2a96c04006f33b2699ad3ccb02da48d0f89b22abce084b29
 2f
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kube-webhook-
+image: registry.cn-beijing.aliyuncs.com/bowen/kube-webhook-
 certgen:v20230312-helm-chart-4.5.2-28-g66a760794
 #image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v20230312-
 helm-chart-4.5.2-28-
 g66a760794@sha256:01d181618f270f2a96c04006f33b2699ad3ccb02da48d0f89b22abce084b29
 2f
-```
 
-```text
 #旧版
 [root@master1 ~]#vim deploy.yaml
 [root@master1 ~]#grep image: deploy.yaml
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/ingress-nginx-
+image: registry.cn-beijing.aliyuncs.com/bowen/ingress-nginx-
 controller:v1.8.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/ingress-nginx-kube-webhook-
+image: registry.cn-beijing.aliyuncs.com/bowen/ingress-nginx-kube-webhook-
 certgen:v20230407
-```
 
-```text
 #旧版
 [root@master1 ~]#vim deploy.yaml
 [root@master1 ~]#grep image: deploy.yaml
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/ingress-nginx-
+image: registry.cn-beijing.aliyuncs.com/bowen/ingress-nginx-
 controller:v1.7.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kube-webhook-
+image: registry.cn-beijing.aliyuncs.com/bowen/kube-webhook-
 certgen:v20230312-helm-chart-4.5.2-28-g66a760794
-```
 
-```text
 #旧版
 [root@master1 ~]#vim deploy.yaml
 [root@master1 ~]#grep image: deploy.yaml
@@ -467,9 +423,7 @@ image: registry.cn-hangzhou.aliyuncs.com/google_containers/nginx-ingress-
 controller:v1.4.0
 image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-webhook-
 certgen:v20220916-gd32f8c343
-```
 
-```text
 #旧版
 [root@master1 ~]#vim deploy.yaml
 [root@master1 ~]#grep image: deploy.yaml
@@ -485,13 +439,9 @@ image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-
 webhook-
 certgen:v1.0@sha256:f3b6b39a6062328c095337b4cadcefd1612348fdd5190b1dcbcb9b9e90bd
 8068
-```
 
-```text
 #2)开放外部访问入口地址,可选
-```
 
-```text
 [root@master1 ~]#vim deploy.yaml
 ......
 apiVersion: v1
@@ -519,16 +469,12 @@ ports:
 - name: http
 port: 80
 .....
-```
 
-```text
 #3)默认ingress-nginx-controller只有一个Pod副本的,可选
 #方法1: 指定2个副本实现高可用（此步可选）
 spec:
 replicas: 2
-```
 
-```text
 #方法2可以修改为DaemonSet提高性能（此步可选）
 apiVersion: apps/v1
 #kind: Deployment
@@ -537,10 +483,10 @@ kind: DaemonSet  #修改此行为 DaemonSet
 spec:
 hostNetwork: true #使用宿主机的网络,直接使用宿主机的IP:80和宿主机的IP:443
 hostPID: true #使用宿主机的Pid
-```
 
-```text
 #应用资源配置文件
+```
+```yaml
 [root@master1 ~]#kubectl apply -f deploy.yaml
 namespace/ingress-nginx created
 serviceaccount/ingress-nginx created
@@ -556,33 +502,25 @@ clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
 configmap/ingress-nginx-controller created
 service/ingress-nginx-controller created
 service/ingress-nginx-controller-admission created
-```
 
-```text
 deployment.apps/ingress-nginx-controller created
 job.batch/ingress-nginx-admission-create created
 job.batch/ingress-nginx-admission-patch created
 ingressclass.networking.k8s.io/nginx created
 validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-
 admission created
-```
 
-```text
 #查看ingress-nginx-controller的Pod运行在哪个节点上,注意:externalTrafficPolicy:
 Cluster时无需此步
 [root@master1 ~]#kubectl get pod -A -o wide |grep ingress-nginx-controller
 ingress-nginx   ingress-nginx-controller-56f8b4f667-4rrm9   1/1     Running
-0               73s     10.244.2.20   node2.wang.org     <none>           <none>
-```
+0               73s     10.244.2.20   node2.bowen.org     <none>           <none>
 
-```text
 #在k8s集群中的运行ingress-nginx-controller的Pod节点上添加externalIPs指定的IP地址
 #注意:externalTrafficPolicy: Cluster时,10.0.0.99绑定在任意集群节点上都可以
 #注意：此方式添加的IP不稳定，建议写入配置文件的静态IP，生产使用高可用的VIP
 [root@node1 ~]#ip a a 10.0.0.99/24 dev eth0 label eth0:1
-```
 
-```text
 #确认效果
 [root@master1 ~]#kubectl get ns
 NAME                   STATUS   AGE
@@ -592,9 +530,7 @@ kube-node-lease        Active   5d19h
 kube-public            Active   5d19h
 kube-system            Active   5d19h
 kubernetes-dashboard   Active   2d19h
-```
 
-```text
 [root@master1 ~]#kubectl get all  -n ingress-nginx
 NAME                                            READY   STATUS      RESTARTS
 AGE
@@ -604,46 +540,32 @@ pod/ingress-nginx-admission-patch--1-gbxzg      0/1     Completed   1
 24m
 pod/ingress-nginx-controller-548b8cb9b8-tsxpl   1/1     Running     0
 24m
-```
 
-```text
 NAME                                         TYPE        CLUSTER-IP
 EXTERNAL-IP   PORT(S)                      AGE
 service/ingress-nginx-controller             NodePort    10.101.159.100
 10.0.0.99    80:32453/TCP,443:32699/TCP   24m
 service/ingress-nginx-controller-admission   ClusterIP   10.105.95.216    <none>
 443/TCP                      24m
-```
 
-```text
 NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/ingress-nginx-controller   1/1     1            1           24m
-```
 
-```text
 NAME                                                  DESIRED   CURRENT   READY
 AGE
 replicaset.apps/ingress-nginx-controller-548b8cb9b8   1         1         1
 24m
-```
 
-```text
 NAME                                       COMPLETIONS   DURATION   AGE
 job.batch/ingress-nginx-admission-create   1/1           4s         24m
 job.batch/ingress-nginx-admission-patch    1/1           5s         24m
-```
 
-```text
 #生成IngressClass
-```
 
-```text
 [root@master1 ~]#kubectl get ingressclass
 NAME     CONTROLLER            PARAMETERS   AGE
 nginx    k8s.io/ingress-nginx  <none>       50s
-```
 
-```text
 #查看configmap
 [root@master1 ~]#kubectl get cm -n ingress-nginx ingress-nginx-controller  -o
 yaml
@@ -671,16 +593,14 @@ name: ingress-nginx-controller
 namespace: ingress-nginx
 resourceVersion: "253620"
 uid: 3ae6b24d-a92e-4896-9937-e2bf7c1aebe2
-```
 
-```text
 #查看secret
+```
+```html
 [root@master1 ~]#kubectl get secrets  -n ingress-nginx
 NAME                      TYPE     DATA   AGE
 ingress-nginx-admission   Opaque   3      18d
-```
 
-```text
 [root@master1 ~]#kubectl get secrets  -n ingress-nginx ingress-nginx-admission  -
 o yaml
 apiVersion: v1
@@ -696,9 +616,7 @@ R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkF5WVRKbHJ6K1VkN1E2NUw1cld5V0lwCjdO
 dzJNQW9HQ0NxR1NNNDlCQU1DQTBrQU1FWUNJUURRZ0p0dDRUalpndDhyMkw2MFY1Zk1aZXNpeHBFUCtM
 bmcKL1NBUUFKNnFKd0loQU9qNEM0VUNGaEc2TzlqVERkcXZ0RmdlK1VXOWZDNVpwR3RoSFhpL3ArMzgK
 LS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-```
 
-```text
 cert:
 LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJ1ekNDQVdHZ0F3SUJBZ0lSQUxoK2JYR3hIdlZP
 UENma0F6czVkR1l3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FYm1sc01UQWdGdzB5TXpB
@@ -724,9 +642,7 @@ namespace: ingress-nginx
 resourceVersion: "253670"
 uid: ce0ecbe6-af86-4397-8217-169db6a1b38e
 type: Opaque
-```
 
-```text
 #查看基于LoadBalancer的service
 [root@master1 ~]#kubectl get svc -n ingress-nginx
 NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP
@@ -739,9 +655,7 @@ ingress-nginx-controller-admission   ClusterIP      10.101.144.209   <none>
 NAME                                 ENDPOINTS                          AGE
 ingress-nginx-controller             10.244.1.126:443,10.244.1.126:80   13m
 ingress-nginx-controller-admission   10.244.1.126:8443                  13m
-```
 
-```text
 [root@master1 ~]#curl 10.0.0.10
 <html>
 <head><title>404 Not Found</title></head>
@@ -750,9 +664,7 @@ ingress-nginx-controller-admission   10.244.1.126:8443                  13m
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
 [root@master1 ~]#curl 10.0.0.101:40090
 <html>
 <head><title>404 Not Found</title></head>
@@ -761,9 +673,7 @@ ingress-nginx-controller-admission   10.244.1.126:8443                  13m
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
 #查看基于NodePort的service
 [root@master1 ~]#kubectl get svc -n ingress-nginx
 NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP
@@ -772,16 +682,12 @@ ingress-nginx-controller             NodePort    10.101.159.100   10.0.0.99
 80:32453/TCP,443:32699/TCP   2m47s
 ingress-nginx-controller-admission   ClusterIP   10.105.95.216    <none>
 443/TCP                      2m47s
-```
 
-```text
 #注意：新版已经无法看到端口的监听
 [root@master1 ~]#ss -ntl|grep -E "32453|32699"
 LISTEN  0        4096             0.0.0.0:32699          0.0.0.0:*
 LISTEN  0        4096             0.0.0.0:32453          0.0.0.0:*
-```
 
-```text
 #externalTrafficPolicy: local时，测试访问只有运行controller的节点的IP:32453才能访问，如
 果为Cluster则支持任意节点
 [root@master1 ~]#curl 10.0.0.101:32453
@@ -793,8 +699,7 @@ LISTEN  0        4096             0.0.0.0:32453          0.0.0.0:*
 </body>
 </html>
 ```
-
-```text
+```html
 [root@master1 ~]#curl 10.0.0.101:32699
 <html>
 <head><title>400 The plain HTTP request was sent to HTTPS port</title></head>
@@ -804,15 +709,11 @@ LISTEN  0        4096             0.0.0.0:32453          0.0.0.0:*
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
 #直接获取状态码
 [root@master1 ~]#curl -I -o /dev/null -s -w %{http_code}"\n" 10.0.0.101:32453
 404
-```
 
-```text
 #查看访问日志
 [root@master1 ~]#kubectl logs -f -n  ingress-nginx ingress-nginx-controller-
 548b8cb9b8-tsxpl
@@ -822,58 +723,41 @@ LISTEN  0        4096             0.0.0.0:32453          0.0.0.0:*
 
 官方链接:
 
-```text
-https://kubernetes.github.io/ingress-nginx/deploy/#quick-start
-```
+
+- <https://kubernetes.github.io/ingress-nginx/deploy/#quick-start>
+
 
 范例: 通过Helm 安装 ingress-nginx
-
-```text
+```bash
 #先安装helm工具
 略
-```
 
-```text
 #安装ingress-nginx
-```
 
-```text
 [root@master1 ~]#helm repo add ingress-nginx
 https://kubernetes.github.io/ingress-nginx
 "ingress-nginx" has been added to your repositories
-```
 
-```text
 [root@master1 ~]#helm repo list
 NAME            URL
 ingress-nginx   https://kubernetes.github.io/ingress-nginx
-```
 
-```text
 #搜索相关ingress-nginx包
 [root@master1 ~]#helm search repo ingress-nginx
 NAME                        CHART VERSION   APP VERSION DESCRIPTION
-```
 
-```text
 ingress-nginx/ingress-nginx 4.4.0           1.5.1       Ingress controller for
 Kubernetes using NGINX a...
-```
 
-```text
 #下载包
 [root@master1 ~]#helm pull ingress-nginx/ingress-nginx
-```
 
-```text
 #解压缩
 [root@master1 ~]#tar xf ingress-nginx-4.4.0.tgz
 [root@master1 ~]#ls ingress-nginx/
 CHANGELOG.md  Chart.yaml  ci  OWNERS  README.md  README.md.gotmpl  templates
 values.yaml
-```
 
-```text
 [root@master1 ~]#vim ingress-nginx/values.yaml
 .....
 image:
@@ -898,27 +782,17 @@ ingress: "true"   #添加此行
 ......
 #type: LoadBalancer
 type: ClusterIP    #修改此行
-```
 
-```text
 root@master1 ~]#cd ingress-nginx/
 [root@master1 ingress-nginx]#kubectl create ns ingress-nginx
-```
 
-```text
-[root@master1 ingress-nginx]#kubectl label node  master1.wang.org ingress=true
-```
+[root@master1 ingress-nginx]#kubectl label node  master1.bowen.org ingress=true
 
-```text
 [root@master1 ingress-nginx]#helm install ingress-nginx -n ingress-nginx .
-```
 
-```text
 #或者通过下面实现安装
 [root@master1 ~]#helm upgrade ingress-nginx ingress-nginx \
-```
 
-```text
 --install \
 --repo https://kubernetes.github.io/ingress-nginx \
 --namespace ingress-nginx \
@@ -926,9 +800,7 @@ root@master1 ~]#cd ingress-nginx/
 --set controller.metrics.enabled=true \
 --set-string controller.podAnnotations."prometheus\.io/scrape"="true" \
 --set-string controller.podAnnotations."prometheus\.io/port"="10254"
-```
 
-```text
 #验证 kubectl get pod -n ingress-nginx -o wide 查看到的Pod,访问下面URL可以看到指标
 [root@master1 ~]#curl http://<PodIP>:10254/metrics
 ```
@@ -936,14 +808,11 @@ root@master1 ~]#cd ingress-nginx/
 # 3 Ingress 命令式实现
 
 ## 3.1 命令式实现说明
-
 ```text
 #创建Ingress的命令：
 kubectl create ingress NAME --rule=domain/url=service:port[,tls[=secret]]
 [options]
-```
 
-```text
 #常用选项
 --annotation=[]  #注解信息，格式“annotation=value”
 --rule=[]        #代理规则，格式“host/path=service:port[,tls=secretname]”,注意:rule
@@ -952,32 +821,24 @@ kubectl create ingress NAME --rule=domain/url=service:port[,tls[=secret]]
 -n 名称空间        #ingress的名称空间，需要和service在同一个名称空间
 ```
 
-```text
-#基于URI方式代理不同应用的请求时，后端应用的URI若与代理时使用的URI不同，则需要启用URL Rewrite
-完成URI的重写
-Ingress-Nginx支持使用“annotation nginx.ingress.kubernetes.io/rewrite-target”注解进
-行
-```
+
+#基于URI方式代理不同应用的请求时，后端应用的URI若与代理时使用的URI不同，则需要启用URL Rewrite 完成URI的重写 Ingress-Nginx支持使用“annotation nginx.ingress.kubernetes.io/rewrite-target”注解进行
+
 
 ## 3.2 命令式实现案例
 
 范例：准备环境实现两个service应用 pod-test1和pod-test2
-
-```text
+```bash
 #准备后端的应用pod-test v0.1和相应的service
 [root@master1 ~]#kubectl create deployment pod-test1 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 [root@master1 ~]#kubectl create service clusterip pod-test1 --tcp=80:80
-```
 
-```text
 #准备后端的应用pod-test v0.2和相应的service
 [root@master1 ~]#kubectl create deployment pod-test2 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --replicas=3
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --replicas=3
 [root@master1 ~]#kubectl create service clusterip pod-test2 --tcp=80:80
-```
 
-```text
 [root@master1 ~]#kubectl get endpoints
 NAME                 ENDPOINTS                                      AGE
 pod-test1            10.244.1.60:80,10.244.1.64:80,10.244.1.69:80   21h
@@ -989,11 +850,10 @@ pod-test2            10.244.1.65:80,10.244.1.66:80,10.244.1.70:80   21h
 #### 3.2.1.1 实现单域名不支持子URL
 
 范例:  命令式实现单域名不支持子URL,子URL无法访问返回404
-
-```text
-#路径精确匹配,对于发往www.wang.org的请求，代理至service/pod-test1，www.wang.org其它的子
+```html
+#路径精确匹配,对于发往www.bowen.org的请求，代理至service/pod-test1，www.bowen.org其它的子
 URL则无法代理
-[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.wang.org/=pod-
+[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.bowen.org/=pod-
 test1:80" --class=nginx  -o yaml --dry-run=client
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1003,7 +863,7 @@ name: demo-ingress
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1012,19 +872,15 @@ name: pod-test1
 port:
 number: 80
 path: /
-pathType: Exact  #表示精确匹配，--rule="www.wang.org/*=pod-test1:80",则为
+pathType: Exact  #表示精确匹配，--rule="www.bowen.org/*=pod-test1:80",则为
 prefix
 status:
 loadBalancer: {}
-```
 
-```text
 #创建
-[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.wang.org/=pod-
+[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.bowen.org/=pod-
 test1:80" --class=nginx
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get ingress demo-ingress -o yaml
 apiVersion: networking.k8s.io/v1
@@ -1039,16 +895,14 @@ uid: 5223c7de-c032-45b5-b541-2cc8a136ac1f
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
 service:
 name: pod-test1
 port:
-```
 
-```text
 number: 80
 path: /
 pathType: Exact    #类型为Exact
@@ -1056,45 +910,33 @@ status:
 loadBalancer:
 ingress:
 - ip: 10.0.0.99
-```
 
-```text
 [root@master1 ~]#kubectl get ingress
 NAME           CLASS    HOSTS          ADDRESS     PORTS   AGE
-demo-ingress   nginx    www.wang.org   10.0.0.99   80      58s
-```
+demo-ingress   nginx    www.bowen.org   10.0.0.99   80      58s
 
-```text
 #查看ingress-nginx-controller对应的Pod中Nginx配置文件的变化
 [root@master1 ~]#kubectl exec ingress-nginx-controller-6fc8fc9c5b-f4bc6 -n
-ingress-nginx -- nginx -T | grep wang.org
-## start server www.wang.org
-server_name www.wang.org ;
-## end server www.wang.org
-```
+ingress-nginx -- nginx -T | grep bowen.org
+## start server www.bowen.org
+server_name www.bowen.org ;
+## end server www.bowen.org
 
-```text
 #集群外访问
-C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99
+C:\Users\Bowen>curl -H"host: www.bowen.org" http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.31, ServerName: pod-test1-
 5f8f7698d8-44vvk, ServerIP: 10.244.3.14!
-```
 
-```text
-C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99
+C:\Users\Bowen>curl -H"host: www.bowen.org" http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.31, ServerName: pod-test1-
 5f8f7698d8-xzvdf, ServerIP: 10.244.2.32!
-```
 
-```text
-C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99
+C:\Users\Bowen>curl -H"host: www.bowen.org" http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.31, ServerName: pod-test1-
 5f8f7698d8-jm4bq, ServerIP: 10.244.1.30!
-```
 
-```text
-#访问子URL失败，原因是只发布了www.wang.org的根目录，其它URL没有发布
-C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99/hostname
+#访问子URL失败，原因是只发布了www.bowen.org的根目录，其它URL没有发布
+C:\Users\Bowen>curl -H"host: www.bowen.org" http://10.0.0.99/hostname
 <html>
 <head><title>404 Not Found</title></head>
 <body>
@@ -1102,9 +944,7 @@ C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99/hostname
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
 #清理
 [root@master1 ~]#kubectl delete ingress demo-ingress
 ```
@@ -1112,18 +952,13 @@ C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99/hostname
 #### 3.2.1.2 实现单域名支持子URL
 
 范例：命令式实现单域名支持子URL
-
-```text
+```yaml
 #添加/*，支持子URL，如果有URL则转发至Pod对应相同的URL
-[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.wang.org/*=pod-
+[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.bowen.org/*=pod-
 test1:80" --class=nginx  -o yaml --dry-run=client
-```
 
-```text
 apiVersion: networking.k8s.io/v1
-```
 
-```text
 kind: Ingress
 metadata:
 creationTimestamp: null
@@ -1131,7 +966,7 @@ name: demo-ingress
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1143,21 +978,15 @@ path: /
 pathType: Prefix  #注意此处
 status:
 loadBalancer: {}
-```
 
-```text
 #创建
-[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.wang.org/*=pod-
+[root@master1 ~]#kubectl create ingress demo-ingress --rule="www.bowen.org/*=pod-
 test1:80" --class=nginx
-```
 
-```text
 [root@master1 ~]#kubectl get ingress
 NAME           CLASS    HOSTS          ADDRESS     PORTS   AGE
-demo-ingress   nginx    www.wang.org   10.0.0.99   80      58s
-```
+demo-ingress   nginx    www.bowen.org   10.0.0.99   80      58s
 
-```text
 #查看
 [root@master1 ~]#kubectl get ingress demo-ingress -o yaml
 apiVersion: networking.k8s.io/v1
@@ -1172,7 +1001,7 @@ uid: 0938aeda-0ea6-4235-a032-3a6adb0e2174
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1184,25 +1013,17 @@ path: /
 pathType: Prefix
 status:
 loadBalancer: {}
-```
 
-```text
 #客户端访问测试
-C:\Users\Wang>curl -H"host: www.wang.org" 10.0.0.99
-```
+C:\Users\Bowen>curl -H"host: www.bowen.org" 10.0.0.99
 
-```text
 kubernetes pod-test v0.1!! ClientIP: 10.244.1.182, ServerName: pod-test1-
 5f8f7698d8-p2pst, ServerIP: 10.244.3.105!
-```
 
-```text
 #支持子URL
-C:\Users\Wang>curl -H"host: www.wang.org" 10.0.0.99/hostname
+C:\Users\Bowen>curl -H"host: www.bowen.org" 10.0.0.99/hostname
 ServerName: pod-test1-5f8f7698d8-p2pst
-```
 
-```text
 #清理
 [root@master1 ~]#kubectl delete ingress demo-ingress
 ```
@@ -1240,18 +1061,15 @@ Pod
 #### 3.2.2.1 单域名多URL不支持子URL
 
 范例: 命令式实现单域名多URL，不支持子URL，如果子URL访问，也全部转发至后端Pod的根路径 /
-
-```text
-#路径精确匹配,对于发往www.wang.org/v1和www.wang.org/v2的请求，分别代理至service/pod-
+```html
+#路径精确匹配,对于发往www.bowen.org/v1和www.bowen.org/v2的请求，分别代理至service/pod-
 test1和service/pod-test2的对应的子URL
 [root@master1 ~]#kubectl create ingress demo-ingress1 --
-rule="www.wang.org/v1=pod-test1:80" --rule="www.wang.org/v2=pod-test2:80" --
+rule="www.bowen.org/v1=pod-test1:80" --rule="www.bowen.org/v2=pod-test2:80" --
 class=nginx
-```
 
-```text
 #集群外访问失败，原因是后端服务没有对应的/v1这样的子URL资源
-C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v1/
+C:\Users\Bowen>curl -H"host: www.bowen.org"  10.0.0.99/v1/
 <html>
 <head><title>404 Not Found</title></head>
 <body>
@@ -1259,10 +1077,8 @@ C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v1/
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
-C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v2/
+C:\Users\Bowen>curl -H"host: www.bowen.org"  10.0.0.99/v2/
 <html>
 <head><title>404 Not Found</title></head>
 <body>
@@ -1270,29 +1086,21 @@ C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v2/
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
-#路径精确匹配,对于发往www.wang.org/v1和/v2的请求，分别代理至service/pod-test1和
+#路径精确匹配,对于发往www.bowen.org/v1和/v2的请求，分别代理至service/pod-test1和
 service/pod-test2的根
 [root@master1 ~]#kubectl create ingress demo-ingress1 --
-rule="www.wang.org/v1=pod-test1:80" --rule="www.wang.org/v2=pod-test2:80" --
+rule="www.bowen.org/v1=pod-test1:80" --rule="www.bowen.org/v2=pod-test2:80" --
 class=nginx --annotation nginx.ingress.kubernetes.io/rewrite-target="/"
 #说明：--annotation nginx.ingress.kubernetes.io/rewrite-target="/"表示代理至后端服务
 的根/，而非默认代理至后端服务的子URL/v1和/v2
-```
 
-```text
 [root@master1 ~]#kubectl get ingress
 NAME            CLASS   HOSTS          ADDRESS      PORTS   AGE
-demo-ingress1   nginx   www.wang.org   10.0.0.99   80      25m
-```
+demo-ingress1   nginx   www.bowen.org   10.0.0.99   80      25m
 
-```text
 [root@master1 ~]#kubectl get ingress demo-ingress1 -o yaml
-```
 
-```text
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -1307,7 +1115,7 @@ uid: a4dc438d-d806-4a9b-87cd-cef06f5f2020
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1326,13 +1134,9 @@ path: /v2
 pathType: Exact
 status:
 loadBalancer: {}
-```
 
-```text
 [root@master1 ~]#kubectl describe ingress demo-ingress1
-```
 
-```text
 Name:             demo-ingress1
 Labels:           <none>
 Namespace:        default
@@ -1342,7 +1146,7 @@ Default backend:  <default>
 Rules:
 Host          Path  Backends
 ----          ----  --------
-www.wang.org
+www.bowen.org
 /v1   pod-test1:80 (10.244.1.26:80,10.244.2.5:80,10.244.3.5:80)
 /v2   pod-test2:80 (10.244.1.27:80,10.244.2.6:80,10.244.3.6:80)
 Annotations:    nginx.ingress.kubernetes.io/rewrite-target: /
@@ -1357,64 +1161,50 @@ Normal  Sync    2m56s (x4 over 26m)  nginx-ingress-controller  Scheduled for
 sync
 Normal  Sync    2m56s (x4 over 26m)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #查看ingress-nginx controller对应Pod的地址
 [root@master1 ~]#kubectl get pod -o wide  -n ingress-nginx
 NAME                                        READY   STATUS      RESTARTS   AGE
 IP            NODE             NOMINATED NODE   READINESS GATES
 ingress-nginx-admission-create-hkg9q        0/1     Completed   0          14m
-10.244.2.36   node2.wang.org   <none>           <none>
+10.244.2.36   node2.bowen.org   <none>           <none>
 ingress-nginx-admission-patch-9khhf         0/1     Completed   1          14m
-10.244.2.35   node2.wang.org   <none>           <none>
+10.244.2.35   node2.bowen.org   <none>           <none>
 ingress-nginx-controller-56f8b4f667-kvrff   1/1     Running     0          14m
-10.244.2.37   node2.wang.org   <none>           <none>
-```
+10.244.2.37   node2.bowen.org   <none>           <none>
 
-```text
 #查看应用的Pod名称
 [root@master1 ~]#kubectl get pod -o wide |grep pod-test1
 pod-test1-5f8f7698d8-9vzgm          1/1     Running   2 (10h ago)   18h
-10.244.1.60   node1.wang.org   <none>           <none>
+10.244.1.60   node1.bowen.org   <none>           <none>
 pod-test1-5f8f7698d8-jrg5x          1/1     Running   3 (10h ago)   22h
-10.244.1.64   node1.wang.org   <none>           <none>
+10.244.1.64   node1.bowen.org   <none>           <none>
 pod-test1-5f8f7698d8-kgv6n          1/1     Running   2 (10h ago)   18h
-10.244.1.69   node1.wang.org   <none>           <none>
+10.244.1.69   node1.bowen.org   <none>           <none>
 [root@master1 ~]#
-```
 
-```text
 #从集群外部测试访问
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v1
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v1
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.26, ServerName: pod-test1-
 5f8f7698d8-jrg5x, ServerIP: 10.244.1.64!
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v2
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v2
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.26, ServerName: pod-test2-
 f7d78c544-f4l5k, ServerIP: 10.244.1.70!
-```
 
-```text
 #如果有URL，则访问的资源仍然为根目录，不支持对应的子URL
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v1/hostname
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v1/hostname
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.26, ServerName: pod-test1-
 5f8f7698d8-jrg5x, ServerIP: 10.244.1.64!
-```
 
-```text
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v2/hostname
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v2/hostname
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.26, ServerName: pod-test2-
 f7d78c544-f4l5k, ServerIP: 10.244.1.70!
-```
 
-```text
 #查看应用的Pod的日志，可以看到客户端来源为ingress-nginx controller对应Pod的地址
 [root@master1 ~]#kubectl logs pod-test1-5f8f7698d8-9vzgm -f
 * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
 10.244.2.34 - - [02/Apr/2021 09:44:42] "GET / HTTP/1.1" 200 -
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete ingress demo-ingress1
 ```
@@ -1422,15 +1212,12 @@ f7d78c544-f4l5k, ServerIP: 10.244.1.70!
 #### 3.2.2.2 单域名多URL支持子URL(kubernetes-1.32.0版命令格式不支持，使用清单方式实现)
 
 范例：命令式实现单域名多URL，支持子URL
-
-```text
+```yaml
 #使用URI的前缀匹配，而非精确匹配，且基于正则表达式模式进行url rewrite
-```
 
-```text
 #新版变化：kubernetes-1.32.0 使用指令式命令出错，无法实现
 [root@master1 ~]#kubectl create ingress demo-ingress2 --
-rule='www.wang.org/v1(/|$)(.*)=pod-test1:80' --rule='www.wang.org/v2(/|$)
+rule='www.bowen.org/v1(/|$)(.*)=pod-test1:80' --rule='www.bowen.org/v2(/|$)
 (.*)=pod-test2:80' --class=nginx --annotation
 nginx.ingress.kubernetes.io/rewrite-target='/$2'
 Warning: path /v1(/|$)(.*) cannot be used with pathType Exact
@@ -1439,17 +1226,13 @@ error: failed to create ingress: admission webhook
 "validate.nginx.ingress.kubernetes.io" denied the request: ingress contains
 invalid paths: path /v1(/|$)(.*) cannot be used with pathType Exact
 path /v2(/|$)(.*) cannot be used with pathType Exact
-```
 
-```text
 #使用清单文件实现
 [root@master1 ~]#kubectl create ingress demo-ingress2 --
-rule='www.wang.org/v1(/|$)(.*)=pod-test1:80' --rule='www.wang.org/v2(/|$)
+rule='www.bowen.org/v1(/|$)(.*)=pod-test1:80' --rule='www.bowen.org/v2(/|$)
 (.*)=pod-test2:80' --class=nginx --annotation
 nginx.ingress.kubernetes.io/rewrite-target='/$2'> demo-ingress2.yaml
-```
 
-```text
 [root@master1 ~]#vim demo-ingress2.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1461,7 +1244,7 @@ name: demo-ingress2
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1470,9 +1253,7 @@ name: pod-test1
 port:
 number: 80
 path: /v1(/|$)(.*)
-```
 
-```text
 #pathType: Exact      #默认类型为Exact
 pathType: ImplementationSpecific #修改为类型,不支持Prefix
 - backend:
@@ -1483,30 +1264,20 @@ number: 80
 path: /v2(/|$)(.*)
 #pathType: Exact      #默认类型为Exact
 pathType: ImplementationSpecific #修改为类型,不支持Prefix
-```
 
-```text
 [root@master1 ~]#kubectl apply -f  demo-ingress2.yaml
-```
 
-```text
 [root@master1 ~]#kubectl create ingress demo-ingress2 --
-rule='www.wang.org/v1(/|$)(.*)=pod-test1:80' --rule='www.wang.org/v2(/|$)
+rule='www.bowen.org/v1(/|$)(.*)=pod-test1:80' --rule='www.bowen.org/v2(/|$)
 (.*)=pod-test2:80' --class=nginx --annotation
 nginx.ingress.kubernetes.io/rewrite-target='/$2'
-```
 
-```text
 #注意: '/$2'是单引号,不能为双引号
-```
 
-```text
 [root@master1 ~]#kubectl get ingress
 NAME              CLASS    HOSTS             ADDRESS      PORTS   AGE
-demo-ingress2     nginx    www.wang.org      10.0.0.99   80      2m41s
-```
+demo-ingress2     nginx    www.bowen.org      10.0.0.99   80      2m41s
 
-```text
 [root@master1 ~]#kubectl get ingress demo-ingress2 -o yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1522,7 +1293,7 @@ uid: 1bb2c72d-d834-4bef-a0f7-69e00e97b5c1
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1541,14 +1312,10 @@ path: /v2(/|$)(.*)
 pathType: Exact
 status:
 loadBalancer:
-```
 
-```text
 ingress:
 - ip: 10.0.0.99
-```
 
-```text
 [root@master1 ~]#kubectl get svc -n ingress-nginx
 NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP
 PORT(S)                      AGE
@@ -1556,38 +1323,30 @@ ingress-nginx-controller             LoadBalancer   10.104.190.93   10.0.0.99
 80:30288/TCP,443:30485/TCP   2m55s
 ingress-nginx-controller-admission   ClusterIP      10.101.94.203   <none>
 443/TCP                      2m55s
-```
 
-```text
 #集群外测试访问
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v1
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v1
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.26, ServerName: pod-test1-
 5f8f7698d8-jrg5x, ServerIP: 10.244.1.64!
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v2
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v2
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.26, ServerName: pod-test2-
 f7d78c544-f4l5k, ServerIP: 10.244.1.70!
-```
 
-```text
 #如果externalTrafficPolicy为Cluster，可以访问任意集群节点的NodePort端口30288,如果
 externalTrafficPolicy为Local，只能访问运行Controller的Pod所在节点的NodePort端口30288
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.201:30288/v1
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.201:30288/v1
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.31, ServerName: pod-test2-
 f7d78c544-f4l5k, ServerIP: 10.244.1.70!
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.202:30288/v2
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.202:30288/v2
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.31, ServerName: pod-test2-
 f7d78c544-fl892, ServerIP: 10.244.1.66!
-```
 
-```text
 #支持子URL
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v1/hostname
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v1/hostname
 ServerName: pod-test1-5f8f7698d8-9vzgm
-C:\Users\Wang>curl -H"host:www.wang.org" http://10.0.0.99/v2/hostname
+C:\Users\Bowen>curl -H"host:www.bowen.org" http://10.0.0.99/v2/hostname
 ServerName: pod-test2-f7d78c544-f4l5k
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete ingress demo-ingress2
 ```
@@ -1621,25 +1380,20 @@ Service service2:80
 Pod
 
 范例：命令式实现基于主机头的多虚拟主机
-
-```text
+```yaml
 #环境准备:
 #基于FQDN名称代理不同应用的请求时，需要事先准备好多个域名，且确保对这些域名的解析能够到达
 Ingress Controller
-```
 
-```text
-#对test1.wang.org的请求代理至service/pod-test1，对test2.wang.org请求代理至
+#对test1.bowen.org的请求代理至service/pod-test1，对test2.bowen.org请求代理至
 service/pod-test2
 [root@master1 ~]#kubectl create ingress demo-ingress3 --
-rule="test1.wang.org/*=pod-test1:80" --rule="test2.wang.org/*=pod-test2:80" --
+rule="test1.bowen.org/*=pod-test1:80" --rule="test2.bowen.org/*=pod-test2:80" --
 class=nginx
-```
 
-```text
 [root@master1 ~]#kubectl get ingress
 NAME               CLASS   HOSTS                           ADDRESS   PORTS   AGE
-demo-ingress3   nginx   test1.wang.org,test2.wang.org             80      5s
+demo-ingress3   nginx   test1.bowen.org,test2.bowen.org             80      5s
 [root@master1 ~]#kubectl get ingress demo-ingress3 -o yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1653,20 +1407,18 @@ uid: 8a5cbd1d-dcd2-4f1f-9dc9-9a8025e38b3a
 spec:
 ingressClassName: nginx
 rules:
-- host: test1.wang.org
+- host: test1.bowen.org
 http:
 paths:
 - backend:
 service:
 name: pod-test1
-```
 
-```text
 port:
 number: 80
 path: /
-pathType: Prefix          #类型为Prefix,原因为test1.wang.org/*有*号
-- host: test2.wang.org
+pathType: Prefix          #类型为Prefix,原因为test1.bowen.org/*有*号
+- host: test2.bowen.org
 http:
 paths:
 - backend:
@@ -1678,27 +1430,21 @@ path: /
 pathType: Prefix
 status:
 loadBalancer: {}
-```
 
-```text
 #测试访问
-C:\Users\Wang>curl -H"host:test1.wang.org" http://10.0.0.99
+C:\Users\Bowen>curl -H"host:test1.bowen.org" http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test1-
 5f8f7698d8-9vzgm, ServerIP: 10.244.1.60!
-C:\Users\Wang>curl -H"host:test2.wang.org" http://10.0.0.99
+C:\Users\Bowen>curl -H"host:test2.bowen.org" http://10.0.0.99
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test2-
 f7d78c544-fl892, ServerIP: 10.244.1.66!
-```
 
-```text
 #支持子URL
-C:\Users\Wang>curl -H"host:test1.wang.org" http://10.0.0.99/hostname
+C:\Users\Bowen>curl -H"host:test1.bowen.org" http://10.0.0.99/hostname
 ServerName: pod-test1-5f8f7698d8-kgv6n
-C:\Users\Wang>curl -H"host:test2.wang.org" http://10.0.0.99/hostname
+C:\Users\Bowen>curl -H"host:test2.bowen.org" http://10.0.0.99/hostname
 ServerName: pod-test2-f7d78c544-f4l5k
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete ingress demo-ingress3
 ```
@@ -1708,77 +1454,54 @@ ServerName: pod-test2-f7d78c544-f4l5k
 #### 3.2.4.1 命令式实现 HTTPS
 
 范例: 命令式实现HTTPS
-
-```text
+```html
 #基于TLS的Ingress要求事先准备好专用的“kubernetes.io/tls”类型的Secret资源对象
-[root@master1 ~]#(umask 077; openssl genrsa -out www.wang.org.key 2048)
-```
+[root@master1 ~]#(umask 077; openssl genrsa -out www.bowen.org.key 2048)
 
-```text
-[root@master1 ~]#openssl req -new -x509 -key www.wang.org.key -out
-www.wang.org.crt -subj /C=CN/ST=Beijing/L=Beijing/O=SRE/CN=www.wang.org -days
+[root@master1 ~]#openssl req -new -x509 -key www.bowen.org.key -out
+www.bowen.org.crt -subj /C=CN/ST=Beijing/L=Beijing/O=SRE/CN=www.bowen.org -days
 365
-```
 
-```text
 #创建Secret
-[root@master1 ~]#kubectl create secret tls tls-wang --cert=./www.wang.org.crt --
-key=./www.wang.org.key
-```
+[root@master1 ~]#kubectl create secret tls tls-bowen --cert=./www.bowen.org.crt --
+key=./www.bowen.org.key
 
-```text
 [root@master1 ~]#kubectl get secrets
 NAME       TYPE                DATA   AGE
-tls-wang   kubernetes.io/tls   2      15m
-```
+tls-bowen   kubernetes.io/tls   2      15m
 
-```text
-[root@master1 ~]#kubectl describe secrets tls-wang
-Name:         tls-wang
-```
+[root@master1 ~]#kubectl describe secrets tls-bowen
+Name:         tls-bowen
 
-```text
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Type:  kubernetes.io/tls
-```
 
-```text
 Data
 ====
 tls.crt:  1294 bytes
 tls.key:  1700 bytes
-```
 
-```text
 #创建虚拟主机代理规则，同时将该主机定义为TLS类型，默认HTTP自动跳转至HTTPS
 [root@master1 ~]#kubectl create ingress tls-demo-ingress --
-rule='www.wang.org/*=pod-test1:80,tls=tls-wang' --class=nginx
-```
+rule='www.bowen.org/*=pod-test1:80,tls=tls-bowen' --class=nginx
 
-```text
 #注意：启用tls后，该域名下的所有URI默认为强制将http请求利用308跳转至https，若不希望使用该跳转
 功能，可以使用如下注解选项
 #方法1
 --annotation nginx.ingress.kubernetes.io/ssl-redirect=false，即如下形式
 [root@master1 ~]#kubectl create ingress tls-demo-ingress --
-rule='www.wang.org/*=pod-test1:80,tls=tls-wang' --class=nginx --annotation
+rule='www.bowen.org/*=pod-test1:80,tls=tls-bowen' --class=nginx --annotation
 nginx.ingress.kubernetes.io/ssl-redirect=false
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl edit ingress tls-demo-ingress
 metadata:
 annotations: #添加两行
 nginx.ingress.kubernetes.io/ssl-redirect: "false"
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get ingress tls-demo-ingress -o yaml
 apiVersion: networking.k8s.io/v1
@@ -1793,7 +1516,7 @@ uid: ecff3bd3-da04-4df0-8b79-7a8e23962ca2
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1805,20 +1528,16 @@ path: /
 pathType: Prefix
 tls:
 - hosts:
-- www.wang.org
-secretName: tls-wang
+- www.bowen.org
+secretName: tls-bowen
 status:
-```
 
-```text
 loadBalancer:
 ingress:
 - ip: 10.0.0.99
-```
 
-```text
 #集群外客户端测试访问
-C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99/
+C:\Users\Bowen>curl -H"host: www.bowen.org" http://10.0.0.99/
 <html>
 <head><title>308 Permanent Redirect</title></head>
 <body>
@@ -1826,67 +1545,53 @@ C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99/
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
-C:\Users\Wang>curl -IH"host: www.wang.org" http://10.0.0.99/
+C:\Users\Bowen>curl -IH"host: www.bowen.org" http://10.0.0.99/
 HTTP/1.1 308 Permanent Redirect
 Date: Thu, 15 Jun 2022 03:11:04 GMT
 Content-Type: text/html
 Content-Length: 164
 Connection: keep-alive
-Location: https://www.wang.org
-```
+Location: https://www.bowen.org
 
-```text
 #注意:修改为https方式访问
-C:\Users\Wang>curl -k -H"host: www.wang.org" https://10.0.0.99/
+C:\Users\Bowen>curl -k -H"host: www.bowen.org" https://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test1-
 5f8f7698d8-jrg5x, ServerIP: 10.244.1.64!
-```
 
-```text
 #查看证书有效期
 #注意：Openssl命令的版本过低将无法看到过期时间，比如:CentOS8
-[root@ubuntu2204 ~]#openssl s_client www.wang.org:443
+```
+```yaml
+[root@ubuntu2204 ~]#openssl s_client www.bowen.org:443
 CONNECTED(00000003)
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify error:num=18:self-signed certificate
 verify return:1
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify return:1
 ---
 Certificate chain
-0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
-i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
+i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
 v:NotBefore: Jan  9 04:01:09 2025 GMT; NotAfter: Jan  7 04:01:09 2035 GMT
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete  ingress tls-demo-ingress
-```
 
-```text
 #修改为不自动跳转https
 [root@master1 ~]#kubectl create ingress tls-demo-ingress --
-rule='www.wang.org/*=pod-test1:80,tls=tls-wang' --class=nginx --annotation
+rule='www.bowen.org/*=pod-test1:80,tls=tls-bowen' --class=nginx --annotation
 nginx.ingress.kubernetes.io/ssl-redirect=false
-```
 
-```text
 [root@master1 ~]#kubectl get ingress tls-demo-ingress
 NAME               CLASS   HOSTS          ADDRESS     PORTS     AGE
-tls-demo-ingress   nginx   www.wang.org   10.0.0.99   80, 443   53s
-```
+tls-demo-ingress   nginx   www.bowen.org   10.0.0.99   80, 443   53s
 
-```text
 [root@master1 ~]#kubectl get ingress tls-demo-ingress  -o yaml
 apiVersion: networking.k8s.io/v1
-```
 
-```text
 kind: Ingress
 metadata:
 annotations:
@@ -1900,7 +1605,7 @@ uid: a2e8e19e-fc10-4e80-ad68-ac7c2ab038c6
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -1912,23 +1617,19 @@ path: /
 pathType: Prefix
 tls:
 - hosts:
-- www.wang.org
-secretName: tls-wang
+- www.bowen.org
+secretName: tls-bowen
 status:
 loadBalancer:
 ingress:
 - ip: 10.0.0.99
-```
 
-```text
 #测试从集群外访问,发现不再自动跳转HTTPS
-C:\Users\Wang>curl -H"host: www.wang.org" http://10.0.0.99/
+C:\Users\Bowen>curl -H"host: www.bowen.org" http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.31, ServerName: pod-test1-
 5f8f7698d8-xzvdf, ServerIP: 10.244.2.32!
-```
 
-```text
-C:\Users\Wang>curl -kH"host: www.wang.org" https://10.0.0.99/
+C:\Users\Bowen>curl -kH"host: www.bowen.org" https://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.31, ServerName: pod-test1-
 5f8f7698d8-44vvk, ServerIP: 10.244.3.14!
 ```
@@ -1938,76 +1639,61 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.2.31, ServerName: pod-test1-
 HTTPS 的证书的有效期一般为1年,到期前需要提前更新证书。
 
 范例: 证书更新
-
-```text
+```bash
 #重新颁发证书
-[root@master1 ~]#(umask 077; openssl genrsa -out wang.key 2048)
-[root@master1 ~]#openssl req -new -x509 -key wang.key -out wang.crt -subj
-/C=CN/ST=Beijing/L=Beijing/O=SRE/CN=www.wang.org -days 3650
-```
+[root@master1 ~]#(umask 077; openssl genrsa -out bowen.key 2048)
+[root@master1 ~]#openssl req -new -x509 -key bowen.key -out bowen.crt -subj
+/C=CN/ST=Beijing/L=Beijing/O=SRE/CN=www.bowen.org -days 3650
 
-```text
 #方法1:此方法繁琐，不推荐
 #在线修改证书配置,需要提前先将新证书文件用base64编码并删除换行符
-[root@master1 ~]#cat wang.crt |base64 | tr -d '\n'
-[root@master1 ~]#cat wang.key |base64 | tr -d '\n'
+[root@master1 ~]#cat bowen.crt |base64 | tr -d '\n'
+[root@master1 ~]#cat bowen.key |base64 | tr -d '\n'
 #上面生成的内容替换下面命令的内容,立即生效
-```
 
-```text
-[root@master1 ~]#kubectl edit secrets  tls-wang
-```
+[root@master1 ~]#kubectl edit secrets  tls-bowen
 
-```text
 #方法2:此方法简单，推荐
 #删除旧证书配置
-[root@master1 ~]#kubectl delete secrets tls-wang
+[root@master1 ~]#kubectl delete secrets tls-bowen
 #创建新证书配置
-[root@master1 ~]#kubectl create secret tls tls-wang --cert=./wang.crt --
-key=./wang.key
-```
+[root@master1 ~]#kubectl create secret tls tls-bowen --cert=./bowen.crt --
+key=./bowen.key
 
-```text
 #集群外验证证书是否生效
-[root@ubuntu2204 ~]#echo 10.0.0.99 www.wang.org >> /etc/hosts
-```
+[root@ubuntu2204 ~]#echo 10.0.0.99 www.bowen.org >> /etc/hosts
 
-```text
 #用Linux的curl，windows 的Curl不支持
-[root@node3 ~]#curl https://www.wang.org -vk
+[root@node3 ~]#curl https://www.bowen.org -vk
 *   Trying 10.0.0.10:443...
-* Connected to www.wang.org (10.0.0.10) port 443 (#0)
+* Connected to www.bowen.org (10.0.0.10) port 443 (#0)
 * SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
 * ALPN, server accepted to use h2
 * Server certificate:
-*  subject: C=CN; ST=Beijing; L=Beijing; O=SRE; CN=www.wang.org
+*  subject: C=CN; ST=Beijing; L=Beijing; O=SRE; CN=www.bowen.org
 *  start date: Jun  6 07:53:35 2025 GMT
 *  expire date: Jun  6 07:53:35 2026 GMT
-*  issuer: C=CN; ST=Beijing; L=Beijing; O=SRE; CN=www.wang.org
-```
+*  issuer: C=CN; ST=Beijing; L=Beijing; O=SRE; CN=www.bowen.org
 
-```text
 #注意：Openssl命令的版本过低将无法看到过期时间，比如:CentOS8
-[root@ubuntu2204 ~]#openssl s_client www.wang.org:443
+[root@ubuntu2204 ~]#openssl s_client www.bowen.org:443
 CONNECTED(00000003)
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify error:num=18:self-signed certificate
 verify return:1
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify return:1
 ---
 Certificate chain
-0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
-i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
+i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
 v:NotBefore: Jun 15 03:18:44 2021 GMT; NotAfter: Jun 12 03:18:44 2031 GMT
 ......
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete ingress tls-demo-ingress
-[root@master1 ~]#kubectl delete secrets tls-wang
+[root@master1 ~]#kubectl delete secrets tls-bowen
 ```
 
 # 4 Ingress 声明式实现
@@ -2018,20 +1704,18 @@ v:NotBefore: Jun 15 03:18:44 2021 GMT; NotAfter: Jun 12 03:18:44 2031 GMT
 
 注意: k8s-v1.22之前后版本的声明式的yaml格式有所不同。
 
-```text
-https://kubernetes.io/docs/concepts/services-networking/ingress/
-```
+
+- <https://kubernetes.io/docs/concepts/services-networking/ingress/>
+
 
 **官方配置参考**
-
 ```text
 https://kubernetes.github.io/ingress-nginx/user-guide/nginx-
 configuration/annotations/
 ```
 
 **配置文件解析**
-
-```text
+```yaml
 apiVersion: networking.k8s.io/v1            # 资源所属的API群组和版本
 kind: Ingress                               # 资源类型标识符
 metadata:                                   # 元数据
@@ -2072,7 +1756,6 @@ ingressClassName  <string>        # ingress类名称，用于指定适配的控�
 ```
 
 ![原 PDF 第 38 页插图](assets/Kubernetes流量调度Ingress_Password_Removed1/img-5ca9f2734e295495.png)
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/services-
 networking/ingress/#%E7%A4%BA%E4%BE%8B
@@ -2127,8 +1810,7 @@ Prefix/aaa/ccc否，使用默认后端
 nginx controller 可以实现的基于域名的访问。
 
 范例 : 单域名支持子URL
-
-```text
+```yaml
 #准备后端服务所需的资源
 [root@master1 ~]#cat ingress-deployment-svc.yaml
 apiVersion: apps/v1
@@ -2147,7 +1829,7 @@ app: pod-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 ports:
 - containerPort: 80
@@ -2164,52 +1846,38 @@ ports:
 - name: http
 port: 80
 targetPort: 80
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply -f ingress-deployment-svc.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get deployments,svc,po
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/deployment-test   3/3     3            3           105s
-```
 
-```text
 NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
 AGE
 service/deployment-service   ClusterIP   10.99.228.134   <none>        80/TCP
 105s
 service/kubernetes           ClusterIP   10.96.0.1       <none>        443/TCP
 5d20h
-```
 
-```text
 NAME                                   READY   STATUS    RESTARTS   AGE
 pod/deployment-test-555f594785-9mmbq   1/1     Running   0          105s
-```
 
-```text
 pod/deployment-test-555f594785-l6v98   1/1     Running   0          105s
 pod/deployment-test-555f594785-rfhcz   1/1     Running   0          105s
-```
 
-```text
 [root@master1 ~]#kubectl get po -o wide
 NAME                               READY   STATUS    RESTARTS   AGE     IP
 NODE               NOMINATED NODE   READINESS GATES
 deployment-test-555f594785-9mmbq   1/1     Running   0          6m32s
-10.244.5.38   node3.wang.org   <none>           <none>
+10.244.5.38   node3.bowen.org   <none>           <none>
 deployment-test-555f594785-l6v98   1/1     Running   0          6m32s
-10.244.3.66   node1.wang.org   <none>           <none>
+10.244.3.66   node1.bowen.org   <none>           <none>
 deployment-test-555f594785-rfhcz   1/1     Running   0          6m32s
-10.244.3.67   node1.wang.org   <none>           <none>
-```
+10.244.3.67   node1.bowen.org   <none>           <none>
 
-```text
 #定义创建ingress资源文件，和Controller无关，使用统一格式
 [root@master1 ~]#cat  ingress-http-test.yaml
 apiVersion: networking.k8s.io/v1       #v1.19版之前使用networking.k8s.io/v1beta1，
@@ -2223,36 +1891,29 @@ name: ingress-test
 spec:
 ingressClassName: nginx   #新版建议使用此项指定controller类型
 rules:                     #可以配置多个rules
-- host: www.wang.org       #域名配置,如果不写相当于匹配 * ,支持格式:*.wang.org
+- host: www.bowen.org       #域名配置,如果不写相当于匹配 * ,支持格式:*.bowen.org
 http:
 paths:                 #相当于nginx的location配置块,同一个host可以配置多个path
-- path: /              #将www.wang.org的请求代理至后端的/
+- path: /              #将www.bowen.org的请求代理至后端的/
 pathType: Prefix     #表示以 / 开始即可。如果Exact，不支持子URL
 backend:
 service:
 name: deployment-service #service的名称
 port:
 number: 80     #service的Port
-```
 
-```text
 #属性解析：注释信息，对于不同的ingress的内容是不一样的,对于ingress来说，最重要的就是rules了，
 这里的hosts是一个自定义的域名
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply -f ingress-http-test.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get ingress
 NAME           CLASS    HOSTS             ADDRESS      PORTS   AGE
-ingress-test   <none>   www.wang.org   10.0.0.104   80      32s
+ingress-test   <none>   www.bowen.org   10.0.0.104   80      32s
 ```
-
-```text
+```html
 [root@master1 ~]#kubectl describe ingress ingress-test
 Name:             ingress-test
 Namespace:        default
@@ -2262,10 +1923,8 @@ backend" not found>)
 Rules:
 Host             Path  Backends
 ----             ----  --------
-www.wang.org
-```
+www.bowen.org
 
-```text
 /   deployment-service:80
 (10.244.3.66:80,10.244.3.67:80,10.244.5.38:80)
 Annotations:       kubernetes.io/ingress.class: nginx
@@ -2274,34 +1933,26 @@ Type    Reason  Age                From                      Message
 ----    ------  ----               ----                      -------
 Normal  Sync    45s (x2 over 55s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #结果显示：ingress 将后端的deployment-service:80 的样式自动与 ingress 的 url(/) 关联在
 一起
-```
 
-```text
 #为externalIPs的ip地址做一个域名绑定
-C:\Users\Wang>echo '10.0.0.99 www.wang.org' >> /etc/hosts
-```
+C:\Users\Bowen>echo '10.0.0.99 www.bowen.org' >> /etc/hosts
 
-```text
 #访问效果,注意:需要提前做名称解析
-C:\Users\Wang>curl www.wang.org
+C:\Users\Bowen>curl www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-l6v98, ServerIP: 10.244.3.66!
-C:\Users\Wang>curl www.wang.org
+C:\Users\Bowen>curl www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-rfhcz, ServerIP: 10.244.3.67!
-C:\Users\Wang>curl www.wang.org
+C:\Users\Bowen>curl www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-9mmbq, ServerIP: 10.244.5.38!
-```
 
-```text
 #非域名方式进行访问
-C:\Users\Wang>curl 10.0.0.99
+C:\Users\Bowen>curl 10.0.0.99
 <html>
 <head><title>404 Not Found</title></head>
 <body>
@@ -2309,46 +1960,30 @@ C:\Users\Wang>curl 10.0.0.99
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
 #结果显示：通过域名可以正常的访问后端的服务，而非域名访问方式受到了限制
-```
 
-```text
-C:\Users\Wang>curl -H "Host:www.wang.org" http://10.0.0.99
+C:\Users\Bowen>curl -H "Host:www.bowen.org" http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.5, ServerName: deployment-test-
 95c58b447-jg6gz, ServerIP: 10.244.2.6!
 ```
 
-```text
-#如果type的值为LoadBalancer或者NodePort，也可直接访问运行Controller Pod的节点的IP:32453
-也可以访问
-C:\Users\Wang>curl -H "Host:www.wang.org" http://10.0.0.106:32453
-kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
-555f594785-l6v98, ServerIP: 10.244.3.66!
-#结果显示：通过自定义携带域名的方式可以正常访问。
-```
 
-```text
+#如果type的值为LoadBalancer或者NodePort，也可直接访问运行Controller Pod的节点的IP:32453 也可以访问 C:\Users\Bowen>curl -H "Host:www.bowen.org" http://10.0.0.106:32453 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-555f594785-l6v98, ServerIP: 10.244.3.66!#结果显示：通过自定义携带域名的方式可以正常访问。
+
+```bash
 #进入到ingress的控制器端，查看配置效果
 [root@master1 ~]#kubectl -n ingress-nginx exec -it ingress-nginx-controller-
 548b8cb9b8-tsxpl -- /bin/bash -c 'grep example nginx.conf'
-## start server www.wang.org
-server_name www.wang.org ;
-## end server www.wang.org
-```
+## start server www.bowen.org
+server_name www.bowen.org ;
+## end server www.bowen.org
 
-```text
 [root@master1 ~]#kubectl -n ingress-nginx exec -it ingress-nginx-controller-
 548b8cb9b8-tsxpl -- cat nginx.conf
-```
 
-```text
 #结果显示：这里直接将我们提前定义的域名信息作为信息的入口了
-```
 
-```text
 #可以通过haproxy配置实现访问,先查看ingress-nginx-controller对应service的NodePort节点对
 应的Port
 [root@master1 ~]#kubectl get svc -n ingress-nginx
@@ -2358,41 +1993,33 @@ ingress-nginx-controller             LoadBalancer   10.98.85.194     10.0.0.99
 80:32453/TCP,443:30251/TCP   16m
 ingress-nginx-controller-admission   ClusterIP      10.106.123.179   <none>
 443/TCP                      16m
-```
 
-```text
 #基于集群外的Haproxy和NodePort的SVC实现
 [root@ha1 ~]#vim /etc/haproxy/haproxy.cfg
 #添加下面行
-listen www.wang.org-80
+listen www.bowen.org-80
 bind 10.0.0.100:80
 mode http
 server node1 10.0.0.103:32453 check inter 3s fall 3 rise 3
 server node2 10.0.0.104:32453 check inter 3s fall 3 rise 3
 server node3 10.0.0.105:32453 check inter 3s fall 3 rise 3
 [root@ha1 ~]#systemctl restart haproxy
-```
 
-```text
 #修改hosts
 [root@master1 ~]#vim /etc/hosts
-10.0.0.100 k8s k8s.wang.org www.wang.org
-```
+10.0.0.100 k8s k8s.bowen.org www.bowen.org
 
-```text
 #再次访问
-[root@master1 ~]#curl www.wang.org
+[root@master1 ~]#curl www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-9mmbq, ServerIP: 10.244.5.38!
-[root@master1 ~]#curl www.wang.org
+[root@master1 ~]#curl www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-l6v98, ServerIP: 10.244.3.66!
-[root@master1 ~]#curl www.wang.org
+[root@master1 ~]#curl www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-rfhcz, ServerIP: 10.244.3.67!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete  -f  yaml/ingress-http-test.yaml
 ```
@@ -2400,15 +2027,12 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 ### 4.2.2 获取真实客户端IP
 
 范例：获取真实客户端IP，需要通过loadBalancer的SVC实现才支持，ExternalIP不支持
-
-```text
+```yaml
 #准备环境
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+beijing.aliyuncs.com/bowen/nginx:1.20.0
 [root@master1 ~]#kubectl create svc  clusterip myapp --tcp 80
-```
 
-```text
 #Ingress配置
 [root@master1 ~]#cat ingress-http-real-ip.yaml
 apiVersion: networking.k8s.io/v1
@@ -2416,9 +2040,7 @@ kind: Ingress
 metadata:
 generation: 1
 name: ingress-myapp
-```
 
-```text
 namespace: default
 #annotations:
 #  nginx.ingress.kubernetes.io/enable-real-ip: "true" #允许IP透传,此为默认值,可以不
@@ -2426,7 +2048,7 @@ namespace: default
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -2436,14 +2058,10 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #创建Ingress资源
 [root@master1 ~]#kubectl apply -f ingress-http-real-ip.yaml
-```
 
-```text
 #查看Ingress资源
 [root@master1 ~]#kubectl describe ingress ingress-myapp
 Name:             ingress-myapp
@@ -2455,7 +2073,7 @@ Default backend:  <default>
 Rules:
 Host          Path  Backends
 ----          ----  --------
-www.wang.org
+www.bowen.org
 /   myapp:80 (10.244.2.194:80)
 Annotations:    nginx.ingress.kubernetes.io/enable-real-ip: true
 Events:
@@ -2463,9 +2081,7 @@ Type    Reason  Age                    From                      Message
 ----    ------  ----                   ----                      -------
 Normal  Sync    3m26s (x2 over 3m35s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #查看Ingress资源
 [root@master1 ~]#kubectl get ingress ingress-myapp -o yaml
 apiVersion: networking.k8s.io/v1
@@ -2476,23 +2092,21 @@ kubectl.kubernetes.io/last-applied-configuration: |
 {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":
 {"annotations":{"nginx.ingress.kubernetes.io/enable-real-
 ip":"true"},"generation":1,"name":"ingress-myapp","namespace":"default"},"spec":
-{"ingressClassName":"nginx","rules":[{"host":"www.wang.org","http":{"paths":
+{"ingressClassName":"nginx","rules":[{"host":"www.bowen.org","http":{"paths":
 [{"backend":{"service":{"name":"myapp","port":
 {"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
 nginx.ingress.kubernetes.io/enable-real-ip: "true"
 creationTimestamp: "2022-05-28T02:15:27Z"
 generation: 1
 name: ingress-myapp
-```
 
-```text
 namespace: default
 resourceVersion: "1511049"
 uid: ad8c3a43-e400-47dd-87da-2241ac5237a7
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -2506,9 +2120,7 @@ status:
 loadBalancer:
 ingress:
 - ip: 10.0.0.99
-```
 
-```text
 #查看ingress nginx 配置
 [root@master1 ~]#kubectl get pod -n ingress-nginx
 NAME                                        READY   STATUS      RESTARTS
@@ -2517,64 +2129,46 @@ ingress-nginx-admission-patch-7k94z         0/1     Completed   0
 16h
 ingress-nginx-controller-6fc8fc9c5b-7tkzz   1/1     Running     1 (3h29m ago)
 16h
-```
 
-```text
 [root@master1 ~]#kubectl exec  -n ingress-nginx  ingress-nginx-controller-
 6fc8fc9c5b-7tkzz -- nginx -T |grep 'proxy_set_header X-Forwarded-For'
 proxy_set_header X-Forwarded-For        $remote_addr;
 [root@master1 ~]#kubectl exec  -n ingress-nginx  ingress-nginx-controller-
 6fc8fc9c5b-7tkzz -- nginx -T |grep 'proxy_set_header X-Real-IP'
 proxy_set_header X-Real-IP              $remote_addr;
-```
 
-```text
 #从集群内访问
-[root@master1 ~]#curl -H"host: www.wang.org" 10.0.0.99
+[root@master1 ~]#curl -H"host: www.bowen.org" 10.0.0.99
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-```
 
-```text
 #集群外访问
-C:\Users\Wang>curl -H"host: www.wang.org" 10.0.0.99
+C:\Users\Bowen>curl -H"host: www.bowen.org" 10.0.0.99
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-```
 
-```text
-[root@rocky8 ~]#curl -H"host: www.wang.org" 10.0.0.99
+[root@rocky8 ~]#curl -H"host: www.bowen.org" 10.0.0.99
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-```
 
-```text
 #查看Pod的名称
 [root@master1 ~]#kubectl get pod
 NAME                               READY   STATUS    RESTARTS      AGE
 myapp-6c88c9948-v9htm              1/1     Running   0             20m
-```
 
-```text
 #查看Pod的访问日志格式
 [root@master1 ~]#kubectl exec -it myapp-6c88c9948-v9htm -- nginx -T |grep -A3
 log_format
 log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-```
 
-```text
 '$status $body_bytes_sent "$http_referer" '
 '"$http_user_agent" "$http_x_forwarded_for"';
-```
 
-```text
 #查看ingress-controller的地址
 [root@master1 ~]#kubectl get pod -n ingress-nginx ingress-nginx-controller-
 6fc8fc9c5b-7tkzz -o wide
 NAME                                        READY   STATUS    RESTARTS      AGE
 IP             NODE             NOMINATED NODE   READINESS GATES
 ingress-nginx-controller-6fc8fc9c5b-7tkzz   1/1     Running   1 (89m ago)   14h
-10.244.1.182   node1.wang.org   <none>           <none>
-```
+10.244.1.182   node1.bowen.org   <none>           <none>
 
-```text
 #查看访问日志可看到$http_x_forwarded_for字段记录集群外客户端的真实地址，$remote_addr字段记
 录的是ingress-controller的地址
 [root@master1 ~]#kubectl logs -f myapp-6c88c9948-v9htm
@@ -2588,9 +2182,9 @@ ingress-nginx-controller-6fc8fc9c5b-7tkzz   1/1     Running   1 (89m ago)   14h
 
 ### 4.2.3 单域名多URL案例
 
-```text
-https://kubernetes.io/docs/concepts/services-networking/ingress/
-```
+
+- <https://kubernetes.io/docs/concepts/services-networking/ingress/>
+
 
 ![原 PDF 第 47 页插图](assets/Kubernetes流量调度Ingress_Password_Removed1/img-1db1121a09c9d36f.png)
 
@@ -2601,14 +2195,11 @@ Simple fanout: 在同一个FQDN下通过不同的URI完成不同应用间的流�
 基于单个虚拟主机接收多个应用的流量常用于将流量分发至同一个应用下的多个不同子应用，同一个应用内的流量由调度算法分发至该应用的各后端端点不需要为每个应用配置专用的域名。
 
 范例：环境准备两个HTTP应用
-
-```text
+```yaml
 #如果前面的资源已删除，重新应用上面小节的资源文件生成deployment和对应的SVC
-#访问 www.wang.org/flask的时候，返回flask的结果
-#访问 www.wang.org/nginx的时候，返回nginx的结果
-```
+#访问 www.bowen.org/flask的时候，返回flask的结果
+#访问 www.bowen.org/nginx的时候，返回nginx的结果
 
-```text
 [root@master1 ~]#cat ingress-deployment-svc.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -2626,13 +2217,11 @@ app: pod-test
 spec:
 containers:
 - name: pod-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 ports:
 - containerPort: 80
-```
 
-```text
 name: http
 ---
 apiVersion: v1
@@ -2646,13 +2235,9 @@ ports:
 - name: http
 port: 80
 targetPort: 80
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f  yaml/ingress-deployment-svc.yaml
-```
 
-```text
 #再添加一个nginx的服务，定义资源文件
 [root@master1 ~]#cat ingress-deployment-nginx.yaml
 apiVersion: apps/v1
@@ -2671,7 +2256,7 @@ app: nginx-test
 spec:
 containers:
 - name: nginx-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 imagePullPolicy: IfNotPresent
 ports:
 - containerPort: 80
@@ -2689,25 +2274,17 @@ ports:
 port: 80
 targetPort: 80
 #配置解析:为了避免多个service使用同一个后端端口，这里一定要为service的端口命名
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply  -f  ingress-deployment-nginx.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get deployment,svc
-```
 
-```text
 NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/deployment-nginx   3/3     3            3           88s
 deployment.apps/deployment-test    3/3     3            3           73m
-```
 
-```text
 NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
 AGE
 service/deployment-service   ClusterIP   10.99.228.134   <none>        80/TCP
@@ -2721,8 +2298,7 @@ service/nginx-service        ClusterIP   10.99.61.212    <none>        80/TCP
 #### 4.2.3.1 单域名多URL不支持子URL
 
 范例:  单域名多URL，不支持子URL
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat ingress-http-mul-url.yaml
 apiVersion: networking.k8s.io/v1
@@ -2736,7 +2312,7 @@ nginx.ingress.kubernetes.io/rewrite-target: / #默认会转发给后端时会带
 spec:
 ingressClassName: nginx   #新版建议使用此项指定controller类型
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - path: /flask                   #指定访问的URL
@@ -2755,32 +2331,22 @@ name: nginx-service   #指定对应service的名称
 port:
 name: nginx     #匹配对应servcie中的端口name: nginx
 #number: 80
-```
 
-```text
 #注意事项：
 #默认转给后端服务时会将url也同时转发，而后端服务有可能不存在此URL，所以需要在后端url转发的时
 候，取消转发关键字。
 #方法就是，在annotation中添加一个重写的规则nginx.ingress.kubernetes.io/rewrite-target:
 /  即所有的请求把ingress匹配到的url关键字清除掉
-```
 
-```text
 #应用资源文件
-```
 
-```text
 [root@master1 ~]#kubectl apply -f ingress-http-mul-url.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get ingress
 NAME              CLASS    HOSTS             ADDRESS      PORTS   AGE
-ingress-mul-url   <none>   www.wang.org   10.0.0.104   80      68s
-```
+ingress-mul-url   <none>   www.bowen.org   10.0.0.104   80      68s
 
-```text
 [root@master1 ~]#kubectl describe ingress
 Name:             ingress-mul-url
 Namespace:        default
@@ -2790,7 +2356,7 @@ backend" not found>)
 Rules:
 Host             Path  Backends
 ----             ----  --------
-www.wang.org
+www.bowen.org
 /flask   deployment-service:http
 (10.244.3.66:80,10.244.3.67:80,10.244.5.38:80)
 /nginx   nginx-service:nginx
@@ -2802,24 +2368,18 @@ Type    Reason  Age                From                      Message
 ----    ------  ----               ----                      -------
 Normal  Sync    37s (x2 over 73s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #修改hosts文件(配合前面的hparoxy实现)
 [root@master1 ~]#vim /etc/hosts
-10.0.0.99 k8s k8s.wang.org www.wang.org
-```
+10.0.0.99 k8s k8s.bowen.org www.bowen.org
 
-```text
 #浏览器访问效果
-[root@master1 ~]#curl www.wang.org/flask
+[root@master1 ~]#curl www.bowen.org/flask
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-l6v98, ServerIP: 10.244.3.66!
-[root@master1 ~]#curl www.wang.org/nginx
+[root@master1 ~]#curl www.bowen.org/nginx
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f ingress-http-mul-url.yaml
 ```
@@ -2827,21 +2387,16 @@ Welcome to Nginx Web Site ! Nginx Version: 1.20.0
 #### 4.2.3.2 单域名多URL支持子URL
 
 范例:  单域名多URL，支持子URL
-
-```text
+```yaml
 #环境准备
 [root@master1 ~]#kubectl create deployment pod-test1 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 [root@master1 ~]#kubectl create service clusterip pod-test1 --tcp=80:80
-```
 
-```text
 [root@master1 ~]#kubectl create deployment pod-test2 --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2 --replicas=3
+beijing.aliyuncs.com/bowen/pod-test:v0.2 --replicas=3
 [root@master1 ~]#kubectl create service clusterip pod-test2 --tcp=80:80
-```
 
-```text
 #资源文件
 [root@master1 ~]#cat ingress-http-mul-suburl.yml
 apiVersion: networking.k8s.io/v1
@@ -2854,7 +2409,7 @@ name: ingress-http-mul-suburl
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -2875,14 +2430,10 @@ path: /v2(/|$)(.*)                           #正则表达式
 #pathType: Exact
 pathType: ImplementationSpecific             #k8s-v1.32.0不再支持Exact,需要
 修改类型
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f ingress-http-mul-suburl.yml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl describe ingress ingress-http-mul-suburl
 Name:             ingress-http-mul-suburl
@@ -2894,7 +2445,7 @@ Default backend:  <default>
 Rules:
 Host          Path  Backends
 ----          ----  --------
-www.wang.org
+www.bowen.org
 /v1(/|$)(.*)   pod-test1:80 (10.244.3.105:80)
 /v2(/|$)(.*)   pod-test2:80 (10.244.3.106:80)
 Annotations:    nginx.ingress.kubernetes.io/rewrite-target: /$2
@@ -2903,32 +2454,22 @@ Type    Reason  Age                    From                      Message
 ----    ------  ----                   ----                      -------
 Normal  Sync    6m24s (x2 over 6m57s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #集群外测试访问，支持子URL
-C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v1
+C:\Users\Bowen>curl -H"host: www.bowen.org"  10.0.0.99/v1
 kubernetes pod-test v0.1!! ClientIP: 10.244.1.182, ServerName: pod-test1-
 5f8f7698d8-p2pst, ServerIP: 10.244.3.105!
-```
 
-```text
-C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v1/hostname
+C:\Users\Bowen>curl -H"host: www.bowen.org"  10.0.0.99/v1/hostname
 ServerName: pod-test1-5f8f7698d8-p2pst
-```
 
-```text
-C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v2
+C:\Users\Bowen>curl -H"host: www.bowen.org"  10.0.0.99/v2
 kubernetes pod-test v0.2!! ClientIP: 10.244.1.182, ServerName: pod-test2-
 f7d78c544-n25xn, ServerIP: 10.244.3.106!
-```
 
-```text
-C:\Users\Wang>curl -H"host: www.wang.org"  10.0.0.99/v2/hostname
+C:\Users\Bowen>curl -H"host: www.bowen.org"  10.0.0.99/v2/hostname
 ServerName: pod-test2-f7d78c544-n25xn
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f yaml/ingress-http-mul-suburl.yml
 ```
@@ -2940,19 +2481,14 @@ ServerName: pod-test2-f7d78c544-n25xn
 Name based virtual hosting 基于虚拟主机名实现，为每个应用使用一个专有的主机名，并基于这些名称完成不同应用间的流量转发。每个FQDN对应于Ingress Controller上的一个虚拟主机的定义同一组内的应用的流量，由Ingress Controller根据调度算法完成请求调度。
 
 范例: 多域名主机访问的环境准备两个HTTP应用
-
-```text
-#访问 flask.wang.org/的时候，返回flask的结果
-#访问 nginx.wang.org/的时候，返回nginx的结果
+```yaml
+#访问 flask.bowen.org/的时候，返回flask的结果
+#访问 nginx.bowen.org/的时候，返回nginx的结果
 #如果前面的资源已删除，重新应用上面小节的资源文件生成deployment和对应的SVC
 [root@master1 ~]#kubectl apply  -f ingress-deployment-svc.yaml
-```
 
-```text
 #再添加一个nginx的服务，定义资源文件
-```
 
-```text
 [root@master1 ~]#cat ingress-deployment-nginx.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -2970,7 +2506,7 @@ app: nginx-test
 spec:
 containers:
 - name: nginx-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 imagePullPolicy: IfNotPresent
 ports:
 - containerPort: 80
@@ -2988,22 +2524,16 @@ ports:
 port: 80
 targetPort: 80
 #配置解析:为了避免多个service使用同一个后端端口，这里一定要为service的端口命名
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply  -f ingress-deployment-nginx.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get deployment,svc
 NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/deployment-nginx   3/3     3            3           88s
 deployment.apps/deployment-test    3/3     3            3           73m
-```
 
-```text
 NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
 AGE
 service/deployment-service   ClusterIP   10.99.228.134   <none>        80/TCP
@@ -3015,12 +2545,9 @@ service/nginx-service        ClusterIP   10.99.61.212    <none>        80/TCP
 ```
 
 范例：多域名主机访问
-
-```text
+```yaml
 #编辑Ingress资源定义文件
-```
 
-```text
 [root@master1 ~]#cat ingress-http-mul-host.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -3043,7 +2570,7 @@ nginx.ingress.kubernetes.io/proxy-read-timeout: "120" #后端服务器响应的�
 spec:
 ingressClassName: nginx   #新版建议使用此项指定controller类型
 rules:
-- host: flask.wang.org
+- host: flask.bowen.org
 http:
 paths:
 - path: /
@@ -3054,7 +2581,7 @@ name: deployment-service
 port:
 name: http         #匹配 servcie 中的端口 name: http
 #number: 80
-- host: nginx.wang.org
+- host: nginx.bowen.org
 http:
 paths:
 - path: /
@@ -3064,32 +2591,22 @@ service:
 name: nginx-service
 port:
 name: nginx      #匹配 servcie 中的端口 name: nginx
-```
 
-```text
 #配置解析：这里面有两个主机访问的地址是同一个后端端口，如果还用number的话，就无法正常的识别导致
 同一个地址访问不同的后端效果
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply -f yaml/ingress-http-mul-host.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get ingress
 NAME              CLASS    HOSTS                                 ADDRESS
 PORTS   AGE
-ingress-mul-url   <none>   flask.wang.org,nginx.wang.org                80
+ingress-mul-url   <none>   flask.bowen.org,nginx.bowen.org                80
 40s
-```
 
-```text
 [root@master1 ~]#kubectl describe ingress ingress-mul-url
-```
 
-```text
 Name:             ingress-mul-url
 Namespace:        default
 Address:          10.0.0.104
@@ -3098,10 +2615,10 @@ backend" not found>)
 Rules:
 Host               Path  Backends
 ----               ----  --------
-flask.wang.org
+flask.bowen.org
 /   deployment-service:http
 (10.244.3.66:80,10.244.3.67:80,10.244.5.38:80)
-nginx.wang.org
+nginx.bowen.org
 /   nginx-service:nginx
 (10.244.3.68:80,10.244.4.51:80,10.244.5.39:80)
 Annotations:         kubernetes.io/ingress.class: nginx
@@ -3110,38 +2627,28 @@ Type    Reason  Age                From                      Message
 ----    ------  ----               ----                      -------
 Normal  Sync    17s (x2 over 65s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 #提前准备多个后端主机的域名
 [root@master1 ~]#vim /etc/hosts
-10.0.0.101 master1 master1.wang.org flask.wang.org nginx.wang.org
-```
+10.0.0.101 master1 master1.bowen.org flask.bowen.org nginx.bowen.org
 
-```text
 #访问效果
-[root@master1 ~]#curl flask.wang.org
+[root@master1 ~]#curl flask.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-rfhcz, ServerIP: 10.244.3.67!
-[root@master1 ~]#curl nginx.wang.org
+[root@master1 ~]#curl nginx.bowen.org
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-```
 
-```text
 #再次修改hosts(配合前面hparoxy实现)
 [root@master1 ~]#vim /etc/hosts
-10.0.0.99 k8s k8s.wang.org www.wang.org flask.wang.org nginx.wang.org
-```
+10.0.0.99 k8s k8s.bowen.org www.bowen.org flask.bowen.org nginx.bowen.org
 
-```text
-[root@master1 ~]#curl nginx.wang.org
+[root@master1 ~]#curl nginx.bowen.org
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-[root@master1 ~]#curl flask.wang.org
+[root@master1 ~]#curl flask.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-l6v98, ServerIP: 10.244.3.66!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f ingress-http-mul-host.yaml
 ```
@@ -3157,48 +2664,33 @@ Ingress也可以提供TLS支持，但仅限于443/TCP端口。若TLS配置部分
 TLS Secret必须包含名为tls.crt和 的密钥tls.key，它们分别含有TLS的证书和私钥。准备对基础的flask应用进行https方式来进行访问。利用ingress的tls规则就可以帮助我们实现对http应用进行https安全加固。
 
 范例:  实现HTTP自动跳转至HTTPS
-
-```text
+```html
 #生成证书
 [root@master1 ~]#mkdir tls && cd tls
-[root@master1 tls]#(umask 077; openssl genrsa -out www.wang.org.key 2048)
-```
+[root@master1 tls]#(umask 077; openssl genrsa -out www.bowen.org.key 2048)
 
-```text
 #生成自签名证书，文件名可自定义
-[root@master1 tls]#openssl req -new -x509 -key www.wang.org.key -out
-www.wang.org.crt -subj "/CN=www.wang.org" -days 365
-```
+[root@master1 tls]#openssl req -new -x509 -key www.bowen.org.key -out
+www.bowen.org.crt -subj "/CN=www.bowen.org" -days 365
 
-```text
 #创建对应的secret资源
 [root@master1 tls]#kubectl create secret tls ingress-tls --
-cert=./www.wang.org.crt --key=./www.wang.org.key
-```
+cert=./www.bowen.org.crt --key=./www.bowen.org.key
 
-```text
 [root@master1 ~]#kubectl describe secrets ingress-tls
 Name:         ingress-tls
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Type:  kubernetes.io/tls
-```
 
-```text
 Data
 ====
-```
 
-```text
 tls.crt:  1131 bytes
 tls.key:  1679 bytes
-```
 
-```text
 #定义资源配置文件,实现HTTP自动跳转至HTTPS
 [root@master1 ~]#cat ingress-http-tls-test.yaml
 apiVersion: networking.k8s.io/v1
@@ -3210,7 +2702,7 @@ name: ingress-test
 spec:
 ingressClassName: nginx   #新版建议使用此项指定controller类型
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - path: /
@@ -3220,31 +2712,25 @@ service:
 name: deployment-service
 port:
 number: 80
-#- hosts: m.wang.org
+#- hosts: m.bowen.org
 # ......
 # https 证书配置
 tls:
 - hosts:
-- www.wang.org
+- www.bowen.org
 secretName: ingress-tls
 #- hosts:                         #多个域名分别对应不同的证书
-#  - m.wang.org
+#  - m.bowen.org
 #  secretName: ingress-tls-m
-```
 
-```text
 #应用资源文件
 [root@master1 ~]#kubectl apply -f ingress-http-tls-test.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get ingress
 NAME              CLASS    HOSTS             ADDRESS      PORTS     AGE
-ingress-mul-url   <none>   www.wang.org   10.0.0.104   80        25m
-```
+ingress-mul-url   <none>   www.bowen.org   10.0.0.104   80        25m
 
-```text
 [root@master1 ~]#kubectl describe ingress ingress-test
 Name:             ingress-test
 Labels:           <none>
@@ -3253,14 +2739,12 @@ Address:
 Ingress Class:    <none>
 Default backend:  <default>
 TLS:
-ingress-tls terminates www.wang.org
+ingress-tls terminates www.bowen.org
 Rules:
 Host             Path  Backends
 ----             ----  --------
-www.wang.org
-```
+www.bowen.org
 
-```text
 /   deployment-service:80
 (10.244.3.66:80,10.244.3.67:80,10.244.5.38:80)
 Annotations:       kubernetes.io/ingress.class: nginx
@@ -3269,16 +2753,12 @@ Type    Reason  Age                From                      Message
 ----    ------  ----               ----                      -------
 Normal  Sync    29s (x2 over 67s)  nginx-ingress-controller  Scheduled for
 sync
-```
 
-```text
 [root@master1 ~]#vim /etc/hosts
-10.0.0.101 master1 master1.wang.org www.wang.org
-```
+10.0.0.101 master1 master1.bowen.org www.bowen.org
 
-```text
 #测试效果
-[root@master1 ~]#curl www.wang.org
+[root@master1 ~]#curl www.bowen.org
 <html>
 <head><title>308 Permanent Redirect</title></head>
 <body>
@@ -3286,49 +2766,39 @@ sync
 <hr><center>nginx</center>
 </body>
 </html>
-```
 
-```text
-#结果显示：所有访问http://www.wang.org的请求重定向HTTPS
-```
+#结果显示：所有访问http://www.bowen.org的请求重定向HTTPS
 
-```text
-[root@master1 ~]#curl -kL http://www.wang.org
+[root@master1 ~]#curl -kL http://www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-rfhcz, ServerIP: 10.244.3.67!
-```
 
-```text
-[root@master1 ~]#curl -k https://www.wang.org
+[root@master1 ~]#curl -k https://www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-rfhcz, ServerIP: 10.244.3.67!
-[root@master1 ~]#curl -k https://www.wang.org
+[root@master1 ~]#curl -k https://www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-9mmbq, ServerIP: 10.244.5.38!
-[root@master1 ~]#curl -k https://www.wang.org
+[root@master1 ~]#curl -k https://www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.3.65, ServerName: deployment-test-
 555f594785-l6v98, ServerIP: 10.244.3.66!
-```
 
-```text
 #查看证书有效期
 #注意：Openssl命令的版本过低将无法看到过期时间，比如:CentOS8
-[root@ubuntu2204 ~]#openssl s_client www.wang.org:443
+[root@ubuntu2204 ~]#openssl s_client www.bowen.org:443
 CONNECTED(00000003)
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify error:num=18:self-signed certificate
 verify return:1
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify return:1
 ---
 Certificate chain
-0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
-i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
+i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
 v:NotBefore: Jan  9 04:01:09 2025 GMT; NotAfter: Jan  7 04:01:09 2035 GMT
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f yaml/ingress-http-tls-test.yaml
 ```
@@ -3398,8 +2868,7 @@ Canary规则会按特定的次序进行评估优先级从低到高顺序： cana
 ## 5.2 实战案例
 
 ### 5.2.1 范例：初始环境准备新旧两个版本应用和Ingress
-
-```text
+```yaml
 #准备新旧版本对应的各自独立的两套deployment和service
 [root@master1 ~]#cat > deploy-pod-test-v1.yaml
 apiVersion: apps/v1
@@ -3422,7 +2891,7 @@ app: pod-test
 version: v0.1
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 name: pod-test
 ---
 apiVersion: v1
@@ -3441,9 +2910,7 @@ selector:
 app: pod-test
 version: v0.1
 type: ClusterIP
-```
 
-```text
 [root@master1 ~]#cat > deploy-pod-test-v2.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -3456,9 +2923,7 @@ replicas: 1
 selector:
 matchLabels:
 app: pod-test
-```
 
-```text
 version: v0.2
 strategy: {}
 template:
@@ -3468,11 +2933,9 @@ app: pod-test
 version: v0.2
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.2
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.2
 name: pod-test
-```
 
-```text
 ---
 apiVersion: v1
 kind: Service
@@ -3490,30 +2953,22 @@ selector:
 app: pod-test
 version: v0.2
 type: ClusterIP
-```
 
-```text
 #部署新旧两个版本
 [root@master1 ~]#kubectl apply -f deploy-pod-test-v1.yaml -f deploy-pod-test-
 v2.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get svc
 NAME          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
 kubernetes    ClusterIP   10.96.0.1        <none>        443/TCP   28d
 pod-test-v1   ClusterIP   10.111.30.185    <none>        80/TCP    78s
 pod-test-v2   ClusterIP   10.107.142.163   <none>        80/TCP    75s
-```
 
-```text
 [root@master1 ~]#kubectl get deployments.apps
 NAME          READY   UP-TO-DATE   AVAILABLE   AGE
 pod-test-v1   1/1     1            1           95s
 pod-test-v2   1/1     1            1           92s
-```
 
-```text
 #创建Ingress对应旧版本的应用
 [root@master1 ~]#cat > ingress-pod-test.yaml
 apiVersion: networking.k8s.io/v1
@@ -3525,11 +2980,9 @@ name: pod-test
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
-```
 
-```text
 paths:
 - backend:
 service:
@@ -3538,43 +2991,34 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply  -f ingress-pod-test.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get ingress
 NAME       CLASS    HOSTS          ADDRESS   PORTS   AGE
-pod-test   <none>   www.wang.org             80      9s
-```
+pod-test   <none>   www.bowen.org             80      9s
 
-```text
 #集群外客户端访问
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" http://10.0.0.99/
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #持续执行观察
-[root@ubuntu2004 ~]#while true;do curl -k -H"host:www.wang.org"
+[root@ubuntu2004 ~]#while true;do curl -k -H"host:www.bowen.org"
 https://10.0.0.99/;sleep 0.5;done
 ```
 
 ### 5.2.2 范例：蓝绿发布
-
-```text
+```yaml
 #方法1：在线编辑
 [root@master1 ~]#kubectl edit ingress pod-test
 .....
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -3582,9 +3026,7 @@ service:
 #name: pod-test-v1
 name: pod-test-v2         #修改此行，指向新版应用的SVC
 .....
-```
 
-```text
 #修改上前的Ingress清单文件,对应使用新版本的应用
 #方法2
 [root@master1 ~]#vim ingress-pod-test.yaml
@@ -3597,11 +3039,9 @@ name: pod-test
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
-```
 
-```text
 paths:
 - backend:
 service:
@@ -3611,16 +3051,12 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #集群外客户端访问，观察全部都切换至新版本
-[root@ubuntu2004 ~]#while true;do curl -H"host:www.wang.org"
+[root@ubuntu2004 ~]#while true;do curl -H"host:www.bowen.org"
 http://10.0.0.99/;sleep 0.5;done
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
@@ -3640,9 +3076,7 @@ kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-```
 
-```text
 #回滚旧版本
 [root@master1 ~]#vim ingress-pod-test.yaml
 apiVersion: networking.k8s.io/v1
@@ -3653,7 +3087,7 @@ annotations:
 kubernetes.io/ingress.class: nginx
 spec:
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -3664,21 +3098,16 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
 ```
 
 ### 5.2.3 范例：基于权重的金丝雀发布
-
-```text
+```yaml
 #旧版应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #新版的清单文件
 [root@master1 ~]#cat > canary-by-weight.yaml
 apiVersion: networking.k8s.io/v1
@@ -3693,7 +3122,7 @@ name: pod-test-canary-by-weight
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -3703,16 +3132,12 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f canary-by-weight.yaml
-```
 
-```text
 #集群外客户端访问，观察新旧版本的比例
-[root@ubuntu2004 ~]#while true;do curl -H"host: www.wang.org"
+[root@ubuntu2004 ~]#while true;do curl -H"host: www.bowen.org"
 http://10.0.0.99/;sleep 0.5;done
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
@@ -3732,43 +3157,21 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
 ```
 
-```text
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
-cfc768546-89z2g, ServerIP: 10.244.2.39!
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
-cfc768546-89z2g, ServerIP: 10.244.2.39!
-kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
+kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38! kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38! kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-cfc768546-89z2g, ServerIP: 10.244.2.39! kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38! kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38! kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38! kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38! kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-cfc768546-89z2g, ServerIP: 10.244.2.39! kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
+
+```bash
 #调整weight权重为90
 [root@master1 ~]#vim canary-by-weight.yaml
 .....
 nginx.ingress.kubernetes.io/canary-weight: "90"
 .....
-```
 
-```text
 #再应用
 [root@master1 ~]#kubectl apply -f canary-by-weight.yaml
-```
 
-```text
 #观察比例变化
-[root@ubuntu2004 ~]#while true;do curl -H"host:www.wang.org"
+[root@ubuntu2004 ~]#while true;do curl -H"host:www.bowen.org"
 http://10.0.0.99/;sleep 0.5;done
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
@@ -3796,37 +3199,26 @@ kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-```
 
-```text
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #如果需要回滚
 [root@master1 ~]#kubectl edit ingress pod-test-canary-by-weight
 nginx.ingress.kubernetes.io/canary-weight: "0" #修改新版比例为0,完全回滚
-```
 
-```text
 #环境清理
-```
 
-```text
 [root@master1 ~]#kubectl delete -f canary-by-weight.yaml
 ```
 
 ### 5.2.4 范例：基于 Cookie 实现金丝雀发布
-
-```text
+```yaml
 #旧版应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat > canary-by-cookie.yaml
 apiVersion: networking.k8s.io/v1
@@ -3841,7 +3233,7 @@ name: pod-test-canary-by-cookie
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -3851,52 +3243,39 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f canary-by-cookie.yaml
-```
 
-```text
 #集群外客户端访问，当cookie中有vip_user=always时才用金丝雀发布新版
-[root@ubuntu2004 ~]#curl  -H"host: www.wang.org" -b "vip_user=always"
+[root@ubuntu2004 ~]#curl  -H"host: www.bowen.org" -b "vip_user=always"
 http://10.0.0.99
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-```
 
-```text
 #集群外客户端访问，当cookie中有vip_user!=always的其它值，或没有vip_user时则不使用金丝发布
-[root@ubuntu2004 ~]#curl  -H"host: www.wang.org" -b "vip_user=never"
+[root@ubuntu2004 ~]#curl  -H"host: www.bowen.org" -b "vip_user=never"
 http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
-[root@ubuntu2004 ~]#curl  -H"host: www.wang.org" -b "vip_user=wang"
+[root@ubuntu2004 ~]#curl  -H"host: www.bowen.org" -b "vip_user=bowen"
 http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-[root@ubuntu2004 ~]#curl  -H"host: www.wang.org"  http://10.0.0.99
+[root@ubuntu2004 ~]#curl  -H"host: www.bowen.org"  http://10.0.0.99
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f canary-by-cookie.yaml
 ```
 
 ### 5.2.5 范例：基于请求 Header 固定值的金丝雀发布
-
-```text
+```yaml
 #旧版应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat >  canary-by-header.yaml
 apiVersion: networking.k8s.io/v1
@@ -3911,7 +3290,7 @@ name: pod-test-canary-by-header
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -3921,66 +3300,49 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f canary-by-header.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get ingress
 NAME                        CLASS    HOSTS          ADDRESS     PORTS   AGE
-pod-test                    <none>   www.wang.org   10.0.0.99   80      12m
-pod-test-canary-by-header   <none>   www.wang.org   10.0.0.99   80      53s
-```
+pod-test                    <none>   www.bowen.org   10.0.0.99   80      12m
+pod-test-canary-by-header   <none>   www.bowen.org   10.0.0.99   80      53s
 
-```text
 #集群外客户端访问，注意：always的小写的
 #当X-Canary: always则访问v0.2新版
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"X-Canary: always"
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"X-Canary: always"
 http://10.0.0.99/
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-```
 
-```text
 #当X-Canary: never则访问v0.1旧版
-[root@ubuntu2004 ~]#curl  -H"host:www.wang.org" -H"X-Canary: never"
+[root@ubuntu2004 ~]#curl  -H"host:www.bowen.org" -H"X-Canary: never"
 http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #当X-Canary 是其它值则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org"  http://10.0.0.99/
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org"  http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #当没有首部字段X-Canary则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"X-Canary: test"
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"X-Canary: test"
 http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f canary-by-header.yaml
 ```
 
 ### 5.2.6 范例：基于请求 Header 精确匹配指定值的金丝雀发布
-
-```text
+```yaml
 #旧版应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat > canary-by-header-value.yaml
 apiVersion: networking.k8s.io/v1
@@ -3996,7 +3358,7 @@ name: pod-test-canary-by-header-value
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -4006,60 +3368,43 @@ port:
 number: 80
 path: /
 pathType: Prefix
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f canary-by-header-value.yaml
-```
 
-```text
 #集群外客户端访问，注意：IsVIP字段名大小写不敏感,true值大小写敏感
 #当IsVIP: true，则访问v0.2新版
-```
 
-```text
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"IsVIP: true" http://10.0.0.99/
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"IsVIP: true" http://10.0.0.99/
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-```
 
-```text
 #当IsVIP: false，则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -k -H"host:www.wang.org" -H"IsVIP: false"
+[root@ubuntu2004 ~]#curl -k -H"host:www.bowen.org" -H"IsVIP: false"
 https://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #当IsVIP: 其它值，则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -k -H"host:www.wang.org" -H"IsVIP: test"
+[root@ubuntu2004 ~]#curl -k -H"host:www.bowen.org" -H"IsVIP: test"
 https://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #当没有首部字段IsVIP，则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" http://10.0.0.99/
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f canary-by-header-value.yaml
 ```
 
 ### 5.2.7 范例：基于请求 Header 正则表达式模式匹配的指定值的金丝雀发布
-
-```text
+```yaml
 #旧版应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat > canary-by-header-pattern.yaml
 apiVersion: networking.k8s.io/v1
@@ -4075,7 +3420,7 @@ name: pod-test-canary-by-header-pattern
 spec:
 ingressClassName: nginx
 rules:
-- host: www.wang.org
+- host: www.bowen.org
 http:
 paths:
 - backend:
@@ -4086,96 +3431,73 @@ number: 80
 path: /
 pathType: Prefix
 #应用
-```
 
-```text
 [root@master1 ~]#kubectl apply -f canary-by-header-pattern.yaml
-```
 
-```text
 #集群外客户端访问
 #符合正则表达式访问，则访问v0.2新版,字段名Username大小
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"Username: VIP_wang"
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"Username: VIP_bowen"
 http://10.0.0.99/
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"Username: VIP_test"
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"Username: VIP_test"
 http://10.0.0.99/
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"Username: vip_wang"
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"Username: vip_bowen"
 http://10.0.0.99/
 kubernetes pod-test v0.2!! ClientIP: 10.244.2.37, ServerName: pod-test-v2-
 cfc768546-89z2g, ServerIP: 10.244.2.39!
-```
 
-```text
 #不符合正则表达式访问，则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org" -H"Username: wang"
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org" -H"Username: bowen"
 http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #当没有首部字段Username，则访问v0.1旧版
-[root@ubuntu2004 ~]#curl -H"host:www.wang.org"  http://10.0.0.99/
+[root@ubuntu2004 ~]#curl -H"host:www.bowen.org"  http://10.0.0.99/
 kubernetes pod-test v0.1!! ClientIP: 10.244.2.37, ServerName: pod-test-v1-
 6ddc47c8cd-lmcmh, ServerIP: 10.244.2.38!
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f canary-by-header-pattern.yaml
 ```
 
 ### 5.2.8 范例：基于cookie和Header 同时存在的金丝雀发布比较优先级
-
-```text
+```bash
 #旧版应用
 [root@master1 ~]#kubectl apply -f ingress-pod-test.yaml
-```
 
-```text
 #同时应用两个ingress的清单文件
 [root@master1 ~]#kubectl apply -f canary-by-cookie.yaml -f canary-by-header-
 pattern.yaml
-```
 
-```text
 [root@master1 ~]#kubectl  get ingress
 NAME                                CLASS   HOSTS          ADDRESS
 PORTS   AGE
-pod-test                            nginx   www.wang.org   10.0.0.10,10.0.0.99
+pod-test                            nginx   www.bowen.org   10.0.0.10,10.0.0.99
 80      29m
-pod-test-canary-by-cookie           nginx   www.wang.org   10.0.0.10,10.0.0.99
+pod-test-canary-by-cookie           nginx   www.bowen.org   10.0.0.10,10.0.0.99
 80      66s
-pod-test-canary-by-header-pattern   nginx   www.wang.org   10.0.0.10,10.0.0.99
+pod-test-canary-by-header-pattern   nginx   www.bowen.org   10.0.0.10,10.0.0.99
 80      6m14s
-```
 
-```text
 #基于cookie访问，优先级低于header，所以不生效，访问旧版本
-[root@ubuntu2404 ~]#curl -H"cookie: vip_user=always" www.wang.org
+[root@ubuntu2404 ~]#curl -H"cookie: vip_user=always" www.bowen.org
 kubernetes pod-test v0.1!! ClientIP: 10.244.1.126, ServerName: pod-test-v1-
 644d84d5df-gv5x8, ServerIP: 10.244.4.141!
-```
 
-```text
 #基于header访问，优先级高于cookie，所以优先生效
-[root@ubuntu2404 ~]#curl -H"username: VIP_" www.wang.org
+[root@ubuntu2404 ~]#curl -H"username: VIP_" www.bowen.org
 kubernetes pod-test v0.2!! ClientIP: 10.244.1.126, ServerName: pod-test-v2-
 555cf59c67-9l5vx, ServerIP: 10.244.3.181!
-```
 
-```text
 #删除header的ingress
 [root@master1 ~]#kubectl delete ingress  pod-test-canary-by-header-pattern
-```
 
-```text
 #再基于cookie访问，可以访问新版本
-[root@ubuntu2404 ~]#curl -H"cookie: vip_user=always" www.wang.org
+[root@ubuntu2404 ~]#curl -H"cookie: vip_user=always" www.bowen.org
 kubernetes pod-test v0.2!! ClientIP: 10.244.1.126, ServerName: pod-test-v2-
 555cf59c67-9l5vx, ServerIP: 10.244.3.181!
 ```

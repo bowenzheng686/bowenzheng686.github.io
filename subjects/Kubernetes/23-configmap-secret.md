@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · ConfigMap、Secret 与配置注入'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -46,9 +47,9 @@ ConfigMap Secret downwardAPI Projected
 
 ### 2.1.2 配置组件简介
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/configuration/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/configuration/>
+
 
 #### 2.1.2.1 Configmap
 
@@ -75,7 +76,6 @@ downwardAPI 为运行在pod中的应用容器提供了一种反向引用。让�
 ## 2.2  ConfigMap
 
 ### 2.2.1 ConfigMap 说明
-
 ```text
 https://kubernetes.io/zh-cn/docs/concepts/configuration/configmap/
 https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-pod-
@@ -95,7 +95,6 @@ ConfigMap不仅仅可以保存单个属性，也可以用来保存整个配置�
 ![原 PDF 第 114 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-f421bb3bf380d3ab.png)
 
 **基本属性**
-
 ```text
 #kubectl explain cm
 binaryData      #二进制数据
@@ -106,23 +105,12 @@ immutable <boolean>  #设为true，不能被修改只能删除，默认为nil可
 
 **数据配置的格式**
 
-```text
-#单行配置数据格式
-属性名称key: 属性值value   #单行配置内容，一般保存变量，参数等
-文件名：单行内容            #配置文件如果只有一行，也使用此方式，key为文件名，value为文件内容
-```
 
-```text
-#多行文件数据格式
-文件名称1: |     #注意：| 是"多行键值"的标识符
-文件内容行1    #内容大小不能超过1M
-文件内容行2
-......
-文件名称2: |     #注意：| 是"多行键值"的标识符
-文件内容行1    #内容大小不能超过1M
-文件内容行2
-......
-```
+#单行配置数据格式属性名称key: 属性值value   #单行配置内容，一般保存变量，参数等文件名：单行内容            #配置文件如果只有一行，也使用此方式，key为文件名，value为文件内容
+
+
+#多行文件数据格式文件名称1: |     #注意：| 是"多行键值"的标识符文件内容行1    #内容大小不能超过1M 文件内容行2......文件名称2: |     #注意：| 是"多行键值"的标识符文件内容行1    #内容大小不能超过1M 文件内容行2......
+
 
 configmap资源类型的创建，与Kubernetes的其他很多资源对象的创建方式一样，主要涉及到两种方式：
 
@@ -147,34 +135,25 @@ configmap资源类型的创建，与Kubernetes的其他很多资源对象的创�
 ##### 2.2.2.1.1 命令行创建方式说明
 
 **命令参数**
-
-```text
+```bash
 #创建命令格式
 kubectl create configmap NAME [--from-file=[key=]source] [--from-
 literal=key1=value1] [--dry-run=server|client|none] [-n <namespace>] [options]
-```
 
-```text
 #参数详解:
 --from-literal=key1=value1          #以设置键值对的方式实现变量配置数据
 --from-env-file=/PATH/TO/FILE       #以环境变量专用文件的方式实现配置数据
 --from-file=[key=]/PATH/TO/FILE     #以配置文件的方式创建配置文件数据，如不指定key，FILE
 名称为key名
 --from-file=/PATH/TO/DIR            #以配置文件所在目录的方式创建配置文件数据
-```
 
-```text
 --dry-run=client -o yaml            #测试运行并显示cm内容
-```
 
-```text
 #查看configmap
 kubectl create configmap <cm_name> -n <namespace> [-o yaml] --dry-run=client
 kubectl get configmap <cm_name> -n <namespace>
 kubectl describe configmap <cm_name> -n <namespace>
-```
 
-```text
 #删除configmap
 kubectl delete configmap <cm_name> [-n <namespace>]
 ```
@@ -182,21 +161,16 @@ kubectl delete configmap <cm_name> [-n <namespace>]
 ##### 2.2.2.1.2 命令行创建方式案例
 
 范例：命令行创建基于key/value形式的变量配置
-
-```text
+```yaml
 #在使用kubectl创建的时候，通过在命令行直接传递键值对创建
 [root@master1 ~]#kubectl create configmap cm-test1 --from-literal=key1='value1' -
 -from-literal=key2='value2'
-```
 
-```text
 [root@master1 ~]#kubectl get cm
 NAME               DATA   AGE
 cm-test1           2      72s
 kube-root-ca.crt   1      30d
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-test1 -o yaml
 apiVersion: v1
 data:
@@ -209,17 +183,13 @@ name: cm-test1
 namespace: default
 resourceVersion: "651484"
 uid: 0fae9ad6-7cf0-448b-a46f-3b4dffa91c23
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-test1
 Name:         cm-test1
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 key2:
@@ -228,40 +198,29 @@ value2
 key1:
 ----
 value1
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #删除CM
 [root@master1 ~]#kubectl delete cm cm-test1
 ```
 
 范例:  命令行创建基于key/value形式的变量配置
-
-```text
+```yaml
 #创建CM
 [root@master1 ~]#kubectl create configmap pod-test-config  --from-
 literal=host="127.0.0.1" --from-literal=port="8888"
 configmap/pod-test-config created
-```
 
-```text
 #验证创建成功
 [root@master1 ~]#kubectl get cm
 NAME               DATA   AGE
 kube-root-ca.crt   1      107d
 pod-test-config    2      5s
-```
 
-```text
 #显示CM内容
 [root@master1 ~]#kubectl get cm pod-test-config -o yaml
 apiVersion: v1
@@ -275,16 +234,13 @@ name: pod-test-config
 namespace: default
 resourceVersion: "46375"
 uid: cef1aeb9-4b7d-4850-9b87-363c534f6e3a
-```
 
-```text
 #删除CM
 [root@master1 ~]#kubectl delete cm pod-test-config
 ```
 
 范例: 命令行创建基于环境变量文件的变量配置
-
-```text
+```yaml
 #如果变量较多，使用上面方式一个个的设定环境变量太繁琐，可以全部添加到环境变量文件中然后基于它来创
 建CM。
 #定制环境变量文件
@@ -292,14 +248,10 @@ uid: cef1aeb9-4b7d-4850-9b87-363c534f6e3a
 key1=value1
 key2=value2
 #注意：env文件中所有的配置项以 "属性名=属性值" 格式定制
-```
 
-```text
 #将所有环境变量添加到到configmap中
 [root@master1 ~]#kubectl create configmap cm-test2 --from-env-file=conf.d/env
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-test2 -o yaml
 apiVersion: v1
 data:
@@ -312,17 +264,13 @@ name: cm-test2
 namespace: default
 resourceVersion: "653157"
 uid: 9ee7d00f-d2f6-4275-83d6-938bbc898ce5
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-test2
 Name:         cm-test2
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 key1:
@@ -331,49 +279,34 @@ value1
 key2:
 ----
 value2
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #删除CM
 [root@master1 ~]#kubectl delete cm  cm-test2
 ```
 
 范例：命令行创建基于配置文件的文件形式CM
-
-```text
+```yaml
 #直接将多个配置文件创建为一个ConfigMap
 [root@master1 ~]#ls conf.d/
 app1.conf  app2.conf  app3.conf
-```
 
-```text
 [root@master1 ~]#cat conf.d/app1.conf
 [app1]
 config1
-```
 
-```text
 [root@master1 ~]#cat conf.d/app2.conf
 [app2]
 config2
-```
 
-```text
 #文件名自动成为key名
 [root@master1 ~]#kubectl create configmap cm-test3 --from-file=./conf.d/app1.conf
 --from-file=./conf.d/app2.conf
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-test3 -o yaml
 apiVersion: v1
 data:
@@ -390,77 +323,54 @@ name: cm-test3
 namespace: default
 resourceVersion: "651963"
 uid: 4b1b3836-183b-4648-9c3f-7335046e1d89
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-test2
 Name:         cm-test3
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 app1.conf:
 ----
 [app1]
 config1
-```
 
-```text
 app2.conf:
 ----
 [app2]
 config2
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #删除CM
 [root@master1 ~]#kubectl delete cm cm-test3
 ```
 
 范例:  命令行创建基于目录的CM
-
-```text
+```yaml
 [root@master1 ~]#ls conf.d/
 app1.conf  app2.conf  app3.conf
-```
 
-```text
 [root@master1 ~]#cat conf.d/app1.conf
 [app1]
 config1
-```
 
-```text
 [root@master1 ~]#cat conf.d/app2.conf
 [app2]
 config2
-```
 
-```text
 [root@master1 ~]#cat conf.d/app3.conf
 [app3]
 config3
-```
 
-```text
 #直接将一个目录下的所有配置文件创建为一个ConfigMap
 [root@master1 ~]#kubectl create configmap cm-test4 --from-file=./conf.d/
-```
 
-```text
 #结果显示：多个文件之间，属性名是文件名，属性值是文件内容
 [root@master1 ~]#kubectl get cm cm-test4 -o yaml
 apiVersion: v1
@@ -481,50 +391,36 @@ name: cm-test3
 namespace: default
 resourceVersion: "652190"
 uid: e5453f19-0947-4468-af29-11fb9e88567c
-```
 
-```text
 #结果显示：多个文件之间，属性名是文件名，属性值是文件内容
 [root@master1 ~]#kubectl describe cm cm-test4
 Name:         cm-test4
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 app1.conf:
 ----
 [app1]
 config1
-```
 
-```text
 app2.conf:
 ----
 [app2]
 config2
-```
 
-```text
 app3.conf:
 ----
 [app3]
 config3
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #删除CM
 [root@master1 ~]#kubectl delete cm cm-test4
 ```
@@ -534,8 +430,7 @@ Events:  <none>
 ##### 2.2.2.2.1 资源清单文件格式说明
 
 **资源清单文件命令格式**
-
-```text
+```yaml
 #清单文件格式
 apiVersion: v1
 kind: ConfigMap
@@ -550,9 +445,7 @@ key: value   #配置信息如果只有一行，也使用此方式，使用卷挂
 文件内容行2
 .....
 #注意：CM的清单文件没有spec信息，而是data
-```
 
-```text
 #命令式:
 kubectl create -f /path/file
 #声明式
@@ -566,8 +459,7 @@ kubectl apply -f /path/file
 ##### 2.2.2.2.2 资源清单文件创建方式案例
 
 范例
-
-```text
+```yaml
 #资源定义文件
 [root@master1 ~]#cat storage-configmap-test.yaml
 apiVersion: v1
@@ -575,133 +467,99 @@ kind: ConfigMap
 metadata:
 name: config-test
 data:
-author: wangxiaochun
+author: bowen
 file.conf: |
 [class]
 linux
 go
 java
-```
 
-```text
 #注释：data：部分内容是真正的配置项，有两种格式：
-#author: 是Key/value格式
 #file.conf: | 是文件格式
-```
 
-```text
 #创建资源对象
 [root@master1 ~]#kubectl apply  -f storage-configmap-test.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get cm
 NAME               DATA   AGE
 config-test        2      3s
 kube-root-ca.crt   1      30d
-```
 
-```text
 [root@master1 ~]#kubectl describe cm config-test
 Name:         config-test
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 author:
 ----
-wangxiaochun
+bowen
 file.conf:
 ----
 [class]
 linux
 go
 java
-```
 
-```text
 BinaryData
 ====
 ```
 
-```text
-Events:  <none>
-#结果显示：定义了两种类型的配置属性：文件样式和数据样式，都是以kv样式展示，属性名key和属性值
-value中间使用 "----" 来隔开
-```
 
-```text
+Events:  <none>#结果显示：定义了两种类型的配置属性：文件样式和数据样式，都是以kv样式展示，属性名key和属性值 value中间使用 "----" 来隔开
+
+```bash
 #可以在线修改
 [root@master1 ~]#kubectl edit cm config-test
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete cm config-test
 ```
 
 范例:  只读的configmap
-
-```text
+```yaml
 [root@master1 ~]#cat storage-configmap-immutable-test.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
 name: cm-immutable-test
 data:
-author: wangxiaochun
+author: bowen
 file.conf: |
 [class]
-```
 
-```text
 linux
 go
 java
 immutable: true  #只读
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-configmap-immutable-test.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-immutable-test
 NAME                DATA   AGE
 cm-immutable-test   2      3m2s
-```
 
-```text
 #在线修改configmap提示出错
 [root@master1 ~]#kubectl edit cm  cm-immutable-test
 # * data: Forbidden: field is immutable when `immutable` is set
-```
 
-```text
 #可以删除
 [root@master1 ~]#kubectl delete cm cm-immutable-test
 configmap "cm-immutable-test" deleted
-```
 
-```text
 [root@master1 ~]#kubectl get cm
 NAME               DATA   AGE
 kube-root-ca.crt   1      17d
 ```
 
 范例：生成redis配置文件对应的cm
-
-```text
+```yaml
 [root@master1 ~]#kubectl create cm cm-redis --from-file /tmp/redis.conf  --dry-
 run=client -o yaml > cm-redis.yaml
-```
 
-```text
 #查看生成的文件内容
 [root@master1 config]#head cm-redis.yaml
 apiVersion: v1
@@ -728,31 +586,22 @@ config
 #### 2.2.2.3 在线更新 configmap
 
 注意：configmap虽然支持在线更新，但是configmap更新后可能不会对已有的Pod的应用生效，可能还需要重建Pod才能生效。
-
-```text
+```bash
 #创建 configmap
-```
 
-```text
 [root@master1 ~]#kubectl create cm cm-nginx-conf --from-file=nginx.conf
-```
 
-```text
 #修改configmap
 #方法1,旧版中如果配置内容如果不大,多行内容可以显示在一行,但此方式不方便修改,但如果过大,此方式只
 能显示大小,而非内容,所以不能修改,新版无此问题
 [root@master1 ~]#kubectl edit cm cm-nginx-conf
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl get cm cm-nginx-conf  -o yaml > cm-config-conf.yaml
 [root@master1 ~]#cp cm-config-conf.yaml cm-config-conf.yaml.bak
 [root@master1 ~]#vim cm-config-conf.yaml
 [root@master1 ~]#kubectl apply -f cm-config-conf.yaml
-```
 
-```text
 #方法3
 #修改配置
 [root@master1 ~]#vim nginx.conf
@@ -779,17 +628,14 @@ ConfigMap必须在Pod之前创建与ConfigMap在同一个namespace内的pod才�
 环境变量格式
 
 方式1：env 对指定的变量一个一个赋值
-
-```text
+```bash
 kubectl explain pod.spec.containers.env
 name            #手工定制环境变量时，设置环境变量的名称，必选字段
 value           #手工定制环境变量时，直接设置环境变量的属性值，不通过CM获取配置，可选字
 段
 valueFrom       #手工定制环境变量时，设置环境变量的属性来源，可以支持从
 CM,Secret,downwordAPI获取
-```
 
-```text
 kubectl explain pod.spec.containers.env.valueFrom.configMapKeyRef
 name            #引用指定的configmap
 key             #引用指定的configmap中的具体哪个key
@@ -797,15 +643,11 @@ optional        #如果设置为false，标识该项是必选项，如果设置�
 的。默认false
 ```
 
-```text
-#此方式实现过程
-1）容器中自定义环境变量名
-2）根据CM的名称和Key名，找到对应的value
-3) 再将value赋值给容器的环境变量
-```
+
+#此方式实现过程 1）容器中自定义环境变量名 2）根据CM的名称和Key名，找到对应的value 3) 再将value赋值给容器的环境变量
+
 
 方式2：envFrom 使用CM的所有变量实现对变量的批量赋值，此方式生产更为推荐。
-
 ```text
 kubectl explain pod.spec.containers.envFrom
 configMapRef    #ConfigMap对象中的所有Key
@@ -813,11 +655,9 @@ secretKeyRef    #Secret对象中的所有Key
 prefix          #为ConfigMap中的每个属性都添加前缀标识
 ```
 
-```text
-#此方实现过程
-1）容器中自定义环境变量名，并且和CM的key同名
-2）找到指定的CM中所有Key名，将值批量直接赋值给容器中相同名称的变量
-```
+
+#此方实现过程 1）容器中自定义环境变量名，并且和CM的key同名 2）找到指定的CM中所有Key名，将值批量直接赋值给容器中相同名称的变量
+
 
 #### 2.2.3.2 使用volume的方式挂载入到pod内的文件中
 
@@ -830,8 +670,7 @@ prefix          #为ConfigMap中的每个属性都添加前缀标识
 而且旧式应用不支持热加载，因此可能不会自动加载更新的配置文件，从而导致配置无法生效。所以一般建议当更新configmap的配置后，可以通过重新Pod使之生效，符合不可变基础设施的理念。推荐滚动升级pod的方式来让ConfigMap内容变化生效。
 
 **volume 格式**
-
-```text
+```yaml
 #指定卷信息，引用CM
 kubectl explain pod.spec.volumes
 name: volume_name  #指定volume名
@@ -846,55 +685,30 @@ projected into the specified paths, and unlisted keys will not be present.
 If a key is specified which is not present in the ConfigMap, the volume
 setup will error unless it is marked optional. Paths must be relative and
 may not contain the '..' path or start with '..'.
-```
 
-```text
 #kubectl explain pod.spec.volumes.configMap.items
 KIND:     Pod
 VERSION:  v1
-```
 
-```text
 RESOURCE: items <[]Object>
 ```
 
-```text
-DESCRIPTION:
-items if unspecified, each key-value pair in the Data field of the
-referenced ConfigMap will be projected into the volume as a file whose name
-is the key and content is the value. If specified, the listed keys will be
-projected into the specified paths, and unlisted keys will not be present.
-If a key is specified which is not present in the ConfigMap, the volume
-setup will error unless it is marked optional. Paths must be relative and
-may not contain the '..' path or start with '..'.
-```
+
+DESCRIPTION: items if unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'.
 
 ```text
 Maps a string key to a path within a volume.
-```
 
-```text
 FIELDS:
 key  <string> -required-
 key is the key to project.
 ```
 
-```text
-mode <integer>
-mode is Optional: mode bits used to set permissions on this file. Must be
-an octal value between 0000 and 0777 or a decimal value between 0 and 511.
-YAML accepts both octal and decimal values, JSON requires decimal values
-for mode bits. If not specified, the volume defaultMode will be used. This
-might be in conflict with other options that affect the file mode, like
-fsGroup, and the result can be other mode bits set.
-```
 
-```text
-path <string> -required-
-path is the relative path of the file to map the key to. May not be an
-absolute path. May not contain the path element '..'. May not start with
-the string '..'.
-```
+mode <integer>mode is Optional: mode bits used to set permissions on this file. Must be an octal value between 0000 and 0777 or a decimal value between 0 and 511. YAML accepts both octal and decimal values, JSON requires decimal values for mode bits. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.
+
+
+path <string> -required-path is the relative path of the file to map the key to. May not be an absolute path. May not contain the path element '..'. May not start with the string '..'.
 
 ```text
 #挂载卷到容器内的目录
@@ -915,8 +729,7 @@ Defaults to "" (volume's root).
 ### 2.2.4 ConfigMap 实战案例
 
 #### 2.2.4.1 范例：env 变量
-
-```text
+```yaml
 #资源清单文件
 [root@master1 ~]#cat storage-configmap-simple-env.yaml
 apiVersion: v1
@@ -934,7 +747,7 @@ name: configmap-env-test
 spec:
 containers:
 - name: configmap-env-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 env:
 - name: NGINX_HOST
 value: "10.0.0.100" #直接变量赋值
@@ -951,27 +764,19 @@ name: cm-nginx-config
 key: user
 optional: false
 #配置解析：这里面我们可以使用两种方式在pod中传递变量
-```
 
-```text
 #资源创建
 [root@master1 ~]#kubectl apply -f storage-configmap-simple-env.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get cm
 NAME               DATA   AGE
 cm-nginx-config    2      8s
 kube-root-ca.crt   1      30d
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                 READY   STATUS    RESTARTS   AGE
 configmap-env-test   1/1     Running   0          29s
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-nginx-config  -o yaml
 apiVersion: v1
 data:
@@ -980,9 +785,7 @@ user: www
 kind: ConfigMap
 metadata:
 annotations:
-```
 
-```text
 kubectl.kubernetes.io/last-applied-configuration: |
 {"apiVersion":"v1","data":
 {"port":"10086","user":"www"},"kind":"ConfigMap","metadata":{"annotations":
@@ -992,17 +795,13 @@ name: cm-nginx-config
 namespace: default
 resourceVersion: "657159"
 uid: a446750a-2cd1-4d8b-a672-b83caa1808a7
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-nginx-config
 Name:         cm-nginx-config
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 port:
@@ -1011,18 +810,12 @@ port:
 user:
 ----
 www
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #验证变量
 [root@master1 ~]#kubectl describe pod configmap-env-test |grep -A 5 Environment
 Environment:
@@ -1034,9 +827,7 @@ Optional: false
 Mounts:
 /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-s9hpp
 (ro)
-```
 
-```text
 [root@master1 ~]#kubectl exec -it configmap-env-test  -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=configmap-env-test
@@ -1053,25 +844,20 @@ KUBERNETES_SERVICE_PORT=443
 KUBERNETES_SERVICE_PORT_HTTPS=443
 KUBERNETES_PORT=tcp://192.168.0.1:443
 NGINX_VERSION=1.20.0
-```
 
-```text
 NJS_VERSION=0.5.3
 PKG_RELEASE=1~buster
 HOME=/root
-```
 
-```text
 #资源删除
 [root@master1 ~]#kubectl delete -f storage-configmap-simple-env.yaml
 ```
 
 #### 2.2.4.2 范例：env 变量
-
-```text
+```yaml
 #查看Pod默认的变量
 [root@master1 ~]#kubectl run pod-test --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 [root@master1 ~]#kubectl exec -it pod-test -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=pod-test
@@ -1089,9 +875,7 @@ RELEASE=Stable
 PS1=[\u@\h \w]\$
 HOME=/root
 [root@master1 ~]#kubectl delete pod pod-test
-```
 
-```text
 #创建配置文件
 [root@master1 ~]#cat storage-configmap-valueFrom-env.yaml
 apiVersion: v1
@@ -1102,9 +886,7 @@ namespace: default
 data:
 host: 0.0.0.0
 port: "8888"
-```
 
-```text
 ---
 apiVersion: v1
 kind: Pod
@@ -1112,7 +894,7 @@ metadata:
 name: configmap-env-demo
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 name: pod-test
 env:
 - name: HOST
@@ -1120,9 +902,7 @@ valueFrom:
 configMapKeyRef:
 name: cm-pod-test
 key: host
-```
 
-```text
 optional: true  #true时,如果configmap中的key即使不存在,也不会导致容器无法初始
 化
 - name: PORT
@@ -1131,22 +911,16 @@ configMapKeyRef:
 name: cm-pod-test
 key: port
 optional: false #false时,如果configmap中的key不存在,会导致容器无法初始化
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f storage-configmap-valueFrom-env.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                 READY   STATUS    RESTARTS   AGE   IP           NODE
 NOMINATED NODE   READINESS GATES
 configmap-env-demo   1/1     Running   0          6s    10.244.3.4
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#kubectl exec -it configmap-env-demo -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=configmap-env-demo
@@ -1165,23 +939,17 @@ DEPLOYENV=Production
 RELEASE=Stable
 PS1=[\u@\h \w]\$
 HOME=/root
-```
 
-```text
 [root@master1 ~]#kubectl exec -it configmap-env-demo --  ss -ntl
 State          Recv-Q         Send-Q      Local Address:Port           Peer
 Address:Port         Process
 LISTEN         0              128         0.0.0.0:8888
 0.0.0.0:*
-```
 
-```text
 [root@master1 ~]#curl 10.244.3.4:8888
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: configmap-env-demo,
 ServerIP: 10.244.3.4!
-```
 
-```text
 #资源删除
 [root@master1 ~]#kubectl delete -f storage-configmap-valueFrom-env.yaml
 ```
@@ -1189,14 +957,11 @@ ServerIP: 10.244.3.4!
 #### 2.2.4.3 范例：env 变量
 
 可以基于configmap给pod中的命令执行，以变量的方式，传递一些参数。
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat storage-configmap-simple-envargs.yaml
 apiVersion: v1
-```
 
-```text
 kind: ConfigMap
 metadata:
 name: cm-command-arg
@@ -1219,16 +984,12 @@ configMapKeyRef:
 name: cm-command-arg              #引用configmap
 key: time                         #指定CM中的key
 - name: NAME                            #也可以直接对环境变量赋值
-value: "wangxiaochun"
+value: "bowen"
 restartPolicy: Never
-```
 
-```text
 #应用文件
 [root@master1 ~]#kubectl apply  -f storage-configmap-simple-envargs.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-command-arg -o yaml
 apiVersion: v1
 data:
@@ -1244,54 +1005,39 @@ name: cm-command-arg
 namespace: default
 resourceVersion: "659304"
 uid: 670af079-d60f-4ae2-8a63-cee6775d4f61
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-command-arg
 Name:         cm-command-arg
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 time:
 ----
 3600
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                 READY   STATUS    RESTARTS   AGE
 pod-cm-command-arg   1/1     Running   0          77s
-```
 
-```text
 [root@master1 ~]#kubectl exec -it pod-cm-command-arg -- ps aux
 PID   USER     TIME  COMMAND
 1 root      0:00 sleep 3600
 7 root      0:00 ps aux
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete  -f storage-configmap-simple-envargs.yaml
 ```
 
 #### 2.2.4.4 范例：envFrom 批量导入所有变量
-
-```text
+```yaml
 #配置文件资源定义文件
 [root@master1 ~]#cat storage-configmap-simple-envfrom.yaml
 apiVersion: v1
@@ -1309,21 +1055,15 @@ name: configmap-envfrom-test
 spec:
 containers:
 - name: configmap-envfrom-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 envFrom:           #指定cm
 - configMapRef:
 name: cm-nginx  #所有变量从cm中读取
-```
 
-```text
 #配置解析：envFrom 方式使用cm里面所有的属性信息，而且变量名是默认的
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f storage-configmap-simple-envfrom.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-nginx -o yaml
 apiVersion: v1
 data:
@@ -1338,23 +1078,17 @@ kubectl.kubernetes.io/last-applied-configuration: |
 {"annotations":{},"name":"cm-nginx","namespace":"default"}}
 creationTimestamp: "2021-03-24T09:33:52Z"
 name: cm-nginx
-```
 
-```text
 namespace: default
 resourceVersion: "658234"
 uid: 452f388f-2462-485b-a45c-2d4373eef8f4
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-nginx
 Name:         cm-nginx
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 NGINX_PORT:
@@ -1363,18 +1097,12 @@ NGINX_PORT:
 NGINX_USER:
 ----
 www
-```
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
-```
 
-```text
 #验证变量
 [root@master1 ~]#kubectl exec -it configmap-envfrom-test -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -1394,16 +1122,13 @@ NGINX_VERSION=1.20.0
 NJS_VERSION=0.5.3
 PKG_RELEASE=1~buster
 HOME=/root
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete  -f storage-configmap-simple-envfrom.yaml
 ```
 
 #### 2.2.4.5 范例：volume 生成配置文件并更新生效
-
-```text
+```yaml
 #configmap资源定义
 [root@master1 ~]#cat storage-configmap-simple-volume.yaml
 apiVersion: v1
@@ -1411,10 +1136,8 @@ kind: ConfigMap
 metadata:
 name: cm-volume
 data:
-author.txt: wangxiaochun
-```
+author.txt: bowen
 
-```text
 file.conf: |
 [app]
 config1
@@ -1431,22 +1154,18 @@ configMap:
 name: cm-volume  #指定卷来自cm
 containers:
 - name: nginx
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 volumeMounts:
 - name: volume-config #调用前面定义的卷名
 mountPath: /cmap/   #指定Pod中的挂载点目录
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply  -f storage-configmap-simple-volume.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-volume -o yaml
 apiVersion: v1
 data:
-author.txt: wangxiaochun  #author成为文件名，wangxiaochun成为文件内容
+author.txt: bowen  #author成为文件名，bowen成为文件内容
 file.conf: |
 [app]
 config1
@@ -1455,7 +1174,7 @@ kind: ConfigMap
 metadata:
 annotations:
 kubectl.kubernetes.io/last-applied-configuration: |
-{"apiVersion":"v1","data":{"author":"wangxiaochun","file.conf":"
+{"apiVersion":"v1","data":{"author":"bowen","file.conf":"
 [app]\nconfig1\nconfig2\n"},"kind":"ConfigMap","metadata":{"annotations":
 {},"name":"cm-volume","namespace":"default"}}
 creationTimestamp: "2021-03-24T09:59:41Z"
@@ -1463,17 +1182,13 @@ name: cm-volume
 namespace: default
 resourceVersion: "661232"
 uid: af5aece4-0eb3-46f9-abda-bb0b8441a8ee
-```
 
-```text
 [root@master1 ~]#kubectl describe cm cm-volume
 Name:         cm-volume
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Data
 ====
 file.conf:
@@ -1481,40 +1196,30 @@ file.conf:
 [app]
 config1
 config2
-```
 
-```text
 author.txt:
 ----
-wangxiaochun
-```
+bowen
 
-```text
 BinaryData
 ====
-```
 
-```text
 Events:  <none>
 [root@master1 ~]#kubectl get pod
 NAME              READY   STATUS    RESTARTS   AGE
 pod-volume-test   1/1     Running   0          29s
-```
 
-```text
 #验证配置文件
 [root@master1 ~]#kubectl exec -it pod-volume-test -- sh
 # ls /cmap
 author.txt  file.conf
 # cat /cmap/author.txt
-wangxiaochun#
+bowen#
 # cat /cmap/file.conf
 [app]
 config1
 config2
-```
 
-```text
 #查看一下文件的存储方式
 # ls -la /cmap
 total 12
@@ -1525,17 +1230,13 @@ lrwxrwxrwx 1 root root   32 Mar 24 10:00 ..data ->
 ..2021_03_24_10_00_38.3037173162
 lrwxrwxrwx 1 root root   13 Mar 24 10:00 author.txt -> ..data/author
 lrwxrwxrwx 1 root root   16 Mar 24 10:00 file.conf -> ..data/file.conf
-```
 
-```text
 #结果显示：
 #这些文件虽然看起来是在挂载的目录下，实际上，它是经过了两层的软连接才能找到真正挂载的文件
 容器内挂载目录的生成的文件file --> ..data/file -->
 ..YYYY_MM_DD_HH_MM_SS.XXXXXXXX/file
 #通过这种双层软连接的方式，只要容器支持重载技术，那么只需要更改配置文件就可以实现容器应用的变动
-```
 
-```text
 #在线更新配置文件中的内容
 [root@master1 ~]#kubectl edit cm cm-volume
 # Please edit the object below. Lines beginning with a '#' will be ignored,
@@ -1545,7 +1246,7 @@ file will be
 #
 apiVersion: v1
 data:
-author.txt: wang  #修改此行
+author.txt: bowen  #修改此行
 file.conf: |
 [app]
 config1
@@ -1553,13 +1254,9 @@ config2
 config3  #加此行
 kind: ConfigMap
 .....
-```
 
-```text
 configmap/cm-volume edited
-```
 
-```text
 #等一会儿进入pod可以看到配置文件变化
 # ls -la /cmap
 total 12
@@ -1571,22 +1268,19 @@ lrwxrwxrwx 1 root root   32 Mar 24 10:04 ..data ->
 lrwxrwxrwx 1 root root   13 Mar 24 10:00 author.txt -> ..data/author
 lrwxrwxrwx 1 root root   16 Mar 24 10:00 file.conf -> ..data/file.conf
 # cat /cmap/author.txt
-wang# cat /cmap/file.conf
+bowen# cat /cmap/file.conf
 [app]
 config1
 config2
 config3
 #结果显示：无需重启pod对象，只要等待十几秒后，配置信息自动发生了变动
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete  -f storage-configmap-simple-volume.yaml
 ```
 
 #### 2.2.4.6 范例：volume 挂载CM中的全部内容
-
-```text
+```yaml
 #命令行创建CM,创建nginx的配置信息
 [root@master1 ~]#cat nginx-conf.d/default.conf
 server {
@@ -1602,15 +1296,11 @@ location = /50x.html {
 root   /usr/share/nginx/html;
 }
 }
-```
 
-```text
 #命令行创建CM
 [root@master1 ~]#kubectl create configmap cm-nginx-conf-files --from-file=nginx-
 conf.d/default.conf
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat storage-configmap-nginx-file.yaml
 apiVersion: v1
@@ -1622,9 +1312,7 @@ index.html: "Nginx Configmap page!"  #单行内容的文件生成configmap
 ---
 apiVersion: v1
 kind: Pod
-```
 
-```text
 metadata:
 name: pod-nginx-conf-configmap
 spec:
@@ -1638,7 +1326,7 @@ configMap:
 name: cm-nginx-index
 optional: false
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 name: nginx
 volumeMounts:
 - name: nginx-conf
@@ -1647,17 +1335,13 @@ readOnly: true
 - name: nginx-index
 mountPath: /usr/share/nginx/html/
 readOnly: true
-```
 
-```text
 [root@master1 ~]#kubectl get cm
 NAME                  DATA   AGE
 cm-nginx-conf-files   1      10m
 cm-nginx-index        1      10s
 kube-root-ca.crt      1      47h
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get cm cm-nginx-index -o yaml
 apiVersion: v1
@@ -1675,9 +1359,7 @@ name: cm-nginx-index
 namespace: default
 resourceVersion: "39212"
 uid: 3ec517a4-5bfa-4413-b897-fb735f4b3fe3
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-nginx-conf-files -o yaml
 apiVersion: v1
 data:
@@ -1687,9 +1369,7 @@ listen       8080;
 server_name  localhost;
 #access_log  /var/log/nginx/host.access.log  main;
 location / {
-```
 
-```text
 root   /usr/share/nginx/html;
 index  index.html index.htm;
 }
@@ -1698,9 +1378,7 @@ location = /50x.html {
 root   /usr/share/nginx/html;
 }
 }
-```
 
-```text
 kind: ConfigMap
 metadata:
 creationTimestamp: "2021-03-24T12:00:32Z"
@@ -1708,23 +1386,17 @@ name: cm-nginx-conf-files
 namespace: default
 resourceVersion: "39713"
 uid: 008efea1-aa21-49aa-9576-002a81237a3b
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                       READY   STATUS    RESTARTS   AGE   IP           NODE
 NOMINATED NODE   READINESS GATES
 pod-nginx-conf-configmap   1/1     Running   0          65s   172.16.3.5
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #验证配置文件结果
 [root@master1 ~]#curl  172.16.3.5:8080
 Nginx Configmap page!
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete -f storage-configmap-nginx-file.yaml
 [root@master1 ~]#kubectl delete configmap cm-nginx-conf-files
@@ -1733,53 +1405,40 @@ Nginx Configmap page!
 #### 2.2.4.7 范例：volume 挂载 CM 中部分文件并支持动态更新
 
 范例：下面方式指定configmap的指定key对应的文件挂载至Pod中，在Pod目录中只能看到前面特定的配置文件，pod中目录原有的配置文件将被隐藏，支持动态更新
-
-```text
+```yaml
 #准备配置文件
 [root@master1 ~]#ls nginx-conf.d/
 default.conf  myserver.conf  myserver-gzip.cfg  myserver-status.cfg
-```
 
-```text
 #配置文件
 [root@master1 ~]#cat nginx-conf.d/myserver.conf
 server {
 listen 8888;
-server_name www.wang.org;
+server_name www.bowen.org;
 include /etc/nginx/conf.d/myserver-*.cfg;
 location / {
 root /usr/share/nginx/html;
 }
 }
-```
 
-```text
 #子配置文件,注意:文件是以cfg为后缀,不能以conf文件后缀,会导致冲突
 [root@master1 ~]#cat nginx-conf.d/myserver-gzip.cfg
 gzip on;
 gzip_comp_level 5;
 gzip_proxied     expired no-cache no-store private auth;
-```
 
-```text
 gzip_types text/plain text/css application/xml text/javascript;
-```
 
-```text
 [root@master1 ~]#cat nginx-conf.d/myserver-status.cfg
 location /nginx-status {
 stub_status on;
 access_log off;
 }
-```
 
-```text
 #创建cm
 [root@master1 ~]#kubectl create cm cm-nginx-conf-files  --from-file=nginx-
 conf.d/
-```
 
-```text
 [root@master1 config]#kubectl  get cm cm-nginx-conf-files -o yaml
 apiVersion: v1
 data:
@@ -1810,7 +1469,7 @@ access_log off;
 myserver.conf: |
 server {
 listen 8888;
-server_name www.wang.org;
+server_name www.bowen.org;
 include /etc/nginx/conf.d/myserver-*.cfg;
 location / {
 root /usr/share/nginx/html;
@@ -1823,9 +1482,7 @@ name: cm-nginx-conf-files
 namespace: default
 resourceVersion: "251337"
 uid: 33c08e9b-3c51-4d9b-b02d-a377724d231d
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat storage-configmap-nginx-subfile.yaml
 apiVersion: v1
@@ -1860,7 +1517,7 @@ configMap:
 name: cm-nginx-index
 optional: false
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 name: pod-cm-nginx-conf-container
 volumeMounts:
 - name: nginx-conf
@@ -1869,30 +1526,24 @@ readOnly: true
 - name: nginx-index
 mountPath: /usr/share/nginx/html/
 readOnly: true
-```
 
-```text
 #创建资源
-[root@master1 ~]#kubectl  apply  -f storage-configmap-nginx-subfile.yaml
 ```
+```yaml
+[root@master1 ~]#kubectl  apply  -f storage-configmap-nginx-subfile.yaml
 
-```text
 [root@master1 ~]#kubectl  get cm
 NAME                  DATA   AGE
 cm-nginx-conf-files   4      49s
 cm-nginx-index        1      47s
-```
 
-```text
 [root@master1 ~]#kubectl get cm cm-nginx-index -o yaml
 apiVersion: v1
 data:
 index.html: |
 Nginx Sub Configmap Page!
 kind: ConfigMap
-```
 
-```text
 metadata:
 annotations:
 kubectl.kubernetes.io/last-applied-configuration: |
@@ -1904,9 +1555,7 @@ name: cm-nginx-index
 namespace: default
 resourceVersion: "46606"
 uid: 475da0b7-b672-4e7f-80d7-b92c89573d32
-```
 
-```text
 #查看资源
 [root@master1 ~]#kubectl get cm cm-nginx-conf-files -o yaml
 apiVersion: v1
@@ -1938,7 +1587,7 @@ access_log off;
 myserver.conf: |
 server {
 listen 8888;
-server_name www.wang.org;
+server_name www.bowen.org;
 include /etc/nginx/conf.d/myserver-*.cfg;
 location / {
 root /usr/share/nginx/html;
@@ -1951,13 +1600,9 @@ name: cm-nginx-conf-files
 namespace: default
 resourceVersion: "46599"
 uid: f748bda6-da72-42ba-9dc1-157c8d508b55
-```
 
-```text
 #查看容器的文件
-```
 
-```text
 [root@master1 ~]#kubectl exec -it pod-cm-nginx-conf -- ls -al /etc/nginx/conf.d/
 total 12
 drwxrwxrwx 3 root root 4096 Mar  9 03:49 .
@@ -1970,36 +1615,27 @@ gzip2.cfg
 lrwxrwxrwx 1 root root   26 Mar  9 03:49 myserver-status.cfg -> ..data/myserver-
 status2.cfg
 lrwxrwxrwx 1 root root   20 Mar  9 03:49 myserver.conf -> ..data/myserver2.conf
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                READY   STATUS    RESTARTS   AGE   IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-cm-nginx-conf   1/1     Running   0          7s    172.16.1.15
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #访问验证
 [root@master1 ~]#kubectl exec -it  pod-cm-nginx-conf -- ls /etc/nginx/conf.d/
 myserver-gzip.cfg  myserver-status.cfg  myserver.conf
-```
 
-```text
 [root@master1 ~]#curl 172.16.1.15:8888
 Nginx Sub Configmap Page!
-```
 
-```text
 [root@master1 ~]#curl 172.16.1.15:8888/nginx-status
 Active connections: 1
 server accepts handled requests
 2 2 2
 Reading: 0 Writing: 1 Waiting: 0
 ```
-
-```text
+```yaml
 [root@master1 ~]#curl -I --compressed  172.16.1.15:8888
 HTTP/1.1 200 OK
 Server: nginx/1.20.0
@@ -2007,50 +1643,36 @@ Content-Type: text/html
 Connection: keep-alive
 ETag: W/"623c6c59-1a"
 Content-Encoding: gzip
-```
 
-```text
 #更新配置
 [root@master1 ~]#kubectl edit cm cm-nginx-index
 apiVersion: v1
 data:
 index.html: |
 Nginx Sub Configmap Page changed! #修改此行
-```
 
-```text
 #更新完配置立即生效
 [root@master1 ~]#curl 172.16.1.15:8888
 Nginx Sub Configmap Page changed!
-```
 
-```text
 #更新配置
 [root@master1 ~]#kubectl edit cm cm-nginx-conf-files
 myserver.conf: |
 server {
 listen 9999;  #修改此行
-```
 
-```text
-server_name www.wang.org;
-```
+server_name www.bowen.org;
 
-```text
 #在线更新完配置文件的时间戳没有变化，但文件内容变化了
 [root@master1 ~]#kubectl exec -it pod-cm-nginx-conf -- ls -al /etc/nginx/conf.d/
-```
 
-```text
 [root@master1 ~]#curl 172.16.1.15:9999
 curl: (7) Failed to connect to 172.16.1.15 port 9999: Connection refused
 [root@master1 ~]#kubectl exec -it pod-cm-nginx-conf  -- nginx -s reload
 2022/03/24 13:17:56 [notice] 43#43: signal process started
 [root@master1 ~]#curl 172.16.1.15:9999
 Nginx Sub Configmap Page changed!
-```
 
-```text
 #删除资源
 [root@master1 ~]#kubectl delete -f storage-configmap-nginx-subfile.yaml
 [root@master1 ~]#kubectl delete  cm cm-nginx-conf-files
@@ -2062,10 +1684,10 @@ Nginx Sub Configmap Page changed!
 
 ![原 PDF 第 143 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-4ce9ca580b8832ce.png)
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/configuration/secret/
-https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/configuration/secret/>
+- <https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/>
+
 
 Secret 和 Configmap 相似，也可以提供配置数据，但主要用于为Pod提供敏感需要加密的信息。Secret 主要用于存储密码、证书私钥，SSH 密钥，OAuth令牌等敏感信息，这些敏感信息采用base64编码保存，相对明文存储更安全。
 
@@ -2138,47 +1760,35 @@ docker-registry kubernetes.io/dockercfg serialized -/ .dockercfg file 旧版
 手动创建：用户自行创建的Secret 常用来存储用户私有的一些信息自动创建：集群自动创建的Secret 用来作为集群中各个组件之间通信的身份校验使用。
 
 范例:  Secret 大的类别
-
-```text
+```bash
 [root@master1 ~]#kubectl create secret -h
 Create a secret using specified subcommand.
-```
 
-```text
 Available Commands:
 docker-registry   创建一个给 Docker registry 使用的 Secret
 generic           Create a secret from a local file, directory, or literal
 value
 tls               创建一个 TLS secret
-```
 
-```text
 Usage:
 kubectl create secret [flags] [options]
 ```
 
-```text
-Use "kubectl <command> --help" for more information about a given command.
-Use "kubectl options" for a list of global command-line options (applies to all
-commands).
-```
+
+Use "kubectl <command> --help" for more information about a given command. Use "kubectl options" for a list of global command-line options (applies to all commands).
+
 
 范例: 查看 Secret
-
-```text
+```yaml
 [root@master1 ~]#kubectl get secrets -A
-```
 
-```text
 NAMESPACE       NAME                            TYPE
 DATA   AGE
 ingress-nginx   ingress-nginx-admission         Opaque
 3      3d17h
 kube-system     bootstrap-token-n44d75          bootstrap.kubernetes.io/token
 6      47d
-```
 
-```text
 [root@master1 ~]#kubectl get secrets -n ingress-nginx ingress-nginx-admission  -o
 yaml
 apiVersion: v1
@@ -2201,9 +1811,7 @@ namespace: ingress-nginx
 resourceVersion: "670798"
 uid: b371e542-44de-4343-893b-268697e1e13b
 type: Opaque
-```
 
-```text
 [root@master1 ~]#kubectl get secrets -n kube-system bootstrap-token-n44d75 -o
 yaml
 apiVersion: v1
@@ -2227,14 +1835,11 @@ type: bootstrap.kubernetes.io/token
 ```
 
 范例: 查看 Secret
-
-```text
+```yaml
 [root@master1 ~]#kubectl get secret
 NAME                  TYPE                                  DATA   AGE
 default-token-w2gph   kubernetes.io/service-account-token   3      4d13h
-```
 
-```text
 [root@master1 ~]#kubectl get secrets  default-token-w2gph  -o yaml
 apiVersion: v1
 data:
@@ -2265,75 +1870,57 @@ type: kubernetes.io/service-account-token
 ![原 PDF 第 147 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-5df5d5a2132df688.png)
 
 **官方说明**
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-
 kubectl/
 ```
 
 格式
-
 ```text
 kubectl create secret [flags] [options] [-n <namespace>]
 ```
 
 **帮助信息**
-
-```text
+```bash
 [root@master ~]# kubectl create secret -h
 Create a secret using specified subcommand.
-```
 
-```text
 Available Commands:
 docker-registry #创建一个给 Docker registry 使用的 secret
 generic         #从本地 file, directory 或者 literal value 创建一个 secret
 tls             #创建一个 TLS secret
-```
 
-```text
 Usage:
 kubectl create secret [flags] [options]
 ```
 
 **命令格式**
-
-```text
+```bash
 #generic类型
 kubectl create secret generic NAME [--type=string] [--from-file=[key=]source] [-
 -from-literal=key1=value1]
-```
 
-```text
 --from-literal=key1=value1      #以命令行设置键值对的环境变量方式配置数据
 --from-env-file=/PATH/FILE      #以环境变量的专用文件的方式配置数据
 --from-file=[key=]/PATH/FILE    #以配置文件的方式创建配置数据，如不指定key，FILE名称为
 key名
 --from-file=/PATH/DIR           #以配置文件所在目录的方式创建配置数据
-```
 
-```text
 #该命令中的--type选项进行定义除了后面docker-registry和tls命令之外的其它子类型，有些类型有
 key的特定要求
 #注意: 如果vaule中有特殊字符,比如:$,\,*,=,!等,需要用\进行转义或用单引号''引起来
-```
 
-```text
 #tls类型
 kubectl create secret tls NAME --cert=/path/file --key=/path/file
 #其保存cert文件内容的key名称不能指定自动为tls.crt，而保存private key的key不能指定自动为
 tls.key
-```
 
-```text
 #docker-registry类型
 #方式1:基于用户名和密码方式实现
 kubectl create secret docker-registry NAME --docker-username=user --docker-
 password=password --docker-email=email [--docker-server=string] [--from-file=
 [key=]source]
-```
 
-```text
 #方式2:基于dockerconfig文件方式实现
 kubectl create secret docker-registry  KEYNAME --from-
 file=.dockerconfigjson=path/to/.docker/config.json
@@ -2341,8 +1928,7 @@ file=.dockerconfigjson=path/to/.docker/config.json
 ```
 
 范例:
-
-```text
+```bash
 #创建generic类型
 kubectl create secret generic my-secret-generic --from-file=/path/bar
 kubectl create secret generic my-secret-generic --from-file=ssh-
@@ -2350,31 +1936,23 @@ privatekey=~/.ssh/id_rsa --from-file=ssh-publickey=~/.ssh/id_rsa.pub
 kubectl create secret generic my-secret-generic --from-literal=username=admin --
 from-literal=password=123456
 kubectl create secret generic my-secret-generic --from-env-file=/path/to/bar.env
-```
 
-```text
 #创建tls类型
-kubectl create secret tls my-secret-tls --cert=certs/wang.org.cert --
-key=certs/wang.org.key
-```
+kubectl create secret tls my-secret-tls --cert=certs/bowen.org.cert --
+key=certs/bowen.org.key
 
-```text
 #创建docker-registry类型
 #参考示例：https://Kubernetesmeetup.github.io/docs/tasks/configure-pod-
 container/pull-image-private-registry/
 #基于私有仓库的用户名和密码
 kubectl create secret docker-registry my-secret-docker-registry --docker-
-server=harbor.wang.org --docker-username=admin --docker-password=123456 --
+server=harbor.bowen.org --docker-username=admin --docker-password=123456 --
 docker-email=29308620@qq.com
-```
 
-```text
 #先登录并认证到目标仓库server上，认证凭据自动保存在dockercfg文件中,基于dockerconfig文件实现
 kubectl create secret docker-registry dockerharbor-auth --from-
 file=.dockerconfigjson=/root/.docker/config.json
-```
 
-```text
 kubectl create secret generic dockerharbor-auth --
 type='kubernetes.io/dockerconfigjson' --from-
 file=.dockerconfigjson=/root/.docker/config.json
@@ -2389,52 +1967,35 @@ Secret 资源的元数据：除了name, namespace之外，常用的还有labels,
 annotation的名称遵循类似于labels的名称命名格式，但其数据长度不受限制它不能用于被标签选择器作为筛选条件；但常用于为那些仍处于Beta阶段的应用程序提供临时的配置接口管理命令：kubectl annotate TYPE/NAME KEY=VALUE
 
 范例: 查看 Secret 字段说明
-
-```text
+```bash
 [root@master1 ~]#kubectl explain secret
 KIND:     Secret
 VERSION:  v1
-```
 
-```text
 DESCRIPTION:
 Secret holds secret data of a certain type. The total bytes of the values
 in the Data field must be less than MaxSecretSize bytes.
 ```
 
-```text
-FIELDS:
-apiVersion   <string>
-APIVersion defines the versioned schema of this representation of an
-object. Servers should convert recognized schemas to the latest internal
-value, and may reject unrecognized values. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+
+FIELDS: apiVersion   <string>APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#resources
-```
 
-```text
-data <map[string]string>
-Data contains the secret data. Each key must consist of alphanumeric
-characters, '-', '_' or '.'. The serialized form of the secret data is a
-base64 encoded string, representing the arbitrary (possibly non-string)
-data value here. Described in https://tools.ietf.org/html/rfc4648#section-4
-```
 
-```text
-immutable    <boolean>
-Immutable, if set to true, ensures that data stored in the Secret cannot be
-updated (only object metadata can be modified). If not set to true, the
-field can be modified at any time. Defaulted to nil.
-```
+data <map[string]string>Data contains the secret data. Each key must consist of alphanumeric characters, '-', '_' or '.'. The serialized form of the secret data is a base64 encoded string, representing the arbitrary (possibly non-string) data value here. Described in https://tools.ietf.org/html/rfc4648#section-4
 
-```text
-kind <string>
-Kind is a string value representing the REST resource this object
-represents. Servers may infer this from the endpoint the client submits
-requests to. Cannot be updated. In CamelCase. More info:
-https://git.k8s.io/community/contributors/devel/sig-architecture/api-
+
+immutable    <boolean>Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified). If not set to true, the field can be modified at any time. Defaulted to nil.
+
+
+kind <string>Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:
+
+<https://git.k8s.io/community/contributors/devel/sig-architecture/api->
+
 conventions.md#types-kinds
-```
 
 ```text
 metadata <Object>
@@ -2443,13 +2004,8 @@ https://git.k8s.io/community/contributors/devel/sig-architecture/api-
 conventions.md#metadata
 ```
 
-```text
-stringData   <map[string]string>
-stringData allows specifying non-binary secret data in string form. It is
-provided as a write-only input field for convenience. All keys and values
-are merged into the data field on write, overwriting any existing values.
-The stringData field is never output when reading from the API.
-```
+
+stringData   <map[string]string>stringData allows specifying non-binary secret data in string form. It is provided as a write-only input field for convenience. All keys and values are merged into the data field on write, overwriting any existing values. The stringData field is never output when reading from the API.
 
 ```text
 type <string>
@@ -2482,7 +2038,6 @@ Pod引用Secret的方式：pods.spec.imagePullSecrets
 ### 2.3.5 Generic 案例
 
 **官方说明**
-
 ```text
 https://kubernetes.io/zh-cn/docs/tasks/configmap-secret/managing-secret-using-
 config-file/
@@ -2491,14 +2046,11 @@ config-file/
 generic 主要用于实现用户名和密码的加密保存。
 
 注意: generic加密保存要注意换行问题  \n
-
 ```text
 #generic类型
 kubectl create secret generic NAME [--type=string] [--from-file=[key=]source] [-
 -from-literal=key1=value1]
-```
 
-```text
 --from-literal=key1=value1          #以命令行设置键值对的方式配置数据
 --from-env-file=/PATH/TO/FILE       #以环境变量专用文件的方式配置数据
 --from-file=[key=]/PATH/TO/FILE     #以配置文件的方式创建配置数据，如不指定key，FILE名称
@@ -2510,41 +2062,30 @@ key的特定要求
 ```
 
 #### 2.3.5.1 范例：命令式创建 generic
-
-```text
+```yaml
 #命令式创建
 [root@master1 ~]#kubectl create secret generic secret-mysql-root --from-
 literal=username=root --from-literal=password=123456
-```
 
-```text
 #确认创建成功
 [root@master1 ~]#kubectl get secrets
 NAME              TYPE     DATA   AGE
 secret-mysql-root   Opaque   2      7s
-```
 
-```text
 #查看Generic使用Base64编码
 [root@master1 ~]#kubectl describe secrets secret-mysql-root
 Name:         secret-mysql-root
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
-```
 
-```text
 Type:  Opaque
-```
 
-```text
 Data
 ====
 password:  6 bytes
 username:  4 bytes
-```
 
-```text
 [root@master1 ~]#kubectl get secrets secret-mysql-root  -o yaml
 apiVersion: v1
 data:
@@ -2558,9 +2099,7 @@ namespace: default
 resourceVersion: "20360"
 uid: 5fa84616-997e-4c86-b4e5-b895516c4c12
 type: Opaque
-```
 
-```text
 #解码
 [root@master1 ~]#echo -n cm9vdA== | base64 -d
 root
@@ -2569,16 +2108,13 @@ root
 ```
 
 #### 2.3.5.2 范例: Base64 编码数据
-
-```text
+```yaml
 #将数据转换成base64编码,注意:需要加-n选项去掉换行符
 [root@master1 ~]#echo -n 'admin' | base64
 YWRtaW4=
 [root@master1 ~]#echo -n  'password' | base64
 cGFzc3dvcmQ=
-```
 
-```text
 #清单文件
 [root@master1 ~]#cat storage-secret-Opaque-data.yaml
 apiVersion: v1
@@ -2590,27 +2126,19 @@ type: Opaque
 data:                         #data表示必须以base64编码存放,stringData表示明文存放数据
 user: YWRtaW4=
 password: cGFzc3dvcmQ=
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f storage-secret-Opaque-data.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get secrets
 NAME                TYPE     DATA   AGE
 secret-data         Opaque   2      5m5s
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get secrets secret-data -o yaml
 apiVersion: v1
 data:
-```
 
-```text
 password: cGFzc3dvcmQ=
 user: YWRtaW4=
 kind: Secret
@@ -2626,27 +2154,20 @@ namespace: default
 resourceVersion: "545820"
 uid: d99ced51-1b27-4fcd-ba06-e480f31287be
 type: Opaque
-```
 
-```text
 #如果安装etcdctl工具,可以看到secret实际保存在etcd中
 [root@master1 ~]#etcdctl get / --keys-only --prefix |grep secret-data
 /registry/secrets/default/secret-data
-```
 
-```text
 #查看secret内容
 [root@master1 ~]#etcdctl get /registry/secrets/default/secret-data
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete secrets secret-data
 ```
 
 #### 2.3.5.3 范例:  stringData 明文数据
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat storage-secret-Opaque-stringData.yaml
 apiVersion: v1
@@ -2658,21 +2179,15 @@ type: Opaque
 stringData:                #stringData表示明文存放数据,data表示必须以base64编码存放
 user: 'admin'
 password: 'password'
-```
 
-```text
 #应用文件
 [root@master1 ~]#kubectl apply -f storage-secret-Opaque-stringData.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get secrets
 NAME                TYPE     DATA   AGE
 secret-stringdata   Opaque   2      2m3s
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get secrets secret-stringdata -o yaml
 apiVersion: v1
@@ -2682,9 +2197,7 @@ user: YWRtaW4=
 kind: Secret
 metadata:
 annotations:
-```
 
-```text
 kubectl.kubernetes.io/last-applied-configuration: |
 {"apiVersion":"v1","kind":"Secret","metadata":{"annotations":
 {},"name":"secret-stringdata","namespace":"default"},"stringData":
@@ -2695,22 +2208,17 @@ namespace: default
 resourceVersion: "546179"
 uid: 03b3e308-43ff-4f8f-9ac4-a41589272664
 type: Opaque
-```
 
-```text
 #删除
 [root@master1 ~]#kubectl delete -f storage-secret-Opaque-stringData.yaml
 ```
 
 #### 2.3.5.4 范例:  Secret 通过环境变量为提供MySQL环境初始化的密码信息
-
-```text
+```bash
 #MySQL容器支持MYSQL_ROOT_PASSWORD变量存放密码,使用环境变量创建MySQL容器
 [root@node1 ~]#docker run --name mysql_test -e MYSQL_ROOT_PASSWORD=123456 -d
-registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
-```
+registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 
-```text
 #登录验证
 [root@node1 ~]#docker exec  mysql_test mysql -uroot -h127.0.0.1 -p123456 -e
 status
@@ -2719,46 +2227,24 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 mysql  Ver 8.0.27 for Linux on x86_64 (MySQL Community Server - GPL)
 ```
 
-```text
-Connection id:      8
-Current database:
-Current user:       root@127.0.0.1
-SSL:            Cipher in use is TLS_AES_256_GCM_SHA384
-Current pager:      stdout
-Using outfile:      ''
-Using delimiter:    ;
-Server version:     8.0.27 MySQL Community Server - GPL
-Protocol version:   10
-Connection:     127.0.0.1 via TCP/IP
-Server characterset:    utf8mb4
-Db     characterset:    utf8mb4
-Client characterset:    latin1
-Conn.  characterset:    latin1
-TCP port:       3306
-Uptime:         28 sec
-```
 
-```text
+Connection id:      8 Current database: Current user:       root@127.0.0.1 SSL:            Cipher in use is TLS_AES_256_GCM_SHA384 Current pager:      stdout Using outfile:      ''Using delimiter:    ; Server version:     8.0.27 MySQL Community Server - GPL Protocol version:   10 Connection:     127.0.0.1 via TCP/IP Server characterset:    utf8mb4 Db     characterset:    utf8mb4 Client characterset:    latin1 Conn.  characterset:    latin1 TCP port:       3306 Uptime:         28 sec
+
+```yaml
 Threads: 2  Questions: 5  Slow queries: 0  Opens: 117  Flush tables: 3  Open
 tables: 36  Queries per second avg: 0.178
-```
 
-```text
 #生成密码的base64编码
 [root@master1 ~]#echo -n root | base64
 cm9vdA==
 [root@master1 ~]#echo -n 123456 | base64
 MTIzNDU2
-```
 
-```text
 #清单文件，secret 通过环境为提供MySQL环境初始化的密码信息，但很不安全
 [root@master1 ~]#cat  storage-secret-mysql-init.yaml
 apiVersion: v1
 kind: Secret
-```
 
-```text
 metadata:
 name: secret-mysql
 type: kubernetes.io/basic-auth
@@ -2774,7 +2260,7 @@ name: pod-secret-mysql-init
 spec:
 containers:
 - name: mysql
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/mysql:8.0.29-oracle
+image: registry.cn-beijing.aliyuncs.com/bowen/mysql:8.0.29-oracle
 env:
 - name: MYSQL_ROOT_PASSWORD
 valueFrom:
@@ -2782,21 +2268,15 @@ secretKeyRef:
 name: secret-mysql      #引用指定的secret
 key: password           #引用指定的secret中对应的key
 optional: false         #必须存在
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl  apply  -f storage-secret-mysql-init.yaml
-```
 
-```text
 #查看结果
 [root@master1 ~]#kubectl get secrets
 NAME                            TYPE                             DATA   AGE
 secret-mysql                    kubernetes.io/basic-auth         2      1m8s
-```
 
-```text
 #可以看到base64编码的变量信息
 [root@master1 ~]#kubectl get secrets secret-mysql -o yaml
 apiVersion: v1
@@ -2816,19 +2296,13 @@ namespace: default
 resourceVersion: "725930"
 uid: 4089922b-3dc9-4b55-8eb5-61a2756c206a
 type: kubernetes.io/basic-auth
-```
 
-```text
 [root@master1 ~]#kubectl get pod
 NAME                    READY   STATUS    RESTARTS   AGE
 pod-secret-mysql-init   1/1     Running   0          3m30s
-```
 
-```text
 #可以通过环境变量查看到密码，很不安全
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-secret-mysql-init -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=pod-secret-mysql-init
@@ -2861,9 +2335,7 @@ GOSU_VERSION=1.12
 MYSQL_MAJOR=8.0
 MYSQL_VERSION=8.0.27-1debian10
 HOME=/root
-```
 
-```text
 #验证密码登录MySQL
 [root@master1 ~]#kubectl exec pod-secret-mysql-init -- mysql -uroot -p123456 -e
 status
@@ -2872,46 +2344,24 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 mysql  Ver 8.0.27 for Linux on x86_64 (MySQL Community Server - GPL)
 ```
 
-```text
-Connection id:      9
-Current database:
-Current user:       root@localhost
-SSL:                Not in use
-Current pager:      stdout
-Using outfile:      ''
-Using delimiter:    ;
-Server version:     8.0.27 MySQL Community Server - GPL
-Protocol version:   10
-Connection:     Localhost via UNIX socket
-Server characterset:    utf8mb4
-Db     characterset:    utf8mb4
-Client characterset:    latin1
-Conn.  characterset:    latin1
-UNIX socket:        /var/run/mysqld/mysqld.sock
-Uptime:         33 sec
-```
 
-```text
+Connection id:      9 Current database: Current user:       root@localhost SSL:                Not in use Current pager:      stdout Using outfile:      ''Using delimiter:    ; Server version:     8.0.27 MySQL Community Server - GPL Protocol version:   10 Connection:     Localhost via UNIX socket Server characterset:    utf8mb4 Db     characterset:    utf8mb4 Client characterset:    latin1 Conn.  characterset:    latin1 UNIX socket:        /var/run/mysqld/mysqld.sock Uptime:         33 sec
+
+```yaml
 Threads: 2  Questions: 5  Slow queries: 0  Opens: 118  Flush tables: 3  Open
 tables: 37  Queries per second avg: 0.151
 --------------
-```
 
-```text
 [root@master1 ~]#echo -n 654321 | base64
 NjU0MzIx
 [root@master1 ~]#vim storage-secret-mysql-init.yaml
 data:
 username: cm9vdAo=
 password: NjU0MzIx   #修改密码
-```
 
-```text
 #重新应用
 [root@master1 ~]#kubectl apply -f  storage-secret-mysql-init.yaml
-```
 
-```text
 #查看是否变化
 [root@master1 ~]#kubectl get secrets secret-mysql -o yaml
 apiVersion: v1
@@ -2919,37 +2369,26 @@ data:
 password: NjU0MzIx
 username: cm9vdAo= #Secret更新
 .....
-```
 
-```text
 #Pod内的变量没有自动更新
 [root@master1 ~]#kubectl exec pod-secret-mysql-init -- env|grep PASSWORD
 MYSQL_ROOT_PASSWORD=123456
-```
 
-```text
 #删除Pod重新创建
 [root@master1 ~]#kubectl delete pod  pod-secret-mysql-init
-```
 
-```text
 [root@master1 ~]#kubectl apply -f   storage-secret-mysql-init.yaml
-```
 
-```text
 #Pod内变量更新成功
 [root@master1 ~]#kubectl exec pod-secret-mysql-init -- env|grep PASSWORD
 MYSQL_ROOT_PASSWORD=654321
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl  delete -f storage-secret-mysql-init.yaml
 ```
 
 #### 2.3.5.5 范例:  通过卷调用 secret
-
-```text
+```yaml
 #清单文件
 [root@master1 ~]#cat storage-secret-test-pod.yaml
 apiVersion: v1
@@ -2963,14 +2402,10 @@ data:
 username: YWRtaW4=
 #password: password
 password: cGFzc3dvcmQ=
-```
 
-```text
 #说明：
 #type类型指定为 Opaque 或者 kubernetes.io/basic-auth,username和password是加密的信息
-```
 
-```text
 #资源定义文件时，与命令行创建secret的--from-literal=username=admin 效果是一样的,但命令行
 的变量无需加密
 ---
@@ -2986,27 +2421,21 @@ secret:
 secretName: secret-test       #指定secret的名称
 containers:
 - name: secret-test-container
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 volumeMounts:                #卷引用secret
 - name: secret
 mountPath: /secret/
 readOnly: true
-```
 
-```text
 #创建资源
 [root@master1 ~]#kubectl  apply -f storage-secret-test-pod.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
 default-token-w2gph   kubernetes.io/service-account-token   3      4d13h
 secret-test           kubernetes.io/basic-auth              2      3s
-```
 
-```text
 [root@master1 ~]#kubectl get secrets secret-test -o yaml
 apiVersion: v1
 data:
@@ -3026,30 +2455,22 @@ namespace: default
 resourceVersion: "81663"
 uid: 7c643f0d-0eac-48b3-95d2-7b11fa374140
 type: kubernetes.io/basic-auth
-```
 
-```text
 #验证
 [root@master1 ~]#kubectl get pod pod-secret-volume
 NAME                READY   STATUS    RESTARTS   AGE
 pod-secret-volume   1/1     Running   0          5s
-```
 
-```text
 [root@master1 ~]#kubectl exec pod-secret-volume -- ls /secret
 password
 username
-```
 
-```text
 #注意:文件内容不会随着Secret更新而自动更新,可以将Pod删除重建来实现更新
 [root@master1 ~]#kubectl exec pod-secret-volume -- cat  /secret/username
 admin
 [root@master1 ~]#kubectl exec pod-secret-volume -- cat  /secret/password
 password
-```
 
-```text
 #通过两次软链接实现
 [root@master1 ~]#kubectl  exec pod-secret-volume -- ls -l   /secret -a
 total 4
@@ -3060,9 +2481,7 @@ lrwxrwxrwx 1 root root   32 Sep 30 07:37 ..data ->
 ..2024_09_30_07_37_50.1344469564
 lrwxrwxrwx 1 root root   15 Sep 30 07:37 password -> ..data/password
 lrwxrwxrwx 1 root root   15 Sep 30 07:37 username -> ..data/username
-```
 
-```text
 #在Pod运行的宿主机可以看到secret对应的文件
 [root@node1 ~]#find /var/lib/kubelet -name password
 /var/lib/kubelet/pods/41368cea-bd8e-4c7a-9803-
@@ -3070,31 +2489,24 @@ lrwxrwxrwx 1 root root   15 Sep 30 07:37 username -> ..data/username
 /var/lib/kubelet/pods/41368cea-bd8e-4c7a-9803-
 35659f1121e0/volumes/kubernetes.io~secret/secret/..2021_04_24_07_22_12.187672675
 8/password
-```
 
-```text
 [root@node1 ~]#cat /var/lib/kubelet/pods/41368cea-bd8e-4c7a-9803-
 35659f1121e0/volumes/kubernetes.io~secret/secret/password
 password
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f storage-secret-test-pod.yaml
 ```
 
 #### 2.3.5.6 范例: 为 Service Account 创建 Secret
-
-```text
+```yaml
 #k8s-v1.24版本后,创建SA不会自动创建secret,需要手动创建secret
 [root@master1 ~]#cat storage-secret-sa.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
 name: testsa
-```
 
-```text
 ---
 apiVersion: v1
 kind: Secret
@@ -3104,28 +2516,18 @@ name: testsa-secret
 namespace: default
 annotations:
 kubernetes.io/service-account.name: "testsa"
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-secret-sa.yaml
-```
 
-```text
 [root@master1 ~]#kubectl get secrets,sa
 NAME                   TYPE                                  DATA   AGE
-```
 
-```text
 secret/testsa-secret   kubernetes.io/service-account-token   3      36m
-```
 
-```text
 NAME                     SECRETS   AGE
 serviceaccount/default   0         41d
 serviceaccount/testsa    0         36m
-```
 
-```text
 #查看对应的token
 #方法1
 [root@master1 ~]#kubectl get secrets testsa-secret -o yaml
@@ -3156,20 +2558,16 @@ namespace: default
 resourceVersion: "578846"
 uid: c7efbc9d-de09-4442-a159-9ecd5933a890
 type: kubernetes.io/service-account-token
-```
 
-```text
 #获取上面的Token值并解码生成变量TOKEN
 [root@master1 ~]#TOKEN=$(echo
 ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklrWkpTWEJSUzE5RVNuSlVRamxhVlhadmEzWnJha2c0
 YjI5QmIwZ3RSalZrZDI0eWJXdHRVWGRGY0RBaWZRLmV5SnBjTFRwWFh6aEgxU3ZNaGRxOVJzWXBBSmdM
 QQ==|base64 -d)
-```
 
-```text
 #使用上面TOKEN访问，验证用户身份，但权限不足
 [root@master1 ~]#curl -s  --cacert /etc/kubernetes/pki/ca.crt -H "Authorization:
-Bearer ${TOKEN}" https://kubeapi.wang.org:6443|head{
+Bearer ${TOKEN}" https://kubeapi.bowen.org:6443|head{
 "kind": "Status",
 "apiVersion": "v1",
 "metadata": {},
@@ -3180,17 +2578,11 @@ get path \"/\"",
 "details": {},
 "code": 403
 }
-```
 
-```text
 #方法2:此方式无需base64解码
-```
 
-```text
 [root@master1 ~]#kubectl describe secrets testsa-secret
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete -f storage-secret-sa.yaml
 ```
@@ -3198,13 +2590,10 @@ get path \"/\"",
 ### 2.3.6 TLS  案例
 
 TLS 类型的 Secret 主要用于对https场景的证书和密钥文件来进行加密传输。
-
 ```text
 #tls类型格式
 kubectl create secret tls NAME --cert=/path/file --key=/path/file
-```
 
-```text
 #注意：
 #保存cert文件内容的key名称不能指定，自动为tls.crt，卷挂载后生成的文件名也为tls.crt
 #保存private key文件内容的key不能指定,自动为tls.key，卷挂载后生成的文件名也为tls.key
@@ -3215,42 +2604,32 @@ kubectl create secret tls NAME --cert=/path/file --key=/path/file
 下面案例实现一个基于https 的nginx的web服务。
 
 #### 2.3.6.1 创建 TLS 证书文件
-
-```text
+```bash
 #生成私钥匙
 [root@master1 ~]#mkdir nginx-certs
-[root@master1 ~]#openssl  genrsa -out nginx-certs/www.wang.org.key 2048
-```
+[root@master1 ~]#openssl  genrsa -out nginx-certs/www.bowen.org.key 2048
 
-```text
 #生成自签名证书
-[root@master1 ~]#openssl req  -new -x509 -key nginx-certs/www.wang.org.key -days
-3650 -out nginx-certs/www.wang.org.crt -subj
-/C=CN/ST=Beijing/L=Beijing/O=DevOps/CN=www.wang.org
+[root@master1 ~]#openssl req  -new -x509 -key nginx-certs/www.bowen.org.key -days
+3650 -out nginx-certs/www.bowen.org.crt -subj
+/C=CN/ST=Beijing/L=Beijing/O=DevOps/CN=www.bowen.org
 #注意：CN指向的域名必须是nginx配置中使用的域名信息
-```
 
-```text
 #查看文件
 [root@master1 ~]#ls nginx-certs/
-wang.org.crt  wang.org.key
+bowen.org.crt  bowen.org.key
 ```
 
 #### 2.3.6.2  基于 TLS 证书文件创建对应的 Secret
-
-```text
+```yaml
 [root@master1 ~]#kubectl create secret tls secret-nginx-ssl  --cert=nginx-
-certs/www.wang.org.crt --key=nginx-certs/www.wang.org.key
-```
+certs/www.bowen.org.crt --key=nginx-certs/www.bowen.org.key
 
-```text
 #查看结果
 [root@master1 ~]#kubectl get secrets
 NAME                  TYPE                                  DATA   AGE
 secret-nginx-ssl      kubernetes.io/tls                     2      2m53s
-```
 
-```text
 #查看内容
 [root@master1 ~]#kubectl get secrets secret-nginx-ssl -o yaml
 apiVersion: v1
@@ -3272,64 +2651,45 @@ type: kubernetes.io/tls
 ```
 
 #### 2.3.6.3 准备 Nginx 配置文件
-
-```text
+```nginx
 #nginx主配置文件 myserver.conf
 [root@master1 nginx-ssl-conf.d]#ls
 myserver.conf  myserver-gzip.cfg  myserver-status.cfg
 [root@master1 nginx-ssl-conf.d]#cat myserver.conf
 server {
 listen 80;
-server_name www.wang.org;
+server_name www.bowen.org;
 return 301 https://$host$request_uri;
 }
-```
 
-```text
 server {
 listen 443 ssl;
-server_name www.wang.org;
-```
+server_name www.bowen.org;
 
-```text
 ssl_certificate /etc/nginx/certs/tls.crt;
 ssl_certificate_key /etc/nginx/certs/tls.key;
-```
 
-```text
 ssl_session_timeout 5m;
-```
 
-```text
 ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-```
 
-```text
 ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
 ssl_prefer_server_ciphers on;
-```
 
-```text
 include /etc/nginx/conf.d/myserver-*.cfg;
-```
 
-```text
 location / {
 root /usr/share/nginx/html;
 }
 }
-```
 
-```text
 #nginx的压缩配置文件:myserver-gzip.cfg
 [root@master1 nginx-ssl-conf.d]#cat myserver-gzip.cfg
 gzip on;
 gzip_comp_level 5;
 gzip_proxied     expired no-cache no-store private auth;
 gzip_types text/plain text/css application/xml text/javascript;
-```
 
-```text
 #nginx的状态页配置文件myserver-status.cfg
 [root@master1 nginx-ssl-conf.d]#cat myserver-status.cfg
 location /status {
@@ -3339,13 +2699,10 @@ access_log off;
 ```
 
 #### 2.3.6.4 创建配置文件对应的 Configmap
-
-```text
+```bash
 [root@master1 ~]#kubectl create configmap cm-nginx-ssl-conf --from-file=nginx-
 ssl-conf.d/
-```
 
-```text
 [root@master1 ~]#kubectl get cm
 NAME                DATA   AGE
 cm-nginx-ssl-conf   3      15m
@@ -3353,8 +2710,7 @@ kube-root-ca.crt    1      4d15h
 ```
 
 #### 2.3.6.5 创建引用Secret和configmap资源配置文件
-
-```text
+```yaml
 #创建资源配置文件
 [root@master1 ~]#cat storage-secret-nginx-ssl.yaml
 apiVersion: v1
@@ -3372,46 +2728,37 @@ configMap:
 name: cm-nginx-ssl-conf
 optional: false
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/nginx:1.20.0
+- image: registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 name: nginx-ssl-server
 volumeMounts:
 - name: nginx-certs
 mountPath: /etc/nginx/certs/    #其保存cert文件自动命名为tls.crt，而保存private
 key文件的自动命名为tls.key
 readOnly: true
-```
 
-```text
 - name: nginx-confs
 mountPath: /etc/nginx/conf.d/
 readOnly: true
-```
 
-```text
 #创建pod
 [root@master1 ~]#kubectl apply  -f storage-secret-nginx-ssl.yaml
 ```
 
 #### 2.3.6.6 验证结果
-
-```text
+```bash
 [root@master1 ~]#kubectl get pod pod-nginx-ssl -o wide
 NAME            READY   STATUS    RESTARTS   AGE     IP            NODE
 NOMINATED NODE   READINESS GATES
 pod-nginx-ssl   1/1     Running   0          3m33s   172.16.3.13
-node3.wang.org   <none>           <none>
-```
+node3.bowen.org   <none>           <none>
 
-```text
 #查看生成的证书文件，表示为关联时间戳目录下的两个双层软链接文件tls.crt和tls.key,保存证书的原始
 文件,而非base64格式
 [root@master1 ~]#kubectl exec -it pod-nginx-ssl -- ls -l /etc/nginx/certs/
 total 0
 lrwxrwxrwx 1 root root 14 Mar 27 06:21 tls.crt -> ..data/tls.crt
 lrwxrwxrwx 1 root root 14 Mar 27 06:21 tls.key -> ..data/tls.key
-```
 
-```text
 #访问Pod
 [root@master1 ~]#curl -I  http://172.16.3.13
 HTTP/1.1 301 Moved Permanently
@@ -3421,9 +2768,7 @@ Content-Type: text/html
 Content-Length: 169
 Connection: keep-alive
 Location: https://172.16.3.13/
-```
 
-```text
 [root@master1 ~]#curl -Lkv  http://172.16.3.13
 *   Trying 172.16.3.13:80...
 * Connected to 172.16.3.13 (172.16.3.13) port 80 (#0)
@@ -3449,9 +2794,7 @@ Location: https://172.16.3.13/
 * Connected to 172.16.3.13 (172.16.3.13) port 443 (#1)
 * ALPN, offering h2
 * ALPN, offering http/1.1
-```
 
-```text
 * TLSv1.0 (OUT), TLS header, Certificate Status (22):
 * TLSv1.3 (OUT), TLS handshake, Client hello (1):
 * TLSv1.2 (IN), TLS header, Certificate Status (22):
@@ -3474,8 +2817,8 @@ Location: https://172.16.3.13/
 * SSL connection using TLSv1.2 / ECDHE-RSA-AES128-GCM-SHA256
 * ALPN, server accepted to use http/1.1
 * Server certificate:
-*  subject: C=CN; ST=Beijing; L=Beijing; O=DevOps; CN=www.wang.org
-*  issuer: C=CN; ST=Beijing; L=Beijing; O=DevOps; CN=www.wang.org
+*  subject: C=CN; ST=Beijing; L=Beijing; O=DevOps; CN=www.bowen.org
+*  issuer: C=CN; ST=Beijing; L=Beijing; O=DevOps; CN=www.bowen.org
 *  SSL certificate verify result: self-signed certificate (18), continuing
 anyway.
 * TLSv1.2 (OUT), TLS header, Supplemental data (23):
@@ -3498,37 +2841,29 @@ anyway.
 <
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
 * Connection #1 to host 172.16.3.13 left intact
-```
 
-```text
 [root@master1 ~]#curl -Lk http://172.16.3.13/status
 Active connections: 2
 server accepts handled requests
 8 8 8
 Reading: 0 Writing: 1 Waiting: 1
-```
 
-```text
 #验证证书信息
 [root@master1 ~]#openssl s_client -connect 172.16.3.13:443
 CONNECTED(00000003)
 Can't use SSL_get_servername
-depth=0 C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.wang.org
-```
+depth=0 C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.bowen.org
 
-```text
 verify error:num=18:self-signed certificate
 verify return:1
-depth=0 C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.bowen.org
 verify return:1
 ---
 Certificate chain
-0 s:C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.wang.org
-i:C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.wang.org
+0 s:C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.bowen.org
+i:C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.bowen.org
 ........
-```
 
-```text
 #清理环境
 [root@master1 ~]#kubectl delete  -f storage-secret-nginx-ssl.yaml
 [root@master1 ~]#kubectl delete cm cm-nginx-ssl-conf
@@ -3544,54 +2879,43 @@ i:C = CN, ST = Beijing, L = Beijing, O = DevOps, CN = www.wang.org
 证书的有效期一般为1年,到期前需要提前更新证书
 
 范例: 证书更新
-
-```text
+```bash
 #重新颁发证书
-[root@master1 ~]#(umask 077; openssl genrsa -out wang.key 2048)
-[root@master1 ~]#openssl req -new -x509 -key wang.key -out wang.crt -subj
-/C=CN/ST=Beijing/L=Beijing/O=SRE/CN=www.wang.org -days 3650
-```
+[root@master1 ~]#(umask 077; openssl genrsa -out bowen.key 2048)
+[root@master1 ~]#openssl req -new -x509 -key bowen.key -out bowen.crt -subj
+/C=CN/ST=Beijing/L=Beijing/O=SRE/CN=www.bowen.org -days 3650
 
-```text
 #方法1:
 #在线修改证书配置,需要提前先将新证书文件用base64编码并删除换行符
-[root@master1 ~]#cat wang.crt |base64 | tr -d '\n'
-[root@master1 ~]#cat wang.key |base64 | tr -d '\n'
+[root@master1 ~]#cat bowen.crt |base64 | tr -d '\n'
+[root@master1 ~]#cat bowen.key |base64 | tr -d '\n'
 #上面生成的内容替换下面命令的内容,立即生效
 [root@master1 ~]#kubectl edit secrets  secret-nginx-ssl
-```
 
-```text
 #方法2
 #删除旧证书配置
 [root@master1 ~]#kubectl delete secrets secret-nginx-ssl
 #创建新证书配置
-[root@master1 ~]#kubectl create secret tls secret-nginx-ssl --cert=./wang.crt --
-key=./wang.key
-```
+[root@master1 ~]#kubectl create secret tls secret-nginx-ssl --cert=./bowen.crt --
+key=./bowen.key
 
-```text
 #集群外验证证书是否生效
-[root@master1 ~]#echo 172.16.3.13 www.wang.org >> /etc/hosts
-```
+[root@master1 ~]#echo 172.16.3.13 www.bowen.org >> /etc/hosts
 
-```text
 #nginx不支持热加载，需要手动加载
 [root@master1 ~]#kubectl exec pod-nginx-ssl -- nginx -s reload
-[root@master1 ~]#openssl s_client www.wang.org:443
+[root@master1 ~]#openssl s_client www.bowen.org:443
 CONNECTED(00000003)
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify error:num=18:self-signed certificate
 verify return:1
-```
 
-```text
-depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+depth=0 C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 verify return:1
 ---
 Certificate chain
-0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
-i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.wang.org
+0 s:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
+i:C = CN, ST = Beijing, L = Beijing, O = SRE, CN = www.bowen.org
 a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
 v:NotBefore: Jun 15 03:18:44 2021 GMT; NotAfter: Jun 12 03:18:44 2031 GMT
 ......
@@ -3608,7 +2932,6 @@ dockercfg及dockerconfigjson类型的Secret 适用于实现让kubelet从私有Im
 其引用定义在pod.spec.imagePullSecrets字段上的列表,即支持多个docker-registry类型的Secret,从上至下逐个进行匹配。也支持pod.spec.serviceAcountName引用sa，再在serviceAccount.imagePullSecrets间接引用Docker-registry的secret。创建此种secret 可以通过下面方式实现。
 
 方法1: 通过命令创建
-
 ```text
 kubectl create secret docker-registry KEYNAME --docker-
 server=DOCKER_REGISTRY_SERVER --docker-username=DOCKER_USER --docker-
@@ -3616,30 +2939,21 @@ password=DOCKER_PASSWORD --docker-email=EMAIL
 ```
 
 方式二: 通过docker认证文件创建。
-
-```text
+```bash
 #先登录并认证到目标仓库server上，认证凭据自动保存在~/.docker/config.json文件中
 docker login --username=DOCKER_USER DOCKER_REGISTRY_SERVER
-```
 
-```text
 #基于config.json文件生成secret
 kubectl create secret docker-registry  KEYNAME --from-
 file=.dockerconfigjson=path/to/.docker/config.json
-```
 
-```text
 kubectl create secret generic KEYNAME --type='kubernetes.io/dockerconfigjson' --
 from-file=.dockerconfigjson=/root/.docker/config.json
-```
 
-```text
 #示例：
 kubectl create secret docker-registry my-secret --from-
 file=.dockerconfigjson=path/to/.docker/config.json
-```
 
-```text
 kubectl create secret generic dockerharbor-auth --
 type='kubernetes.io/dockerconfigjson' --from-
 file=.dockerconfigjson=/root/.docker/config.json
@@ -3660,36 +2974,27 @@ file=.dockerconfigjson=/root/.docker/config.json
 ![原 PDF 第 169 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-9d843b014f6789cb.png)
 
 范例: 测试用docker拉取上面的私有镜像
-
-```text
+```bash
 #不登录验证无法拉取镜像
-[root@ubuntu2204 ~]#docker pull wangxiaochun/private:nginx-1.20.0
-Error response from daemon: pull access denied for wangxiaochun/private,
+[root@ubuntu2204 ~]#docker pull bowen/private:nginx-1.20.0
+Error response from daemon: pull access denied for bowen/private,
 repository does not exist or may require 'docker login': denied: requested
 access to the resource is denied
-```
 
-```text
 #登录
-[root@ubuntu2204 ~]#docker login -u wangxiaochun -p 123456
+[root@ubuntu2204 ~]#docker login -u bowen -p 123456
 WARNING! Using --password via the CLI is insecure. Use --password-stdin.
 WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
 Configure a credential helper to remove this warning. See
 https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-```
 
-```text
 Login Succeeded
-[root@ubuntu2204 ~]#docker pull wangxiaochun/private:nginx-1.20.0
-```
+[root@ubuntu2204 ~]#docker pull bowen/private:nginx-1.20.0
 
-```text
-[root@ubuntu2204 ~]#docker images wangxiaochun/private:nginx-1.20.0
+[root@ubuntu2204 ~]#docker images bowen/private:nginx-1.20.0
 REPOSITORY             TAG            IMAGE ID       CREATED         SIZE
-wangxiaochun/private   nginx-1.20.0   7145ef2ae727   12 months ago   133MB
-```
+bowen/private   nginx-1.20.0   7145ef2ae727   12 months ago   133MB
 
-```text
 [root@ubuntu2204 ~]#cat .docker/config.json
 {
 "auths": {
@@ -3709,8 +3014,7 @@ wangxiaochun/private   nginx-1.20.0   7145ef2ae727   12 months ago   133MB
 **安装并创建Harbor的私有仓库和项目**
 
 ![原 PDF 第 170 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-371098afd162f49c.png)
-
-```text
+```bash
 #修改所有集群节点的Docker配置支持私有仓库
 [root@node1 ~]#vim /etc/docker/daemon.json
 {
@@ -3719,54 +3023,41 @@ wangxiaochun/private   nginx-1.20.0   7145ef2ae727   12 months ago   133MB
 "https://docker.mirrors.ustc.edu.cn",
 "https://hub-mirror.c.163.com"
 ],
-"insecure-registries":["harbor.wang.org"],  #添加此行,确保docker节点能够域名解析，而非
+"insecure-registries":["harbor.bowen.org"],  #添加此行,确保docker节点能够域名解析，而非
 Pod解析
 "exec-opts": ["native.cgroupdriver=systemd"]
 }
 [root@node1 ~]#systemctl restart docker
-```
 
-```text
 #拉取镜像
-[root@ubuntu2204 ~]#docker pull wangxiaochun/pod-test:v0.1
-[root@ubuntu2204 ~]#docker tag wangxiaochun/pod-test:v0.1
-harbor.wang.org/example/pod-test:v0.1
-```
+[root@ubuntu2204 ~]#docker pull bowen/pod-test:v0.1
+[root@ubuntu2204 ~]#docker tag bowen/pod-test:v0.1
+harbor.bowen.org/example/pod-test:v0.1
 
-```text
 #登录
-[root@ubuntu2204 ~]#docker login -u admin -p 123456 harbor.wang.org
-```
+[root@ubuntu2204 ~]#docker login -u admin -p 123456 harbor.bowen.org
 
-```text
 #上传镜像到私有仓库
-[root@ubuntu2204 ~]#docker push harbor.wang.org/example/pod-test:v0.1
+[root@ubuntu2204 ~]#docker push harbor.bowen.org/example/pod-test:v0.1
 ```
 
 **查看镜像**
 
 ![原 PDF 第 171 页插图](assets/Kubernetes数据存储和配置管理_Password_Removed1/img-31cd2180676657a8.png)
-
-```text
+```yaml
 #方法1：命令行创建Secret
 root@master1 ~]#kubectl create secret docker-registry harbor-docker-registry-
-secret  --docker-server=harbor.wang.org --docker-username=admin --docker-
+secret  --docker-server=harbor.bowen.org --docker-username=admin --docker-
 password=123456
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl create secret docker-registry harbor-docker-registry-
 secret --from-file=.dockerconfigjson=/root/.docker/config.json
-```
 
-```text
 [root@master1 ~]#kubectl get secrets harbor-docker-registry-secret
 NAME                            TYPE                             DATA   AGE
 harbor-docker-registry-secret   kubernetes.io/dockerconfigjson   1      10m
-```
 
-```text
 [root@master1 ~]#kubectl get secrets harbor-docker-registry-secret -o yaml
 apiVersion: v1
 data:
@@ -3781,26 +3072,20 @@ namespace: default
 resourceVersion: "682806"
 uid: d5bc9bc6-6a28-4f8f-ab19-b4c52725c8f3
 type: kubernetes.io/dockerconfigjson
-```
 
-```text
 #查看Secret内容
 [root@master1 ~]#echo
 eyJhdXRocyI6eyJoYXJib3Iud2FuZy5vcmciOnsidXNlcm5hbWUiOiJhZG1pbiIsInBhc3N3b3JkIjoi
 MTIzNDU2IiwiYXV0aCI6IllXUnRhVzQ2TVRJek5EVTIifX19 |base64 -d
-{"auths":{"harbor.wang.org":
+{"auths":{"harbor.bowen.org":
 {"username":"admin","password":"123456","auth":"YWRtaW46MTIzNDU2"}}}
-```
 
-```text
 #准备清单文件
 [root@master1 ~]#cat storage-secret-docker-registry-harbor.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-```
 
-```text
 name: deployment-harbor-docker-registry-secret
 spec:
 replicas: 3
@@ -3814,20 +3099,16 @@ app: pod-test-harbor-docker-registry-secret
 spec:
 containers:
 - name: pod-test-harbor-docker-registry-secret
-image: harbor.wang.org/example/pod-test:v0.1
+image: harbor.bowen.org/example/pod-test:v0.1
 ports:
 - containerPort: 80
 imagePullSecrets:
 - name: harbor-docker-registry-secret  #指定docker-registry类型的secret,如
 果有多个会逐个验证
-```
 
-```text
 #应用清单
 [root@master1 ~]#kubectl apply -f storage-secret-docker-registry-harbor.yaml
-```
 
-```text
 #验证Pod启动成功
 [root@master1 ~]#kubectl get pod |grep harbor
 deployment-harbor-docker-registry-secret-648986d7d-4pnbv   1/1     Running
@@ -3836,9 +3117,7 @@ deployment-harbor-docker-registry-secret-648986d7d-66ppw   1/1     Running
 0             3s
 deployment-harbor-docker-registry-secret-648986d7d-tvf24   1/1     Running
 0             3s
-```
 
-```text
 #测试访问Pod成功
 [root@master1 ~]#curl 10.244.2.39
 kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: deployment-harbor-
@@ -3848,15 +3127,12 @@ docker-registry-secret-648986d7d-4pnbv, ServerIP: 10.244.2.39!
 ##### 2.3.7.2.2 命令行创建阿里云的私有仓库登录认证信息
 
 范例: 通过命令创建阿里云的私有仓库登录认证信息
-
-```text
+```yaml
 #注意:如果不是docker官方仓库,必须指定--docker-server 选项
 [root@master1 ~]#kubectl create secret docker-registry aliyun-docker-registry-
 secret --docker-server=registry.cn-beijing.aliyuncs.com --docker-
 username=29308620@qq.com --docker-password=123456
-```
 
-```text
 [root@master1 ~]#cat storage-secret-docker-registry-aliyun.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -3868,25 +3144,21 @@ selector:
 matchLabels:
 app: nginx-aliyun-docker-registry-secret
 template:
-```
 
-```text
 metadata:
 labels:
 app: nginx-aliyun-docker-registry-secret
 spec:
 containers:
 - name: nginx-aliyun-docker-registry-secret
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/private:nginx-
+image: registry.cn-beijing.aliyuncs.com/bowen/private:nginx-
 1.20.0
 ports:
 - containerPort: 80
 imagePullSecrets:
 - name: aliyun-docker-registry-secret  #调用上面创建的secret名称，列表方式，多
 个容器遍历多个secret访问
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-secret-docker-registry-aliyun.yaml
 deployment.apps/deployment-aliyun-docker-registry-secret created
 [root@master1 ~]#kubectl get pod
@@ -3898,9 +3170,7 @@ deployment-aliyun-docker-registry-secret-54b9c6766f-kbtth   1/1     Running   0
 3s
 deployment-aliyun-docker-registry-secret-54b9c6766f-rxx6b   1/1     Running   0
 3s
-```
 
-```text
 [root@master1 ~]#kubectl get secrets aliyun-docker-registry-secret -o yaml
 apiVersion: v1
 data:
@@ -3916,9 +3186,7 @@ namespace: default
 resourceVersion: "824679"
 uid: dadd0676-49de-40be-aeb4-e87249b523ba
 type: kubernetes.io/dockerconfigjson
-```
 
-```text
 #解析secret信息,可以看到密码
 [root@master1 ~]#echo
 eyJhdXRocyI6eyJyZWdpc3RyeS5jbi1iZWlqaW5nLmFsaXl1bmNzLmNvbSI6eyJ1c2VybmFtZSI6IjI5
@@ -3931,57 +3199,44 @@ EyMzQ1Ng=="}}}
 
 #### 2.3.7.3 通过 Docker 认证文件实现
 
-注意: harbor.wang.org 服务器的域名解析要在worker节点上的DNS或/etc/hosts文件中实现,而无需在集群内的coreDNS实现。
+注意: harbor.bowen.org 服务器的域名解析要在worker节点上的DNS或/etc/hosts文件中实现,而无需在集群内的coreDNS实现。
 
 范例: 通过docker认证文件实现Harbor私有仓库访问
-
-```text
+```yaml
 #登录Harbor仓库生成dockerconfig文件
-[root@master1 ~]#docker login harbor.wang.org -u admin -p 123456
-```
+[root@master1 ~]#docker login harbor.bowen.org -u admin -p 123456
 
-```text
 [root@master1 ~]#cat .docker/config.json
 {
 "auths": {
-"harbor.wang.org": {
+"harbor.bowen.org": {
 "auth": "YWRtaW46MTIzNDU2"
 }
 }
 }
-```
 
-```text
 #准备镜像并上传到私用仓库
-[root@master1 ~]#docker pull wangxiaochun/pod-test:v0.2
-[root@master1 ~]#docker tag wangxiaochun/pod-test:v0.2
-harbor.wang.org/example/pod-test:v0.2
-[root@master1 ~]#docker push harbor.wang.org/example/pod-test:v0.2
-```
+[root@master1 ~]#docker pull bowen/pod-test:v0.2
+[root@master1 ~]#docker tag bowen/pod-test:v0.2
+harbor.bowen.org/example/pod-test:v0.2
+[root@master1 ~]#docker push harbor.bowen.org/example/pod-test:v0.2
 
-```text
 #在worker节点上访问私有仓库不经过验证,无法下载镜像
-[root@node1 ~]#docker pull harbor.wang.org/example/pod-test:v0.2
+[root@node1 ~]#docker pull harbor.bowen.org/example/pod-test:v0.2
 Error response from daemon: unauthorized: unauthorized to access repository:
 example/pod-test, action: pull: unauthorized to access repository: example/pod-
 test, action: pull
-```
 
-```text
 #基于dockerconfig生成secret
 [root@master1 ~]#kubectl create secret docker-registry secret-docker-registry-
 harbor-dockerconfig --from-file=.dockerconfigjson=/root/.docker/config.json
-```
 
-```text
 [root@master1 ~]#kubectl get secrets
 NAME                                         TYPE
 DATA   AGE
 secret-docker-registry-harbor-dockerconfig   kubernetes.io/dockerconfigjson   1
 10s
-```
 
-```text
 [root@master1 ~]#kubectl get secrets secret-docker-registry-harbor-dockerconfig -
 o yaml
 apiVersion: v1
@@ -3996,26 +3251,20 @@ namespace: default
 resourceVersion: "734984"
 uid: f039e6d5-c30a-4412-98d8-ca2c8a7cd532
 type: kubernetes.io/dockerconfigjson
-```
 
-```text
 #查看data内容
 [root@master1 ~]#echo
 ewoJImF1dGhzIjogewoJCSJoYXJib3Iud2FuZy5vcmciOiB7CgkJCSJhdXRoIjogIllXUnRhVzQ2TVRJ
 ek5EVTIiCgkJfQoJfQp9 |base64 -d
 {
 "auths": {
-"harbor.wang.org": {
+"harbor.bowen.org": {
 "auth": "YWRtaW46MTIzNDU2"
-```
 
-```text
 }
 }
 }
-```
 
-```text
 #准备清单文件
 [root@master1 ~]#cat storage-secret-docker-registry-harbor-dockerconfig.yaml
 apiVersion: apps/v1
@@ -4034,37 +3283,31 @@ app: pod-test-secret-docker-registry-harbor-dockerconfig
 spec:
 containers:
 - name: pod-test-harbor-docker-registry-secret
-image: harbor.wang.org/example/pod-test:v0.2
+image: harbor.bowen.org/example/pod-test:v0.2
 ports:
 - containerPort: 80
 imagePullSecrets:
 - name: secret-docker-registry-harbor-dockerconfig
-```
 
-```text
 #应用
 [root@master1 ~]#kubectl apply -f storage-secret-docker-registry-harbor-
 dockerconfig.yaml
-```
 
-```text
 #查看
 [root@master1 ~]#kubectl get pod -o wide
 NAME                                                              READY   STATUS
 RESTARTS   AGE   IP            NODE             NOMINATED NODE   READINESS
 GATES
 deployment-secret-docker-registry-harbor-dockerconfig-6cf59fmd8   1/1
-Running   0          67s   10.244.1.42   node1.wang.org   <none>
+Running   0          67s   10.244.1.42   node1.bowen.org   <none>
 <none>
 deployment-secret-docker-registry-harbor-dockerconfig-6cf59h8vx   1/1
-Running   0          67s   10.244.3.32   node3.wang.org   <none>
+Running   0          67s   10.244.3.32   node3.bowen.org   <none>
 <none>
 deployment-secret-docker-registry-harbor-dockerconfig-6cf5k5r22   1/1
-Running   0          67s   10.244.2.43   node2.wang.org   <none>
+Running   0          67s   10.244.2.43   node2.bowen.org   <none>
 <none>
-```
 
-```text
 #查看到Pod的镜像下载成功
 [root@master1 ~]#kubectl describe pod deployment-secret-docker-registry-harbor-
 dockerconfig-6cf5k5r22 |tail
@@ -4075,32 +3318,26 @@ for 300s
 Events:
 Type    Reason     Age    From               Message
 ----    ------     ----   ----               -------
-```
 
-```text
 Normal  Scheduled  6m23s  default-scheduler  Successfully assigned
 default/deployment-secret-docker-registry-harbor-dockerconfig-6cf5k5r22 to
-node2.wang.org
+node2.bowen.org
 Normal  Pulling    6m23s  kubelet            Pulling image
-"harbor.wang.org/example/pod-test:v0.2"
+"harbor.bowen.org/example/pod-test:v0.2"
 Normal  Pulled     6m23s  kubelet            Successfully pulled image
-"harbor.wang.org/example/pod-test:v0.2" in 74.107717ms (74.117064ms including
+"harbor.bowen.org/example/pod-test:v0.2" in 74.107717ms (74.117064ms including
 waiting)
 Normal  Created    6m23s  kubelet            Created container pod-test-harbor-
 docker-registry-secret
 Normal  Started    6m23s  kubelet            Started container pod-test-harbor-
 docker-registry-secret
-```
 
-```text
 #在上面pod运行的节点上仍然无法用docker拉取镜像
-[root@node1 ~]#docker pull harbor.wang.org/example/pod-test:v0.2
+[root@node1 ~]#docker pull harbor.bowen.org/example/pod-test:v0.2
 Error response from daemon: unauthorized: unauthorized to access repository:
 example/pod-test, action: pull: unauthorized to access repository: example/pod-
 test, action: pull
-```
 
-```text
 #环境清理
 [root@master1 ~]#kubectl delete -f storage-secret-docker-registry-harbor-
 dockerconfig.yaml
@@ -4109,24 +3346,19 @@ dockerconfig
 ```
 
 范例: 通过docker认证文件实现阿里云私有仓库访问
-
-```text
+```yaml
 #尝试无登录直接拉取私有仓库的镜像失败
 [root@node1 ~]#docker push registry.cn-
-beijing.aliyuncs.com/wangxiaochun/private:nginx-1.20.0
+beijing.aliyuncs.com/bowen/private:nginx-1.20.0
 The push refers to repository [registry.cn-
-beijing.aliyuncs.com/wangxiaochun/private]
+beijing.aliyuncs.com/bowen/private]
 An image does not exist locally with the tag: registry.cn-
-beijing.aliyuncs.com/wangxiaochun/private
-```
+beijing.aliyuncs.com/bowen/private
 
-```text
 [root@master1 ~]#docker login --username=29308620@qq.com registry.cn-
 beijing.aliyuncs.com
 Password:
-```
 
-```text
 [root@master1 ~]#cat /root/.docker/config.json
 {
 "auths": {
@@ -4135,22 +3367,16 @@ Password:
 }
 }
 }[root@master1 ~]#
-```
 
-```text
 #创建secret
 [root@master1 ~]#kubectl create secret generic aliyun-registry-secret-auth --
 type='kubernetes.io/dockerconfigjson' --from-
 file=.dockerconfigjson=/root/.docker/config.json
-```
 
-```text
 [root@master1 ~]#kubectl get secrets
 NAME                          TYPE                             DATA   AGE
 aliyun-registry-secret-auth   kubernetes.io/dockerconfigjson   1      48s
-```
 
-```text
 [root@master1 ~]#kubectl get secrets aliyun-registry-secret-auth -o yaml
 apiVersion: v1
 data:
@@ -4165,9 +3391,7 @@ namespace: default
 resourceVersion: "568129"
 uid: 70605fce-35ef-4b21-9a41-3fa09a58c2c6
 type: kubernetes.io/dockerconfigjson
-```
 
-```text
 #创建deployment引用secret
 [root@master1 ~]#cat storage-secret-docker-registry-dockerconfig.yaml
 apiVersion: apps/v1
@@ -4186,62 +3410,52 @@ app: nginx-aliyun-registry-secret
 spec:
 containers:
 - name: nginx-aliyun-registry-secret
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/private:nginx-
+image: registry.cn-beijing.aliyuncs.com/bowen/private:nginx-
 1.20.0
 ports:
 - containerPort: 80
 imagePullSecrets:
 - name: aliyun-registry-secret-auth
-```
 
-```text
 [root@master1 ~]#kubectl apply  -f storage-secret-docker-registry-
 dockerconfig.yaml
 deployment.apps/deployment-aliyun-registry-secret-auth created
-```
 
-```text
 #查看Pod成功创建在node1节点
 [root@master1 ~]#kubectl get pod -o wide
 NAME                                                      READY   STATUS
 RESTARTS        AGE    IP            NODE             NOMINATED NODE   READINESS
 GATES
 deployment-aliyun-registry-secret-auth-5c76cb9d99-drz8r   1/1     Running   0
-43s    10.244.1.52   node1.wang.org   <none>           <none>
-```
+43s    10.244.1.52   node1.bowen.org   <none>           <none>
 
-```text
 #成功下载镜像
 [root@master1 ~]#kubectl describe pod deployment-aliyun-registry-secret-auth-
 5c76cb9d99-drz8r
 .....
-```
 
-```text
 Events:
 Type    Reason     Age   From               Message
 ----    ------     ----  ----               -------
 Normal  Scheduled  27s   default-scheduler  Successfully assigned
 default/deployment-aliyun-registry-secret-auth-5c76cb9d99-drz8r to
-node1.wang.org
+node1.bowen.org
 Normal  Pulling    26s   kubelet            Pulling image "registry.cn-
-beijing.aliyuncs.com/wangxiaochun/private:nginx-1.20.0"
+beijing.aliyuncs.com/bowen/private:nginx-1.20.0"
 Normal  Pulled     2s    kubelet            Successfully pulled image
-"registry.cn-beijing.aliyuncs.com/wangxiaochun/private:nginx-1.20.0" in
+"registry.cn-beijing.aliyuncs.com/bowen/private:nginx-1.20.0" in
 24.153465179s
 Normal  Created    2s    kubelet            Created container nginx-aliyun-
 registry-secret
 Normal  Started    2s    kubelet            Started container nginx-aliyun-
 registry-secret
-```
 
-```text
 #Pod正常访问
+```
+```bash
 [root@master1 ~]#curl 10.244.1.52
 Welcome to Nginx Web Site ! Nginx Version: 1.20.0
-```
 
-```text
 #在node1节点实时观察日志如下
 [root@node1 ~]#docker events
 2021-02-28T16:40:02.660893707Z container create
@@ -4270,9 +3484,7 @@ io.kubernetes.pod.namespace=default, io.kubernetes.pod.uid=bf09c67d-4318-4a17-
 b745-a048106afe2e, name=k8s_POD_deployment-aliyun-registry-secret-auth-
 5c76cb9d99-x6lf9_default_bf09c67d-4318-4a17-b745-a048106afe2e_0, pod-template-
 hash=5c76cb9d99)
-```
 
-```text
 2021-02-28T16:40:03.224076848Z container create
 26cd765096a6ac461474822b26da7348d2a7a1e5de8ed44a1d81a11c2d3391ea
 (annotation.io.kubernetes.container.hash=80100196,
@@ -4315,14 +3527,12 @@ io.kubernetes.sandbox.id=4b107a1940e673148cf2e4a6f7c3a280ccdfd0070d91cdf8690809f
 f454b9135, maintainer=NGINX Docker Maintainers <docker-maint@nginx.com>,
 name=k8s_nginx-aliyun-registry-secret_deployment-aliyun-registry-secret-auth-
 5c76cb9d99-x6lf9_default_bf09c67d-4318-4a17-b745-a048106afe2e_0)
-```
 
-```text
 #node1节点仍然无法直接下载镜像
 [root@node1 ~]#docker push registry.cn-
-beijing.aliyuncs.com/wangxiaochun/private:nginx-1.20.0
+beijing.aliyuncs.com/bowen/private:nginx-1.20.0
 The push refers to repository [registry.cn-
-beijing.aliyuncs.com/wangxiaochun/private]
+beijing.aliyuncs.com/bowen/private]
 0544a0706b26: Preparing
 272bc57d3405: Preparing
 f7141923aaa3: Preparing
@@ -4337,9 +3547,9 @@ denied: requested access to the resource is denied
 
 ### 2.4.1 downwardAPI 介绍
 
-```text
-https://kubernetes.io/zh-cn/docs/concepts/storage/volumes/#downwardapi
-```
+
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/volumes/#downwardapi>
+
 
 在Kubernetes集群场景中，对于运行中的pod来说，可以通过 configmap 、secret、volume等方式为pod提供相应的配置属性或者配置文件等信息。但是对于pod中的应用程序来说，有时候还需要获取其所在的宿主机提供的外在环境信息。
 
@@ -4380,7 +3590,6 @@ metadata.namespace The pod’s namespace.Yes Yes
 metadata.uid The pod’s UID.Yes Yes
 
 All the pod’s labels, one label
-
 ```text
 metadata.labels
 ```
@@ -4396,7 +3605,6 @@ metadata.labels['key']The value of the specified
 label.Yes Yes
 
 All the pod’s annotations, one
-
 ```text
 metadata.annotations
 ```
@@ -4453,27 +3661,19 @@ storage limit.Yes Yes
 
 容器规范中可在环境变量配置中的valueFrom通过内嵌字段fieldRef引用的信息包括如下信息：
 
-```text
-metadata.name：Pod对象的名称
-metadata.namespace：Pod对象隶属的名称空间
-metadata.uid：Pod对象的UID
-metadata.labels['<KEY>']：Pod对象标签中的指定键的值，例如metadata.labels['mylabel']
-metadata.annotations['<KEY>']：Pod对象注解信息中的指定键的值
-```
+
+metadata.name：Pod对象的名称 metadata.namespace：Pod对象隶属的名称空间 metadata.uid：Pod对象的UID metadata.labels['<KEY>']：Pod对象标签中的指定键的值，例如metadata.labels['mylabel'] metadata.annotations['<KEY>']：Pod对象注解信息中的指定键的值
+
 
 容器上的计算资源需求和资源限制相关的信息，以及临时存储资源需求和资源限制相关的信息可通过容器规范中的resourceFieldRef字段引用，相关字段包括requests.cpu、limits.cpu、requests.memory和limits.memory等。
 
 另外，可通过环境变量引用的信息有如下几个：
 
-```text
-status.podIP：Pod对象的IP地址
-spec.serviceAccountName：Pod对象使用的ServiceAccount资源名称
-spec.nodeName：节点名称
-status.hostIP：节点IP地址
-```
+
+status.podIP：Pod对象的IP地址 spec.serviceAccountName：Pod对象使用的ServiceAccount资源名称 spec.nodeName：节点名称 status.hostIP：节点IP地址
+
 
 容器上的当前容器的资源请求及资源限额的定义，可以通过resourceFieldRef字段引用，因此它们包括6项。
-
 ```text
 requests.cpu
 requests.memory
@@ -4486,8 +3686,7 @@ limits.ephemeral-storage
 ### 2.4.2 downwardAPI 案例
 
 范例: 获取基本的变量信息通过变量方式引用
-
-```text
+```yaml
 #定制的资源对象
 [root@master1 ~]#cat storage-downwardapi-env-test.yaml
 apiVersion: v1
@@ -4499,7 +3698,7 @@ app: downwardapi-env
 spec:
 containers:
 - name: downwardapi-env-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 resources:
 requests:
 memory: "32Mi"
@@ -4512,9 +3711,7 @@ env:
 valueFrom:
 fieldRef:
 fieldPath: metadata.name
-```
 
-```text
 - name: THIS_POD_NAMESPACE
 valueFrom:
 fieldRef:
@@ -4533,22 +3730,16 @@ resourceFieldRef:
 resource: requests.memory
 divisor: 1Mi
 - name: VAR_REF
-value: $(THIS_POD_NAMESPACE).wang.org  #变量引用格式:$(VAR_NAME)
-```
+value: $(THIS_POD_NAMESPACE).bowen.org  #变量引用格式:$(VAR_NAME)
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply -f storage-downwardapi-env-test.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]# kubectl get pod
 NAME                   READY   STATUS    RESTARTS   AGE
 downwardapi-env-test   1/1     Running   0          7s
-```
 
-```text
 [root@master1 ~]# kubectl exec -it downwardapi-env-test -- env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=downwardapi-env-test
@@ -4558,12 +3749,11 @@ THIS_APP_LABEL=downwardapi-env
 THIS_CPU_LIMIT=1  #向
 THIS_MEM_REQUEST=32
 THIS_POD_NAME=downwardapi-env-test
-VAR_REF=default.wang.org
+VAR_REF=default.bowen.org
 ```
 
 范例: 存储卷方式使用
-
-```text
+```yaml
 [root@master1 ~]#cat  storage-downwardapi-volume-test.yaml
 kind: Pod
 apiVersion: v1
@@ -4580,9 +3770,7 @@ volumes:
 - name: podinfo
 downwardAPI:
 defaultMode: 0420  #文件权限，默认0644
-```
 
-```text
 items:
 - fieldRef:
 fieldPath: metadata.namespace
@@ -4604,7 +3792,7 @@ divisor: "1Mi"
 path: "mem_request"
 containers:
 - name: downwardapi-volume-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 resources:
 requests:
 memory: "32Mi"
@@ -4617,21 +3805,15 @@ volumeMounts:
 mountPath: /etc/podinfo/
 readOnly: false
 #属性解析；defaultMode 表示挂载文件后，文件的权限限制,items 定制自己的一些名称
-```
 
-```text
 #应用资源对象
 [root@master1 ~]#kubectl apply -f storage-downwardapi-volume-test.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#kubectl get pod
 NAME                      READY   STATUS    RESTARTS   AGE
 downwardapi-volume-test   1/1     Running   0          2s
-```
 
-```text
 [root@master1 ~]#kubectl exec -it downwardapi-volume-test -- ls /etc/podinfo/
 cpu_limit        pod_annotations  pod_namespace
 mem_request      pod_labels
@@ -4643,15 +3825,11 @@ zone="Beijing"
 [root@master1 ~]#kubectl exec -it downwardapi-volume-test -- cat
 /etc/podinfo/cpu_limit
 1
-```
 
-```text
 #双层软链接，支持动态更新
 [root@master1 ~]#kubectl exec -it -n demons downwardapi-volume-test -- sh
 [root@downwardapi-volume-test /]# ls /etc/podinfo -l
-```
 
-```text
 total 0
 lrwxrwxrwx    1 root     root            16 Jun  6 01:20 cpu_limit ->
 ..data/cpu_limit
@@ -4663,19 +3841,17 @@ lrwxrwxrwx    1 root     root            17 Jun  6 01:20 pod_labels ->
 ..data/pod_labels
 lrwxrwxrwx    1 root     root            20 Jun  6 01:20 pod_namespace ->
 ..data/pod_namespace
-```
 
-```text
 #更新Pod属性，再次观察
 [root@master1 ~]#kubectl edit pod -n demons downwardapi-volume-test
 ```
 
 ## 2.5 Projected
 
-```text
-https://kubernetes.io/docs/concepts/storage/projected-volumes/
-https://kubernetes.io/zh-cn/docs/concepts/storage/projected-volumes/
-```
+
+- <https://kubernetes.io/docs/concepts/storage/projected-volumes/>
+- <https://kubernetes.io/zh-cn/docs/concepts/storage/projected-volumes/>
+
 
 之前的CM,Secret等卷资源在Pod内的一个目录同时只能挂载一个卷，而我们有时希望在一个目录内生成来自多个卷的多个文件。Projected  volumes 是一种特殊的卷类型，支持同时投射多个卷至同一个挂载点。Projected  不是一个独立的API 资源类型，但其可以引用现有的configmap、secret资源对象，或downwardAPI中的元数据信息。
 
@@ -4688,13 +3864,10 @@ Projected Volume仅支持对如下四种类型的卷（数据源）进行投射�
 **ConfigMap**：投射ConfgMap对象Secret：投射Secret对象DownwardAPI：投射Pod元数据ServiceAccountToken：投射ServiceAccountToken。
 
 范例：默认每一个Pod都有Projected卷
-
-```text
+```yaml
 [root@master1 ~]#kubectl run myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1
 
-```text
 [root@master1 ~]#kubectl get pod myapp -o yaml
 apiVersion: v1
 kind: Pod
@@ -4708,7 +3881,7 @@ resourceVersion: "185818"
 uid: 3059fd59-1a6e-47d0-af1b-28d015f2b3bb
 spec:
 containers:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imagePullPolicy: IfNotPresent
 name: myapp
 resources: {}
@@ -4720,7 +3893,7 @@ name: kube-api-access-cl7p6
 readOnly: true
 dnsPolicy: ClusterFirst
 enableServiceLinks: true
-nodeName: node1.wang.org
+nodeName: node1.bowen.org
 preemptionPolicy: PreemptLowerPriority
 priority: 0
 restartPolicy: Always
@@ -4750,9 +3923,7 @@ path: token
 items:
 - key: ca.crt
 path: ca.crt
-```
 
-```text
 name: kube-root-ca.crt
 - downwardAPI:
 items:
@@ -4783,7 +3954,7 @@ lastTransitionTime: "2022-04-17T15:38:19Z"
 status: "True"
 type: PodScheduled
 containerStatuses:
-- image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+- image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 imageID: ""
 lastState: {}
 name: myapp
@@ -4800,29 +3971,22 @@ startTime: "2022-04-17T15:38:19Z"
 ```
 
 范例：挂载secret,configMap和downwardAPI到容器内的同一个目录
-
-```text
+```yaml
 #Example configuration with a secret, a downwardAPI, and a configMap
 #https://kubernetes.io/docs/concepts/storage/projected-volumes/#example-
 configuration-secret-downwardapi-configmap
-```
 
-```text
 [root@master1 ~]#cat  storage-projected-demo.yaml
 apiVersion: v1
 data:
 username: d2FuZ3hpYW9jaHVu
 kind: Secret
 metadata:
-```
 
-```text
 name: mysecret
 namespace: default
 type: Opaque
-```
 
-```text
 ---
 apiVersion: v1
 data:
@@ -4839,7 +4003,7 @@ name: projected-volume-demo
 spec:
 containers:
 - name: container-test
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+image: registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1
 volumeMounts:
 - name: all-in-one
 mountPath: "/projected-volume"
@@ -4867,22 +4031,16 @@ name: myconfigmap
 items:
 - key: myconfig
 path: my-group/my-config
-```
 
-```text
 [root@master1 ~]#kubectl apply -f storage-projected-demo.yaml
 secret/mysecret created
 configmap/myconfigmap created
 pod/projected-volume-demo created
-```
 
-```text
 [root@master1 ~]#kubectl exec -it projected-volume-demo -- sh
 [root@projected-volume-demo /]# ls -l  /projected-volume/
 total 0
-```
 
-```text
 lrwxrwxrwx    1 root     root            16 Apr 17 16:07 cpu_limit ->
 ..data/cpu_limit
 lrwxrwxrwx    1 root     root            13 Apr 17 16:07 labels -> ..data/labels
@@ -4896,17 +4054,14 @@ my-config    my-username
 [root@projected-volume-demo /]# cat   /projected-volume/my-group/my-config
 Hello,Myconfig
 [root@projected-volume-demo /]# cat   /projected-volume/my-group/my-username
-wangxiaochun
+bowen
 ```
 
 范例：Example configuration: secrets with a non-default permission mode set
-
-```text
+```yaml
 #https://kubernetes.io/docs/concepts/storage/projected-volumes/#example-
 configuration-secrets-nondefault-permission-mode
-```
 
-```text
 apiVersion: v1
 kind: Pod
 metadata:
@@ -4937,19 +4092,14 @@ mode: 511
 ```
 
 范例：serviceAccountToken projected volumes
-
-```text
+```yaml
 #https://kubernetes.io/docs/concepts/storage/projected-
 volumes/#serviceaccounttoken
-```
 
-```text
 apiVersion: v1
 kind: Pod
 metadata:
-```
 
-```text
 name: sa-token-test
 spec:
 containers:
@@ -4972,13 +4122,10 @@ path: token
 ```
 
 范例：
-
-```text
+```yaml
 #https://livebook.manning.com/book/kubernetes-in-action-second-edition/chapter-
 9/v-13/371
-```
 
-```text
 apiVersion: v1
 kind: Pod
 metadata:

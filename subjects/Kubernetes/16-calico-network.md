@@ -2,6 +2,7 @@
 layout: default
 title: 'Kubernetes · Calico 网络部署与管理'
 subject_page: true
+kubernetes_notes: true
 syntax_highlight: true
 ---
 
@@ -70,7 +71,6 @@ Host_B将无法收到这个ARP请求。
 Proxy ARP 配置
 
 Proxy ARP 是在网卡上启用的, 可通过下面文件查看是否启用Proxy ARP。
-
 ```text
 /proc/sys/net/ipv4/conf/<DEV>/proxy_arp
 #值为0则未开启,此为默认值
@@ -80,8 +80,7 @@ Proxy ARP 是在网卡上启用的, 可通过下面文件查看是否启用Proxy
 节点为每个cali 接口都开启了ARP Proxy功能，从而让宿主机扮演网关设备，并以自己的MAC地址代为应答对端Pod中发来的ARP请求。同一节点上的Pod间通信依赖于节点主机上为每个Pod单独配置的路由规则,即同一个节点的Pod间通信也是通过三层路由实现的。
 
 Pod 内生成的路由如下：
-
-```text
+```bash
 [root@myapp-6b59f8f86-mfdn8 /]# route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -90,8 +89,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 ```
 
 节点主机上生成的路由如下：
-
-```text
+```bash
 [root@node1 ~]#route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -104,14 +102,10 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 cali2ad752e56a1  #对应Pod的veth网卡
 10.244.101.130  0.0.0.0         255.255.255.255 UH    0      0        0
 cali47ddc65abff
-```
 
-```text
 #开启ARP Proxy
 [root@node1 ~]#ls /proc/sys/net/ipv4/conf/
-```
 
-```text
 all              cali13251176854  cali3d321aef9c7  cali7f09440efda
 cali8e36c4d65e6  default  eth0  tunl0
 cali0e6b75291c2  cali25e96b97a8c  cali72c6e46c423  cali7f22771d9d2
@@ -133,56 +127,41 @@ calid568e889c3c  docker0  lo
 ##### 3.1.2.2.2 范例: Calico 同一个节点不同容器间通信
 
 ![原 PDF 第 83 页插图](assets/Kubernetes网络插件/img-39a7bd00833ada85.png)
-
-```text
+```bash
 #创建名称空间
 [root@ubuntu2204 ~]#ip netns add ns1
 [root@ubuntu2204 ~]#ip netns add ns2
-```
 
-```text
 #创建网卡veth pair
 [root@ubuntu2204 ~]#ip link add  veth1 type veth peer name veth1-ns1
 [root@ubuntu2204 ~]#ip link add  veth2 type veth peer name veth2-ns2
 [root@ubuntu2204 ~]#ip link set veth1-ns1 netns ns1
 [root@ubuntu2204 ~]#ip link set veth2-ns2 netns ns2
-```
 
-```text
 #添加IP
 [root@ubuntu2204 ~]#ip netns exec ns1 ip addr add 192.168.100.101/24 dev veth1-
 ns1
 [root@ubuntu2204 ~]#ip netns exec ns1 ip link set veth1-ns1 up
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns2 ip addr add 192.168.200.102/24 dev veth2-
 ns2
 [root@ubuntu2204 ~]#ip netns exec ns2 ip link set veth2-ns2 up
-```
 
-```text
 #主机网卡IP配置
 [root@ubuntu2204 ~]#ip a a  192.168.100.1/24 dev veth1
 [root@ubuntu2204 ~]#ip a a  192.168.200.1/24 dev veth2
 [root@ubuntu2204 ~]#ip link set  veth1 up
 [root@ubuntu2204 ~]#ip link set  veth2 up
-```
 
-```text
 #添加路由
 [root@ubuntu2204 ~]#ip netns exec ns1 ip route add default via 192.168.100.1 dev
 veth1-ns1
 [root@ubuntu2204 ~]#ip netns exec ns2 ip route add default via 192.168.200.1 dev
 veth2-ns2
-```
 
-```text
 #开启路由转发
 [root@ubuntu2204 ~]#sysctl -w net.ipv4.ip_forward=1
-```
 
-```text
 [root@ubuntu2204 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -214,33 +193,23 @@ inet 192.168.200.1/24 scope global veth2
 valid_lft forever preferred_lft forever
 inet6 fe80::9cfd:86ff:fe30:9c10/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #测试通信
 [root@ubuntu2204 ~]#ip netns exec ns1 ping -c1 192.168.200.102
 PING 192.168.200.102 (192.168.200.102) 56(84) bytes of data.
 64 bytes from 192.168.200.102: icmp_seq=1 ttl=63 time=0.039 ms
-```
 
-```text
 --- 192.168.200.102 ping statistics ---
-```
 
-```text
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.039/0.039/0.039/0.000 ms
-```
 
-```text
 #查看ARP缓存
 [root@ubuntu2204 ~]#ip netns exec ns1 arp -n
 Address                  HWtype  HWaddress           Flags Mask            Iface
 192.168.100.1            ether   a6:55:12:8c:96:c6   C
 veth1-ns1
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns2 arp -n
 Address                  HWtype  HWaddress           Flags Mask            Iface
 192.168.200.1            ether   9e:fd:86:30:9c:10   C
@@ -250,23 +219,18 @@ veth2-ns2
 ##### 3.1.2.2.3 范例: Calico 同一个节点不同容器间通信
 
 ![原 PDF 第 85 页插图](assets/Kubernetes网络插件/img-a0779c1be67f7ef0.png)
-
-```text
+```bash
 #1.创建ns
 [root@ubuntu2204 ~]#ip netns add ns1
 [root@ubuntu2204 ~]#ip netns add ns2
 [root@ubuntu2204 ~]#ip netns
 ns2
 ns1
-```
 
-```text
 #2.创建一对veth peer
 [root@ubuntu2204 ~]#ip link add  veth1 type veth peer name veth1-ns1
 [root@ubuntu2204 ~]#ip link add  veth2 type veth peer name veth2-ns2
-```
 
-```text
 [root@ubuntu2204 ~]#ip a
 ......
 3: veth1-ns1@veth1: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN
@@ -275,18 +239,14 @@ link/ether 96:ab:a3:21:3d:c3 brd ff:ff:ff:ff:ff:ff
 4: veth1@veth1-ns1: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN
 group default qlen 1000
 link/ether a6:55:12:8c:96:c6 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 5: veth2-ns2@veth2: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN
 group default qlen 1000
 link/ether c6:a3:df:ea:2f:e3 brd ff:ff:ff:ff:ff:ff
 6: veth2@veth2-ns2: <BROADCAST,MULTICAST,M-DOWN> mtu 1500 qdisc noop state DOWN
 group default qlen 1000
 link/ether 9e:fd:86:30:9c:10 brd ff:ff:ff:ff:ff:ff
-```
 
-```text
 #3.把veth1-ns1/veth2-ns2分别放在ns1/ns2名称空间中
 [root@ubuntu2204 ~]#ip link set veth1-ns1 netns ns1
 [root@ubuntu2204 ~]#ip link set veth2-ns2 netns ns2
@@ -316,17 +276,13 @@ link/ether a6:55:12:8c:96:c6 brd ff:ff:ff:ff:ff:ff link-netns ns1
 6: veth2@if5: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default
 qlen 1000
 link/ether 9e:fd:86:30:9c:10 brd ff:ff:ff:ff:ff:ff link-netns ns2
-```
 
-```text
 #4.设置ns1和ns2的网卡ip地址
 #配置ns1名称空间的网卡IP
 [root@ubuntu2204 ~]#ip netns exec ns1 ip addr add 192.168.100.101/32 dev veth1-
 ns1
 [root@ubuntu2204 ~]#ip netns exec ns1 ip link set veth1-ns1 up
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns1 ip addr
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -337,34 +293,24 @@ inet 192.168.100.101/32 scope global veth1-ns1
 valid_lft forever preferred_lft forever
 inet6 fe80::94ab:a3ff:fe21:3dc3/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #默认无法访问自身的IP
 [root@ubuntu2204 ~]#ip netns exec ns1 ping -c1 192.168.100.101
 PING 192.168.100.101 (192.168.100.101) 56(84) bytes of data.
-```
 
-```text
 --- 192.168.100.101 ping statistics ---
 1 packets transmitted, 0 received, 100% packet loss, time 0ms
-```
 
-```text
 #启用lo网卡即可
 [root@ubuntu2204 ~]#ip netns exec ns1 ip link set lo up
 [root@ubuntu2204 ~]#ip netns exec ns1 ping -c1 192.168.100.101
 PING 192.168.100.101 (192.168.100.101) 56(84) bytes of data.
 64 bytes from 192.168.100.101: icmp_seq=1 ttl=64 time=0.018 ms
-```
 
-```text
 --- 192.168.100.101 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.018/0.018/0.018/0.000 ms
-```
 
-```text
 #配置ns2名称空间的网卡IP
 [root@ubuntu2204 ~]#ip netns exec ns2 ip addr add 192.168.100.102/32 dev veth2-
 ns2
@@ -379,13 +325,13 @@ inet 192.168.100.102/32 scope global veth2-ns2
 valid_lft forever preferred_lft forever
 inet6 fe80::c4a3:dfff:feea:2fe3/64 scope link
 valid_lft forever preferred_lft forever
+```
+```bash
 [root@ubuntu2204 ~]#ip netns exec ns1 ip link set lo up
 #ns1和ns2无法通信
 [root@ubuntu2204 ~]#ip netns exec ns1 ping -c1 192.168.100.102
 ping: connect: Network is unreachable
-```
 
-```text
 #5.设置route
 [root@ubuntu2204 ~]#ip netns exec ns1 ip route add 169.254.1.1 dev veth1-ns1
 scope link
@@ -398,9 +344,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 ns1
 169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 veth1-
 ns1
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns2 ip route add 169.254.1.1 dev veth2-ns2
 scope link
 [root@ubuntu2204 ~]#ip netns exec ns2 ip route add default via 169.254.1.1 dev
@@ -412,20 +356,14 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 ns2
 169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 veth2-
 ns2
-```
 
-```text
 #6.把veth设备up
 [root@ubuntu2204 ~]#ip link set veth1 up
 [root@ubuntu2204 ~]#ip link set veth2 up
-```
 
-```text
 #7.开启路由
 [root@ubuntu2204 ~]#sysctl -w net.ipv4.ip_forward=1
-```
 
-```text
 #8.在hosts上设置回复路由
 [root@ubuntu2204 ~]#ip route add 192.168.100.101/32 dev veth1
 [root@ubuntu2204 ~]#ip route add 192.168.100.102/32 dev veth2
@@ -436,21 +374,15 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.0.0.0        0.0.0.0         255.255.255.0   U     0      0        0 eth0
 192.168.100.101 0.0.0.0         255.255.255.255 UH    0      0        0 veth1
 192.168.100.102 0.0.0.0         255.255.255.255 UH    0      0        0 veth2
-```
 
-```text
 #无法访问外网
 [root@ubuntu2204 ~]#ip netns exec ns1 ping -c1 192.168.100.102
 PING 192.168.100.102 (192.168.100.102) 56(84) bytes of data.
 From 192.168.100.101 icmp_seq=1 Destination Host Unreachable
-```
 
-```text
 --- 192.168.100.102 ping statistics ---
 1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
-```
 
-```text
 #9.为veth网卡开启proxy arp
 [root@ubuntu2204 ~]#cat /proc/sys/net/ipv4/conf/veth1/proxy_arp
 0
@@ -458,22 +390,16 @@ From 192.168.100.101 icmp_seq=1 Destination Host Unreachable
 0
 [root@ubuntu2204 ~]#echo 1 > /proc/sys/net/ipv4/conf/veth1/proxy_arp
 [root@ubuntu2204 ~]#echo 1 > /proc/sys/net/ipv4/conf/veth2/proxy_arp
-```
 
-```text
 #10.测试相互访问
 [root@ubuntu2204 ~]#ip netns exec ns1 ping -c1 192.168.100.102
 PING 192.168.100.102 (192.168.100.102) 56(84) bytes of data.
 64 bytes from 192.168.100.102: icmp_seq=1 ttl=63 time=0.051 ms
-```
 
-```text
 --- 192.168.100.102 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.051/0.051/0.051/0.000 ms
-```
 
-```text
 #查看MAC,看到网关对应veth网卡的MAC
 [root@ubuntu2204 ~]#ip netns exec ns1 arp -n
 Address                  HWtype  HWaddress           Flags Mask            Iface
@@ -481,24 +407,16 @@ Address                  HWtype  HWaddress           Flags Mask            Iface
 veth1-ns1
 10.0.0.100               ether   a6:55:12:8c:96:c6   C
 veth1-ns1
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns2 ping -c1 192.168.100.101
 PING 192.168.100.101 (192.168.100.101) 56(84) bytes of data.
-```
 
-```text
 64 bytes from 192.168.100.101: icmp_seq=1 ttl=63 time=0.036 ms
-```
 
-```text
 --- 192.168.100.101 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.036/0.036/0.036/0.000 ms
-```
 
-```text
 #查看MAC,看到网关对应veth网卡的MAC
 [root@ubuntu2204 ~]#ip netns exec ns2 arp -n
 Address                  HWtype  HWaddress           Flags Mask            Iface
@@ -511,38 +429,29 @@ veth2-ns2
 ##### 3.1.2.2.4 范例: Calico 跨不同节点的不同容器间通信
 
 ![原 PDF 第 89 页插图](assets/Kubernetes网络插件/img-0c0019c8d353661e.png)
-
-```text
+```bash
 #节点1上执行
 [root@ubuntu2204 ~]#ip netns add ns1
 [root@ubuntu2204 ~]#ip link add veth0 type veth peer name eth0-ns1
 [root@ubuntu2204 ~]#ip link set veth0 up
-```
 
-```text
 [root@ubuntu2204 ~]#ip link set eth0-ns1 netns ns1
 [root@ubuntu2204 ~]#ip netns exec ns1 ip addr add 192.168.200.101/32 dev eth0-
 ns1
 [root@ubuntu2204 ~]#ip netns exec ns1 ip link set eth0-ns1 up
-```
 
-```text
 #添加ns1名称空间的路由
 [root@ubuntu2204 ~]#ip netns exec ns1 ip route add 169.254.1.1 dev eth0-ns1
 scope link
 [root@ubuntu2204 ~]#ip netns exec ns1 ip route add default via 169.254.1.1 dev
 eth0-ns1
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns1 route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         169.254.1.1     0.0.0.0         UG    0      0        0 eth0-ns1
 169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 eth0-ns1
-```
 
-```text
 #在宿主机上添加分别到达各个Pod的路由
 [root@ubuntu2204 ~]#ip route add 192.168.200.101 dev veth0 scope link
 [root@ubuntu2204 ~]#ip route add 192.168.200.102 via 10.0.0.102 dev eth0
@@ -550,91 +459,65 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 Kernel IP routing table
 192.168.200.101 0.0.0.0         255.255.255.255 UH    0      0        0 veth0
 192.168.200.102 10.0.0.102      255.255.255.255 UGH   0      0        0 eth0
-```
 
-```text
 #开启路由
 [root@ubuntu2204 ~]#sysctl -w net.ipv4.ip_forward=1
 #开启proxy ARP
 [root@ubuntu2204 ~]#echo 1 > /proc/sys/net/ipv4/conf/veth0/proxy_arp
-```
 
-```text
 #节点2上执行
 [root@ubuntu2204 ~]#ip netns add ns2
 [root@ubuntu2204 ~]#ip link add veth0 type veth peer name eth0-ns2
 [root@ubuntu2204 ~]#ip link set veth0 up
-```
 
-```text
 [root@ubuntu2204 ~]#ip link set eth0-ns2 netns ns2
 [root@ubuntu2204 ~]#ip netns exec ns2 ip addr add 192.168.200.102/32 dev eth0-
 ns2
 [root@ubuntu2204 ~]#ip netns exec ns2 ip link set eth0-ns2 up
-```
 
-```text
 #添加ns2名称空间的路由
 [root@ubuntu2204 ~]#ip netns exec ns2 ip route add 169.254.1.1 dev eth0-ns2
 scope link
 [root@ubuntu2204 ~]#ip netns exec ns2 ip route add default via 169.254.1.1 dev
 eth0-ns2
-```
 
-```text
 #在宿主机上添加分别到达各个Pod的路由
 [root@ubuntu2204 ~]#ip route add 192.168.200.102 dev veth0 scope link
 [root@ubuntu2204 ~]#ip route add 192.168.200.101 via 10.0.0.101 dev eth0
-```
 
-```text
 #开启路由
 [root@ubuntu2204 ~]#sysctl -w net.ipv4.ip_forward=1
 #开启proxy ARP
 [root@ubuntu2204 ~]#echo 1 > /proc/sys/net/ipv4/conf/veth0/proxy_arp
-```
 
-```text
 #测试访问
 #在第1个节点上执行
 [root@ubuntu2204 ~]#ip netns exec ns1  ping -c1 192.168.200.102
 PING 192.168.200.102 (192.168.200.102) 56(84) bytes of data.
 64 bytes from 192.168.200.102: icmp_seq=1 ttl=62 time=1.44 ms
-```
 
-```text
 --- 192.168.200.102 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 1.442/1.442/1.442/0.000 ms
-```
 
-```text
 #查看网关的MAC为veth的网卡MAC
 [root@ubuntu2204 ~]#ip netns exec ns1  arp -n
-```
 
-```text
 Address                  HWtype  HWaddress           Flags Mask            Iface
 10.0.0.101               ether   1a:1d:32:3f:e9:06   C                     eth0-
 ns1
 169.254.1.1              ether   1a:1d:32:3f:e9:06   C                     eth0-
 ns1
-```
 
-```text
 #在第2个节点上执行
 [root@ubuntu2204 ~]#ip netns exec ns2  ping -c1 192.168.200.101
 PING 192.168.200.101 (192.168.200.101) 56(84) bytes of data.
 64 bytes from 192.168.200.101: icmp_seq=1 ttl=62 time=0.608 ms
-```
 
-```text
 --- 192.168.200.101 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 0.608/0.608/0.608/0.000 ms
-```
 
-```text
 [root@ubuntu2204 ~]#ip netns exec ns2  arp -n
 Address                  HWtype  HWaddress           Flags Mask            Iface
 169.254.1.1              ether   1a:1d:32:3f:e9:06   C                     eth0-
@@ -706,15 +589,12 @@ ToR( Top of Rack )
 **BGP Pod 通信过程示例**
 
 ![原 PDF 第 94 页插图](assets/Kubernetes网络插件/img-d51e55f6719ee6fd.png)
-
 ```text
 A POD eth0 10.121.74.181 ----->A  POD 网关 ARP ----->  A 宿主机 cali3e7996a24a7网卡
 ----> 默认路由0.0.0.0 ----> A 宿主机 eth0 10.120.129.9  ----->  到达 B 宿主机 eth0
 10.120.128.7 -----> 通过路由表 ip为 10.121.46.65 到达 B 宿主机 cali558def1712b网卡 通
 过iptables 转发 ----->  B POD eth0 10.121.46.65
-```
 
-```text
 #有bug
 A POD eth0 10.121.74.181 ----->A  POD 网关 ARP ----->  A 宿主机 cali3e7996a24a7网卡
 ----> 默认路由0.0.0.0 ----> A eth0 10.120.129.9  ----->  A Node 网关 10.120.129.254
@@ -740,7 +620,6 @@ IPIP 是Calico的默认模式，生产使用较多。通过把一个IP数据包�
 **Pod 通信流程示例**
 
 ![原 PDF 第 95 页插图](assets/Kubernetes网络插件/img-56fc97cc1a95504e.png)
-
 ```text
 A POD eth0 10.7.75.132 -----> A POD 网关 -----> A 宿主机 cali76174826315网卡 ----->
 A tunl0 10.7.75.128 封装 ----> A eth0 10.120.181.20 -----> 通过网关 10.120.181.254
@@ -796,9 +675,9 @@ VXLAN 还实现了这样一种类似于 flannel的 VXLAN with directrouting的�
 
 参考资料：
 
-```text
-https://docs.projectcalico.org/reference/architecture/overview
-```
+
+- <https://docs.projectcalico.org/reference/architecture/overview>
+
 
 由于Calico是一种纯三层的实现，因此可以避免与二层方案相关的数据包封装的操作，中间没有任何的NAT，没有任何的overlay，所以它的转发效率可能是所有方案中最高的，因为它的包直接走原生TCP/IP的协议栈，它的隔离也因为这个栈而变得容易实现。因为TCP/IP的协议栈提供了一整套的防火墙的规则，所以它可以通过IPTABLES的规则达到比较复杂的隔离逻辑。
 
@@ -896,10 +775,10 @@ Typha 以 deployment 方式运行，replicas 数量根据节点数决定，一�
 
 参考资料：
 
-```text
-https://docs.projectcalico.org/getting-started/kubernetes/quickstart
-https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
-```
+
+- <https://docs.projectcalico.org/getting-started/kubernetes/quickstart>
+- <https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements>
+
 
 注意:如果要使用calico，必须要提前将 flannel 删除，然后再安装calico。因为对于kubernetes的cni同时只支持一个网络插件。
 
@@ -934,7 +813,6 @@ Calico manifests
 Calico 也可以使用原始清单manifests作为操作器的替代方案进行安装。manifests包含在 Kubernetes 集群中每个节点上安装 Calico 所需的资源。不建议使用manifests清单，因为它们无法像操作器那样自动管理 Calico 的生命周期。但是，manifests清单对于需要对底层 Kubernetes 资源进行高度特定修改的集群可能很有用。
 
 参考资料：
-
 ```text
 https://docs.projectcalico.org/getting-started/kubernetes/self-managed-
 onprem/onpremises
@@ -973,23 +851,16 @@ onprem/onpremises
 #### 3.2.2.1 清理之前的网络插件（可选）
 
 如果之前部署过其它网络插件，需要清理干净，Kubernetes 不允许同时多个网络插件存在。
-
-```text
+```bash
 #清理之前的flannel插件
 [root@master1 ~]#kubectl delete -f kube-flannel.yml
-```
 
-```text
 #确认flannel的相关Pod被删除
 [root@master1 ~]#kubectl get pod -n kube-system | grep flannel
-```
 
-```text
 #先清除旧网卡，然后重启一下主机，直接清空所有的路由表信息
 [root@master1 ~]#reboot
-```
 
-```text
 #重启后，查看网络效果
 [root@master1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
@@ -1017,14 +888,13 @@ valid_lft forever preferred_lft forever
 
 **查看calico版本的k8s 版本的兼容性**
 
-```text
-https://projectcalico.docs.tigera.io/getting-started/kubernetes/requirements
-```
+
+- <https://projectcalico.docs.tigera.io/getting-started/kubernetes/requirements>
+
 
 ![原 PDF 第 104 页插图](assets/Kubernetes网络插件/img-dd0c758ffe9ed129.png)
 
 **查看安装方法**
-
 ```text
 https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-
 onprem/onpremises
@@ -1035,25 +905,20 @@ onprem/onpremises#install-calico-with-kubernetes-api-datastore-50-nodes-or-less
 ![原 PDF 第 104 页插图](assets/Kubernetes网络插件/img-8c4e03c4ee37d932.png)
 
 范例:  选择少于50个节点以内的Manifest 清单部署方式使用官方默认的配置文件
-
-```text
+```bash
 #下载最新版本的yaml文件
 [root@master1 ~]#curl
 https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.y
 aml -O
 [root@master1 ~]#wget https://docs.projectcalico.org/manifests/calico.yaml
-```
 
-```text
 #指定下载版本
 CALICO_VERSION=v3.29.1
 #CALICO_VERSION=v3.28.0
 #CALICO_VERSION=v3.27.3
 #CALICO_VERSION=v3.26.1
 #CALICO_VERSION=v3.24.1
-```
 
-```text
 #加速下载
 #50节点以下
 https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/calico.
@@ -1061,9 +926,7 @@ yaml
 #50节点以上
 https://raw.githubusercontent.com/projectcalico/calico/v3.31.0/manifests/calico-
 typha.yaml
-```
 
-```text
 [root@master1 ~]#wget -O calico-${CALICO_VERSION=}.yaml
 https://mirror.ghproxy.com/https://raw.githubusercontent.com/projectcalico/calic
 o/${CALICO_VERSION=}/manifests/calico.yaml
@@ -1074,14 +937,10 @@ sts/calico.yaml -Lo calico-${CALICO_VERSION=}.yaml
 [root@master1 ~]#curl
 https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION=}/manife
 sts/calico.yaml -O
-```
 
-```text
 #可以直接使用原文件，如果修改可以先备份原文件(可选)
 [root@master1 ~]#cp calico.yaml calico.yaml.bak
-```
 
-```text
 #可以直接使用原来的flannel的网络配置，测试环境也可以做下面配置修改CIDR，(可选)
 [root@master1 ~]# vim calico.yaml
 #官网推荐的修改内容(基于kubeadm安装可不做修改,其它安装方式,需要修改，可选)
@@ -1092,14 +951,8 @@ cidr选项，使用指定Pod网段
 value: "192.168.0.0/16"   #默认值为value: "192.168.0.0/16"
 ```
 
-```text
-#2)开放默认注释的CALICO_IPV4POOL_CIDR变量，此处改为24,生产环境可不用修改，当前为测试环境建议
-修改
-#默认没有下面内容,手动加下面两行,调大单个节点上的Pod所在网段,默认使用/26,即255.255.255.192的
-子网掩码，每个节点只有62个Pod的地址
-- name: CALICO_IPV4POOL_BLOCK_SIZE
-value: "24"
-```
+
+#2)开放默认注释的CALICO_IPV4POOL_CIDR变量，此处改为24,生产环境可不用修改，当前为测试环境建议修改#默认没有下面内容,手动加下面两行,调大单个节点上的Pod所在网段,默认使用/26,即255.255.255.192的子网掩码，每个节点只有62个Pod的地址- name: CALICO_IPV4POOL_BLOCK_SIZE value: "24"
 
 ```text
 #3)是否启用IPIP或VXLAN,注意,两者互斥,不能同时启用，默认启用IPIP(可选)
@@ -1110,30 +963,17 @@ value: "24"
 - name: CALICO_IPV4POOL_IPIP
 ```
 
-```text
-value: "Always"  #此项修改为"Cross-Subnet",表示同一网络使用BGP,跨网段时才启用IPIP,但
-XvLAN必须为Never
-# Enable or Disable VXLAN on the default IP pool.
-- name: CALICO_IPV4POOL_VXLAN
-value: "Never"   #此项修改为"Cross-Subnet",表示同一网络使用BGP,跨网段时才启用VXLAN,
-但IPIP必须为Never
-```
 
-```text
-#4)BGP 使用地址自动探测,默认值不用修改,如何有多块网卡,需要指定哪个网卡的IP用于BGP通信（可选）
-containers
-env
-.....
-# Auto-detect the BGP IP address.
-- name: IP
-value: "autodetect"
-```
+value: "Always"  #此项修改为"Cross-Subnet",表示同一网络使用BGP,跨网段时才启用IPIP,但 XvLAN必须为Never# Enable or Disable VXLAN on the default IP pool.- name: CALICO_IPV4POOL_VXLAN value: "Never"   #此项修改为"Cross-Subnet",表示同一网络使用BGP,跨网段时才启用VXLAN,但IPIP必须为Never
+
+
+#4)BGP 使用地址自动探测,默认值不用修改,如何有多块网卡,需要指定哪个网卡的IP用于BGP通信（可选）containers env.....# Auto-detect the BGP IP address.- name: IP value: "autodetect"
+
 
 #### 3.2.2.3 定制 Docker 镜像地址
 
 从2024年6月开始，docker hub官网从国内无法访问，因此修改镜像地址。
-
-```text
+```bash
 #查看默认的镜像文件
 [root@master1 ~]#grep image: calico.yaml
 image: docker.io/calico/cni:v3.29.1
@@ -1141,101 +981,78 @@ image: docker.io/calico/cni:v3.29.1
 image: docker.io/calico/node:v3.29.1
 image: docker.io/calico/node:v3.29.1
 image: docker.io/calico/kube-controllers:v3.29.1
-```
 
-```text
 [root@master1 ~]#grep docker.io calico.yaml
 image: docker.io/calico/cni:v3.22.0
 image: docker.io/calico/cni:v3.22.0
 image: docker.io/calico/pod2daemon-flexvol:v3.22.0
 image: docker.io/calico/node:v3.22.0
 image: docker.io/calico/kube-controllers:v3.22.0
-```
 
-```text
 #修改为定制的镜像
 #新版docker
 [root@master1 ~]#sed -i 's@docker.io/calico/@registry.cn-
-beijing.aliyuncs.com/wangxiaochun/@g' calico-v3.29.1.yaml
+beijing.aliyuncs.com/bowen/@g' calico-v3.29.1.yaml
 [root@master1 ~]#sed -i 's@docker.io/calico/@registry.cn-
-beijing.aliyuncs.com/wangxiaochun/@g' calico-v3.28.0.yaml
-```
+beijing.aliyuncs.com/bowen/@g' calico-v3.28.0.yaml
 
-```text
 #旧版
-[root@master1 ~]#sed -i 's#docker.io/calico#harbor.wang.org/google_containers#g'
+[root@master1 ~]#sed -i 's#docker.io/calico#harbor.bowen.org/google_containers#g'
 calico.yaml
-```
 
-```text
 #查看效果
 #新版
 [root@master1 ~]#grep image: calico-v3.29.1.yaml
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/cni:v3.29.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/cni:v3.29.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/node:v3.29.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/node:v3.29.1
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kube-
+image: registry.cn-beijing.aliyuncs.com/bowen/cni:v3.29.1
+image: registry.cn-beijing.aliyuncs.com/bowen/cni:v3.29.1
+image: registry.cn-beijing.aliyuncs.com/bowen/node:v3.29.1
+image: registry.cn-beijing.aliyuncs.com/bowen/node:v3.29.1
+image: registry.cn-beijing.aliyuncs.com/bowen/kube-
 controllers:v3.29.1
-```
 
-```text
 [root@master1 ~]#grep image: calico-v3.28.0.yaml
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/cni:v3.28.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/cni:v3.28.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/node:v3.28.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/node:v3.28.0
-image: registry.cn-beijing.aliyuncs.com/wangxiaochun/kube-
+image: registry.cn-beijing.aliyuncs.com/bowen/cni:v3.28.0
+image: registry.cn-beijing.aliyuncs.com/bowen/cni:v3.28.0
+image: registry.cn-beijing.aliyuncs.com/bowen/node:v3.28.0
+image: registry.cn-beijing.aliyuncs.com/bowen/node:v3.28.0
+image: registry.cn-beijing.aliyuncs.com/bowen/kube-
 controllers:v3.28.0
-```
 
-```text
 #旧版
 [root@master1 ~]## grep google calico.yaml
-image: harbor.wang.org/google_containers/cni:v3.22.0
-image: harbor.wang.org/google_containers/cni:v3.22.0
-image: harbor.wang.org/google_containers/pod2daemon-flexvol:v3.22.0
-image: harbor.wang.org/google_containers/node:v3.22.0
-image: harbor.wang.org/google_containers/kube-controllers:v3.22.0
+image: harbor.bowen.org/google_containers/cni:v3.22.0
+image: harbor.bowen.org/google_containers/cni:v3.22.0
+image: harbor.bowen.org/google_containers/pod2daemon-flexvol:v3.22.0
+image: harbor.bowen.org/google_containers/node:v3.22.0
+image: harbor.bowen.org/google_containers/kube-controllers:v3.22.0
 ```
 
 #### 3.2.2.4 应用官方清单文件实现安装Calico
 
 范例: 使用官方默认文件的网络配置不做修改
-
-```text
+```bash
 [root@master1 ~]#kubectl  get crd
 No resources found
-```
 
-```text
 [root@master1 ~]#kubectl  api-resources |wc -l
 59
-```
 
-```text
 #应用calico插件
 [root@master1 ~]#kubectl apply -f calico.yaml
-```
 
-```text
 #查看master和worker节点的镜像有三个
 [root@master1 ~]#docker images  |grep calico|awk '{print $1,$2,$NF}'
 calico/cni v3.22.0 236MB
 calico/pod2daemon-flexvol v3.22.0 21.4MB
 calico/node v3.22.0 213MB
-```
 
-```text
 #只有一个节点有kube-controllers镜像,其它节点都只有三个
 [root@node1 ~]#docker images  |grep calico|awk '{print $1,$2,$NF}'
 calico/kube-controllers v3.22.0 132MB
 calico/cni v3.22.0 236MB
 calico/pod2daemon-flexvol v3.22.0 21.4MB
 calico/node v3.22.0 213MB
-```
 
-```text
 #环境部署完毕后，查看效果
 [root@master1 ~]#kubectl get pod -n kube-system | egrep 'NAME|calico'
 NAME                                         READY   STATUS    RESTARTS
@@ -1250,22 +1067,16 @@ calico-node-g4tcn                            1/1     Running   0
 11m
 calico-node-hgwd9                            1/1     Running   0
 11m
-```
 
-```text
 calico-node-msjqp                            1/1     Running   0
 11m
 calico-node-tbh9k                            1/1     Running   0
 11m
-```
 
-```text
 #自动生成一个api版本信息,calico部署完毕后，会生成一系列的自定义配置属性信息
 [root@master1 ~]#kubectl api-versions  | grep crd
 crd.projectcalico.org/v1
-```
 
-```text
 #查看生成CRD
 [root@master1 ~]#kubectl get crds
 NAME                                                  CREATED AT
@@ -1286,15 +1097,11 @@ ipreservations.crd.projectcalico.org                  2021-09-17T12:20:15Z
 kubecontrollersconfigurations.crd.projectcalico.org   2021-09-17T12:20:15Z
 networkpolicies.crd.projectcalico.org                 2021-09-17T12:20:15Z
 networksets.crd.projectcalico.org                     2021-09-17T12:20:15Z
-```
 
-```text
 #发现添加20个资源
 [root@master1 ~]#kubectl  api-resources |wc -l
 79
-```
 
-```text
 #该api版本信息中有的CRD资源
 [root@master1 ~]#kubectl api-resources --api-group=crd.projectcalico.org
 NAME                            SHORTNAMES   APIVERSION
@@ -1319,9 +1126,7 @@ hostendpoints                                crd.projectcalico.org/v1   false
 HostEndpoint
 ipamblocks                                   crd.projectcalico.org/v1   false
 IPAMBlock
-```
 
-```text
 ipamconfigs                                  crd.projectcalico.org/v1   false
 IPAMConfig
 ipamhandles                                  crd.projectcalico.org/v1   false
@@ -1337,10 +1142,10 @@ NetworkPolicy
 networksets                                  crd.projectcalico.org/v1   true
 NetworkSet
 NetworkSet
-```
 
-```text
 #上面自定义资源,如下面的控制器进行控制
+```
+```yaml
 [root@master1 ~]#kubectl get pod -n kube-system |grep calico
 calico-kube-controllers-5d6f95db4f-czg7z   1/1     Running   0
 5h48m
@@ -1352,26 +1157,20 @@ calico-node-strl2                          1/1     Running   0
 5h48m
 calico-node-wdh75                          1/1     Running   0
 5h48m
-```
 
-```text
 #节点状态正常
 [root@master1 ~]#kubectl  get nodes
 NAME               STATUS   ROLES           AGE    VERSION
-master1.wang.org   Ready    control-plane   160d   v1.30.2
-node1.wang.org     Ready    <none>          160d   v1.30.2
-node2.wang.org     Ready    <none>          160d   v1.30.2
-node3.wang.org     Ready    <none>          160d   v1.30.2
-```
+master1.bowen.org   Ready    control-plane   160d   v1.30.2
+node1.bowen.org     Ready    <none>          160d   v1.30.2
+node2.bowen.org     Ready    <none>          160d   v1.30.2
+node3.bowen.org     Ready    <none>          160d   v1.30.2
 
-```text
 #ippools自定义资源
 [root@master1 ~]#kubectl get  ippools
 NAME                  AGE
 default-ipv4-ippool   10m
-```
 
-```text
 [root@master1 ~]#kubectl get  ippools.crd.projectcalico.org default-ipv4-ippool
 -o yaml
 apiVersion: crd.projectcalico.org/v1
@@ -1387,9 +1186,7 @@ resourceVersion: "4403"
 uid: fa62275f-ccc6-4a61-97d9-809605c5a89d
 spec:
 allowedUses:
-```
 
-```text
 - Workload
 - Tunnel
 blockSize: 26            #默认24位
@@ -1403,21 +1200,18 @@ vxlanMode: Never
 #### 3.2.2.5 创建 Pod 测试效果
 
 范例：查看网卡和路由的信息
-
-```text
+```bash
 #查看每个Node的Pod的网段,但实际上Calico自行定义子网,并没有使用此网段
 [root@master1 ~]#kubectl get nodes -o yaml|grep -E 'podCIDR:|hostname'
-kubernetes.io/hostname: master1.wang.org
+kubernetes.io/hostname: master1.bowen.org
 podCIDR: 10.244.0.0/24
-kubernetes.io/hostname: node1.wang.org
+kubernetes.io/hostname: node1.bowen.org
 podCIDR: 10.244.2.0/24
-kubernetes.io/hostname: node2.wang.org
+kubernetes.io/hostname: node2.bowen.org
 podCIDR: 10.244.1.0/24
-kubernetes.io/hostname: node3.wang.org
+kubernetes.io/hostname: node3.bowen.org
 podCIDR: 10.244.3.0/24
-```
 
-```text
 [root@master1 calico]#kubectl get nodes -o yaml|grep -A3 spec
 spec:
 podCIDR: 10.244.0.0/24
@@ -1438,9 +1232,7 @@ spec:
 podCIDR: 10.244.3.0/24
 podCIDRs:
 - 10.244.3.0/24
-```
 
-```text
 #查看实际使用的子网网段
 [root@master1 ~]#kubectl get ipamhandles.crd.projectcalico.org -o yaml |grep -A1
 block: | sort |uniq
@@ -1450,48 +1242,38 @@ block: | sort |uniq
 10.244.213.0/24: 1
 10.244.23.0/24: 1
 block:
-```
 
-```text
 #创建Pod，观察结果
-```
 
-```text
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 6
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 6
 
-```text
 #观察到同一个节点的Pod使用相同的网段IP
 [root@master1 ~]#kubectl get pod -o wide |awk 'NR>1{print $7,$6}' |sort
-node1.wang.org 10.244.101.129
-node1.wang.org 10.244.101.130
-node2.wang.org 10.244.36.1
-node2.wang.org 10.244.36.2
-node3.wang.org 10.244.168.196
-node3.wang.org 10.244.168.197
-```
+node1.bowen.org 10.244.101.129
+node1.bowen.org 10.244.101.130
+node2.bowen.org 10.244.36.1
+node2.bowen.org 10.244.36.2
+node3.bowen.org 10.244.168.196
+node3.bowen.org 10.244.168.197
 
-```text
 #发现Calico并不使用Node节点指令的网段,而是自主分配
 [root@master1 ~]#kubectl get pod -o wide
 NAME                    READY   STATUS    RESTARTS   AGE   IP               NODE
 NOMINATED NODE   READINESS GATES
 myapp-6b59f8f86-2t2bn   1/1     Running   0          65s   10.244.36.1
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-6b59f8f86-7q7k4   1/1     Running   0          65s   10.244.168.197
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-6b59f8f86-dtcql   1/1     Running   0          65s   10.244.36.2
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-6b59f8f86-lvsx9   1/1     Running   0          65s   10.244.168.196
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-6b59f8f86-mfdn8   1/1     Running   0          65s   10.244.101.129
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 myapp-6b59f8f86-w6gll   1/1     Running   0          65s   10.244.101.130
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #每个Pod所在节点自动会生成对应的calixxxx的网卡，且此网卡的MAC都为ee:ee:ee:ee:ee:ee
 #环境创建完毕后，会生成一个tunl0的网卡，所有的流量会走这个tunl0网卡
 [root@node1 ~]#ip a
@@ -1521,9 +1303,7 @@ default qlen 1000
 link/ipip 0.0.0.0 brd 0.0.0.0
 inet 10 2 scope global tunl0
 valid_lft forever preferred_lft forever
-```
 
-```text
 7: cali2ad752e56a1@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1480 qdisc noqueue
 state UP group default qlen 1000
 link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netnsid 0
@@ -1534,24 +1314,20 @@ state UP group default qlen 1000
 link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netnsid 1
 inet6 fe80::ecee:eeff:feee:eeee/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #tunl0 是一个虚拟网络接口，不支持 ethtool -i 操作
+```
+```bash
 [root@node1 ~]#ethtool -i tunl0
 Cannot get driver information: Operation not supported
-```
 
-```text
 [root@node1 ~]#ip addr show tunl0
 4: tunl0@NONE: <NOARP,UP,LOWER_UP> mtu 1480 qdisc noqueue state UNKNOWN group
 default qlen 1000
 link/ipip 0.0.0.0 brd 0.0.0.0
 inet 10.244.23.0/32 scope global tunl0
 valid_lft forever preferred_lft forever
-```
 
-```text
 #每个Pod在宿主机上生成veth的网卡对
 [root@node1 ~]#ethtool -i cali2ad752e56a1
 driver: veth
@@ -1564,9 +1340,7 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 #查看和Pod的对应编号
 [root@node1 ~]#ethtool -S cali13251176854
 NIC statistics:
@@ -1580,22 +1354,16 @@ rx_queue_0_xdp_tx: 0
 rx_queue_0_xdp_tx_errors: 0
 tx_queue_0_xdp_xmit: 0
 tx_queue_0_xdp_xmit_errors: 0
-```
 
-```text
 #和flannel不同,calico不会生成新的网桥
 [root@node1 ~]#brctl show
 bridge name bridge id       STP enabled interfaces
 docker0     8000.0242fd8a2fc8   no
-```
 
-```text
 #当前主机上的每个Pod对应一条/32的路由
 [root@node1 ~]#route -n
 Kernel IP routing table
-```
 
-```text
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.0.0.2        0.0.0.0         UG    0      0        0 eth0
 10.0.0.0        0.0.0.0         255.255.255.0   U     0      0        0 eth0
@@ -1608,9 +1376,7 @@ cali2ad752e56a1
 cali47ddc65abff
 10.244.168.192  10.0.0.203      255.255.255.192 UG    0      0        0 tunl0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #查看节点上calixxxx的网卡信息
 [root@node1 ~]#ethtool -i cali2ad752e56a1
 driver: veth
@@ -1623,9 +1389,7 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 [root@node1 ~]#ethtool -S cali2ad752e56a1
 NIC statistics:
 peer_ifindex: 4              #对应Pod的4号网卡
@@ -1638,14 +1402,10 @@ rx_queue_0_xdp_tx: 0
 rx_queue_0_xdp_tx_errors: 0
 tx_queue_0_xdp_xmit: 0
 tx_queue_0_xdp_xmit_errors: 0
-```
 
-```text
 #进入Pod查看网卡信息
 [root@master1 ~]#kubectl exec -it myapp-6b59f8f86-mfdn8 -- sh
-```
 
-```text
 #安装ethtool工具
 [root@myapp-6b59f8f86-mfdn8 /]# apk add ethtool
 #查看网卡信息
@@ -1662,13 +1422,10 @@ link/ipip 0.0.0.0 brd 0.0.0.0
 group default qlen 1000
 link/ether 4e:a9:cf:b0:59:f9 brd ff:ff:ff:ff:ff:ff link-netnsid 0
 inet 10.244.101.129/32 scope global eth0
-```
 
-```text
 valid_lft forever preferred_lft forever
 ```
-
-```text
+```bash
 [root@myapp-6b59f8f86-mfdn8 /]# ethtool -i eth0
 driver: veth
 version: 1.0
@@ -1680,9 +1437,7 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 [root@myapp-6b59f8f86-mfdn8 /]# ethtool -S eth0
 NIC statistics:
 peer_ifindex: 7            #对应节点的7号网卡
@@ -1695,9 +1450,7 @@ rx_queue_0_xdp_tx: 0
 rx_queue_0_xdp_tx_errors: 0
 tx_queue_0_xdp_xmit: 0
 tx_queue_0_xdp_xmit_errors: 0
-```
 
-```text
 [root@myapp-6b59f8f86-mfdn8 /]# route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -1708,60 +1461,43 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 #### 3.2.2.6 Pod 网络通信分析
 
 范例：tcpdump抓包分析
-
-```text
+```bash
 #由于在calico的默认网络模型是 IPIP，所以在进行Pod之间的数据包测试的时候，可以通过直接抓取宿主
 机数据包，来发现双层ip效果
 [root@master1 ~]#kubectl run pod-client --image=registry.cn-
-beijing.aliyuncs.com/wangxiaochun/admin-box:v0.1 -it --rm --command -- /bin/bash
-```
+beijing.aliyuncs.com/bowen/admin-box:v0.1 -it --rm --command -- /bin/bash
 
-```text
 #如果在同一个节点的Pod间通信,也需要路由一跳通信,说明同一个节点的Pod间通信也是需要跨路由的,即每
 一个Pod都需要有一条路由记录
 [root@myapp-547df679bb-7gjlh /]# ping -c1 10.244.163.231
 PING 10.244.163.231 (10.244.163.231): 56 data bytes
 64 bytes from 10.244.163.231: seq=0 ttl=63 time=0.416 ms
-```
 
-```text
 --- 10.244.163.231 ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.416/0.416/0.416 ms
-```
 
-```text
 #如果在不同个节点的Pod间通信,路由需要2跳
 [root@myapp-547df679bb-7gjlh /]# ping -c1 10.244.23.45
 PING 10.244.23.45 (10.244.23.45): 56 data bytes
 64 bytes from 10.244.23.45: seq=0 ttl=62 time=0.643 ms
-```
 
-```text
 --- 10.244.23.45 ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 round-trip min/avg/max = 0.643/0.643/0.643 ms
-```
 
-```text
 root@pod-client /# ping 192.168.144.4
-```
 
-```text
 #或者使用之前的Pod
 [root@master1 ~]#kubectl exec -it myapp-7c47997446-8h99v -- /bin/sh
 [root@myapp-7c47997446-8h99v /]# ping 192.168.144.4
-```
 
-```text
 [root@master1 ~]#kubectl get pod -o wide |awk '{print $1,$2,$6,$7}'
 NAME READY IP NODE
-myapp-7c47997446-8h99v 1/1 192.168.23.4 node1.wang.org
-myapp-7c47997446-p9tn8 1/1 192.168.144.4 node2.wang.org
-myapp-7c47997446-zx2rd 1/1 192.168.163.5 node3.wang.org
-```
+myapp-7c47997446-8h99v 1/1 192.168.23.4 node1.bowen.org
+myapp-7c47997446-p9tn8 1/1 192.168.144.4 node2.bowen.org
+myapp-7c47997446-zx2rd 1/1 192.168.163.5 node3.bowen.org
 
-```text
 #抓包观察
 [root@node2 ~]#tcpdump  -i eth0 -nn -vvv ip host 10.0.0.104 and host 10.0.0.105
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
@@ -1784,14 +1520,10 @@ ICMP echo request, id 6656, seq 3, length 64 (ipip-proto-4)
 ICMP echo reply, id 6656, seq 3, length 64 (ipip-proto-4)
 ```
 
-```text
-#结果显示：
-每个数据包都是基于双层ip嵌套的方式来进行传输，而且协议是 ipip-proto-4
-结合路由的分发详情，可以看到具体的操作效果。
-具体效果：192.168.23.4 -> 10.0.0.104 -> 10.0.0.105 -> 192.168.144.4
-```
 
-```text
+#结果显示：每个数据包都是基于双层ip嵌套的方式来进行传输，而且协议是 ipip-proto-4 结合路由的分发详情，可以看到具体的操作效果。具体效果：192.168.23.4 -> 10.0.0.104 -> 10.0.0.105 -> 192.168.144.4
+
+```bash
 [root@node1 ~]#tcpdump  -i eth0 -nn -vvv ip host 10.0.0.201 and host 10.0.0.202
 tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144
 bytes
@@ -1806,9 +1538,7 @@ seq 2731853996, win 64800, options [mss 1440,sackOK,TS val 3752943032 ecr
 (4), length 80)
 10.0.0.202 > 10.0.0.201: IP (tos 0x0, ttl 63, id 0, offset 0, flags [DF],
 proto TCP (6), length 60)
-```
 
-```text
 192.168.144.3.80 > 192.168.23.2.52676: Flags [S.], cksum 0xb241 (correct),
 seq 3643199396, ack 2731853997, win 64260, options [mss 1440,sackOK,TS val
 1306330301 ecr 3752943032,nop,wscale 7], length 0
@@ -1848,35 +1578,28 @@ HTTP/1.0 200 OK
 ```
 
 范例：wireshark 抓包查看通信过程
-
-```text
+```bash
 #创建Pod
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 6
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 6
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                    READY   STATUS    RESTARTS   AGE   IP               NODE
 NOMINATED NODE   READINESS GATES
 myapp-6b59f8f86-2t2bn   1/1     Running   0          65s   10.244.36.1
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-6b59f8f86-7q7k4   1/1     Running   0          65s   10.244.168.197
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-6b59f8f86-dtcql   1/1     Running   0          65s   10.244.36.2
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-6b59f8f86-lvsx9   1/1     Running   0          65s   10.244.168.196
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-6b59f8f86-mfdn8   1/1     Running   0          65s   10.244.101.129
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 myapp-6b59f8f86-w6gll   1/1     Running   0          65s   10.244.101.130
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #在节点网卡上抓包，可以观察跨节点Pod间的通信过程
 [root@master1 ~]#kubectl exec -it myapp-6b59f8f86-mfdn8 -- sh
 [root@myapp-6b59f8f86-mfdn8 /]# curl 10.244.36.1
@@ -1886,9 +1609,7 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.101.129, ServerName: myapp-
 [root@myapp-6b59f8f86-mfdn8 /]# curl  10.244.101.130
 kubernetes pod-test v0.1!! ClientIP: 10.244.101.129, ServerName: myapp-
 6b59f8f86-w6gll, ServerIP: 10.244.101.130!
-```
 
-```text
 #观察如下显示结果
 ```
 
@@ -1897,43 +1618,32 @@ kubernetes pod-test v0.1!! ClientIP: 10.244.101.129, ServerName: myapp-
 ### 3.2.3 部署 Calico 案例:  修改默认配置使用指定Pod的网段
 
 范例: 修改默认配置,指定Pod的网段为24位
-
-```text
+```bash
 [root@master1 ~]# vim calico.yaml
 4223             - name: CALICO_IPV4POOL_CIDR #取消两行注释,可以覆盖安装k8s时的--pod-
 network-cidr选项
 ```
 
-```text
-4224               value: "192.168.0.0/16"   #默认值为value: "192.168.0.0/16"
-#手动加下面两行,调大单个节点上的Pod所在网段,默认是/26,即每个节点只有62个Pod的地址
-4225             - name: CALICO_IPV4POOL_BLOCK_SIZE
-4226               value: "24"
-```
 
-```text
+4224               value: "192.168.0.0/16"   #默认值为value: "192.168.0.0/16"#手动加下面两行,调大单个节点上的Pod所在网段,默认是/26,即每个节点只有62个Pod的地址 4225             - name: CALICO_IPV4POOL_BLOCK_SIZE 4226               value: "24"
+
+```yaml
 #应用calico插件
 [root@master1 ~]# kubectl apply -f calico.yaml
-```
 
-```text
 #查看master和worker节点的镜像有三个
 [root@master1 ~]#docker images  |grep calico|awk '{print $1,$2,$NF}'
 calico/cni v3.22.0 236MB
 calico/pod2daemon-flexvol v3.22.0 21.4MB
 calico/node v3.22.0 213MB
-```
 
-```text
 #只有一个节点有kube-controllers镜像,其它节点都只有三个
 [root@node1 ~]#docker images  |grep calico|awk '{print $1,$2,$NF}'
 calico/kube-controllers v3.22.0 132MB
 calico/cni v3.22.0 236MB
 calico/pod2daemon-flexvol v3.22.0 21.4MB
 calico/node v3.22.0 213MB
-```
 
-```text
 #环境部署完毕后，查看效果
 [root@master1 ~]#kubectl get pod -n kube-system | egrep 'NAME|calico'
 NAME                                         READY   STATUS    RESTARTS
@@ -1952,9 +1662,7 @@ calico-node-msjqp                            1/1     Running   0
 11m
 calico-node-tbh9k                            1/1     Running   0
 11m
-```
 
-```text
 #查看路由表,注意接口为tunl0
 [root@master1 ~]#route -n
 内核 IP 路由表
@@ -1968,15 +1676,11 @@ calico-node-tbh9k                            1/1     Running   0
 192.168.163.0   10.0.0.106      255.255.255.0   UG    0      0        0 tunl0
 192.168.213.0   0.0.0.0         255.255.255.0   U     0      0        0 *
 192.168.216.0   10.0.0.103      255.255.255.0   UG    0      0        0 tunl0
-```
 
-```text
 [root@master1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
-```
 
-```text
 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 inet 127.0.0.1/8 scope host lo
 valid_lft forever preferred_lft forever
@@ -1999,20 +1703,14 @@ default qlen 1000
 link/ipip 0.0.0.0 brd 0.0.0.0
 inet 192.168.213.0/32 scope global tunl0
 valid_lft forever preferred_lft forever
-```
 
-```text
 [root@master1 ~]# kubectl get crd
-```
 
-```text
 #CRD中的ippools 里面包含了calico相关的网络属性信息
 [root@master1 ~]# kubectl get ippools
 NAME                  AGE
 default-ipv4-ippool   18m
-```
 
-```text
 #查看这里配置的calico相关的信息
 [root@master1 ~]#kubectl get ippools  default-ipv4-ippool -o yaml
 apiVersion: crd.projectcalico.org/v1
@@ -2037,9 +1735,7 @@ ipipMode: Always
 natOutgoing: true
 nodeSelector: all()
 vxlanMode: Never
-```
 
-```text
 #结果显示：calico采用的模型就是 ipip模型，分配的网段是使定制的 cidr网段，而且子网段也是定制的
 24位掩码。
 ```
@@ -2047,8 +1743,7 @@ vxlanMode: Never
 ### 3.2.4 部署 Calico 案例: 使用 IPIP Cross-Subnet 配置实现IPIP with BGP模式
 
 默认总是使用IPIP叠加网络,性能不佳,可修改为Cross-Subnet ,实现Pod通信时节点间在同一网段用BGP,不同网段才使用IPIP。
-
-```text
+```bash
 #方法1
 #删除原有的网络
 [root@master1 ~]# kubectl delete -f calico.yaml
@@ -2063,43 +1758,31 @@ value: "Cross-Subnet"  #此项修改为Cross-Subnet或者CrossSubnet,表示Pod�
 - name: CALICO_IPV4POOL_VXLAN
 value: "Never"        #此项修改为"Cross-Subnet",表示Pod在同一网段使用BGP,跨网段时
 才启用VXLAN,但不能IPIP同时启用
-```
 
-```text
 #应用配置
 [root@master1 ~]#kubectl apply -f calico.yaml
 #查看可能没有成功
 [root@master1 ~]#kubectl get ippools  default-ipv4-ippool -o yaml
-```
 
-```text
 #方法2
 [root@master1 ~]#kubectl edit ippools.crd.projectcalico.org default-ipv4-ippool
 #ipipMode: Always
 ipipMode: CrossSubnet   # Always修改为CrossSubnet
-```
 
-```text
 #方法3:如果第1种方式有问题,可以使用此方式
 #查看配置生成配置文件
 [root@master1 ~]#kubectl get ippools  default-ipv4-ippool.yaml-o yaml > default-
 ipv4-ippool.yaml
-```
 
-```text
 #修改
 [root@master1 ~]#vim default-ipv4-ippool.yaml
 #删除timestamp,generation,uid信息
 #修改ipipMode:
 ipipMode: CrossSubnet #支持Always|CrossSubnet|Never三个值
-```
 
-```text
 #应用配置生效
 [root@master1 ~]#kubectl apply -f default-ipv4-ippool.yaml
-```
 
-```text
 #查看路由表,注意接口为eth0,说明直接路由
 [root@master1 ~]#route -n
 内核 IP 路由表
@@ -2111,37 +1794,29 @@ ipipMode: CrossSubnet #支持Always|CrossSubnet|Never三个值
 192.168.25.0    10.0.0.102      255.255.255.0   UG    0      0        0 eth0
 192.168.144.0   10.0.0.105      255.255.255.0   UG    0      0        0 eth0
 192.168.163.0   10.0.0.106      255.255.255.0   UG    0      0        0 eth0
-```
 
-```text
 192.168.213.0   0.0.0.0         255.255.255.0   U     0      0        0 *
 192.168.216.0   10.0.0.103      255.255.255.0   UG    0      0        0 eth0
-```
 
-```text
 [root@master1 ~]#kubectl delete deployments.apps myapp
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas=3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-```text
 [root@master1 ~]#kubectl get pod  -o wide
 NAME                              READY   STATUS    RESTARTS   AGE   IP
 NODE             NOMINATED NODE   READINESS GATES
 myapp-7c47997446-jrbwl   1/1     Running   0          32s   192.168.23.1
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 myapp-7c47997446-vq6vt   1/1     Running   0          32s   192.168.163.1
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-7c47997446-wmj6h   1/1     Running   0          32s   192.168.144.2
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 [root@master1 ~]#kubectl exec -it myapp-7c47997446-jrbwl -- sh
 [root@myapp-7c47997446-jrbwl /]# ping 192.168.163.1
 PING 192.168.163.1 (192.168.163.1): 56 data bytes
 64 bytes from 192.168.163.1: seq=0 ttl=62 time=0.480 ms
 [root@myapp-7c47997446-jrbwl /]# curl 192.168.163.1
-```
 
-```text
 #抓包观察
 [root@node2 ~]#tcpdump  -i eth0 -nn icmp
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
@@ -2152,9 +1827,7 @@ listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
 26, length 64
 12:25:54.954269 IP 192.168.23.1 > 192.168.163.1: ICMP echo request, id 3072, seq
 27, length 64
-```
 
-```text
 [root@node2 ~]#tcpdump  -i eth0 -nn -vvv tcp port 80
 tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144
 bytes
@@ -2175,9 +1848,7 @@ seq 3257646885, ack 822640605, win 64260, options [mss 1440,sackOK,TS val
 1307682182], length 0
 15:07:39.635815 IP (tos 0x0, ttl 63, id 6065, offset 0, flags [DF], proto TCP
 (6), length 129)
-```
 
-```text
 192.168.23.1.52476 > 192.168.163.1.80: Flags [P.], cksum 0x28ca (incorrect -
 > 0xe0af), seq 1:78, ack 1, win 507, options [nop,nop,TS val 3754294922 ecr
 1307682182], length 77: HTTP, length: 77
@@ -2185,10 +1856,10 @@ GET / HTTP/1.1
 Host: 192.168.163.1
 User-Agent: curl/7.67.0
 Accept: */*
-```
 
-```text
 #在worker节点查看路由表
+```
+```bash
 [root@node1 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2205,9 +1876,7 @@ cali545684cf79f
 192.168.163.0   10.0.0.106      255.255.255.0   UG    0      0        0 eth0
 192.168.213.0   10.0.0.101      255.255.255.0   UG    0      0        0 eth0
 192.168.216.0   10.0.0.103      255.255.255.0   UG    0      0        0 eth0
-```
 
-```text
 [root@node2 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2226,9 +1895,7 @@ cali6bbe530865b
 192.168.163.0   10.0.0.106      255.255.255.0   UG    0      0        0 eth0
 192.168.213.0   10.0.0.101      255.255.255.0   UG    0      0        0 eth0
 192.168.216.0   10.0.0.103      255.255.255.0   UG    0      0        0 eth0
-```
 
-```text
 [root@node3 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2241,28 +1908,23 @@ cali6bbe530865b
 192.168.163.0   0.0.0.0         255.255.255.0   U     0      0        0 *
 192.168.163.1   0.0.0.0         255.255.255.255 UH    0      0        0
 cali069d8d6d6ad
-```
 
-```text
 192.168.163.2   0.0.0.0         255.255.255.255 UH    0      0        0
 calia9c36a0c90e
 192.168.213.0   10.0.0.101      255.255.255.0   UG    0      0        0 eth0
 192.168.216.0   10.0.0.103      255.255.255.0   UG    0      0        0 eth0
-```
 
-```text
 #注意:Node1上的两个Pod对应上面的两个calixxx接口
 [root@master1 ~]#kubectl get pod -A -o wide |grep node1
 default       myapp-7c47997446-jrbwl            1/1     Running            0
-7m29s   192.168.23.1    node1.wang.org     <none>           <none>
+7m29s   192.168.23.1    node1.bowen.org     <none>           <none>
 kube-system   coredns-8468f7cd6-bdpf7                    1/1     Running
-1 (23m ago)     20d     192.168.23.2    node1.wang.org     <none>
+1 (23m ago)     20d     192.168.23.2    node1.bowen.org     <none>
 <none>
 ```
 
 ### 3.2.5 部署 Calico 案例: 使用 BGP 配置BGP Native Routing模式
-
-```text
+```yaml
 #在线修改为BGP模式
 [root@master1 ~]#kubectl edit ippools.crd.projectcalico.org default-ipv4-ippool
 apiVersion: crd.projectcalico.org/v1
@@ -2284,9 +1946,7 @@ ipipMode: Never     #修改此行
 natOutgoing: true
 nodeSelector: all()
 vxlanMode: Never
-```
 
-```text
 #查看路由表已经生效
 [root@node1 ~]#route -n
 Kernel IP routing table
@@ -2306,9 +1966,7 @@ cali7f09440efda
 calid568e889c3c
 10.244.23.95    0.0.0.0         255.255.255.255 UH    0      0        0
 cali13251176854
-```
 
-```text
 10.244.23.101   0.0.0.0         255.255.255.255 UH    0      0        0
 cali25e96b97a8c
 10.244.23.102   0.0.0.0         255.255.255.255 UH    0      0        0
@@ -2319,31 +1977,25 @@ calid034cb34a92
 10.244.163.0    10.0.0.203      255.255.255.0   UG    0      0        0 eth0
 10.244.213.0    10.0.0.200      255.255.255.0   UG    0      0        0 eth0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #查看Pod
 [root@master1 ~]#kubectl get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP              NODE
 NOMINATED NODE   READINESS GATES
 myapp-547df679bb-2rtx6   1/1     Running   0          17m   10.244.163.26
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 myapp-547df679bb-kvjlt   1/1     Running   0          17m   10.244.144.1
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-547df679bb-phftk   1/1     Running   0          17m   10.244.23.103
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 #跨主机通信
 [root@master1 ~]#kubectl exec -it myapp-547df679bb-phftk -- sh
 [root@myapp-547df679bb-phftk /]# curl 10.244.144.1
 kubernetes pod-test v0.1!! ClientIP: 10.244.23.103, ServerName: myapp-
 547df679bb-kvjlt, ServerIP: 10.244.144.1!
 [root@myapp-547df679bb-phftk /]#
-```
 
-```text
 #抓包分析,可以看到直接的路由通信
 [root@node1 ~]#tcpdump -i eth0 -nn port 80
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
@@ -2371,16 +2023,13 @@ HTTP: HTTP/1.0 200 OK
 length 249: HTTP
 17:43:42.257094 IP 10.244.23.103.49260 > 10.244.144.1.80: Flags [F.], seq 77,
 ack 268, win 506, options [nop,nop,TS val 2172510896 ecr 3762915006], length 0
-```
 
-```text
 17:43:42.257337 IP 10.244.144.1.80 > 10.244.23.103.49260: Flags [.], ack 78, win
 502, options [nop,nop,TS val 3762915007 ecr 2172510896], length 0
 ```
 
 ### 3.2.6 部署 Calico 案例: 使用 VXLAN 模式
-
-```text
+```bash
 #方法1
 [root@master1 ~]#kubectl edit ippools.crd.projectcalico.org default-ipv4-ippool
 .......
@@ -2396,9 +2045,7 @@ nodeSelector: all()
 #vxlanMode: Never
 vxlanMode: Always  #此处的Never改为Always,表示总是使用VXLAN,也可以为Cross-Subnet ,实
 现Pod通信时同一网段用BGP,不同网段才使用VXLAN， 支持Always|CrossSubnet|Never三个值
-```
 
-```text
 #方法2
 [root@master1 ~]# vim calico.yaml
 # Enable IPIP
@@ -2409,13 +2056,9 @@ value: "Never"  #此项修改为Never,表示Pod启用VXLAN
 value: "Always"        #此项修改为"Always",表示Pod启用VXLAN
 #应用calico插件
 [root@master1 ~]# kubectl apply -f calico.yaml
-```
 
-```text
 #修改后立即生效,查看路由表如下
-```
 
-```text
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2438,9 +2081,7 @@ DOWN group default
 link/ether 02:42:20:dd:f9:35 brd ff:ff:ff:ff:ff:ff
 inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
 valid_lft forever preferred_lft forever
-```
 
-```text
 4: cali25e96b97a8c@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue
 state UP group default qlen 1000
 link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netnsid 0
@@ -2473,9 +2114,7 @@ inet 10.244.23.66/32 scope global vxlan.calico
 valid_lft forever preferred_lft forever
 inet6 fe80::6469:94ff:fef0:87f7/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #隧道接口
 [root@node1 ~]#ethtool -i vxlan.calico
 driver: vxlan
@@ -2488,9 +2127,7 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
-```
 
-```text
 [root@master1 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2503,13 +2140,10 @@ vxlan.calico
 vxlan.calico
 192.168.163.0   192.168.163.4   255.255.255.0   UG    0      0        0
 vxlan.calico
-```
 
-```text
 192.168.213.0   0.0.0.0         255.255.255.0   U     0      0        0 *
 ```
-
-```text
+```bash
 [root@node1 ~]#route -n
 内核 IP 路由表
 目标            网关            子网掩码        标志  跃点   引用  使用 接口
@@ -2525,31 +2159,25 @@ vxlan.calico
 vxlan.calico
 192.168.213.0   192.168.213.1   255.255.255.0   UG    0      0        0
 vxlan.calico
-```
 
-```text
 #创建Pod,相互通信
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
 
-```text
 [root@master1 ~]#kubectl get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP              NODE
 NOMINATED NODE   READINESS GATES
 myapp-7dbd45d496-gcmzt   1/1     Running   0          81m   192.168.23.2
-node1.wang.org   <none>           <none>
+node1.bowen.org   <none>           <none>
 myapp-7dbd45d496-jbwfb   1/1     Running   0          81m   192.168.144.3
-node2.wang.org   <none>           <none>
+node2.bowen.org   <none>           <none>
 myapp-7dbd45d496-twzbl   1/1     Running   0          81m   192.168.163.3
-node3.wang.org   <none>           <none>
+node3.bowen.org   <none>           <none>
 [root@master1 ~]#kubectl exec -it myapp-7dbd45d496-gcmzt -- sh
 [root@myapp-7dbd45d496-gcmzt /]# curl 192.168.144.3
 kubernetes pod-test v0.1!! ClientIP: 192.168.23.2, ServerName: myapp-7dbd45d496-
 jbwfb, ServerIP: 192.168.144.3!
-```
 
-```text
 #抓包分析
 [root@node1 ~]#tcpdump  -i eth0  -nn host 10.0.0.201 and host 10.0.0.202 and udp
 port 4789
@@ -2570,15 +2198,11 @@ IP 192.168.23.2.45814 > 192.168.144.3.80: Flags [.], ack 1, win 507, options
 [nop,nop,TS val 3759608817 ecr 1312996078], length 0
 16:36:13.530566 IP 10.0.0.201.55745 > 10.0.0.202.4789: VXLAN, flags [I] (0x08),
 vni 4096
-```
 
-```text
 IP 192.168.23.2.45814 > 192.168.144.3.80: Flags [P.], seq 1:78, ack 1, win 507,
 options [nop,nop,TS val 3759608817 ecr 1312996078], length 77: HTTP: GET /
 HTTP/1.1
-```
 
-```text
 #通过wireshark抓包可以看到如下显示,过滤VXLAN协议
 ```
 
@@ -2587,15 +2211,12 @@ HTTP/1.1
 ### 3.3.7 部署 Calico 案例: 使用 VXLAN Cross-Subnet 配置VXLAN With BGP模式
 
 对于现有的calico环境，如果需要使用BGP环境，可以直接使用一个配置清单来进行修改calico环境即可。这里先来使用calicoctl修改配置属性。
-
-```text
+```yaml
 #获取当前的配置属性
 [root@master1 ~]#kubectl calico get ipPools
 NAME                  CIDR            SELECTOR
 default-ipv4-ippool   10.244.0.0/16   all()
-```
 
-```text
 #当前路由表
 [root@master1 ~]#route -n
 Kernel IP routing table
@@ -2607,9 +2228,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.244.101.128  10.0.0.201      255.255.255.192 UG    0      0        0 tunl0
 10.244.168.192  10.0.0.203      255.255.255.192 UG    0      0        0 tunl0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 [root@node1 ~]#route -n
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
@@ -2617,9 +2236,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.0.0.0        0.0.0.0         255.255.255.0   U     0      0        0 eth0
 10.244.36.0     10.0.0.202      255.255.255.192 UG    0      0        0 tunl0
 10.244.53.64    10.0.0.200      255.255.255.192 UG    0      0        0 tunl0
-```
 
-```text
 10.244.101.128  0.0.0.0         255.255.255.192 U     0      0        0 *
 10.244.101.129  0.0.0.0         255.255.255.255 UH    0      0        0
 cali2ad752e56a1
@@ -2627,9 +2244,7 @@ cali2ad752e56a1
 cali47ddc65abff
 10.244.168.192  10.0.0.203      255.255.255.192 UG    0      0        0 tunl0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #查看配置
 [root@master1 ~]#kubectl get ipPools default-ipv4-ippool  -o yaml
 apiVersion: crd.projectcalico.org/v1
@@ -2653,9 +2268,7 @@ ipipMode: Always
 natOutgoing: true
 nodeSelector: all()
 vxlanMode: Never
-```
 
-```text
 #查看配置，此方式需要提前安装caliactl工具
 [root@master1 ~]#kubectl calico get ipPools default-ipv4-ippool  -o yaml
 apiVersion: projectcalico.org/v3
@@ -2672,9 +2285,7 @@ ipipMode: Always
 natOutgoing: true
 nodeSelector: all()
 vxlanMode: Never
-```
 
-```text
 #修改配置实现VXLAN with BGP
 #方法1: 直接修改ipPool配置
 [root@master1 ~]#kubectl  edit  ipPools default-ipv4-ippool
@@ -2684,17 +2295,13 @@ allowedUses:
 - Workload
 - Tunnel
 blockSize: 26
-```
 
-```text
 cidr: 10.244.0.0/16
 ipipMode: Never       #修改此行为Never
 natOutgoing: true
 nodeSelector: all()
 vxlanMode: CrossSubnet  #修改此行
-```
 
-```text
 #方法2:定制资源配置文件，注意：此方式需要安装calicactl工具
 [root@master1 ~]#kubectl calico get ipPools default-ipv4-ippool  -o yaml >
 default-ipv4-ippool.yaml
@@ -2718,15 +2325,13 @@ vxlanMode: Cross-Subnet #修改此行为Cross-Subnet或者CrosSubnet
 #禁用IPIP，将原来的Always改为Never
 #vxlanMode 将原来的Never更改成 Cross-Subnet(节点间跨网段) 模式，即可以实现vxlan with BGP
 的效果
-```
 
-```text
 #应用资源配置文件
+```
+```bash
 [root@master1 ~]#kubectl calico apply  -f default-ipv4-ippool.yaml
 Successfully applied 1 'IPPool' resource(s)
-```
 
-```text
 #查看节点的IP信息，tunl0网卡没有IP
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
@@ -2750,9 +2355,7 @@ DOWN group default
 link/ether 02:42:6e:5b:1d:3e brd ff:ff:ff:ff:ff:ff
 inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
 valid_lft forever preferred_lft forever
-```
 
-```text
 4: tunl0@NONE: <NOARP,UP,LOWER_UP> mtu 1480 qdisc noqueue state UNKNOWN group
 default qlen 1000
 link/ipip 0.0.0.0 brd 0.0.0.0
@@ -2773,9 +2376,7 @@ inet 10.244.101.131/32 scope global vxlan.calico
 valid_lft forever preferred_lft forever
 inet6 fe80::6469:94ff:fef0:87f7/64 scope link
 valid_lft forever preferred_lft forever
-```
 
-```text
 #验证路由表，不再显示tunl0路由信息
 [root@node1 ~]#route -n
 Kernel IP routing table
@@ -2791,36 +2392,28 @@ cali2ad752e56a1
 cali47ddc65abff
 10.244.168.192  10.0.0.203      255.255.255.192 UG    0      0        0 eth0
 172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
-```
 
-```text
 #再次进行Pod跨节点网络通信
 [root@master1 ~]#kubectl get pod -o wide |awk '{print $1,$2,$6,$7}'
 NAME READY IP NODE
-myapp-6b59f8f86-2t2bn 1/1 10.244.36.1 node2.wang.org
-myapp-6b59f8f86-7q7k4 1/1 10.244.168.197 node3.wang.org
-myapp-6b59f8f86-dtcql 1/1 10.244.36.2 node2.wang.org
-myapp-6b59f8f86-lvsx9 1/1 10.244.168.196 node3.wang.org
-myapp-6b59f8f86-mfdn8 1/1 10.244.101.129 node1.wang.org
-myapp-6b59f8f86-w6gll 1/1 10.244.101.130 node1.wang.org
-```
+myapp-6b59f8f86-2t2bn 1/1 10.244.36.1 node2.bowen.org
+myapp-6b59f8f86-7q7k4 1/1 10.244.168.197 node3.bowen.org
+myapp-6b59f8f86-dtcql 1/1 10.244.36.2 node2.bowen.org
+myapp-6b59f8f86-lvsx9 1/1 10.244.168.196 node3.bowen.org
+myapp-6b59f8f86-mfdn8 1/1 10.244.101.129 node1.bowen.org
+myapp-6b59f8f86-w6gll 1/1 10.244.101.130 node1.bowen.org
 
-```text
 #从Node1节点的Pod访问Node2节点的Pod
 [root@master1 ~]#kubectl exec -it myapp-6b59f8f86-mfdn8 -- sh
 [root@myapp-6b59f8f86-mfdn8 /]# curl 10.244.36.1
 kubernetes pod-test v0.1!! ClientIP: 10.244.101.129, ServerName: myapp-
 6b59f8f86-2t2bn, ServerIP: 10.244.36.1!
-```
 
-```text
 #在node1节点抓包，由于这次直接通过节点的BGP路由进行转发，所以在抓包时，直接通过Pod的IP抓取即
 可。\
 [root@node1 ~]#tcpdump  -i eth0  -vv -nn tcp port 80
 [root@node1 ~]#tcpdump  -i eth0  -vv -nn ip host 10.244.36.1
-```
 
-```text
 09:49:24.430615 IP (tos 0x0, ttl 63, id 36548, offset 0, flags [DF], proto TCP
 (6), length 60)
 10.244.101.129.50984 > 10.244.36.1.80: Flags [S], cksum 0x9f98 (incorrect ->
@@ -2845,9 +2438,7 @@ GET / HTTP/1.1
 Host: 10.244.36.1
 User-Agent: curl/7.67.0
 Accept: */*
-```
 
-```text
 #同时用wireshark抓包，显示如下
 ```
 
@@ -2856,13 +2447,10 @@ Accept: */*
 ### 3.2.8  部署 Calico 案例: 使用 usePodCidr 配置使用k8s初始化时的Pod网段
 
 如果提前定义CALICO_IPV4POOL_CIDR变量,Calico默认会优先使用此变量指定的网段,而不会从Node.Spec.PodCIDR中分配地址。即优先使用自已CALICO_IPV4POOL_CIDR变量指定网段,而非使用初始化k8s时 --pod-network-cidr选项时指定的网段。但可通过USE_POD_CIDR变量并结合host-local这一IPAM插件可以强制使用安装k8s时的--pod-network-cidr选项指定的网段。
-
-```text
+```bash
 #先清除原有配置,注意:清除网络calico前需要先清除所有Pod资源
 [root@master1 ~]#kubectl delete -f  calico.yaml
-```
 
-```text
 #定制pod的manifest文件分配网络配置,直接让calico使用kube-controller-manager为节点分配的网
 段信息
 [root@master1 ~]#vim calico.yaml
@@ -2878,58 +2466,44 @@ Accept: */*
 ---- 定制calico使用k8s集群节点的地址(默认值,可选)
 4227             - name: USE_POD_CIDR
 4228               value: "true"
-```
 
-```text
 #应用清单文件
 [root@master1 ~]#kubectl apply -f  calico.yaml
-```
 
-```text
 #查看结果
-[root@master1 ~]#kubectl get node node1.wang.org -o yaml|grep CIDR
+[root@master1 ~]#kubectl get node node1.bowen.org -o yaml|grep CIDR
 podCIDR: 10.244.1.0/24
 podCIDRs:
-[root@master1 ~]#kubectl get node node1.wang.org -o yaml|grep podCIDR
+[root@master1 ~]#kubectl get node node1.bowen.org -o yaml|grep podCIDR
 podCIDR: 10.244.1.0/24
 podCIDRs:
-[root@master1 ~]#kubectl get node node2.wang.org -o yaml|grep podCIDR
+[root@master1 ~]#kubectl get node node2.bowen.org -o yaml|grep podCIDR
 podCIDR: 10.244.2.0/24
 podCIDRs:
-[root@master1 ~]#kubectl get node node3.wang.org -o yaml|grep podCIDR
+[root@master1 ~]#kubectl get node node3.bowen.org -o yaml|grep podCIDR
 podCIDR: 10.244.3.0/24
 podCIDRs:
-```
 
-```text
 [root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 2
-```
+beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 2
 
-```text
 #验证Pod地址
 [root@master1 ~]#kubectl get pod -o wide
 NAME                     READY   STATUS    RESTARTS   AGE   IP           NODE
 NOMINATED NODE   READINESS GATES
 myapp-7dbd45d496-lwcgl   1/1     Running   0          11m   10.244.2.2
-node2.wang.org   <none>           <none>
-```
+node2.bowen.org   <none>           <none>
 
-```text
 myapp-7dbd45d496-xf8nc   1/1     Running   0          11m   10.244.1.2
-node1.wang.org   <none>           <none>
-```
+node1.bowen.org   <none>           <none>
 
-```text
 [root@master1 ~]#kubectl exec  myapp-7dbd45d496-xf8nc  -- ip a show eth0
 4: eth0@if11: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1480 qdisc noqueue state UP
 group default qlen 1000
 link/ether 82:e7:c8:b7:99:4a brd ff:ff:ff:ff:ff:ff link-netnsid 0
 inet 10.244.1.2/32 scope global eth0
 valid_lft forever preferred_lft forever
-```
 
-```text
 [root@node1 ~]#ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group
 default qlen 1000
@@ -2987,21 +2561,18 @@ calicoctl 的安装方式很多，常见的方式有：
 
 参考资料：
 
-```text
-https://projectcalico.docs.tigera.io/maintenance/clis/calicoctl/install
-```
+
+- <https://projectcalico.docs.tigera.io/maintenance/clis/calicoctl/install>
+
 
 范例:  在所有节点上安装  calicoctl
-
-```text
+```bash
 #采用单主机命令的方式
 CALICO_VERSION=v3.31.0
 #CALICO_VERSION=v3.29.1
 #CALICO_VERSION=v3.24.1
 #CALICO_VERSION=v3.22.0
-```
 
-```text
 #加速下载
 [root@master1 ~]#wget
 https://githubfast.com/projectcalico/calico/releases/download/${CALICO_VERSION}/
@@ -3009,46 +2580,32 @@ calicoctl-linux-amd64
 [root@master1 ~]#curl -L
 https://mirror.ghproxy.com/https://github.com/projectcalico/calico/releases/down
 load/${CALICO_VERSION}/calicoctl-linux-amd64 -o /usr/local/bin/calicoctl
-```
 
-```text
 [root@master1 ~]#curl -L
 https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/cali
 coctl-linux-amd64 -o /usr/local/bin/calicoctl
-```
 
-```text
 [root@master1 ~]#chmod +x /usr/local/bin/calicoctl
-```
 
-```text
 #在其它节点也安装此工具方便观察
 [root@master1 ~]#scp  /usr/local/bin/calicoctl
 node1..node3:/usr/local/bin/calicoctl
-```
 
-```text
 #查看效果
 [root@master1 ~]#calicoctl version
 Client Version:    v3.22.0
 Git commit:        a86e41d02
 Cluster Version:   v3.22.0
 Cluster Type:      k8s,bgp,kubeadm,kdd
-```
 
-```text
 #如果calicoctl和calico版本不同会如下显示
 [root@master1 ~]#calicoctl version
 Client Version:    v3.20.2
 Git commit:        dcb4b76a
-```
 
-```text
 Cluster Version:   v3.22.0
 Cluster Type:      k8s,bgp,kubeadm,kdd
-```
 
-```text
 [root@master1 ~]#calicoctl --help
 Usage:
 calicoctl [options] <command> [<args>...]
@@ -3056,58 +2613,47 @@ calicoctl [options] <command> [<args>...]
 ```
 
 #### 3.3.2.2 使用 calicoctl
-
-```text
+```yaml
 #显示节点信息
 [root@master1 ~]#calicoctl get node
 NAME
-master1.wang.org
-master2.wang.org
-master3.wang.org
-node1.wang.org
-node2.wang.org
-node3.wang.org
-```
+master1.bowen.org
+master2.bowen.org
+master3.bowen.org
+node1.bowen.org
+node2.bowen.org
+node3.bowen.org
 
-```text
 [root@master1 ~]#calicoctl get node -o wide
 NAME                  ASN      IPV4         IPV6
-master1.wang.org     (64512)   10.0.0.101
-master2.wang.org     (64512)   10.0.0.102
-master3.wang.org     (64512)   10.0.0.103
-node1.wang.org       (64512)   10.0.0.104
-node2.wang.org       (64512)   10.0.0.105
-node3.wang.org       (64512)   10.0.0.106
-```
+master1.bowen.org     (64512)   10.0.0.101
+master2.bowen.org     (64512)   10.0.0.102
+master3.bowen.org     (64512)   10.0.0.103
+node1.bowen.org       (64512)   10.0.0.104
+node2.bowen.org       (64512)   10.0.0.105
+node3.bowen.org       (64512)   10.0.0.106
 
-```text
 #如果calicoctl和calico版本不一致会出现下面提示
 [root@master1 ~]#calicoctl get node
 Failed to get resources: Version mismatch.
 Client Version:   v3.20.2
 Cluster Version:  v3.22.0
 Use --allow-version-mismatch to override.
-```
 
-```text
 #利用--allow-version-mismatch选项可以解决上面问题
 [root@master1 ~]#calicoctl get node --allow-version-mismatch
 NAME
-master1.wang.org
-master2.wang.org
-master3.wang.org
-node1.wang.org
-node2.wang.org
-node3.wang.org
-```
+master1.bowen.org
+master2.bowen.org
+master3.bowen.org
+node1.bowen.org
+node2.bowen.org
+node3.bowen.org
 
-```text
 #查看各个节点状态
 [root@master1 ~]#calicoctl node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+-------------------+-------+----------+-------------+
 | PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
@@ -3115,15 +2661,11 @@ IPv4 BGP status
 | 10.0.0.102   | node-to-node mesh | up    | 01:57:39 | Established |
 | 10.0.0.105   | node-to-node mesh | up    | 01:57:39 | Established |
 | 10.0.0.106   | node-to-node mesh | up    | 01:57:39 | Established |
-```
 
-```text
 | 10.0.0.104   | node-to-node mesh | up    | 01:57:51 | Established |
 | 10.0.0.103   | node-to-node mesh | up    | 01:58:19 | Established |
 +--------------+-------------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
 #查看所有节点
@@ -3135,27 +2677,25 @@ kind: Node
 metadata:
 annotations:
 .....
-```
 
-```text
 #查看指定节点
-[root@master1 ~]#calicoctl get node node1.wang.org -o yaml
+[root@master1 ~]#calicoctl get node node1.bowen.org -o yaml
 apiVersion: projectcalico.org/v3
 kind: Node
 metadata:
 annotations:
 projectcalico.org/kube-labels:
 '{"beta.kubernetes.io/arch":"amd64","beta.kubernetes.io/os":"linux","kubernetes.
-io/arch":"amd64","kubernetes.io/hostname":"node1.wang.org","kubernetes.io/os":"l
+io/arch":"amd64","kubernetes.io/hostname":"node1.bowen.org","kubernetes.io/os":"l
 inux"}'
 creationTimestamp: "2025-05-26T07:16:26Z"
 labels:
 beta.kubernetes.io/arch: amd64
 beta.kubernetes.io/os: linux
 kubernetes.io/arch: amd64
-kubernetes.io/hostname: node1.wang.org
+kubernetes.io/hostname: node1.bowen.org
 kubernetes.io/os: linux
-name: node1.wang.org
+name: node1.bowen.org
 resourceVersion: "514593"
 uid: cc16fe81-5660-43a5-b352-afb47fad4f90
 spec:
@@ -3168,39 +2708,29 @@ bgp:
 ipv4Address: 10.0.0.101/24
 ipv4VXLANTunnelAddr: 192.168.23.14
 orchRefs:
-- nodeName: node1.wang.org
+- nodeName: node1.bowen.org
 orchestrator: k8s
 status:
 podCIDRs:
 - 10.244.1.0/24
-```
 
-```text
 #查看ip的信息
 [root@master1 ~]#calicoctl get ipPool
 NAME                  CIDR             SELECTOR
 default-ipv4-ippool   192.168.0.0/16   all()
-```
 
-```text
 #显示详细信息
-```
 
-```text
 [root@master1 ~]#calicoctl get ipPool default-ipv4-ippool -o yaml
 [root@master1 ~]#calicoctl get ippools -o wide
 NAME                  CIDR            NAT    IPIPMODE   VXLANMODE   DISABLED
 DISABLEBGPEXPORT   SELECTOR
 default-ipv4-ippool   10.244.0.0/16   true   Never      Always      false
 false              all()
-```
 
-```text
 #查看ip的管理
 [root@master1 ~]#calicoctl ipam --help
-```
 
-```text
 #查看ip的信息
 [root@master1 ~]#calicoctl  ipam show
 +----------+----------------+-----------+------------+--------------+
@@ -3208,14 +2738,10 @@ false              all()
 +----------+----------------+-----------+------------+--------------+
 | IP Pool  | 192.168.0.0/16 |     65536 | 10 (0%)    | 65526 (100%) |
 +----------+----------------+-----------+------------+--------------+
-```
 
-```text
 #查看信息的显示效果
 [root@master1 ~]#calicoctl ipam show --help
-```
 
-```text
 #显示相关的配置属性
 [root@master1 ~]#calicoctl  ipam show --show-configuration
 +--------------------+-------+
@@ -3228,8 +2754,7 @@ false              all()
 ```
 
 范例:  calicoctl 使用指定的kubconfig文件
-
-```text
+```yaml
 #默认情况下，calicoctl 将尝试使用位于`$(HOME)/.kube/config`.
 #如果默认 kubeconfig 不存在，或者想指定替代 API 访问信息，您可以使用以下配置选项来执行此操
 作。
@@ -3242,9 +2767,7 @@ metadata:
 spec:
 datastoreType: "kubernetes"
 kubeconfig: "/etc/kubernetes/admin.conf"
-```
 
-```text
 #文件编辑完毕后，就可以直接来测试效果
 [root@master1 ~]#mv .kube/config  /tmp
 #无法执行kubectl
@@ -3252,15 +2775,11 @@ kubeconfig: "/etc/kubernetes/admin.conf"
 E0711 15:21:59.284255   72110 memcache.go:238] couldn't get current server API
 group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080:
 connect: connection refused
-```
 
-```text
 #仍可以执行calicoctl
 [root@master1 ~]#calicoctl get nodes
 NAME
-```
 
-```text
 master1
 master2
 master3
@@ -3272,14 +2791,10 @@ kind: Node
 metadata:
 ...
 #结果显示：可以通过 calicoctl 来操作kubectl操作的资源了，只不过显示的格式稍微有一点点的区别
-```
 
-```text
 #参考资料：https://docs.projectcalico.org/getting-
 started/clis/calicoctl/configure/kdd
-```
 
-```text
 #还原kubeconfig
 [root@master1 ~]#mv /tmp/config .kube/
 ```
@@ -3287,35 +2802,26 @@ started/clis/calicoctl/configure/kdd
 #### 3.3.2.3 calicoctl 集成 kubectl 命令
 
 可以将calicoctl 整合到 kubectl 为子命令，只需要将calicoctl 程序文件更改名字即可实现。
-
-```text
+```yaml
 #默认kubectl不支持calico子命令
 [root@master1 ~]#kubectl calico
 error: unknown command "calico" for "kubectl"
-```
 
-```text
 #定制kubectl 插件子命令,可以使用软链接或改文件名称，形式为kubectl-<calico的子命令>
 [root@master1 ~]#ln -s  calicoctl  /usr/local/bin/kubectl-calico
 [root@master1 ~]#ll /usr/local/bin/kubectl-calico
 lrwxrwxrwx 1 root root 9 Mar 29 14:21 /usr/local/bin/kubectl-calico ->
 calicoctl*
-```
 
-```text
 #测试效果
 [root@master1 ~]#kubectl calico
 Usage:
 kubectl-calico [options] <command> [<args>...]
-```
 
-```text
 #获取网络节点信息
 [root@master1 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+-------------------+-------+----------+-------------+
 | PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
@@ -3326,29 +2832,19 @@ IPv4 BGP status
 | 10.0.0.104   | node-to-node mesh | up    | 01:57:51 | Established |
 | 10.0.0.103   | node-to-node mesh | up    | 01:58:19 | Established |
 +--------------+-------------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 [root@master1 ~]#kubectl  get ipPools
-```
 
-```text
 NAME                  AGE
 default-ipv4-ippool   99m
-```
 
-```text
 [root@master1 ~]#kubectl calico get ipPools
 NAME                  CIDR            SELECTOR
 default-ipv4-ippool   10.244.0.0/16   all()
-```
 
-```text
 [root@master1 ~]#kubectl calico get ipPools default-ipv4-ippool -o yaml
 apiVersion: projectcalico.org/v3
 kind: IPPool
@@ -3386,23 +2882,16 @@ vxlanMode: Never
 #### 3.3.3.2 BGP reflecter  案例
 
 范例: 查看当前节点的网络效果
-
-```text
+```bash
 #如果看不到结果,可以reboot所有节点
 #所有节点都可以执行
-```
 
-```text
 [root@master1 ~]#calicoctl node status
-```
 
-```text
 #此命令只能在Master执行
 [root@master1 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+-------------------+-------+----------+-------------+
 | PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
@@ -3413,19 +2902,16 @@ IPv4 BGP status
 | 10.0.0.104   | node-to-node mesh | up    | 01:57:51 | Established |
 | 10.0.0.103   | node-to-node mesh | up    | 01:58:19 | Established |
 +--------------+-------------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
 ```
 
 范例:  使用kubectl calico 子命令实现 BGP reflecter  案例
-
-```text
+```yaml
 #1)选择一个节点上创建反射器角色并指定节点标签
 #方法1
-[root@master1 ~]#calicoctl get node master1.wang.org  --export -o yaml > calico-
+[root@master1 ~]#calicoctl get node master1.bowen.org  --export -o yaml > calico-
 reflector-master.yaml
 [root@master1 ~]#vim calico-reflector-master.yaml
 apiVersion: projectcalico.org/v3
@@ -3433,7 +2919,7 @@ kind: Node
 metadata:
 labels:
 route-reflector: true  #添加标签，和后面配置要一致
-name: master1.wang.org
+name: master1.bowen.org
 spec:
 bgp:
 ipv4Address: 10.0.0.101/16        #反射器角色节点的ip地址，默认值不做修改
@@ -3441,34 +2927,21 @@ routeReflectorClusterID: 1.1.1.1  #加一行，指定ID，可以是唯一的任�
 ipv4IPIPTunnelAddr: 10.244.0.1      #默认值不做修改
 ```
 
-```text
-#属性解析；
-metadata.labels #必选项，它需要被后面的节点来进行获取
-metadata.name #节点属性，必须是通过 calicoctl get nodes 获取到的节点名称。
-spec.bgp.ipv4Address #须是指定充当反射器角色节点的ip地址
-spec.bgp.ipv4IPIPTunnelAddr #须是指定充当反射器角色节点上tunl0的地址
-spec.bgp.routeReflectorClusterID #是BGP网络中的唯一标识IP，所以这里的集群标识只要唯一并没
-有被使用就可以，此项可选
-```
 
-```text
+#属性解析；metadata.labels #必选项，它需要被后面的节点来进行获取 metadata.name #节点属性，必须是通过 calicoctl get nodes 获取到的节点名称。spec.bgp.ipv4Address #须是指定充当反射器角色节点的ip地址 spec.bgp.ipv4IPIPTunnelAddr #须是指定充当反射器角色节点上tunl0的地址 spec.bgp.routeReflectorClusterID #是BGP网络中的唯一标识IP，所以这里的集群标识只要唯一并没有被使用就可以，此项可选
+
+```yaml
 #应用资源配置文件,注意:使用 kubectl calico 子命令
 [root@master1 ~]#kubectl calico apply -f calico-reflector-master.yaml
 Successfully applied 1 'Node' resource(s)
-```
 
-```text
 #方法2
-[root@master1 ~]#kubectl label node master1.wang.org route-reflector='true'
-[root@master1 ~]#kubectl annotate node master1.wang.org
+[root@master1 ~]#kubectl label node master1.bowen.org route-reflector='true'
+[root@master1 ~]#kubectl annotate node master1.bowen.org
 projectcalico.org/routeReflectorClusterID=1.1.1.1 #可选
-```
 
-```text
 #2)创建清单文件，更改所有节点的网络模型为 reflecter模型
-```
 
-```text
 [root@master1 ~]#vim calico-reflector-bgppeer.yaml
 kind: BGPPeer
 apiVersion: projectcalico.org/v3
@@ -3480,39 +2953,29 @@ peerSelector: route-reflector=="true"   #定义使用前面匹配的标签选择
 目标节点
 ```
 
-```text
-#属性解析；
-spec.nodeSelector #指定的所有后端节点
-spec.peerSelector #指定的是反射器的标签，标识所有的后端节点与这个反射器进行数据交流，要和前面
-定义的保持一致
-```
 
-```text
+#属性解析；spec.nodeSelector #指定的所有后端节点 spec.peerSelector #指定的是反射器的标签，标识所有的后端节点与这个反射器进行数据交流，要和前面定义的保持一致
+
+```yaml
 #应用资源配置文件
 #方法1：使用 kubectl calico 子命令
 [root@master1 ~]#kubectl calico apply -f calico-reflector-bgppeer.yaml
 Successfully applied 1 'BGPPeer' resource(s)
 #方法2
 [root@master1 ~]#kubectl  apply -f calico-reflector-bgppeer.yaml
-```
 
-```text
 #查看效果
 [root@master1 ~]#calicoctl get bgppeer
 [root@master1 ~]#kubectl get bgppeer
 NAME                 AGE
 bgppeer-demo         5s
-```
 
-```text
 #在当前Master查看到
 [root@master1 ~]#calicoctl node status
 [root@master1 ~]#kubectl calico node status
 #当前节点已经清空
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+---------------+-------+----------+-------------+
 | PEER ADDRESS |   PEER TYPE   | STATE |  SINCE   |    INFO     |
@@ -3523,47 +2986,33 @@ IPv4 BGP status
 | 10.0.0.105   | node specific | start | 08:25:43 | OpenConfirm |
 | 10.0.0.106   | node specific | start | 08:25:43 | Active      |
 +--------------+---------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 #其它节点可看，当前还没有清空
 [root@master2 ~]#calicoctl node status
 [root@master2 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+-------------------+-------+----------+-------------+
 | PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
 +--------------+-------------------+-------+----------+-------------+
 | 10.0.0.103   | node-to-node mesh | up    | 08:23:17 | Established |
-```
 
-```text
 | 10.0.0.104   | node-to-node mesh | up    | 08:23:15 | Established |
 | 10.0.0.105   | node-to-node mesh | up    | 08:23:16 | Established |
 | 10.0.0.106   | node-to-node mesh | up    | 08:23:16 | Established |
 | 10.0.0.101   | node specific     | up    | 08:25:45 | Established |
 +--------------+-------------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 #3)创建新的清单文件，关闭其它节点的默认的网格mesh
 [root@master1 ~]#calicoctl get node -o wide
-```
 
-```text
 [root@master1 ~]#vim calico-reflector-defaultconfig.yaml
 apiVersion: projectcalico.org/v3
 kind: BGPConfiguration
@@ -3576,28 +3025,20 @@ nodeToNodeMeshEnabled: false  #默认为true,表示启用节点间的iBGP全网�
 asNumber: 63400               #默认的AS为 64512，此项可选
 ```
 
-```text
-#属性解析；
-metadata.name #在这里是default，因为要对BGP默认的网络效果进行关闭
-spec.nodeToNodeMeshEnabled #关闭后端节点的BGP peer默认状态 -- 即点对点通信关闭
-spec.asNumber #指定的是后端节点间使用反射器的时候对应一个AS的标志号
-```
 
-```text
+#属性解析；metadata.name #在这里是default，因为要对BGP默认的网络效果进行关闭 spec.nodeToNodeMeshEnabled #关闭后端节点的BGP peer默认状态 -- 即点对点通信关闭 spec.asNumber #指定的是后端节点间使用反射器的时候对应一个AS的标志号
+
+```bash
 #应用资源配置文件
 [root@master1 ~]#calicoctl apply  -f calico-reflector-defaultconfig.yaml
 [root@master1 ~]#kubectl calico apply  -f calico-reflector-defaultconfig.yaml
-```
 
-```text
 #在RR节点上查看效果
 [root@master1 ~]#calicoctl get bgpconfiguration default -o yaml
 [root@master1 ~]#calicoctl node status
 [root@master1 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+---------------+-------+----------+-------------+
 | PEER ADDRESS |   PEER TYPE   | STATE |  SINCE   |    INFO     |
@@ -3608,53 +3049,37 @@ IPv4 BGP status
 | 10.0.0.105   | node specific | up    | 06:52:35 | Established |
 | 10.0.0.106   | node specific | up    | 06:52:35 | Established |
 +--------------+---------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 #在其它的非RR节点只能看到一个节点信息
 [root@master2 ~]#calicoctl node status
 [root@master2 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
-```
 
-```text
 +--------------+---------------+-------+----------+-------------+
 | PEER ADDRESS |   PEER TYPE   | STATE |  SINCE   |    INFO     |
 +--------------+---------------+-------+----------+-------------+
 | 10.0.0.101   | node specific | up    | 06:54:34 | Established |
 +--------------+---------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 #4)为了RR高可用，还需要配置冗余的另一个RR，针对另一个指定的节点执行1）步即可
-[root@master1 ~]#kubectl annotate node master2.wang.org
+[root@master1 ~]#kubectl annotate node master2.bowen.org
 projectcalico.org/routeReflectorClusterID=1.1.1.1
-[root@master1 ~]#kubectl label node master2.wang.org route-reflector='true'
-```
+[root@master1 ~]#kubectl label node master2.bowen.org route-reflector='true'
 
-```text
 #5)验证：
 #在第一个RR节点上查看效果
 [root@master1 ~]#calicoctl node status
 [root@master1 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+---------------+-------+----------+-------------+
 | PEER ADDRESS |   PEER TYPE   | STATE |  SINCE   |    INFO     |
@@ -3665,21 +3090,15 @@ IPv4 BGP status
 | 10.0.0.105   | node specific | up    | 06:52:35 | Established |
 | 10.0.0.106   | node specific | up    | 06:52:35 | Established |
 +--------------+---------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 #在第二个RR节点上查看效果
 [root@master2 ~]#calicoctl node status
 [root@master2 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+---------------+-------+----------+-------------+
 | PEER ADDRESS |   PEER TYPE   | STATE |  SINCE   |    INFO     |
@@ -3690,21 +3109,15 @@ IPv4 BGP status
 | 10.0.0.105   | node specific | up    | 07:01:20 | Established |
 | 10.0.0.106   | node specific | up    | 07:01:17 | Established |
 +--------------+---------------+-------+----------+-------------+
-```
 
-```text
 IPv6 BGP status
 No IPv6 peers found.
-```
 
-```text
 #在其它的非RR节点看到两个RR节点信息
 [root@node1 ~]#calicoctl node status
 [root@node1 ~]#kubectl calico node status
 Calico process is running.
-```
 
-```text
 IPv4 BGP status
 +--------------+---------------+-------+----------+-------------+
 | PEER ADDRESS |   PEER TYPE   | STATE |  SINCE   |    INFO     |
