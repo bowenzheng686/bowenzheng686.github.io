@@ -11,6 +11,7 @@ subject_index: true
   <li><a href="{{ '/subjects/Linux/' | relative_url }}">Linux 系统（18 个章节）</a></li>
   <li><a href="{{ '/subjects/KVM/' | relative_url }}">KVM 虚拟化（8 个章节）</a></li>
   <li><a href="{{ '/subjects/Kubernetes/' | relative_url }}">Kubernetes 学习笔记（36 个章节）</a></li>
+  <li><a href="{{ '/subjects/Prometheus/' | relative_url }}">Prometheus 学习笔记（33 个章节）</a></li>
   <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Git and GitLab Version Control (22 chapters)</a></li>
   <li><a href="{{ '/subjects/MinIO/' | relative_url }}">MinIO Object Storage (19 chapters)</a></li>
   <li><a href="{{ '/subjects/Redis/' | relative_url }}">Redis Database (14 chapters)</a></li>
