@@ -1,189 +1,79 @@
 ---
 layout: default
-title: "MinIO 对象存储 · MINIO 通过 Prometheus 和 Grafana 监控案例"
+title: "MinIO 对象存储 · Prometheus 与 Grafana 监控"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 19 MINIO 通过 Prometheus 和 Grafana 监控案例
-### 7.2 MINIO 通过 Prometheus 和 Grafana 监控案例
+# 19 Prometheus 与 Grafana 监控
 
-范例:
+本章把 MinIO 指标采集到 Prometheus，再通过 Grafana 查看。操作顺序是：确认指标端点与认证 → 配置抓取 → 验证目标状态和样本 → 连接 Grafana → 建立告警。原资料中 `curl http:minio...` 缺少 `//`，并把完整 Bearer Token 写进文章；以下示例保留流程而不暴露可用凭据。
 
-```bash
-[root@ubuntu2204 ~]#curl -s  http:minio.bowen.org:9000/minio/v2/metrics/cluster
-|head
-# HELP minio_audit_failed_messages Total number of messages that failed to send
-since start
-# TYPE minio_audit_failed_messages counter
-minio_audit_failed_messages{server="minio1.bowen.org:9000",target_id="sys_console
-_0"} 0
-minio_audit_failed_messages{server="minio2.bowen.org:9000",target_id="sys_console
-_0"} 1
-minio_audit_failed_messages{server="minio3.bowen.org:9000",target_id="sys_console
-_0"} 0
-minio_audit_failed_messages{server="minio4.bowen.org:9000",target_id="sys_console
-_0"} 0
-minio_audit_failed_messages{server="minio5.bowen.org:9000",target_id="sys_console
-_0"} 1
-minio_audit_failed_messages{server="minio6.bowen.org:9000",target_id="sys_console
-_0"} 0
-# HELP minio_audit_target_queue_length Number of unsent messages in queue for
-target
-# TYPE minio_audit_target_queue_length gauge
-```
+## 1. 生成并检查抓取配置
+
+给 `mc` 配置具有管理权限的别名后，先检查 MinIO 节点及磁盘状态，再根据**当前服务端和 mc 版本**生成 Prometheus 抓取配置：
 
 ```bash
-#利用MC工具添加MinIO连接
-[root@ubuntu2204 ~]#mc config host add minio-cluster http://minio.bowen.org:9000
-admin 12345678
-Added `minio-cluster` successfully.
-[root@ubuntu2204 ~]#mc admin  info minio-cluster
+mc admin info minio-cluster
+mc admin prometheus generate minio-cluster
 ```
 
-●  minio1.bowen.org:9000
+生成结果会包含指标路径、scheme、目标与 Bearer Token；不同版本可能使用 v2 或 v3 指标端点。将 Token 作为秘密存入 Prometheus 可读取、其他用户不可读的文件，不要粘贴到仓库或截图中。若使用 HTTPS，应保持证书验证，不要为了抓取成功而关闭 TLS 校验。
 
-```text
-Uptime: 2 hours
-Version: 2023-10-16T04:13:43Z
-Network: 6/6 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio2.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-10-16T04:13:43Z
-Network: 6/6 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio3.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-10-16T04:13:43Z
-Network: 6/6 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio4.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-10-16T04:13:43Z
-Network: 6/6 OK
-Drives: 4/4 OK
-Pool: 2
-```
-
-●  minio5.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-10-16T04:13:43Z
-Network: 6/6 OK
-Drives: 4/4 OK
-Pool: 2
-```
-
-●  minio6.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-10-16T04:13:43Z
-Network: 6/6 OK
-Drives: 4/4 OK
-Pool: 2
-Pools:
-1st, Erasure sets: 1, Drives per erasure set: 12
-2nd, Erasure sets: 1, Drives per erasure set: 12
-2.6 MiB Used, 1 Bucket, 4 Objects
-24 drives online, 0 drives offline
-```
+指标端点可先在监控节点上测试连接；若需要鉴权，需带受保护的 Token：
 
 ```bash
-#自动生成Promethus配置
-[root@ubuntu2204 ~]#mc admin  prometheus  generate  minio-cluster
+curl -fsS --header "Authorization: Bearer ${MINIO_METRICS_TOKEN}" \
+  https://minio.example.internal:9000/minio/v2/metrics/cluster | head
+```
+
+这里只用 v2 路径说明命令结构；若生成配置为 v3，就以生成结果为准。`curl` 得到 `# HELP` 和指标样本表示端点可访问，仍需在 Prometheus 中确认抓取成功。
+
+## 2. 配置 Prometheus
+
+将以下任务加入现有 `prometheus.yml` 的 `scrape_configs`，不要再写第二个同名顶层键。Token 文件路径以 Prometheus 服务用户可读为准；生产环境优先使用 TLS API 入口。
+
+```yaml
 scrape_configs:
-- job_name: minio-job
-bearer_token:
-eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwcm9tZXRoZXVzIiwic3ViIjoiYWRtaW4
-iLCJleHAiOjQ4NTEyOTYzODJ9.iKHE1uXVPKYAixlJBAIpnb2btslig6WNZz6KQqSWBv7qUnNfYqnqIU
-dq1f6mMAmq_G3pfU_pEJmpPfl1jRrQaw
-metrics_path: /minio/v2/metrics/cluster
-scheme: http
-static_configs:
-- targets: ['minio.bowen.org:9000']
+  - job_name: minio-cluster
+    scheme: https
+    metrics_path: /minio/v2/metrics/cluster
+    bearer_token_file: /etc/prometheus/secrets/minio-metrics-token
+    static_configs:
+      - targets:
+          - minio.example.internal:9000
 ```
 
-```bash
-#安装prometheus和grafana
-过程略
-#配置Prometheus
-[root@ubuntu2204 ~]#vim /usr/local/prometheus/conf/prometheus.yml
-......
-scrape_configs:
-# The job name is added as a label `job=<job_name>` to any timeseries scraped
-from this config.
-- job_name: "prometheus"
-# metrics_path defaults to '/metrics'
-# scheme defaults to 'http'.
-static_configs:
-- targets: ["localhost:9090"]
-#添加前面自动生成Promethus配置如下
-- job_name: minio-job
-bearer_token:
-eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwcm9tZXRoZXVzIiwic3ViIjoiYWRtaW4
-iLCJleHAiOjQ4NTEyOTYzODJ9.iKHE1uXVPKYAixlJBAIpnb2btslig6WNZz6KQqSWBv7qUnNfYqnqIU
-dq1f6mMAmq_G3pfU_pEJmpPfl1jRrQaw
-metrics_path: /minio/v2/metrics/cluster
-scheme: http
-static_configs:
-- targets: ['minio.bowen.org:9000']
-[root@ubuntu2204 ~]#systemctl reload prometheus.service
-#安装grafana
-[root@ubuntu2404 ~]#wget
-https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/pool/main/g/grafana/grafana_11.
-4.0_amd64.deb
-[root@ubuntu2204 ~]#wget
-https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/pool/main/g/grafana/grafana_11.
-3.0_amd64.deb
-[root@ubuntu2204 ~]#wget
-https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/pool/main/g/grafana/grafana_11.
-1.3_amd64.deb
-[root@ubuntu2204 ~]#apt install ./grafana_11.1.3_amd64.deb
-[root@ubuntu2204 ~]#systemctl enable --now  grafana-server
-#使用默认用户/密码:admin/admin
-http://10.0.0.100:3000/
-```
+在发布配置前运行 `promtool check config /etc/prometheus/prometheus.yml`，再按部署方式重载 Prometheus。打开 Prometheus 的 **Status → Targets**，确认 `minio-cluster` 为 `UP`；若为 `DOWN`，先查目标地址、路径、Token、TLS 与网络连通性。对于节点级指标，为每个 MinIO 节点建立独立目标，不能只抓一个负载均衡地址就认为已覆盖全部节点。
 
-```text
-#在Grafana添加Prometheus数据源和导入13502模板
-```
+## 3. 接入 Grafana
 
-![MinIO 对象存储第 97 页插图](assets/img-ab7ff16f829f16e2.png)
+在 Grafana 中添加 Prometheus 数据源，使用 Grafana 服务端可访问的 Prometheus URL，并执行 **Save & test**。随后可导入 [MinIO Dashboard 13502](https://grafana.com/grafana/dashboards/13502-minio-dashboard/) 作为观察起点；若面板为空，核对数据源、job 标签、指标名及 MinIO 版本。不要假设任何旧 Dashboard 对新版本指标零修改兼容。
 
-![MinIO 对象存储第 98 页插图](assets/img-e1c99911da171284.png)
+![Grafana 添加数据源](assets/img-ab7ff16f829f16e2.webp)
 
-![MinIO 对象存储第 98 页插图](assets/img-93f381110cf53155.png)
+![Prometheus 数据源配置](assets/img-e1c99911da171284.webp)
 
-![MinIO 对象存储第 98 页插图](assets/img-cd006cc4fde1ae8c.png)
+![导入 MinIO 仪表盘](assets/img-93f381110cf53155.webp)
 
-![MinIO 对象存储第 99 页插图](assets/img-7d18137e56eccbb1.png)
+![选择数据源与仪表盘](assets/img-cd006cc4fde1ae8c.webp)
+
+![MinIO 指标展示](assets/img-7d18137e56eccbb1.webp)
+
+## 4. 从图表走向告警
+
+至少为采集目标失联、离线驱动器、可用容量下降、请求错误与延迟、后台修复失败建立告警，并按业务情况监控备份任务及入口负载均衡。为告警设置持续时间与静默策略，避免一次短暂重启触发大量误报。通过一次受控演练验证：服务或采集链路异常时能收到告警，恢复后告警会正确清除。
+
+指标显示正常只说明观测链路工作；仍要结合定期对象读取、备份校验和恢复演练判断数据可用性。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/18-minio-monitoring-overview.html' | relative_url }}">← Previous: MinIO Monitoring Overview</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
+  <a href="{{ '/subjects/MinIO/18-minio-monitoring-overview.html' | relative_url }}">← 上一篇：MinIO 监控概述</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
 </nav>

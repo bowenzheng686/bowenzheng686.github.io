@@ -1,159 +1,78 @@
 ---
 layout: default
-title: "MinIO 对象存储 · 备份还原案例"
+title: "MinIO 对象存储 · 备份与恢复示例"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 17 备份还原案例
-### 6.2 备份还原案例
+# 17 备份与恢复示例
 
-### 数据备份
+上一章解释了对象级备份的能力边界；本节把一次备份、增量复制、验证与测试恢复连成完整流程。示例使用测试桶 `mybucket`，备份目标是独立主机上的 `/backup/minio/mybucket`。实际运行前，应确认备份主机的容量、访问控制和故障域，而不是把备份放在 MinIO 数据盘旁边。
 
-范例: 备份
+## 记录备份前状态
 
-```bash
-#创建连接
-[root@ubuntu2204 ~]#mc config host add minio-cluster http://minio.bowen.org:9000
-admin 12345678
-[root@ubuntu2204 ~]#mc config host ls
-gcs
-URL       : https://storage.googleapis.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v2
-Path      : dns
-local
-URL       : http://10.0.0.100:9000
-AccessKey : admin
-SecretKey : 12345678
-API       : s3v4
-Path      : auto
-minio-cluster
-URL       : http://minio.bowen.org:9000
-AccessKey : admin
-SecretKey : 12345678
-API       : s3v4
-Path      : auto
-play
-URL       : https://play.min.io
-AccessKey : Q3AM3UQ867SPQQA43P2F
-SecretKey : zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
-API       : S3v4
-Path      : auto
-s3
-URL       : https://s3.amazonaws.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v4
-Path      : dns
-#查看备份的bucket的大小
-[root@ubuntu2204 ~]#mc ls minio-cluster
-[2023-10-17 18:10:16 CST]     0B mybucket/
-[root@ubuntu2204 ~]#mc du  minio-cluster
-13GiB   3 objects
-[root@ubuntu2204 ~]#mc du  minio-cluster/mybucket
-13GiB   3 objects   mybucket
-#准备rclone的配置文件
-[root@ubuntu2204 ~]#apt update && apt -y install rclone
-[root@ubuntu2204 ~]#mkdir  -p .config/rclone
-[root@ubuntu2204 ~]#cat >  .config/rclone/rclone.conf
-[minio]
-type = s3
-provider = Minio
-evn_auth = false
-access_key_id = admin
-secret_access_key = 12345678
-region = beijing-1
-endpoint = http://minio.bowen.org:9000
-#验证配置
-[root@ubuntu2204 ~]#rclone lsd minio:
--1 2023-10-17 18:10:16        -1 mybucket
-#第一次执行完全备份
-#说明:备份目录/data/minio-bak/会自动创建,无需事先创建
-[root@ubuntu2204 ~]#rclone sync minio:/mybucket /data/minio-bak/ -vP
-2023-10-19 17:17:08 INFO  : CentOS-6.10-x86_64-netinstall.iso: Copied (new)
-2023-10-19 17:18:18 INFO  : CentOS-6.10-x86_64-bin-DVD1.iso: Multi-thread Copied
-(new)
-2023-10-19 17:18:42 INFO  : CentOS-7-x86_64-Everything-2009.iso: Multi-thread
-Copied (new)
-Transferred:       13.441G / 13.441 GBytes, 100%, 130.502 MBytes/s, ETA 0s
-Transferred:            3 / 3, 100%
-Elapsed time:      1m45.5s
-2023/10/19 17:18:42 INFO  :
-Transferred:       13.441G / 13.441 GBytes, 100%, 130.502 MBytes/s, ETA 0s
-Transferred:            3 / 3, 100%
-Elapsed time:      1m45.5s
-#查看备份后的文件
-[root@ubuntu2204 ~]#ls /data/minio-bak/
-CentOS-6.10-x86_64-bin-DVD1.iso    CentOS-7-x86_64-Everything-2009.iso
-CentOS-6.10-x86_64-netinstall.iso
-#在MinIO新上传一个文件后,执行增量备份
-[root@ubuntu2204 ~]#mc cp rhel-server-5.4-i386-dvd.iso minio-server/mybucket
-#执行增量备份
-[root@ubuntu2204 ~]#rclone sync minio:/mybucket /data/minio-bak/ -vP --checksum
-2023-10-19 17:21:23 INFO  : rhel-server-5.4-i386-dvd.iso: Multi-thread Copied
-(new)
-Transferred:        2.799G / 2.799 GBytes, 100%, 64.035 MBytes/s, ETA 0s  #只备份
-变化文件
-Checks:                 3 / 3, 100%
-Transferred:            1 / 1, 100%
-Elapsed time:        44.8s
-2023/10/19 17:21:38 INFO  :
-Transferred:        2.799G / 2.799 GBytes, 100%, 64.035 MBytes/s, ETA 0s
-Checks:                 3 / 3, 100%
-Transferred:            1 / 1, 100%
-Elapsed time:        44.8s
-#查看备份后的文件
-[root@ubuntu2204 ~]#ls /data/minio-bak/
-CentOS-6.10-x86_64-bin-DVD1.iso    CentOS-7-x86_64-Everything-2009.iso
-CentOS-6.10-x86_64-netinstall.iso  rhel-server-5.4-i386-dvd.iso
-```
-
-### 数据还原
-
-```text
-#在控制台删除MinIO文件
-```
-
-![MinIO 对象存储第 93 页插图](assets/img-ace9c7d5c5372fc5.png)
+`mc` 和 `rclone` 都连接 MinIO 的 API 端口。为备份任务创建专用只读访问身份，并用 `rclone config` 建立别名 `minio`；不要把根账户密码或配置文件展示在日志、脚本和仓库中。
 
 ```bash
-#查看数据被清空
-[root@ubuntu2204 ~]#mc du  minio-cluster/mybucket
-0B  0 objects   mybucket
-#还原数据，即使mybucket不存在，也可以自动恢复创建
-[root@ubuntu2204 ~]#rclone sync /data/minio-bak/ minio:/mybucket --transfers=8 -
--update -v -P
-2023-10-19 17:28:47 INFO  : CentOS-6.10-x86_64-netinstall.iso: Copied (new)
-2023-10-19 17:29:47 INFO  : rhel-server-5.4-i386-dvd.iso: Copied (new)
-2023-10-19 17:30:02 INFO  : CentOS-6.10-x86_64-bin-DVD1.iso: Copied (new)
-2023-10-19 17:31:31 INFO  : CentOS-7-x86_64-Everything-2009.iso: Copied (new)
-Transferred:       16.241G / 16.241 GBytes, 100%, 98.526 MBytes/s, ETA 0s
-Transferred:            4 / 4, 100%
-Elapsed time:      2m48.8s
-2023/10/19 17:31:31 INFO  :
-Transferred:       16.241G / 16.241 GBytes, 100%, 98.526 MBytes/s, ETA 0s
-Transferred:            4 / 4, 100%
-Elapsed time:      2m48.8s
-#验证数据还原
-[root@ubuntu2204 ~]#mc du  minio-cluster/mybucket
-16GiB   4 objects   mybucket
+mc ls minio
+mc du minio/mybucket
+rclone lsd minio:
+rclone size minio:mybucket
 ```
 
-登录控制台,验证数据还原
+记录对象数、逻辑容量和桶策略。如果 `mc` 的别名与 `rclone` 的 remote 同名，它们仍存放在各自的配置中，不会自动共享凭据。原材料一处配置 `minio-cluster`，随后却用 `minio-server` 上传，这是两个不同别名；示例统一使用 `minio`。
 
-![MinIO 对象存储第 94 页插图](assets/img-94b7a2365fe8b176.png)
+## 首次复制与增量复制
+
+先复制，再检查源与目标：
+
+```bash
+rclone copy minio:mybucket /backup/minio/mybucket \
+  --transfers 8 --progress --log-file /backup/minio/backup.log
+rclone check minio:mybucket /backup/minio/mybucket
+```
+
+首次运行会传输所有可见对象。下次同样执行 `copy`，工具会按后端能力判断哪些对象已存在且未变化，只传输需更新的内容：
+
+```bash
+rclone copy minio:mybucket /backup/minio/mybucket \
+  --transfers 8 --progress --log-file /backup/minio/backup.log
+rclone check minio:mybucket /backup/minio/mybucket
+```
+
+原案例用 `rclone sync` 做“增量备份”，容易将源端误删传播到目标端；`copy` 不会因此删除目标旧文件。不过，目标中保留的旧文件不是有恢复时间点的版本备份，也可能与源端已覆盖对象同名。正式方案应增加快照或版本保留，并测试对象元数据和历史版本的恢复。`--checksum` 也不是绝对的 MD5 校验：多段上传等场景下对象 ETag 未必是内容 MD5，应依据后端支持的校验方式解读结果。
+
+## 在独立测试桶中恢复
+
+不要为了测试恢复而先删除生产桶。原截图显示删除后桶中 `0 objects`，它只能说明当时数据被清空，不是推荐的演练方法。
+
+![原案例删除对象后的 Console 状态](assets/img-ace9c7d5c5372fc5.webp)
+
+预先建立测试桶 `mybucket-restore-test`，用具有写入权限的恢复身份配置 rclone remote `restore`，再复制备份目录：
+
+```bash
+rclone mkdir restore:mybucket-restore-test
+rclone copy /backup/minio/mybucket restore:mybucket-restore-test \
+  --transfers 8 --progress --log-file /backup/minio/restore.log
+rclone check /backup/minio/mybucket restore:mybucket-restore-test
+rclone size restore:mybucket-restore-test
+```
+
+创建测试桶需要相应权限，若测试桶已存在应先确认内容再决定是否复用。除了 `rclone check`，还应抽样下载并核对应用能否读取，检查内容类型、标签、权限、生命周期、版本和对象锁等是否达到恢复目标。若这些属性不在普通对象复制范围内，要另行恢复。测试完成后按保留策略清理测试桶，不要影响源桶与备份目录。
+
+![原案例恢复后 Console 中的对象](assets/img-94b7a2365fe8b176.webp)
+
+最终将备份任务的退出码、传输量、差异检查结果和恢复演练时间记录到监控中。只有能够在目标环境成功读取所需对象，备份才算经过验证。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/16-backup-and-restore-overview.html' | relative_url }}">← Previous: Backup and Restore Overview</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/18-minio-monitoring-overview.html' | relative_url }}">Next: MinIO Monitoring Overview →</a>
+  <a href="{{ '/subjects/MinIO/16-backup-and-restore-overview.html' | relative_url }}">← 上一篇：备份与恢复概述</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/18-minio-monitoring-overview.html' | relative_url }}">下一篇：MinIO 监控概述 →</a>
 </nav>

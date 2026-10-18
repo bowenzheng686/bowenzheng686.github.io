@@ -1,654 +1,99 @@
 ---
 layout: default
-title: "MinIO 对象存储 · MINIO 客户端 MC"
+title: "MinIO 对象存储 · MinIO 客户端 mc"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 10 MINIO 客户端 MC
-### 3.2 MINIO 客户端 MC
+# 10 MinIO 客户端 mc
 
-### MC 介绍
+`mc` 是 MinIO 的命令行客户端，既能操作本地文件，也能通过 S3 API 管理 MinIO 或其他兼容 S3 的服务。命令名借鉴了 `ls`、`cp`、`cat`、`rm` 等常见文件工具，但目标 `别名/存储桶/对象键` 并不是本地文件路径。集群管理类命令通常位于 `mc admin` 下，需相应权限。
 
-<https://min.io/docs/minio/linux/reference/minio-mc.html>
+参考：[mc 命令索引](https://min.io/docs/minio/linux/reference/minio-mc.html)与[mc admin 命令索引](https://min.io/docs/minio/linux/reference/minio-mc-admin.html)。不同版本可用子命令可能变化，实际使用前先看 `mc --help` 和 `mc <子命令> --help`。
 
-<https://min.io/docs/minio/linux/reference/minio-mc-admin.html>
+## 安装客户端
 
-MC是MinIO 客户端命令行工具 MinIO Client (mc)
-
-MC 可以用于访问MinIO的文件, 使用方法类似于常用的UNIX命令: 如:Is, cat, cp,rm,diff, find等
-
-它支持文件系统和兼容Amazon S3的云存储服务(AWS Signature v2和v4)。
-
-### MC 部署
-
-### 二进制部署
-
-```text
-#二进制部署下载
-https://dl.min.io/client/mc/release/linux-amd64/mc
-http://dl.minio.org.cn/client/mc/release/linux-amd64/mc
-https://min.io/download?
-license=enterprise&platform=linux&subscription=enterprise-plus
-```
-
-![MinIO 对象存储第 56 页插图](assets/img-421bf2411f7815cf.png)
-
-范例: 二进制部署
+从官方发布目录选择与平台、架构匹配的客户端。Linux amd64 二进制示例：
 
 ```bash
-#官网下载
-[root@ubuntu2204 ~]#wget https://dl.min.io/client/mc/release/linux-amd64/mc
-#国内镜像下载
-[root@ubuntu2204 ~]#wget http://dl.minio.org.cn/client/mc/release/linux-amd64/mc
-[root@ubuntu2204 ~]#install  mc /usr/local/bin/mc
+curl -fsSLo mc https://dl.min.io/client/mc/release/linux-amd64/mc
+sudo install -m 755 mc /usr/local/bin/mc
+mc --version
 ```
 
-### 包安装
+也可下载相应的 DEB／RPM 包安装；包名可能是 `mcli`，安装后应检查提供的可执行文件名。不要把企业版下载页的旧版本文件名直接拼接成社区版地址。
 
-<https://min.io/download?license=enterprise&platform=linux&subscription=enterprise-plus>
+![mc 下载页面示意](assets/img-421bf2411f7815cf.webp)
 
-DEB 包
+容器中临时运行时，可用 `minio/mc` 镜像；若希望别名跨容器重建保留，需要将 `~/.mc` 映射到受保护的持久目录。容器必须能解析并访问目标服务地址，而宿主机的 `localhost` 在容器中通常指容器自己。
 
-```text
-wget https://dl.min.io/client/mc/release/linux-
-amd64/mcli_20240731155833.0.0_amd64.deb
-dpkg -i mcli_20240731155833.0.0_amd64.deb
-mcli alias set myminio/ http://MINIO-SERVER MYUSER MYPASSWORD
-```
+![mc 容器镜像示意](assets/img-fecbfd1812e182ae.webp)
 
-RPM 包
+## 配置连接别名
 
-```text
-dnf install https://dl.min.io/client/mc/release/linux-amd64/mcli-
-20240731155833.0.0-1.x86_64.rpm
-mcli alias set myminio/ http://MINIO-SERVER MYUSER MYPASSWORD
-```
-
-### 容器化部署
-
-```text
-#容器化部署
-https://min.io/download#/docker
-https://min.io/download?license=agpl&platform=docker#/docker
-```
-
-![MinIO 对象存储第 57 页插图](assets/img-fecbfd1812e182ae.png)
-
-范例:容器化部署
+`mc alias set` 后依次是别名、**API 地址**、访问密钥和秘密密钥；别名末尾不加 `/`。连接 Console 的 `9001` 端口会失败，应使用 API 的 `9000` 或其代理入口。
 
 ```bash
-[root@ubuntu2204 ~]#docker run --name my-mc --hostname my-mc -it --entrypoint
-/bin/bash --rm minio/mc
-[root@my-mc /]# mc alias set myminio/ https://my-minio-service MY-USER MY-
-PASSWORD
-[root@my-mc /]# mc ls myminio/mybucket
+mc alias set lab http://127.0.0.1:9000 ACCESS_KEY SECRET_KEY
+mc alias list
+mc admin info lab
 ```
 
-### MC 命令使用
+为业务操作使用专门的访问密钥和最小权限策略；`mc admin info` 则需要管理权限。若桶对象读写成功但 `mc admin info` 返回 Access Denied，先检查身份的管理策略，不要误判服务不可用。客户端别名通常保存在用户的 `~/.mc/config.json`，其中可能包含凭据，须限制文件权限并避免提交到仓库。终端命令行中的密钥也可能留在 shell 历史和进程列表中，应按环境使用专用凭据注入方式。
 
-### MC 命令说明
+单机与集群的别名配置完全相同；连接集群时可指定任一健康节点，但生产客户端更适合使用有冗余的 API 负载均衡入口。`mc admin info` 可检查节点、驱动器、存储池和纠删码状态；输出随服务版本和拓扑而变化，不能把某次实验中的“12 drives online”当作通用判据。
 
-```text
-#帮助查看
-mc --help
-mc [GLOBALFLAGS] COMMAND --help
-```
+## 桶与对象的常用操作
 
-常见命令
-
-```sql
-ls #列出文件和文件夹
-mb  #创建一个存储桶或一一个文件夹
-cat  #显示文件和对象内容
-pipe #一个STDIN重定向到一一个对象或者文件或者STDOUT
-share #生成用于共享的URL
-cp  # 拷贝文件和对象
-mirror #给存储桶和文件夹做镜像
-find  #基于参数查找文件
-diff   #对两个文件夹或者存储桶比较差异
-rm   #删除文件和对象
-events #管理对象通知
-watch #监视文件和对象的事件
-policy #管理访问策略
-config #管理mc配置文件
-update #检查软件更新
-version #输出版本信息
-```
-
-### MC 使用
-
-范例: 查看帮助
+下面使用测试桶 `lab-example` 串起创建、上传、读取、下载和检查流程：
 
 ```bash
-[root@ubuntu2204 ~]#mc
-[root@ubuntu2204 ~]#mc --help
-NAME:
-mc - MinIO Client for object storage and filesystems.
-USAGE:
-mc [FLAGS] COMMAND [COMMAND FLAGS | -h] [ARGUMENTS...]
-COMMANDS:
-alias      manage server credentials in configuration file
-ls         list buckets and objects
-mb         make a bucket
-rb         remove a bucket
-cp         copy objects
-mv         move objects
-rm         remove object(s)
-mirror     synchronize object(s) to a remote site
-cat        display object contents
-head       display first 'n' lines of an object
-pipe       stream STDIN to an object
-find       search for objects
-sql        run sql queries on objects
-stat       show object metadata
-tree       list buckets and objects in a tree format
-du         summarize disk usage recursively
-retention  set retention for object(s)
-legalhold  manage legal hold for object(s)
-support    support related commands
-license    license related commands
-share      generate URL for temporary access to an object
-version    manage bucket versioning
-ilm        manage bucket lifecycle
-quota      manage bucket quota
-encrypt    manage bucket encryption config
-event      manage object notifications
-watch      listen for object notification events
-undo       undo PUT/DELETE operations
-anonymous  manage anonymous access to buckets and objects
-tag        manage tags for bucket and object(s)
-diff       list differences in object name, size, and date between two buckets
-replicate  configure server side bucket replication
-admin      manage MinIO servers
-idp        manage MinIO IDentity Provider server configuration
-update     update mc to latest release
-ready      checks if the cluster is ready or not
-ping       perform liveness check
-od         measure single stream upload and download
-batch      manage batch jobs
-GLOBAL FLAGS:
---autocompletion              install auto-completion for your shell
---config-dir value, -C value  path to configuration folder (default:
-"/root/.mc")
---quiet, -q                   disable progress bar display
---no-color                    disable color theme
---json                        enable JSON lines formatted output
---debug                       enable debug output
---insecure                    disable SSL certificate verification
---limit-upload value          limits uploads to a maximum rate in KiB/s,
-MiB/s, GiB/s. (default: unlimited)
---limit-download value        limits downloads to a maximum rate in KiB/s,
-MiB/s, GiB/s. (default: unlimited)
---help, -h                    show help
---version, -v                 print the version
-TIP:
-Use 'mc --autocompletion' to enable shell autocompletion
-COPYRIGHT:
-Copyright (c) 2015-2023 MinIO, Inc.
-LICENSE:
-GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
+mc mb lab/lab-example
+printf 'hello MinIO\n' > /tmp/hello.txt
+mc cp /tmp/hello.txt lab/lab-example/hello.txt
+mc ls lab/lab-example/
+mc stat lab/lab-example/hello.txt
+mc cat lab/lab-example/hello.txt
+mc cp lab/lab-example/hello.txt /tmp/hello-downloaded.txt
 ```
 
-范例: 开启mc命令自动补全功能
+`mc ls lab` 列出桶，`mc ls lab/lab-example/` 列出桶中的对象。`mc stat` 查看对象元数据，`mc du` 统计逻辑用量，`mc tree` 可按前缀呈现树状视图；这些输出并不等于底层磁盘的实际占用。
+
+目录上传使用 `mc cp --recursive` 或 `mc mirror`。对象存储没有传统目录，路径前缀是否包含本地目录名取决于源路径末尾是否带 `/`，正式迁移前应先用少量文件验证目标键名：
 
 ```bash
-[root@ubuntu2204 ~]#mc --autocompletion
-mc: Your shell is set to 'bash', by env var 'SHELL'.
-mc: enabled autocompletion in your 'bash' rc file. Please restart your shell.
-#上面命令本质上就是修改.bashrc文件
-[root@ubuntu2204 ~]#tail -n1 .bashrc
-complete -C /usr/local/bin/mc mc
-#需要重新登录才能生效
-[root@ubuntu2204 ~]#mc
-.cache/ data/   .mc/    snap/   .ssh/
-[root@ubuntu2204 ~]#exit
-#重新登录后,支持自动补会mc命令
-[root@ubuntu2204 ~]#mc  <tab> <tab>
-admin      cat        encrypt    idp        ls         od         rb         rm
-support    update
-alias      cp         event      ilm        mb         ping       ready
-share      tag        version
-anonymous  diff       find       legalhold  mirror     pipe       replicate  sql
-tree       watch
-batch      du         head       license    mv         quota      retention
-stat       undo
+mc cp --recursive ./docs/ lab/lab-example/docs/
+mc ls --recursive lab/lab-example/docs/
+mc mirror ./docs/ lab/lab-example/docs/
 ```
 
-范例: 查看客户端版本和连接信息
+`mc mirror` 常用于同步，但“镜像”不天然等于可靠备份：误删、覆盖、版本、对象锁和同步方向都要另外设计。使用 `--remove` 等会删除目标对象的选项前，先确认差异范围。
+
+## 删除与清理
+
+删除单个对象用 `mc rm`；非空桶不能直接 `mc rb`。以下清理仅针对本节刚创建的测试桶，执行前再次确认别名和桶名：
 
 ```bash
-[root@ubuntu2204 ~]#mc --version
-mc version RELEASE.2023-08-01T23-30-57Z (commit-
-id=0a529d5e642f1a50a74b256c683be453e26bf7e9)
-Runtime: go1.19.12 linux/amd64
-Copyright (c) 2015-2023 MinIO, Inc.
-License GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
-#查看默认连接信息
-[root@ubuntu2204 ~]#mc alias ls
-gcs
-URL       : https://storage.googleapis.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v2
-Path      : dns
-local
-URL       : http://localhost:9000
-AccessKey :
-SecretKey :
-API       :
-Path      : auto
-play
-URL       : https://play.min.io
-AccessKey : Q3AM3UQ867SPQQA43P2F
-SecretKey : zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
-API       : S3v4
-Path      : auto
-s3
-URL       : https://s3.amazonaws.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v4
-Path      : dns
-[root@ubuntu2204 ~]#cat /root/.mc/config.json
-{
-"version": "10",
-"aliases": {
-"gcs": {
-"url": "https://storage.googleapis.com",
-"accessKey": "YOUR-ACCESS-KEY-HERE",
-"secretKey": "YOUR-SECRET-KEY-HERE",
-"api": "S3v2",
-"path": "dns"
-},
-"local": {
-"url": "http://localhost:9000",
-"accessKey": "",
-"secretKey": "",
-"api": "S3v4",
-"path": "auto"
-},
-"play": {
-"url": "https://play.min.io",
-"accessKey": "Q3AM3UQ867SPQQA43P2F",
-"secretKey": "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
-"api": "S3v4",
-"path": "auto"
-},
-"s3": {
-"url": "https://s3.amazonaws.com",
-"accessKey": "YOUR-ACCESS-KEY-HERE",
-"secretKey": "YOUR-SECRET-KEY-HERE",
-"api": "S3v4",
-"path": "dns"
-}
-}
-}
-#默认无法访问
-[root@ubuntu2404 ~]#mc admin info local
-mc: <ERROR> Unable to get service info. Access Denied.
+mc rm lab/lab-example/hello.txt
+mc rm --recursive --force lab/lab-example/docs/
+mc rb --force lab/lab-example
 ```
 
-范例:  初始连接配置单机存储
+带 `--force` 的递归删除会影响桶内所有匹配对象；若开启版本化，还需理解删除标记与历史版本的区别。移除本机连接别名用 `mc alias remove lab`，它只删客户端配置，不会删除服务端数据。
 
-```bash
-#建议使用key进行连接
-[root@ubuntu2204 ~]#mc alias set minio-server http://minio.bowen.org:9000
-Ib4kdhJ3y5E0sbtcp8nH eTbjZq2R06xBgpDNMIqOWQOo7z7rItaSDZEitAAY
-Added `minio-server` successfully.
-[root@ubuntu2204 ~]#mc admin info minio-server2
-```
+## 排障顺序
 
-●  minio1.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2024-10-02T17:50:41Z
-Network: 3/3 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio2.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2024-10-02T17:50:41Z
-Network: 3/3 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio3.bowen.org:9000
-
-```text
-Uptime: 2 hours
-Version: 2024-10-02T17:50:41Z
-Network: 3/3 OK
-Drives: 4/4 OK
-Pool: 1
-┌──────┬──────────────────────┬─────────────────────┬──────────────┐
-│ Pool │ Drives Usage         │ Erasure stripe size │ Erasure sets │
-│ 1st  │ 1.4% (total: 80 GiB) │ 12                  │ 1            │
-└──────┴──────────────────────┴─────────────────────┴──────────────┘
-81 MiB Used, 2 Buckets, 17 Objects
-12 drives online, 0 drives offline, EC:4
-```
-
-```bash
-#使用用户名和密码连接
-[root@ubuntu2204 ~]#mc alias set local http://127.0.0.1:9000 minioadmin
-minioadmin
-[root@ubuntu2204 ~]#mc config host ls
-[root@ubuntu2204 ~]#mc admin info local
-#验证后创建主机连接
-[root@ubuntu2204 ~]#mc config host add local http://127.0.0.1:9000 admin
-12345678
-mc: Configuration written to `/root/.mc/config.json`. Please update your access
-credentials.
-mc: Successfully created `/root/.mc/share`.
-mc: Initialized share uploads `/root/.mc/share/uploads.json` file.
-mc: Initialized share downloads `/root/.mc/share/downloads.json` file.
-Added `local` successfully.
-#查看连接主机
-[root@ubuntu2204 ~]#mc config host ls
-gcs
-URL       : https://storage.googleapis.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v2
-Path      : dns
-local
-URL       : http://127.0.0.1:9000
-AccessKey : minioadmin
-SecretKey : minioadmin
-API       : s3v4
-Path      : auto
-play
-URL       : https://play.min.io
-AccessKey : Q3AM3UQ867SPQQA43P2F
-SecretKey : zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
-API       : S3v4
-Path      : auto
-s3
-URL       : https://s3.amazonaws.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v4
-Path      : dns
-#配置存放在下面文件中
-[root@ubuntu2204 ~]#cat .mc/config.json
-{
-"version": "10",
-"aliases": {
-"gcs": {
-"url": "https://storage.googleapis.com",
-"accessKey": "YOUR-ACCESS-KEY-HERE",
-"secretKey": "YOUR-SECRET-KEY-HERE",
-"api": "S3v2",
-"path": "dns"
-},
-"local": {
-"url": "http://127.0.0.1:9000",
-"accessKey": "minioadmin",
-"secretKey": "minioadmin",
-"api": "S3v4",
-"path": "auto"
-},
-"play": {
-"url": "https://play.min.io",
-"accessKey": "Q3AM3UQ867SPQQA43P2F",
-"secretKey": "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
-"api": "S3v4",
-"path": "auto"
-},
-"s3": {
-"url": "https://s3.amazonaws.com",
-"accessKey": "YOUR-ACCESS-KEY-HERE",
-"secretKey": "YOUR-SECRET-KEY-HERE",
-"api": "S3v4",
-"path": "dns"
-}
-}
-}
-```
-
-```bash
-#单机显示
-[root@ubuntu2204 ~]#mc admin info local
-```
-
-●  127.0.0.1:9000
-
-```bash
-Uptime: 21 minutes
-Version: 2023-08-29T23:07:35Z
-Network: 1/1 OK
-Drives: 1/1 OK
-Pool: 1
-Pools:
-1st, Erasure sets: 1, Drives per erasure set: 1
-0 B Used, 1 Bucket, 0 Objects
-1 drive online, 0 drives offline
-#查看存储中的数据文件
-[root@ubuntu2204 ~]#mc ls local
-[2023-09-05 09:19:38 CST]     0B mybucket/
-[root@ubuntu2204 ~]#mc ls local/mybucket
-[2023-09-05 09:20:28 CST]  18MiB STANDARD 19M图片.jpg
-```
-
-范例:  管理分布式存储
-
-```bash
-#添加分布式存储的任意一个节点连接
-[root@ubuntu2204 ~]#mc config host add minio-cluster http://10.0.0.101:9000
-admin 12345678
-#查看连接信息
-[root@ubuntu2204 ~]#mc config host ls
-gcs
-URL       : https://storage.googleapis.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v2
-Path      : dns
-local
-URL       : http://localhost:9000
-AccessKey :
-SecretKey :
-API       :
-Path      : auto
-minio-cluster
-URL       : http://10.0.0.101:9000
-AccessKey : admin
-SecretKey : 12345678
-API       : s3v4
-Path      : auto
-play
-URL       : https://play.min.io
-AccessKey : Q3AM3UQ867SPQQA43P2F
-SecretKey : zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
-API       : S3v4
-Path      : auto
-s3
-URL       : https://s3.amazonaws.com
-AccessKey : YOUR-ACCESS-KEY-HERE
-SecretKey : YOUR-SECRET-KEY-HERE
-API       : S3v4
-Path      : dns
-#集群显示
-[root@ubuntu2204 ~]#mc admin info minio-cluster
-```
-
-●  10.0.0.101:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-08-29T23:07:35Z
-Network: 3/3 OK
-Drives: 1/1 OK
-Pool: 1
-```
-
-●  10.0.0.102:9000
-
-```text
-Uptime: 2 hours
-Version: 2023-08-29T23:07:35Z
-Network: 3/3 OK
-Drives: 1/1 OK
-Pool: 1
-```
-
-●  10.0.0.103:9000
-
-```bash
-Uptime: 2 hours
-Version: 2023-08-29T23:07:35Z
-Network: 3/3 OK
-Drives: 1/1 OK
-Pool: 1
-Pools:
-1st, Erasure sets: 1, Drives per erasure set: 3
-18 MiB Used, 1 Bucket, 1 Object
-3 drives online, 0 drives offline
-#测试连通
-[root@ubuntu2204 ~]#mc ping -c 1 minio-cluster
-1: http://10.0.0.101:9000:9000   min=1.92ms     max=1.92ms     average=1.92ms
-errors=0   roundtrip=1.92ms
-#查看文件
-[root@ubuntu2204 ~]#mc ls minio-cluster
-[2023-09-05 11:26:05 CST]     0B mybucket/
-[root@ubuntu2204 ~]#mc ls minio-cluster/mybucket
-[2023-09-05 14:05:33 CST]  12MiB STANDARD 11M.jpg
-[2023-09-05 11:27:21 CST]  18MiB STANDARD image-19M.jpg
-#查看存储目录大小
-[root@ubuntu2204 ~]#mc du minio-cluster
-30MiB   2 objects
-#删除连接信息
-[root@ubuntu2204 ~]#mc config host rm  minio-cluster
-Removed `minio-cluster` successfully.
-#确认删除
-[root@ubuntu2204 ~]#mc config host ls
-```
-
-范例: 文件下载上传
-
-```bash
-[root@ubuntu2204 ~]#mc ls minio-cluster/mybucket
-[2023-09-05 14:05:33 CST]  12MiB STANDARD 11M.jpg
-[2023-09-05 11:27:21 CST]  18MiB STANDARD image-19M.jpg
-#下载
-[root@ubuntu2204 ~]#mc cp minio-cluster/mybucket/11M.jpg .
-...000/mybucket/11M.jpg: 11.51 MiB / 11.51 MiB
-```
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 152.93 MiB/s 0s
-
-```bash
-[root@ubuntu2204 ~]#ls
-11M.jpg  data  mc  snap
-#上传
-[root@ubuntu2204 ~]#mc cp /var/log/syslog minio-cluster/mybucket
-/var/log/syslog:         717.02 KiB / 717.02 KiB
-```
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 22.96 MiB/s
-
-```text
-0s[root@ubuntu2204 ~]#mc ls minio-cluster/mybucket
-[2023-09-05 14:05:33 CST]  12MiB STANDARD 11M.jpg
-[2023-09-05 11:27:21 CST]  18MiB STANDARD image-19M.jpg
-[2023-09-05 14:44:16 CST] 717KiB STANDARD syslog
-```
-
-```bash
-#上传日录,需要加-r选项,注意:目录以/后缀表示只上传目录的内容,并不上传目录本身
-[root@ubuntu2204 ~]#mc cp -r /etc/netplan/ minio-cluster/mybucket
-...nstaller-config.yaml: 754 B / 754 B
-```
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 32.28
-
-```bash
-KiB/s 0s[root@ubuntu2204 ~]#mc ls minio-cluster/mybucket
-[2023-09-05 14:47:54 CST]   305B STANDARD 01-netcfg.yaml
-[2023-09-05 14:47:54 CST]   333B STANDARD 01-netcfg.yaml.bak
-[2023-09-05 14:05:33 CST]  12MiB STANDARD 11M.jpg
-[2023-09-05 11:27:21 CST]  18MiB STANDARD image-19M.jpg
-[2023-09-05 14:44:16 CST] 717KiB STANDARD syslog
-[2023-09-05 14:48:00 CST]     0B bak/
-#上传日录,需要加-r选项,注意:目录不以/后缀表示会上传目录本身及内容
-[root@ubuntu2204 ~]#mc cp -r /etc/netplan minio-cluster/mybucket
-...nstaller-config.yaml: 754 B / 754 B
-```
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 28.04
-
-```bash
-KiB/s 0s[root@ubuntu2204 ~]#mc ls minio-cluster/mybucket
-[2023-09-05 14:47:54 CST]   305B STANDARD 01-netcfg.yaml
-[2023-09-05 14:47:54 CST]   333B STANDARD 01-netcfg.yaml.bak
-[2023-09-05 14:05:33 CST]  12MiB STANDARD 11M.jpg
-[2023-09-05 11:27:21 CST]  18MiB STANDARD image-19M.jpg
-[2023-09-05 14:44:16 CST] 717KiB STANDARD syslog
-[2023-09-05 14:48:13 CST]     0B bak/
-[2023-09-05 14:48:13 CST]     0B netplan/
-#删除多个文件
-[root@ubuntu2204 ~]#mc rm  minio-cluster/mybucket/01-netcfg.yaml.bak minio-
-cluster/mybucket/01-netcfg.yaml
-```
-
-```bash
-#查看目录结构
-[root@ubuntu2204 ~]#mc tree minio-cluster
-minio-cluster
-└─ mybucket
-└─ netplan
-└─ bak
-#删除目录
-[root@ubuntu2204 ~]#mc rm -r --force  minio-cluster/mybucket/netplan/bak
-Removed `minio-cluster/mybucket/netplan/bak/00-installer-config.yaml`.
-[root@ubuntu2204 ~]#mc tree minio-cluster
-minio-cluster
-└─ mybucket
-└─ netplan
-```
-
-范例:  管理bucket
-
-```bash
-#创建bucket
-[root@ubuntu2204 ~]#mc mb minio-cluster/bucket01
-Bucket created successfully `minio-cluster/bucket01`.
-[root@ubuntu2204 ~]#mc ls minio-cluster
-[2023-09-05 15:00:06 CST]     0B bucket01/
-[2023-09-05 11:26:05 CST]     0B mybucket/
-#上传文件
-[root@ubuntu2204 ~]#mc cp /etc/issue minio-cluster/bucket01
-[root@ubuntu2204 ~]#mc tree -f  minio-cluster/bucket01
-minio-cluster/bucket01
-└─ issue
-#不能直接删除不为空的bucket
-[root@ubuntu2204 ~]#mc rb minio-cluster/bucket01
-mc: <ERROR> `minio-cluster/bucket01` is not empty. Retry this command with ‘--
-force’ flag if you want to remove `minio-cluster/bucket01` and all its contents
-#强制删除不为空的bucket
-[root@ubuntu2204 ~]#mc rb --force  minio-cluster/bucket01
-Removed `minio-cluster/bucket01` successfully.
-#确认删除
-[root@ubuntu2204 ~]#mc ls minio-cluster
-[2023-09-05 11:26:05 CST]     0B mybucket/
-```
+连接失败时依次检查 API URL、DNS／网络、TLS 证书、访问密钥、策略权限与服务健康状态。`mc --debug` 可辅助定位请求，但调试日志可能包含敏感信息，分享前应审阅。命令自动补全是客户端便利功能，不影响连接或对象语义。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/09-minio-console-management.html' | relative_url }}">← Previous: MinIO Console Management</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/11-accessing-minio-with-programming-apis.html' | relative_url }}">Next: Accessing MinIO with Programming APIs →</a>
+  <a href="{{ '/subjects/MinIO/09-minio-console-management.html' | relative_url }}">← 上一篇：Console 管理</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/11-accessing-minio-with-programming-apis.html' | relative_url }}">下一篇：编程接口访问 MinIO →</a>
 </nav>

@@ -10,8 +10,9 @@ syntax_highlight: true
 
 {% raw %}
 
-# 11 综合案例: 元宇宙创业史
-### 2.5 综合案例: 元宇宙创业史
+# 11 综合案例：从个人开发到团队协作
+
+本案例沿着“个人提交 → 功能分支 → 远程协作 → 版本发布”展开。命令中的仓库地址、分支名和提交 ID 都是示例；执行前应以当前仓库的 `git status`、`git branch -a` 和 `git remote -v` 为准。
 
 ### 起步: 个人小型项目
 
@@ -28,7 +29,7 @@ git init
 vim index.html
 git status
 #管理指定文件
-git add 文件名
+git add <文件名>
 git add .
 #个人信息配置：用户名和邮箱,只需配置一次即可
 git config --global user.name "bowenxiaochun"
@@ -57,7 +58,7 @@ git commit -m '添加AR功能'
 
 ### 版本回退
 
-发现新功能审查有问题,回滚至之前版本
+若新功能尚未推送，可以在实验仓库用 `git reset` 理解分支引用的变化；若已经推送并由团队共享，通常用 `git revert` 新建抵消提交。下面的 `--hard` 会丢弃未提交修改，先确认工作区干净并记录目标提交 ID。
 
 ```text
 git log                       #查看所有的提交记录
@@ -89,7 +90,8 @@ vim index.html
 git add .
 git commit -m '添加新特性'
 #删除分支
-git branch -d debug
+git switch <主分支>  # 先离开要删除的分支
+git branch -d dev  # 仅在已合并且不再需要时删除
 #将指定分支合并至当前分支,可能产生冲突
 git merge <要合并的分支>
 git merge dev  #将dev的最新代码合并到当前分支
@@ -109,9 +111,9 @@ git merge dev  #将dev的最新代码合并到当前分支
 
 注意: 新建仓库时,选择不初始化仓库
 
-![Git 与 GitLab 版本管理第 85 页插图](assets/img-45ed136d66627554.png)
+![Git 与 GitLab 版本管理第 85 页插图](assets/img-45ed136d66627554.webp)
 
-![Git 与 GitLab 版本管理第 85 页插图](assets/img-d205504ed56a6a32.png)
+![Git 与 GitLab 版本管理第 85 页插图](assets/img-d205504ed56a6a32.webp)
 
 ### 将本地仓库同步至远程仓库
 
@@ -123,12 +125,8 @@ git push -u origin 分支
 #推送当前已有项目到gitee仓库
 git remote add origin https://gitee.com/lbtooth/meta-project.git
 git push -u origin "master"
-#关联远程仓库
-[root@ubuntu2004 meta-project]#git remote add origin
-https://gitee.com/lbtooth/meta-project.git
-#也可以将用户和密码同时关联
-[root@ubuntu2004 meta-project]#git remote add origin https://<用户名>:<密码
->@gitee.com/lbtooth/meta-project.git
+# 已添加 origin 时不要重复执行 remote add；如需修改地址，用 remote set-url。
+[root@ubuntu2004 meta-project]#git remote set-url origin https://gitee.com/lbtooth/meta-project.git
 #查看关联
 [root@ubuntu2004 meta-project]#git remote
 origin
@@ -155,7 +153,7 @@ Branch 'master' set up to track remote branch 'master' from 'origin'.
 
 查看gitee网站可以看到仓库有文件上传成功
 
-![Git 与 GitLab 版本管理第 87 页插图](assets/img-15c43c484409ec40.png)
+![Git 与 GitLab 版本管理第 87 页插图](assets/img-15c43c484409ec40.webp)
 
 ### 在新电脑初次使用下载远程仓库的代码并继续开发
 
@@ -179,17 +177,14 @@ git push origin dev
 
 ```bash
 #公有仓库直接下载即可
-[root@ubuntu2004 meta-project]#git clone https://gitee.com/lbtooth/meta-
-project.git
-#如果是私有仓库,还需要提供用户和密码
-[root@ubuntu2004 meta-project]#git clone https://<用户名>:<密码
->@gitee.com/lbtooth/meta-project.git
+[root@ubuntu2004 ~]#git clone https://gitee.com/lbtooth/meta-project.git
+# 私有仓库通过凭据管理器、交互式令牌或 SSH 密钥认证；不要把密码写进 URL。
 #确认分支
 [root@ubuntu2004 meta-project]#git branch
 * master
-[root@ubuntu2004 meta-project]#git checkout -b dev
-#拉取dev分支
-[root@ubuntu2004 meta-project]#git pull origin dev
+[root@ubuntu2004 meta-project]#git switch --track origin/dev
+# 已有本地 dev 后再拉取后续更新
+[root@ubuntu2004 meta-project]#git pull --ff-only origin dev
 #确认新代码已经同步到本机
 [root@ubuntu2004 meta-project]#cat index.html
 #个人信息配置：用户名和邮箱,只需配置一次即可
@@ -262,26 +257,17 @@ git push origin dev
 
 ### 免密码登录
 
-通过HTTP/HTTPS实现
-
-```text
-#原来的地址：
-https://gitee.com/lbtooth/meta-project.git
-#修改的地址：
-https://用户名:密码@gitee.com/lbtooth/meta-project.git
-git remote add origin https://用户名:密码@gitee.com/lbtooth/meta-project.git
-git push origin master
-```
+通过 HTTPS 可使用平台支持的凭据管理器保存访问令牌；不要把用户名、密码或令牌嵌入远程 URL，因为它们可能进入 `.git/config`、终端历史和日志。远程 URL 保持普通仓库地址即可。
 
 SSH 实现
 
 ```text
 #生成公钥和私钥(默认放在 ~/.ssh目录下，id_rsa.pub公钥、id_rsa私钥）
-ssh-keygen
+ssh-keygen -t ed25519 -C "you@example.com"
 #拷贝公钥的内容，并设置到gitee或github中
-cat id_rsa.pub
+cat ~/.ssh/id_ed25519.pub
 #在git本地中配置ssh地址
-git remote add origin git@gitee.com:lbtooth/meta-project.git
+git remote set-url origin git@gitee.com:lbtooth/meta-project.git
 #以后使用以下即可
 git push origin master
 ```
@@ -343,13 +329,13 @@ index 110b1e6..0000000
 #同步所有tag到远程仓库
 [root@ubuntu2004 meta-project]#git push origin --tags
 #拉取所有远程仓库的tag
-[root@ubuntu2004 meta-project]#ggit pull origin --tags
+[root@ubuntu2004 meta-project]#git fetch origin --tags
 ```
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/10-public-cloud-repositories.html' | relative_url }}">← Previous: Public Cloud Repositories</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/12-introduction-to-gitlab.html' | relative_url }}">Next: Introduction to GitLab →</a>
+  <a href="{{ '/subjects/Git-GitLab/10-public-cloud-repositories.html' | relative_url }}">← 上一篇：公有云仓库</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/12-introduction-to-gitlab.html' | relative_url }}">下一篇：GitLab 介绍 →</a>
 </nav>

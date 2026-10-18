@@ -11,160 +11,49 @@ syntax_highlight: true
 {% raw %}
 
 # 22 Kafka 监控
-### 3.10 Kafka 监控
 
-Prometheus 监控 kafka
+Kafka 监控不能只看“Broker 是否存活”。集群健康、分区副本、生产与消费流量、消费积压分别回答不同的问题：数据能否写入、能否读取、是否及时被处理。
+
+Prometheus 可通过 Kafka Exporter 采集主题、分区和消费组等指标；Broker 的 JVM、请求与操作系统指标通常还需要 JMX Exporter、Node Exporter 等数据源。部署前应确认导出器版本与集群模式兼容，并以实际导出的指标名配置告警。
 
 <https://github.com/danielqsj/kafka_exporter>
 
-![微服务技术第 77 页插图](assets/img-61f5bd82530a1a21.png)
+![微服务技术第 77 页插图](assets/img-61f5bd82530a1a21.webp)
 
-![微服务技术第 77 页插图](assets/img-cf8a09f75e93db42.png)
+![微服务技术第 77 页插图](assets/img-cf8a09f75e93db42.webp)
 
-Kafka 常用监控指标
+### 集群与分区：先确认数据是否可用
 
-Kafka集群
+| 观察项 | 含义与阅读方法 |
+| --- | --- |
+| Broker 存活数 | 与预期实例数比较，发现节点退出或反复重启。仅靠实例存活不能证明分区可用。 |
+| 离线分区数 | 没有可用 Leader 的分区数量；持续大于零时，相关分区可能无法正常读写，应优先排查。 |
+| 副本不同步分区数 | 分区的 ISR 少于预期副本集合，说明副本追赶出现问题；结合复制延迟、磁盘和网络判断原因。 |
+| 分区与 Leader 分布 | 看各 Broker 承担的分区和 Leader 数量是否明显失衡，避免单节点成为瓶颈。 |
+| Controller 状态 | 控制器负责集群元数据管理。监控方式取决于 Kafka 使用 ZooKeeper 还是 KRaft，不能把旧版 ZooKeeper 指标直接套到 KRaft 集群。 |
 
-序号指标别名指标含义解释单位
+### Broker：区分请求瓶颈与机器瓶颈
 
-1 Partitions总数集群中所有节点Partition数之和个
+应同时观察生产／消费流量（Bytes/s）、请求速率（次/s）、Produce 与 Fetch 请求失败率、响应时间分位值，以及被拒绝请求。**流量**是字节量，**QPS**是请求数，**每秒消息数**是记录条数，三者不能混为同一个指标。
 
-2 未复制分区总数集群中所有节点未复制分区数之和个
+当响应时间升高时，再结合 CPU、堆内存、GC 时间、磁盘读写吞吐、网络吞吐，以及 ISR 扩大／收缩速率定位瓶颈。例如，磁盘持续饱和且副本落后，通常比单看 CPU 更能解释复制延迟。原表中“生产者流量 Bytes”和“每秒生产者流量 Bytes/s”混用，绘图前要确认指标是累计计数器还是速率。
 
-3 离线分区总数集群中所有节点离线分区数之和个
+旧版 ZooKeeper 模式可监控连接断开、会话过期及请求延迟；KRaft 模式则应改看控制器仲裁和元数据复制相关指标。不要对不存在的指标配置告警。
 
-4 Controller存活数集群中Controller存活的数量个
+### Topic：找出负载来自哪里
 
-5 失败请求（生产者） 集群中所有节点生产者失败请求的速率之和次/s
+按 Topic 观察写入字节速率、读取字节速率、消息速率、分区数和磁盘占用。集群总量正常，也可能只有一个 Topic 增长过快；需要把 Topic 曲线与 Broker 资源曲线对照。Topic 大小还会受保留时间、压缩和副本数影响，不能简单等同于业务数据量。
 
-6 失败请求（消费者） 集群中所有节点消费者失败请求的速率次/s
+### 消费组：判断业务是否跟得上
 
-7 生产者流量集群中所有节点生产者流量之和 Bytes/s
+对每个消费组和分区，`Log-End-Offset` 表示日志末端位置，`Current-Offset` 表示该组已提交的位置，两者之差是常用的 **Lag（积压条数）**。Lag 持续上升意味着消费速度跟不上生产速度，或消费者已停止工作；要再看消费组成员、分区分配、处理错误和提交频率。Lag 以“条”为单位，不代表处理完积压所需的时间，同样的 1 万条对不同业务可能意义不同。
 
-8 消费者流量集群中所有节点消费者流量之和 Bytes/s
-
-9 生产者QPS 集群中所有节点生产者QPS之和次/s
-
-10 消费者QPS 集群中所有节点消费者QPS之和次/s
-
-11 存活节点数集群中存活的节点数量个
-
-12 每秒流入消息数集群中所有节点流入消息数之和个/s
-
-13 最大CPU利用率集群中所有节点CPU利用率最大值
-
-14 最大内存利用率集群中所有节点内存利用率最大值
-
-15 最大Heap区利用率集群中所有节点堆内存利用率最大值
-
-16 最大Non-Heap区利用率集群中所有节点非堆内存利用率最大值
-
-17 最大Minor GC次数集群中所有节点每分钟Minor GC次数最大值
-
-18 最大Major GC次数集群中所有节点每分钟Major GC次数最大值
-
-19 最大Minor GC时间集群中所有节点每分钟Minor GC时间
-
-20 最大Major GC时间集群中所有节点每分钟Major GC时间
-
-Broker指标
-
-序号指标别名指标含义解释单位
-
-1 CPU利用率 %
-
-2 内存利用率 %
-
-3 内存使用量 Bytes
-
-4 磁盘吞吐（Read） Bytes/s
-
-5 磁盘吞吐（Write） Bytes/s
-
-6 生产者流量 Bytes
-
-7 消费者流量 Bytes
-
-8 生产者QPS
-
-9 消费者QPS
-
-10 是否是Controller 0：不是，1：是
-
-11 Follower落后Leader最大消
-
-息量个
-
-12 Partition总数该节点分区总数个
-
-13 Leader分区总数个
-
-14 未复制分区总数个
-
-15 ISR扩大速率个/s
-
-16 ISR收缩速率个/s
-
-17 离线分区总数个
-
-18 Broker拒绝的消息 Byte/s
-
-19 生产者失败请求次/s
-
-20 消费者失败请求次/s Kafka集群
-
-21 生产者请求响应时间分位值 request="Produce" ms
-
-22 消费者请求响应时间分位值 request="FetchConsumer" ms
-
-23 fetch请求速率
-
-24 失败的fetch请求数
-
-25 zookeeper 连接断开速率客户端已断开与服务器的连接，并尝试重新连接。会话不一定
-
-过期。
-
-26 zookeeper 会话过期速率
-
-27 broker请求zk响应时间分位
-
-值
-
-Topic指标
-
-序号指标别名指标含义解释单位
-
-1 生产者流量
-
-2 消费者流量
-
-3 生产者QPS
-
-4 消费者QPS
-
-5 Topic大小
-
-ConsumperGroup 指标
-
-序号指标别名指标含义解释单位
-
-1 生产者QPS
-
-2 消费者QPS
-
-3 Current-Offset
-
-4 Log-End-Offset
-
-5 Lag
-
-6 消费组状态
+告警宜关注**持续异常**而非瞬时尖峰：离线分区应优先处理；副本不同步、失败率和 Lag 可结合持续时间及业务峰谷设阈值。先让仪表板回答“哪里坏了”，再逐步增加细粒度指标，避免一开始就堆满难以解释的曲线。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/21-kafka-tools.html' | relative_url }}">← Previous: Kafka Tools</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/23-nacos-architecture-and-overview.html' | relative_url }}">Next: Nacos Architecture and Overview →</a>
+  <a href="{{ '/subjects/Microservices/21-kafka-tools.html' | relative_url }}">← 上一篇：Kafka 工具</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构专题目录</a>
+  <a href="{{ '/subjects/Microservices/23-nacos-architecture-and-overview.html' | relative_url }}">下一篇：Nacos 架构与概览 →</a>
 </nav>

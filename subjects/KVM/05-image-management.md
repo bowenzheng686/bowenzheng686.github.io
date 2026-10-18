@@ -15,15 +15,15 @@ syntax_highlight: true
 
 ### 磁盘模式
 
-根据存储数据方式的不同可以分为两种格式，一种是稀疏模式、一种是全镜像模式，全镜像模式无法做快照，IO层面是有qemu模拟的，CPU和内存是有KVM实现的
+理解磁盘镜像时，应分开看**文件格式**（raw、qcow2）和**分配方式**（稀疏、预分配）。raw 也可以是稀疏文件；能否做快照取决于格式、存储层和管理工具，不是“全镜像必然不能快照”。QEMU 负责设备模型与 I/O，KVM 提供内核中的硬件辅助虚拟化能力，两者配合运行虚拟机。
 
 raw：
 
-**指定多大就创建多大，直接占用指定大小的空间：**
+**raw** 是接近裸块设备的镜像格式，格式简单、额外元数据少。用 `qemu-img create` 创建时，文件显示的逻辑大小可为指定容量，但实际占用可能因稀疏分配而较小；它本身不提供 qcow2 式内部快照，但可借助底层存储快照。
 
-老牌的格式了，性能上来说的话还是不错的。由于原生的裸格式，不支持snapshot。在虚拟机迁移方面还是有很大的限制。qcow2:是openstack默认也是比较推荐的格式，将差异保存在一个文件，文件比较小而且做快照也比较小，空间是动态增长的.现在比较主流的一种虚拟化镜像格式，支持快照功能。
+**qcow2** 支持按需分配、内部快照和后备文件等特性，适合需要克隆或快照的场景。它的性能和实际占用取决于缓存、预分配及工作负载，不能笼统地说一定更快或更小。
 
-![原文插图（第 117 页）]({{ '/subjects/KVM/assets/p117-img01.png' | relative_url }})
+![原文插图（第 117 页）]({{ '/subjects/KVM/assets/p117-img01.webp' | relative_url }})
 
 ### 确认模式
 
@@ -57,8 +57,6 @@ More information on the QEMU project at <https://qemu.org>.
 ## 5.2 功能实践
 
 ### 基本语法
-
-**创建磁盘**
 
 **创建磁盘**
 
@@ -98,14 +96,12 @@ Formatting '/opt/CentOS-7-x86_64-1.raw', fmt=raw size=3221225472
 **创建一个基于前后端模式的qcow2的磁盘文件**
 
 ````console
-[root@kvm-host ~]# qemu-img create -f qcow2 -o
-backing_file=/kvm/images/gavin.img test-1.qcow2 3G
-qemu-img: test-1.qcow2: Backing file specified without backing format
-Detected format of raw.
+[root@kvm-host ~]# qemu-img create -f qcow2 -o backing_file=/kvm/images/gavin.img,backing_fmt=raw test-1.qcow2
+Formatting 'test-1.qcow2', fmt=qcow2 backing_file=/kvm/images/gavin.img backing_fmt=raw
 [root@kvm-host ~]# ll /kvm/images/gavin.img -h
 -rw------- 1 root root 5.0G 3月 25 22:23 /kvm/images/gavin.img
 注意：
-    这里的容量为5G，根源追究 "2.1.3.1.5 容量变动" 一节
+    后备文件的虚拟容量为 5G，因此新建覆盖层默认沿用该虚拟容量；不要把后备文件移动或修改，否则覆盖层可能无法正确读取。
 ````
 
 **确认效果**
@@ -136,15 +132,14 @@ Child node '/file':
 
 ### 磁盘格式转换
 
-raw磁盘转换qcow2, 注意：正在使用的磁盘无法转换
+下面演示将 raw 镜像转为 qcow2。先关闭使用源镜像的虚拟机，确认备份和空闲空间，再转换并验证；不要对仍在写入的镜像做离线转换。
 
 ````console
 [root@kvm-host ~]# cd /opt/
 [root@kvm-host opt]# ls
 CentOS-7-x86_64-1.raw CentOS-7-x86_64.raw
 格式转换
-[root@kvm-host opt]# qemu-img convert -f raw CentOS-7-x86_64-1.raw -O qcow2
-CentOS-7-x86_64-1.qcow2
+[root@kvm-host opt]# qemu-img convert -f raw -O qcow2 CentOS-7-x86_64-1.raw CentOS-7-x86_64-1.qcow2
 ````
 
 **确认效果**
@@ -205,22 +200,20 @@ CentOS-7-x86_64-1.qcow2
 注意：由于是一个新的磁盘，所以系统在启动的时候，会导致失败，效果如下
 ````
 
-![原文插图（第 120 页）]({{ '/subjects/KVM/assets/p120-img01.png' | relative_url }})
+![原文插图（第 120 页）]({{ '/subjects/KVM/assets/p120-img01.webp' | relative_url }})
 
 ### 非空磁盘实践
 
 **格式转换**
 
 ````console
-[root@kvm-host opt]# qemu-img convert -f raw CentOS-7-x86_64.raw -O qcow2
-CentOS-7-x86_64.qcow2
+[root@kvm-host opt]# qemu-img convert -f raw -O qcow2 CentOS-7-x86_64.raw CentOS-7-x86_64.qcow2
 ````
 
 **检查效果**
 
 ````console
-[root@kvm-host opt]# qemu-img convert -f raw CentOS-7-x86_64.raw -O qcow2
-CentOS-7-x86_64.qcow2
+[root@kvm-host opt]# qemu-img info CentOS-7-x86_64.qcow2
 [root@kvm-host opt]# ll -h
 总用量 3.2G
 -rw-r--r-- 1 qemu qemu 193K 3月 26 22:07 CentOS-7-x86_64-1.qcow2
@@ -265,7 +258,7 @@ CentOS-7-x86_64.qcow2
 
 **查看登录效果**
 
-![原文插图（第 121 页）]({{ '/subjects/KVM/assets/p121-img01.png' | relative_url }})
+![原文插图（第 121 页）]({{ '/subjects/KVM/assets/p121-img01.webp' | relative_url }})
 
 ## 5.3 克隆
 
@@ -308,8 +301,7 @@ virt-clone -o <被克隆的虚拟机名称> --auto-clone
 **克隆vm需要时间**
 
 ````console
-[root@kvm-host ~]# virt-clone -o CentOS-7-x86_64 -n CentOS-7-clone -f
-/opt/CentOS-7-clone.img
+[root@kvm-host ~]# virt-clone -o CentOS-7-x86_64 -n CentOS-7-clone -f /opt/CentOS-7-clone.img
 正在分配 'CentOS-7-clone.img' 4% [=- ] 273 MB/s | 444 MB
  00:00:35
 正在分配 'CentOS-7-clone.img' 5% [== ] 237 MB/s | 539 MB
@@ -430,9 +422,9 @@ autostart CentOS-7-clone.xml CentOS-7-x86_64.xml CentOS-backup.xml networks
  2 CentOS-7-x86_64 运行
 ````
 
-登录后确认效果，因为我们之前定制的是静态ip，所以只能从mac地址上查看到时不同的主机
+克隆后虚拟网卡 MAC 地址会变化，但来宾系统内原有的静态 IP、主机名或机器身份可能仍相同。**不要在未修改这些配置前让源虚拟机和克隆机同时接入同一网络**；先隔离启动克隆机，更新网络与主机身份，再进行连通性验证。
 
-![原文插图（第 125 页）]({{ '/subjects/KVM/assets/p125-img01.png' | relative_url }})
+![原文插图（第 125 页）]({{ '/subjects/KVM/assets/p125-img01.webp' | relative_url }})
 
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/KVM/04-network-management.html' | relative_url }}">← 上一章：网络管理</a>

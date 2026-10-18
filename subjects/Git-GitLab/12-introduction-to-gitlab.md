@@ -11,31 +11,33 @@ syntax_highlight: true
 {% raw %}
 
 # 12 GitLab 介绍
-## 3 私有软件仓库 GitLab
 
-### 3.1 GitLab 介绍
+Git 是分布式版本控制工具；GitLab 是围绕 Git 仓库提供协作、权限管理与 CI/CD 等能力的平台。它可以自建，也可以使用托管服务，不能把两者混为一谈。
 
 ### Gitlab 介绍
 
-![Git 与 GitLab 版本管理第 91 页插图](assets/img-64a0cbd2503511b7.jpeg)
+![Git 与 GitLab 版本管理第 91 页插图](assets/img-64a0cbd2503511b7.webp)
 
 GitLab 是一个基于Ruby on Rails构建用于仓库管理系统的开源项目，使用Git作为代码管理工具，提供了Web界面进行访问公开的或者私有的项目
 
-GitLab 特性
-
-开源免费可以作为 Git 代码仓库提供了方便易用的 Web 管理界面支持多租户功能丰富支持离线提交安全性高, 可以对不同的用户设置不同的权限,并且支持不同用户只能访问特定的代码,实现代码部分可见
+GitLab 提供仓库托管、合并请求、问题跟踪、权限控制和流水线等功能。可用能力取决于部署方式与许可证。离线提交是 Git 本身的能力，不是 GitLab 赋予的；权限通常按实例、组和项目配置，不能保证用户“只看到仓库中的部分代码”。
 
 ### GitLab 架构
 
-Gitlab 是一个由很多应用组成复杂的系统
+GitLab 自建部署包含 Web/API、Git 数据访问、数据库、后台任务和可选的监控、邮件、容器镜像仓库等组件。理解它们的职责有助于排查服务故障，不必把每个组件都视为必装。
 
 <https://panlw.github.io/15365441001781.html>
 
-![Git 与 GitLab 版本管理第 92 页插图](assets/img-0c6ce07aa39cb90f.jpeg)
+![Git 与 GitLab 版本管理第 92 页插图](assets/img-0c6ce07aa39cb90f.webp)
 
-Gitlab的服务构成
-
-Nginx：静态web服务器 GitLab shell：用于处理基于ssh会话的Git命令和修改authorized keys列表 gitlab-workhorse：轻量级的反向代理服务器,它旨在充当智能反向代理，以帮助整个 GitLab 加速 unicorn：An HTTP server for Rack applications, GitLab Rails应用是托管在这个服务器上面的 Gitaly：Git RPC service for handing all Git calls made by GitLab Puma (GitLab Rails)：处理发往Web接口和API的请求 postgresql：数据库 redis：缓存数据库 sidekiq：用于在后台执行队列任务（异步执行) GitLab Exporter：GitLab指标暴露器 Node Exporter：节点指标暴露器 GitLab self-monitoring的多个组件：Prometheus、Alertmanager、Grafana、Sentry和Jaeger Inbound emails（SMPT）：接收用于更新issue的邮件 Outbound email (SMTP)：向用户发送邮件通知 LDAP Authentication：LDAP认证集成 MinIO：对象存储服务 Registry：容器注册表，支持Image的push和pull操作 Runner：执行GitLab的CI/CD作业
+| 组件 | 主要职责 |
+| --- | --- |
+| NGINX / Workhorse | 接收 HTTP 请求并将其分发给应用服务，处理部分大文件传输。 |
+| Rails / Puma | 处理 Web 界面和 API；旧资料中的 Unicorn 不代表当前版本默认架构。 |
+| Gitaly / GitLab Shell | 分别提供 Git 仓库访问服务和 SSH 访问入口。 |
+| PostgreSQL / Redis / Sidekiq | 保存持久化数据、提供缓存与队列支持、执行后台任务。 |
+| Registry / Runner | 可选的容器镜像仓库，以及执行 CI/CD 作业的独立 Runner。 |
+| 邮件、LDAP、监控组件 | 按需求配置的通知、身份认证和可观测能力。 |
 
 Omnibus GitLab
 
@@ -45,7 +47,7 @@ Omnibus GitLab是基于Chef的应用编排工具，它基于Chef的cookbooks和r
 
 相关项目 https://gitlab.com/gitlab-org/omnibus-gitlab Omnibus GitLab architecture and components: https://docs.gitlab.com/omnibus/architecture/
 
-![Git 与 GitLab 版本管理第 93 页插图](assets/img-f63d5e8412915e7d.png)
+![Git 与 GitLab 版本管理第 93 页插图](assets/img-f63d5e8412915e7d.webp)
 
 管理各组件使用统一命令为gitlab-ctl，例如gitlab-ctl reconfigure或gitlab-ctl restart等能统—执行各组件的重新配置及重启操作
 
@@ -53,12 +55,12 @@ Omnibus GitLab是基于Chef的应用编排工具，它基于Chef的cookbooks和r
 
 提供统一配置模板文件, 用于为GitLab中的每个组件提供配置信息
 
-在配置模板文件中对于每个组件配置参数格式为: ['']=
+自建 Omnibus 安装通常通过 `/etc/gitlab/gitlab.rb` 设置参数，例如 `external_url 'https://gitlab.example.com'`；修改后运行 `gitlab-ctl reconfigure` 使配置生效。具体参数名称应以安装版本的官方文档为准。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/11-case-study-a-metaverse-startup.html' | relative_url }}">← Previous: Case Study: A Metaverse Startup</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/13-installing-gitlab.html' | relative_url }}">Next: Installing GitLab →</a>
+  <a href="{{ '/subjects/Git-GitLab/11-case-study-a-metaverse-startup.html' | relative_url }}">← 上一篇：综合案例：从个人开发到团队协作</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/13-installing-gitlab.html' | relative_url }}">下一篇：GitLab 安装 →</a>
 </nav>

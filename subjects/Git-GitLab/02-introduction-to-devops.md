@@ -11,51 +11,39 @@ syntax_highlight: true
 {% raw %}
 
 # 02 DevOps 介绍
-### 1.2 DevOps 介绍
+
+上一篇介绍了开发生命周期；本篇说明为什么仅靠分工和交接难以持续交付，以及 DevOps 如何把开发、测试和运维连接起来。
 
 ### 什么是 DevOps
 
-![Git 与 GitLab 版本管理第 6 页插图](assets/img-598a9e46919369a3.png)
+![Git 与 GitLab 版本管理第 6 页插图](assets/img-598a9e46919369a3.webp)
 
-DevOps 即开发 Development 和 Operations运维的缩写。
-
-DevOps的维基百科定义是这样的：
-
-DevOps是一组过程、方法与系统的统称，用于促进开发、技术运营和质量保障（QA）部门之间的沟通、协作与整合。 DevOps 是针对开发人员、运维人员和测试人员的一种工作理念，是软件在应用开发、代码部署和质量测试等整条生命周期中协作和沟通的最佳实践
-
-DevOps 强调整个组织的所有相关部门的紧密合作以及交付和基础设施变更的自动化、从而实现持续集成、持续部署和持续交付的目标
+DevOps 由 Development（开发）和 Operations（运维）组成，指跨角色协作、自动化和持续改进的一组实践。开发、测试和运维共同对软件从设计到运行的结果负责，而不是把代码交接视为工作的终点。CI/CD 是常见的技术实践，但引入工具本身并不等于完成 DevOps 转型。
 
 ### 为什么要 DevOps
 
-传统的模式是开发人员只关心开发程序，追求功能的变化和实现
+传统分工中，开发团队重视功能交付，运维团队重视环境稳定。如果双方只在上线时交接，部署要求、监控指标和故障处理方案常常发现得太晚。共同的目标应是**稳定地向用户交付价值**：开发时考虑可部署性和可观测性，运维则尽早参与架构与发布设计。
 
-运维只负责基础环境管理和代码部署及监控等，更看重应用的稳定运行
-
-双方缺少一个共同的目标
-
-![Git 与 GitLab 版本管理第 7 页插图](assets/img-a365b158844e5a91.png)
+![Git 与 GitLab 版本管理第 7 页插图](assets/img-a365b158844e5a91.webp)
 
 DevOps 强调团队协作、相互协助、持续发展，实现团队作战，即无论是开发、运维还是测试，都为了最终的代码发布、持续部署和业务稳定而付出各自的努力，从而实现产品设计、开发、测试和部署的良性循环，实现产品的最终持续交付。
 
-![Git 与 GitLab 版本管理第 8 页插图](assets/img-48a1babccd4cf41c.jpeg)
+![Git 与 GitLab 版本管理第 8 页插图](assets/img-48a1babccd4cf41c.webp)
 
-想要将DevOps真正落地，首先第一点，是思维转变，也就是“洗脑”。不仅是运维的要洗，开发的也要洗。员工要洗，领导更要洗。
-
-DevOps并不仅仅是组织架构变革，更是企业文化和思想观念的变革。如果不能改变观念，即使将员工放在一起，也不会产生火花。
-
-除了洗脑之外，就是根据DevOps思想重新梳理全流程的规范和标准。
+落地 DevOps 首先要改变协作方式：团队共享目标、及时反馈问题，再据此梳理从需求到运行的流程。仅把不同岗位安排在同一团队，若仍各自优化局部指标，交接壁垒并不会消失。
 
 在DevOps的流程下，运维人员会在项目开发期间就介入到开发过程中，了解开发人员使用的系统架构和技术路线，从而制定适当的运维方案。而开发人员也会在运维的初期参与到系统部署中，并提供系统部署的优化建议。
 
-DevOps的实施，促进开发和运维人员的沟通，增进彼此的理（gan）解（qing）。
+落地时可以先关注四类可衡量的结果：
 
-DevOps组织优先推动的目标
+| 指标 | 含义 | 希望改善的方向 |
+| --- | --- | --- |
+| 部署频率 | 成功发布到生产环境的频率 | 在质量可控的前提下提高 |
+| 变更前置时间 | 从代码提交到投入生产所需的时间 | 缩短 |
+| 变更失败率 | 导致回滚、修复或故障的生产变更比例 | 降低 |
+| 服务恢复时间（MTTR） | 故障发生后恢复服务所需的时间 | 缩短 |
 
-一组标准化的环境降低新版本的失败率缩短版本之间的交付时间更快的平均版本恢复时间
-
-DevOps的关键指标
-
-平均恢复时间: Mean-time to recovery (MTTR) 平均投产时间: Mean-time to production 平均提前时间:Average lead-time，比计划时间提前部署速度:Deployment speed 部署频率:Deployment frequency 生产失败率:Production failure rate
+这些指标应结合业务和质量一起看：单纯追求发布次数并不代表交付能力提升。
 
 ### DevOps 相关的软件
 
@@ -63,11 +51,9 @@ DevOps 有多个不同的阶段：计划，构建，持续集成，部署，运�
 
 在思维和流程改变的同时，想要充分落地DevOps，当然离不开软件和平台的支持。目前支持DevOps的软件很多了。
 
-![Git 与 GitLab 版本管理第 9 页插图](assets/img-b1119dd3eb8e8d52.png)
+![Git 与 GitLab 版本管理第 9 页插图](assets/img-b1119dd3eb8e8d52.webp)
 
-DevOps 涉及的四大相关平台
-
-项目管理：如：Jira,禅道代码托管：如：Gitlab,SVN 持续交付：如：Jenkins,Gitlab 运维平台：如：腾讯蓝鲸,Spug等
+常见工具按用途可分为：项目管理（如 Jira、禅道）、代码托管（如 GitLab）、构建与交付（如 Jenkins、GitLab CI/CD）以及运行管理与监控平台。Git、SVN 是版本控制工具，不等同于代码托管平台；同一平台也可能覆盖多个环节。
 
 ### DevOps 流水线模型
 
@@ -79,7 +65,7 @@ DevOps 涉及的四大相关平台
 
 具体来说，这个流程包括了敏捷开发，以及持续集成和持续部署的实践等。同时，它还考虑了多个环境以及相应的测试阶段。
 
-![Git 与 GitLab 版本管理第 10 页插图](assets/img-569f8bf226169af4.png)
+![Git 与 GitLab 版本管理第 10 页插图](assets/img-569f8bf226169af4.webp)
 
 第 1 步：需求和用户故事
 
@@ -93,15 +79,15 @@ DevOps 涉及的四大相关平台
 
 开发人员将他们的源代码提交到 Git 等版本控制系统中。这可确保跟踪更改，并且可以管理不同版本的代码。
 
-步骤 4：持续集成 （CI） 生成过程是使用 CI 工具（如 Jenkins）启动的。源代码经过严格的测试，包括单元测试、代码覆盖率检查和代码质量门。
+第 4 步：持续集成（CI）。代码提交触发构建和自动化检查，包括单元测试、代码质量检查等。失败时应尽快反馈给提交者，而不是把未验证的构建继续送往下游。
 
 SonarQube 等工具有助于维护代码质量标准。
 
 第 5 步：工件管理
 
-成功的生成存储在项目存储库中，例如 Artifactory。此存储库允许轻松检索以前的构建和项目。
+将通过检查的构建产物保存到制品库（例如 Artifactory），并记录其版本与来源提交。后续环境复用同一制品，避免重复构建产生差异。
 
-步骤 6：部署到开发环境
+第 6 步：部署到开发环境
 
 新代码将部署到开发环境中进行初始测试和集成。这种环境有助于发现不同开发分支之间的早期问题和冲突。
 
@@ -113,7 +99,7 @@ SonarQube 等工具有助于维护代码质量标准。
 
 质量保证 （QA） 团队接管新的 QA 环境并执行各种测试，包括功能测试、回归测试和性能测试。目标是在继续操作之前识别并解决任何问题。
 
-步骤 9：用户验收测试 （UAT）
+第 9 步：用户验收测试（UAT）
 
 QA 测试成功通过后，代码将继续进入用户验收测试 （UAT） 环境。利益干系人验证它是否满足他们的要求和期望。
 
@@ -131,16 +117,18 @@ QA 测试成功通过后，代码将继续进入用户验收测试 （UAT） 环
 
 虽然具体的工具和方法可能因公司而异，具体的流程可能因组织和项目的不同而有所调整，但在许多软件开发组织中，发布过程的核心结构保持一致。
 
-### DevOps 和 NoOps,AIOps
+### DevOps、NoOps 与 AIOps
 
-![Git 与 GitLab 版本管理第 12 页插图](assets/img-3ee79ba0803a8ff9.png)
+NoOps 通常指通过平台和自动化减少应用团队直接处理基础设施的工作，并不意味着运行维护责任消失。AIOps 则尝试利用数据分析与机器学习辅助告警聚合、异常检测和故障定位。两者是运行方式或技术能力的讨论，不能替代前述跨团队协作。
 
-![Git 与 GitLab 版本管理第 12 页插图](assets/img-1fc31f72af9e67fe.png)
+![Git 与 GitLab 版本管理第 12 页插图](assets/img-3ee79ba0803a8ff9.webp)
+
+![Git 与 GitLab 版本管理第 12 页插图](assets/img-1fc31f72af9e67fe.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/01-traditional-development-models.html' | relative_url }}">← Previous: Traditional Development Models</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/03-continuous-integration-delivery-and-deployment.html' | relative_url }}">Next: Continuous Integration, Delivery, and Deployment →</a>
+  <a href="{{ '/subjects/Git-GitLab/01-traditional-development-models.html' | relative_url }}">← 上一篇：传统开发模型</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/03-continuous-integration-delivery-and-deployment.html' | relative_url }}">下一篇：持续集成、持续交付与持续部署（CI/CD） →</a>
 </nav>

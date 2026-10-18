@@ -17,19 +17,15 @@ syntax_highlight: true
 
 #### 网络模型
 
-kvm类型的虚拟机，默认情况下使用的是nat网络，同一网络模型下创建的多虚拟机之间可以彼此通信，这种网络模型与外界网络进行通信依赖于nat服务，nat服务正常的话，该模型的网络是通过数据包的转换来达到通信的效果的，在网络流量比较大的场景下，该模式的网络模型会成为虚拟机的瓶颈。生产中我们一般采用桥接的网络模型，这种模型是借助于宿主机的网卡设备，直接与外网进行通信，效果很好。
+libvirt 的默认虚拟网络通常采用 NAT，同一虚拟网络中的来宾可互访，并通过宿主机的地址转换访问外部网络。桥接让来宾像局域网中的独立主机一样接入上游网络。选型取决于上游交换机、地址分配、安全边界和网络性能要求；不能简单认定 NAT 必然是瓶颈、生产环境必然要桥接。
 
-![原文插图（第 97 页）]({{ '/subjects/KVM/assets/p097-img01.png' | relative_url }})
+![原文插图（第 97 页）]({{ '/subjects/KVM/assets/p097-img01.webp' | relative_url }})
 
 #### 配置流程
 
 对于kvm来说，它有两种网络：永久网络和临时网络
 
-- 前提：保证宿主机网络正常，网络服务使用network
-- 首先：生成新的桥接设备
-- 其次：关联桥设备和物理网卡设备
-- 然后：清空物理网卡地址，启用桥设备地址，设置网络网关为桥设备地址
-- 最后：虚拟机使用桥设备
+配置宿主机桥接时，应先确认网络管理方式（NetworkManager、systemd-networkd 等）以及上游是否允许多 MAC 地址。宿主机 IP 和默认路由通常从物理网卡迁移到桥 `br0`，**默认网关仍是上游路由器地址，不是桥自身地址**。远程操作前应准备带外控制台与回滚计划，避免迁移过程中失联。
 
 ### 简单实践
 
@@ -196,14 +192,14 @@ OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
 or other application using the libvirt API.
 -->
 <network>
-  <name>gavin-linshi</name> # 名字修改
-  <uuid>00000000-0000-4000-8000-000000000008</uuid> # id修改
+  <name>gavin-linshi</name>
+  <uuid>00000000-0000-4000-8000-000000000008</uuid>
   <forward mode='nat'/>
-  <bridge name='virbr1' stp='on' delay='0'/> # 名字修改为virbr1
-  <mac address='02:00:00:00:00:03'/> # mac修改
-  <ip address='198.18.123.1' netmask='255.255.255.0'> # ip网段修改
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='02:00:00:00:00:03'/>
+  <ip address='198.18.123.1' netmask='255.255.255.0'>
     <dhcp>
-      <range start='198.18.123.2' end='198.18.123.254'/> # ip段修改
+      <range start='198.18.123.2' end='198.18.123.254'/>
     </dhcp>
   </ip>
 </network>
@@ -264,7 +260,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
         TX packets 461 bytes 30624 (29.9 KiB)
 ````
 
-TX errors 0 dropped 0 overruns 0 carrier 0 collisions 0
+上方 `TX errors` 是网卡统计输出的末行，不是需要执行的命令。
 
 #### 永久网络
 
@@ -424,7 +420,7 @@ autostart default.xml gavin-linshi.xml gavin-yongjiu.xml
 
 #### 删除实践
 
-删除网络需要有两步：取消注册+关闭网络
+删除网络前先查看哪些虚拟机仍使用该网络（`virsh domiflist <虚拟机>`）。`net-undefine` 删除持久定义，`net-destroy` 停止活动网络；如果目标是默认网络，这两步会使依赖它的来宾失去连通性。以下仅为隔离实验环境中的操作记录。
 
 ##### 关闭网络
 
@@ -493,7 +489,7 @@ vnet1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
 
 虽然virbr0网卡被清理掉了，但是运行中的虚拟机的网络依然是看到网卡的信息，只不过是无法访问网络了
 
-![原文插图（第 106 页）]({{ '/subjects/KVM/assets/p106-img01.png' | relative_url }})
+![原文插图（第 106 页）]({{ '/subjects/KVM/assets/p106-img01.webp' | relative_url }})
 
 ## 4.3 自定义网络
 
@@ -563,15 +559,13 @@ Destination Gateway Genmask Flags Metric Ref Use Iface
 
 ````bash
 apt install bridge-utils -y
-apt-file list bridge-utils
-centos系统
-yum install bridge-utils
+# Rocky / RHEL 系系统可按需使用：dnf install bridge-utils
 ````
 
 **dns解析**
 
 ````console
-[root@kvm-host ~]# grep namese /etc/resolv.conf
+[root@kvm-host ~]# grep nameserver /etc/resolv.conf
 nameserver 192.0.2.2
 ````
 
@@ -623,14 +617,14 @@ virbr2 8000.5254006b687d yes
 ````console
 [root@kvm-host ~]# route add default gw 192.0.2.2
 注意：
-    操作br0的另一种方法是 ip set dev br0 up/down
+    用 `ip link set dev br0 up` 或 `ip link set dev br0 down` 管理接口状态。
 ````
 
 #### 脚本实践
 
 ##### 脚本内容
 
-如果将命令分开执行的话，则会在关联桥接网卡和物理网卡的时候造成断网现象，所以建议将这几条命令同时执行或者使用脚本执行命令
+下面保留早期基于 `brctl`/`ifconfig` 的实验记录，用于理解连接为何会中断；**不要把该脚本直接用于远程生产主机**。它没有可靠的失败回滚，也不能保证配置在重启后保留。实际部署应使用当前系统的网络管理器创建持久桥接连接，并在带外控制台验证 IP、默认路由与 DNS 后再切换业务流量。
 
 ````console
 [root@kvm-host ~]# vim bridge_setup_function.sh
@@ -703,21 +697,21 @@ add_interface_to_bridge() {
 }
 # 为网桥设置 IP 地址并启动网桥
 configure_bridge_ip() {
-    if ifconfig "$BRIDGE_NAME" "$BRIDGE_IP" up 2>/dev/null; then
+    if ip addr add "$BRIDGE_IP" dev "$BRIDGE_NAME" && ip link set "$BRIDGE_NAME" up; then
         echo "成功为 $BRIDGE_NAME 设置 IP 地址 $BRIDGE_IP 并启动网桥"
     else
         echo "为 $BRIDGE_NAME 设置 IP 地址 $BRIDGE_IP 并启动网桥失败"
-        cleanup
+        echo "请通过带外控制台恢复网络配置" >&2
         exit 1
     fi
 }
 # 添加默认网关
 add_default_gateway() {
-    if route add default gw "$DEFAULT_GATEWAY" 2>/dev/null; then
+    if ip route replace default via "$DEFAULT_GATEWAY" dev "$BRIDGE_NAME"; then
         echo "成功添加默认网关 $DEFAULT_GATEWAY"
     else
         echo "添加默认网关 $DEFAULT_GATEWAY 失败"
-        cleanup
+        echo "请通过带外控制台恢复网络配置" >&2
         exit 1
     fi
 }
@@ -882,7 +876,7 @@ virsh edit CentOS-7-x86_64
 
 方法1：通过vnc连接到虚拟机
 
-因为默认的虚拟机使用的是nat模型，而net模型有专用的dnsmasq软件提供dns服务，我们现在使用桥接模型，所以我们需要自己来设置虚拟机的网卡信息。
+libvirt 默认 NAT 网络通常由 dnsmasq 提供 DHCP/DNS。切换到桥接后，虚拟机的地址应由上游 DHCP 服务分配，或在来宾中配置与上游网段一致的静态地址；桥接本身不会自动提供 DHCP。
 
 方法2：通过console连接虚拟机
 
@@ -1032,7 +1026,7 @@ group default qlen 1000
 
 **解决办法：**
 
-将虚拟机中的"<seclabel type='dynamic' model='selinux' relabel='yes'/>" 删除即可
+先检查宿主机 libvirt 与 SELinux 支持是否完整、运行服务所用的驱动配置是否匹配。直接删去 `<seclabel>` 可能绕开预期的隔离策略，不能作为通用修复；应根据宿主机日志与 libvirt 版本定位根因。
 
 ##### Centos8问题
 

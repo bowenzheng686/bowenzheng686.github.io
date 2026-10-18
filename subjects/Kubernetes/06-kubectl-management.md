@@ -14,13 +14,11 @@ syntax_highlight: true
 
 # 4 Kubernetes 集群管理工具 kubectl 命令
 
-Kubernetes 集群工具有命令行和图形。
-
-kubectl 命令行工具图形工具： openlens 等
+管理 Kubernetes 集群既可以使用 `kubectl` 命令行，也可以使用 OpenLens 等图形客户端。本文以 `kubectl` 为主：它读取 kubeconfig 中的集群与用户信息，向 API Server 发送请求。
 
 ## 4.1 命令简介
 
-![原 PDF 第 212 页插图](assets/Kubernetes架构和部署/img-bc1802c8b1568f2e.jpeg)
+![原 PDF 第 212 页插图](assets/Kubernetes架构和部署/img-bc1802c8b1568f2e.webp)
 
 kubectl作为Kubernetes集群的客户端CLI工具，可以让用户通过命令行的方式对Kubernetes集群的各种资源对象进行操作。
 
@@ -31,7 +29,7 @@ kubectl作为Kubernetes集群的客户端CLI工具，可以让用户通过命令
 - <http://docs.kubernetes.org.cn/683.html>
 
 
-对于kubectl主要有8组命令，分别是：基本命令、部署命令、集群管理命令排障调试命令、高级命令、设置命令、其他命令等。
+`kubectl --help` 会按用途列出资源操作、部署、集群管理、排障调试、配置等命令组。不同客户端版本的分组与命令可能变化，使用时以当前版本的帮助输出为准。
 
 **命令格式**
 ```text
@@ -39,64 +37,37 @@ kubectl [command] [TYPE] [NAME] [flags]
 ```
 
 
-#参数说明 command：操作Kubernetes资源对象的子命令，常见的有create、delete、describe、get等 create  创建资源对象 delete  删除资源对象 describe 查找资源的详细信息 get 获取资源基本信息
-
-
-TYPE：Kubernetes资源类型，举例：节点的资源类型是nodes，缩写no NAME: Kubernetes资源对象的名称，可以省略。flags: 可选参数
+其中 `command` 是操作，如 `get`、`describe`、`create`、`delete`；`TYPE` 是资源类型，如 `nodes`（缩写 `no`）；`NAME` 是对象名称，可按命令需要省略；`flags` 是可选参数。一个命令可能接受 `TYPE NAME`，也可能接受 `TYPE/NAME`，具体以子命令帮助为准。
 
 
 **常见资源缩写**
 
-**最基础资源对象**
+| 资源类型 | 常见缩写 | 作用 |
+| --- | --- | --- |
+| `pods` | `po` | 最小可调度工作单元 |
+| `nodes` | `no` | 集群节点 |
+| `deployments` | `deploy` | 无状态应用的声明式发布 |
+| `replicasets` | `rs` | 维持 Pod 副本数 |
+| `daemonsets` | `ds` | 在符合条件的节点上运行 Pod |
+| `services` | `svc` | 提供稳定的访问入口 |
+| `namespaces` | `ns` | 资源名称空间 |
+| `configmaps` | `cm` | 非机密配置 |
+| `persistentvolumes` | `pv` | 持久卷 |
+| `persistentvolumeclaims` | `pvc` | 持久卷申请 |
+| `storageclasses` | `sc` | 动态存储供给类别 |
+| `horizontalpodautoscalers` | `hpa` | 按指标扩缩副本 |
+| `ingresses` | `ing` | HTTP/HTTPS 入站路由 |
 
-资源对象全称缩写资源对象全称缩写
-
-pod/pods po node/nodes no
-
-**最常见资源对象**
-
-资源对象全称缩写资源对象全称缩写
-
-replication controllers rc horizontal pod autoscalers hpa
-
-replica sets rs persistent volume pv
-
-deployment deploy persistent volume claims pvc
-
-services svc
-
-**其他资源对象**
-
-namespaces ns storage classes sc
-
-config maps cm clusters
-
-daemon sets ds stateful sets
-
-endpoints ep secrets
-
-events ev jobs
-
-ingresses ing
+并非每种资源都有缩写，且集群安装的 CRD 也会增加资源类型；可用 `kubectl api-resources` 查询当前集群。
 ```bash
-#命令来查看,默认有56种资源
-root@master1 ~]#kubectl api-resources| head
-NAME                     SHORTNAMES   APIVERSION     NAMESPACED   KIND
-bindings                              v1             true         Binding
-componentstatuses        cs           v1             false
-ComponentStatus
-configmaps               cm           v1             true         ConfigMap
-endpoints                ep           v1             true         Endpoints
-events                   ev           v1             true         Event
-limitranges              limits       v1             true         LimitRange
-namespaces               ns           v1             false        Namespace
-nodes                    no           v1             false        Node
-persistentvolumeclaims   pvc          v1             true
-PersistentVolumeClaim
+#列出当前集群提供的资源类型和缩写
+kubectl api-resources
 
-[root@master1 ~]#kubectl api-resources| sed -n '1!p' |wc -l
-56
+#仅查看带命名空间的资源
+kubectl api-resources --namespaced=true
 ```
+
+资源数量取决于 Kubernetes 版本、启用的 API 和已安装的扩展，不能把旧示例中的“56 种”当成固定值。
 
 **查看帮助**
 ```bash
@@ -121,147 +92,31 @@ https://kubernetes.io/docs/reference/kubectl/overview/
 ```
 
 
-Basic Commands (Beginner): create         通过file 或者 stdin方法创建资源 expose         使用 RC, service, deployment 或者 pod 并暴露它作为一个 新的 Kubernetes Service run            在集群中运行一个指定的镜像 set            为 objects 设置一个指定的特征
+原 PDF 把多列帮助输出压成了几条无法阅读的长行。按实际用途，可先记住以下命令：
 
+| 场景 | 命令 | 用途 |
+| --- | --- | --- |
+| 查看对象 | `get`、`describe`、`explain` | 列表、详情和字段说明 |
+| 声明式管理 | `apply`、`diff`、`delete` | 应用清单、预览差异和删除资源 |
+| 部署维护 | `rollout`、`scale`、`autoscale` | 查看发布、调整或自动管理副本 |
+| 集群维护 | `cluster-info`、`cordon`、`drain`、`uncordon`、`taint` | 查看集群、维护节点与调度约束 |
+| 故障排查 | `logs`、`exec`、`debug`、`port-forward`、`top` | 日志、容器交互、调试、转发和指标 |
+| 上下文设置 | `config`、`label`、`annotate` | 切换集群上下文、管理元数据 |
 
-Basic Commands (Intermediate): explain        查看资源的文档 get            显示一个或更多 resources edit           在服务器上编辑一个资源 delete         通过 filenames, stdin, resources and names, label selector多种方式删除资源
+输入 `kubectl <command> --help` 查看某个命令的准确参数。`kubectl top` 还依赖集群提供 Metrics API。
 
-```text
-Deploy Commands:
-rollout        Manage the rollout of a resource
-scale          为 Deployment, ReplicaSet, Replication Controller 或者 Job 设置一
-个新的副本数量
-autoscale      自动调整一个 Deployment, ReplicaSet, 或者 ReplicationController 的
-副本数量
-```
+以下是日常最常用的全局选项，完整列表以 `kubectl options` 为准：
 
+| 选项 | 作用 |
+| --- | --- |
+| `--kubeconfig=PATH` | 指定 kubeconfig 文件。 |
+| `--context=NAME` | 在配置文件中选择集群、用户和命名空间组合。 |
+| `--cluster=NAME`、`--user=NAME` | 覆盖所选上下文中的集群或用户。 |
+| `-n, --namespace=NAME` | 指定命名空间；对节点等集群级资源无效。 |
+| `--request-timeout=30s` | 限制单次服务器请求等待时间。 |
+| `-v=7` | 输出更详细的客户端请求日志，排查连接问题时使用。 |
 
-Cluster Management Commands: certificate    修改 certificate 资源. cluster-info   显示集群信息 top            Display Resource (CPU/Memory/Storage) usage. cordon         标记 node 为 unschedulable uncordon       标记 node 为 schedulable drain          Drain node in preparation for maintenance taint          更新一个或者多个 node 上的 taints
-
-
-Troubleshooting and Debugging Commands: describe       显示一个指定 resource 或者 group 的 resources 详情 logs           输出容器在 pod 中的日志 attach         Attach 到一个运行中的 container exec           在一个 container 中执行一个命令 port-forward   Forward one or more local ports to a pod proxy          运行一个 proxy 到 Kubernetes API server cp             复制 files 和 directories 到 containers
-
-
-和从容器中复制 files 和 directories. auth           Inspect authorization debug         Create debugging sessions for troubleshooting workloads and nodes-- 这个命令是后来增加的调试命令 Advanced Commands: diff           Diff live version against would-be applied version apply          通过文件名或标准输入流(stdin)对资源进行配置 patch          使用 strategic merge patch 更新一个资源的 field(s) replace        通过 filename 或者 stdin替换一个资源 wait           Experimental: Wait for a specific condition on one or many resources. convert        在不同的 API versions 转换配置文件 --- 新版本已经被弃用 kustomize      Build a kustomization target from a directory or a remote url.
-
-```text
-Settings Commands:
-label          更新在这个资源上的 labels
-annotate       更新一个资源的注解
-completion     Output shell completion code for the specified shell (bash or
-zsh)
-```
-
-
-Other Commands: api-resources  Print the supported API resources on the server api-versions   Print the supported API versions on the server, in the form of"group/version"config         修改 kubeconfig 文件 plugin         Provides utilities for interacting with plugins. version        输出 client 和 server 的版本信息
-
-```text
-Usage:
-kubectl [flags] [options]
-```
-
-
-Use "kubectl <command> --help" for more information about a given command. Use "kubectl options" for a list of global command-line options (applies to all commands).
-
-```bash
-#查看命令的通用选项
-[root@master1 ~]#kubectl options
-The following options can be passed to any command:
-
---as='':
-Username to impersonate for the operation. User could be a regular user or a
-service account in a namespace.
-
---as-group=[]:
-Group to impersonate for the operation, this flag can be repeated to specify
-multiple groups.
-
---as-uid='':
-UID to impersonate for the operation.
-
---cache-dir='/root/.kube/cache':
-Default cache directory
-
---certificate-authority='':
-Path to a cert file for the certificate authority
-
---client-certificate='':
-
-Path to a client certificate file for TLS
-
---client-key='':
-Path to a client key file for TLS
-
---cluster='':
-The name of the kubeconfig cluster to use
-
---context='':
-The name of the kubeconfig context to use
-
---disable-compression=false:
-If true, opt-out of response compression for all requests to the server
-
---insecure-skip-tls-verify=false:
-If true, the server's certificate will not be checked for validity. This
-will make your HTTPS connections
-insecure
-
---kubeconfig='':
-Path to the kubeconfig file to use for CLI requests.
-
---log-flush-frequency=5s:
-Maximum number of seconds between log flushes
-
---match-server-version=false:
-Require server version to match client version
-
--n, --namespace='':
-If present, the namespace scope for this CLI request
-
---password='':
-Password for basic authentication to the API server
-
---profile='none':
-Name of profile to capture. One of
-(none|cpu|heap|goroutine|threadcreate|block|mutex)
-
---profile-output='profile.pprof':
-Name of the file to write the profile to
-```
-
-
---request-timeout='0': The length of time to wait before giving up on a single server request. Non-zero values should contain a corresponding time unit (e.g. 1s, 2m, 3h). A value of zero means don't timeout requests.
-
-```text
--s, --server='':
-The address and port of the Kubernetes API server
-
---tls-server-name='':
-Server name to use for server certificate validation. If it is not provided,
-the hostname used to contact the
-server is used
-
---token='':
-Bearer token for authentication to the API server
-
---user='':
-The name of the kubeconfig user to use
-
---username='':
-Username for basic authentication to the API server
-
--v, --v=0:
-number for the log level verbosity
-
---vmodule=:
-comma-separated list of pattern=N settings for file-filtered logging (only
-works for the default text log
-format)
-
---warnings-as-errors=false:
-Treat warnings received from the server as errors and exit with a non-zero
-exit code
-```
+不要为图省事而常态化使用 `--insecure-skip-tls-verify`；它会跳过服务端证书校验。切换上下文前先用 `kubectl config current-context` 确认当前目标集群。
 
 ## 4.3 常见用法
 
@@ -278,39 +133,28 @@ exit code
 [root@master1 ~]#source ~/.bashrc
 
 #测试
-[root@master1 ~]#kubectl <TAB>两次
-annotate       autoscale      cp             drain          help
-plugin         scale          wait
-api-resources  certificate    create         edit           kustomize      port-
-forward   set
-api-versions   cluster-info   debug          exec           label          proxy
-taint
-apply          completion     delete         explain        logs
-replace        top
-attach         config         describe       expose         options
-rollout        uncordon
-auth           cordon         diff           get            patch          run
-version
+#在交互式 Bash 中输入 kubectl 后按 Tab 两次，查看可补全的子命令。
+#实际列表随 kubectl 版本变化，不再抄录终端的多列输出。
 ```
 
 ### 4.3.2 查看资源对象
 
 **查看资源对象**
 ```bash
-kubectl get TYPE/NAME ... [-o yaml/json/wide | -w]
-kubectl get TYPE NAME ... [-o yaml/json/wide | -w]
-#参数解析：
--w 是实时查看资源的状态。
--o 是以多种格式查看资源的属性信息
---raw 从api地址中获取相关资源信息
+kubectl get pods -n kube-system
+kubectl get deployment/nginx -o yaml
+kubectl get pods -o wide --watch
 ```
+
+`-o yaml|json|wide` 决定输出格式，`-w`/`--watch` 持续观察变化。`--raw=PATH` 直接请求 API 路径，只在明确知道目标 API 时使用。
 
 **描述资源对象**
 ```bash
-kubectl describe TYPE NAME
-kubectl describe TYPE/NAME
-#注意：这个命令非常重要，一般我们排错时常会用到
+kubectl describe pod nginx-示例名称
+kubectl describe node master1.bowen.org
 ```
+
+`describe` 汇总对象状态与相关事件，适合排查调度失败、镜像拉取失败和探针异常；如果需要完整资源定义，再使用 `get -o yaml`。
 
 范例: 查看当前主机的工作节点
 ```bash
@@ -323,145 +167,13 @@ node1.bowen.org     Ready    <none>                 4d1h   v1.22.1
 node2.bowen.org     Ready    <none>                 4d1h   v1.22.1
 node3.bowen.org     Ready    <none>                 4d1h   v1.22.1
 
-#通过-v 选项指定日志的级别  -v, --v=0 number for the log level verbosity
-[root@master1 ~]#kubectl get node -v 7
-I0520 17:20:08.570813  304347 loader.go:402] Config loaded from file:
-/root/.kube/config
-I0520 17:20:08.572143  304347 envvar.go:172] "Feature gate default state"
-feature="ClientsAllowCBOR" enabled=false
-I0520 17:20:08.572678  304347 envvar.go:172] "Feature gate default state"
-feature="ClientsPreferCBOR" enabled=false
-I0520 17:20:08.573324  304347 envvar.go:172] "Feature gate default state"
-feature="InformerResourceVersion" enabled=false
-I0520 17:20:08.573613  304347 envvar.go:172] "Feature gate default state"
-feature="WatchListClient" enabled=false
-I0520 17:20:08.580560  304347 round_trippers.go:470] GET
-https://kubeapi.bowen.org:6443/api/v1/nodes?limit=500
-I0520 17:20:08.581121  304347 round_trippers.go:476] Request Headers:
-I0520 17:20:08.581404  304347 round_trippers.go:480]     User-Agent:
-kubectl/v1.32.0 (linux/amd64) kubernetes/70d3cc9
-I0520 17:20:08.581733  304347 round_trippers.go:480]     Accept:
-application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1
-;g=meta.k8s.io,application/json
-I0520 17:20:08.593755  304347 round_trippers.go:581] Response Status: 200 OK in
-11 milliseconds
-NAME               STATUS   ROLES           AGE    VERSION
-master1.bowen.org   Ready    control-plane   152d   v1.32.0
-node1.bowen.org     Ready    <none>          152d   v1.32.0
-node2.bowen.org     Ready    <none>          152d   v1.32.0
-node3.bowen.org     Ready    <none>          152d   v1.32.0
-
-#获取节点的基本信息
-[root@master1 ~]#kubectl describe node master1
-Name:               master1.bowen.org
-
-Roles:              control-plane,master
-Labels:             beta.kubernetes.io/arch=amd64
-beta.kubernetes.io/os=linux
-kubernetes.io/arch=amd64
-kubernetes.io/hostname=master1.bowen.org
-kubernetes.io/os=linux
-node-role.kubernetes.io/control-plane=
-node-role.kubernetes.io/master=
-node.kubernetes.io/exclude-from-external-load-balancers=
-Annotations:        flannel.alpha.coreos.com/backend-data:
-{"VNI":1,"VtepMAC":"4e:0c:98:28:17:6a"}
-flannel.alpha.coreos.com/backend-type: vxlan
-flannel.alpha.coreos.com/kube-subnet-manager: true
-flannel.alpha.coreos.com/public-ip: 10.0.0.101
-kubeadm.alpha.kubernetes.io/cri-socket:
-/var/run/dockershim.sock
-node.alpha.kubernetes.io/ttl: 0
-volumes.kubernetes.io/controller-managed-attach-detach: true
-CreationTimestamp:  Tue, 22 Feb 2022 20:26:32 +0800
-Taints:             node-role.kubernetes.io/master:NoSchedule
-Unschedulable:      false
-Lease:
-HolderIdentity:  master1.bowen.org
-AcquireTime:     <unset>
-RenewTime:       Sat, 26 Feb 2022 21:40:32 +0800
-Conditions:
-Type                 Status  LastHeartbeatTime
-LastTransitionTime                Reason                       Message
-----                 ------  -----------------                 ---------------
----                ------                       -------
-NetworkUnavailable   False   Sat, 26 Feb 2022 08:15:08 +0800   Sat, 26 Feb
-2022 08:15:08 +0800   FlannelIsUp                  Flannel is running on this
-node
-MemoryPressure       False   Sat, 26 Feb 2022 21:37:41 +0800   Tue, 22 Feb
-2022 20:26:32 +0800   KubeletHasSufficientMemory   kubelet has sufficient memory
-available
-DiskPressure         False   Sat, 26 Feb 2022 21:37:41 +0800   Tue, 22 Feb
-2022 20:26:32 +0800   KubeletHasNoDiskPressure     kubelet has no disk pressure
-PIDPressure          False   Sat, 26 Feb 2022 21:37:41 +0800   Tue, 22 Feb
-2022 20:26:32 +0800   KubeletHasSufficientPID      kubelet has sufficient PID
-available
-Ready                True    Sat, 26 Feb 2022 21:37:41 +0800   Tue, 22 Feb
-2022 21:11:12 +0800   KubeletReady                 kubelet is posting ready
-status. AppArmor enabled
-Addresses:
-InternalIP:  10.0.0.101
-Hostname:    master1.bowen.org
-Capacity:
-cpu:                2
-ephemeral-storage:  102171608Ki
-hugepages-1Gi:      0
-hugepages-2Mi:      0
-memory:             1999336Ki
-pods:               110
-Allocatable:
-cpu:                2
-ephemeral-storage:  94161353777
-hugepages-1Gi:      0
-
-hugepages-2Mi:      0
-memory:             1896936Ki
-pods:               110
-System Info:
-Machine ID:                 3074412efca64ca986433f07f39ff32c
-System UUID:                f2e84d56-9240-3767-4dfe-6b24be5615a2
-Boot ID:                    9e812469-5338-4957-8092-d774a68946de
-Kernel Version:             5.4.0-100-generic
-OS Image:                   Ubuntu 20.04.3 LTS
-Operating System:           linux
-Architecture:               amd64
-Container Runtime Version:  docker://20.10.10
-Kubelet Version:            v1.22.1
-Kube-Proxy Version:         v1.22.1
-PodCIDR:                      172.16.0.0/24
-PodCIDRs:                     172.16.0.0/24
-Non-terminated Pods:          (8 in total)
-Namespace                   Name                                          CPU
-Requests  CPU Limits  Memory Requests  Memory Limits  Age
----------                   ----                                          ----
---------  ----------  ---------------  -------------  ---
-kube-system                 coredns-7d89d9b6b8-ps6mn                      100m
-(5%)     0 (0%)      70Mi (3%)        170Mi (9%)     4d1h
-kube-system                 coredns-7d89d9b6b8-zl2b6                      100m
-(5%)     0 (0%)      70Mi (3%)        170Mi (9%)     4d1h
-kube-system                 etcd-master1.bowen.org                       100m
-(5%)     0 (0%)      100Mi (5%)       0 (0%)         4d1h
-kube-system                 kube-apiserver-master1.bowen.org             250m
-(12%)    0 (0%)      0 (0%)           0 (0%)         4d1h
-kube-system                 kube-controller-manager-master1.bowen.org    200m
-(10%)    0 (0%)      0 (0%)           0 (0%)         4d1h
-kube-system                 kube-flannel-ds-5x6sj                         100m
-(5%)     100m (5%)   50Mi (2%)        50Mi (2%)      4d
-kube-system                 kube-proxy-h2fv4                              0
-(0%)        0 (0%)      0 (0%)           0 (0%)         4d1h
-kube-system                 kube-scheduler-master1.bowen.org             100m
-(5%)     0 (0%)      0 (0%)           0 (0%)         4d
-Allocated resources:
-(Total limits may be over 100 percent, i.e., overcommitted.)
-Resource           Requests     Limits
---------           --------     ------
-cpu                950m (47%)   100m (5%)
-memory             290Mi (15%)  390Mi (21%)
-ephemeral-storage  0 (0%)       0 (0%)
-hugepages-1Gi      0 (0%)       0 (0%)
-hugepages-2Mi      0 (0%)       0 (0%)
-Events:              <none>
-
+#需要排查客户端与 API Server 通信时，提高 kubectl 客户端日志级别
+kubectl get nodes -v=7
+#日志可显示请求 URL、响应状态及耗时；其中可能含环境信息，不宜直接公开完整输出。
+#查看节点的状态、资源与近期事件
+kubectl describe node master1.bowen.org
+#输出较长时，重点查看 Conditions（Ready、压力状态）、Capacity/Allocatable（资源容量）、
+#Allocated resources（已分配请求量）和 Events（近期事件）。
 #查看指定的多个不同类型的资源
 root@ubuntu2204 ~]#kubectl get svc/myapp deployments/myapp
 NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
@@ -471,57 +183,31 @@ NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/myapp   3/3     3            3           7h32m
 ```
 
-范例:  获取特定的信息
+范例：提取 Pod 的 IP 地址。
 ```bash
-[root@master1 ~]#kubectl -n kube-system get pods etcd-master1.bowen.org -o go-
-template={{.status.podIP}}
+kubectl -n kube-system get pod etcd-master1.bowen.org -o jsonpath='{.status.podIP}'
 10.0.0.101
 ```
 
 ### 4.3.3 创建应用
 ```bash
 #创建一个应用
-[root@master1 ~]#kubectl create deployment nginx --image=registry.cn-
-beijing.aliyuncs.com/bowen/nginx:1.20.0
+[root@master1 ~]#kubectl create deployment nginx --image=registry.cn-beijing.aliyuncs.com/bowen/nginx:1.20.0
 deployment.apps/nginx created
 
 [root@master1 ~]#kubectl expose deployment nginx --port=80 --type=NodePort
 service/nginx exposed
 
-#查看效果
-[root@master1 ~]#kubectl get deployments.apps
-NAME    READY   UP-TO-DATE   AVAILABLE   AGE
-nginx   1/1     1            1           9s
+#确认 Deployment、Pod 和 Service 已创建
+kubectl get deployment nginx
+kubectl get pods -l app=nginx -o wide
+kubectl get service nginx
+#示例中 Service 类型为 NodePort；假设 PORT(S) 为 80:32676/TCP，
+#则集群内服务端口是 80，节点端口是 32676。
+#此示例分配的 NodePort 是 32676/TCP。能否从集群外访问，还取决于节点网络、防火墙和负载均衡设置。
 
-[root@master1 ~]#kubectl get pod,svc
-NAME                         READY   STATUS    RESTARTS   AGE
-pod/nginx-6799fc88d8-fcndt   1/1     Running   0          59s
-
-NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
-AGE
-service/kubernetes   ClusterIP   192.168.0.1     <none>        443/TCP
-4d14h
-service/nginx        NodePort    192.168.20.64   <none>        80:32676/TCP
-41s
-
-#查看详情信息
-[root@master1 ~]#kubectl get pod,svc -o wide
-NAME                         READY   STATUS    RESTARTS   AGE    IP
-NODE               NOMINATED NODE   READINESS GATES
-pod/nginx-6799fc88d8-fcndt   1/1     Running   0          2m1s   172.16.3.4
-node1.bowen.org   <none>           <none>
-
-NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-SELECTOR
-service/kubernetes   ClusterIP   192.168.0.1     <none>        443/TCP
-4d14h   <none>
-service/nginx        NodePort    192.168.20.64   <none>        80:32676/TCP
-103s    app=nginx
-
-#注意：这里的 NodePort 代表在所有的节点主机上都开启一个能够被外网访问的随机端口32676/TCP
-
-#访问任意一下worker节点的端口32676都可以访问到相关的容器
-[root@master1 ~]#curl -I <任意worker节点IP>:32676
+#在网络允许的节点地址上测试该端口
+[root@master1 ~]#curl -I http://<节点IP>:32676
 HTTP/1.1 200 OK
 Server: nginx/1.21.5
 Date: Sun, 27 Feb 2022 03:10:20 GMT
@@ -539,7 +225,7 @@ Accept-Ranges: bytes
 #查看资源的详情信息
 [root@master1 ~]#kubectl describe pod nginx-6799fc88d8-fcndt
 
-#进入容器查看信息,注意：如果一个pod内部存在多个pod的话，需要通过 -c 指定一个具体的容器
+#进入容器排查；若 Pod 包含多个容器，用 -c 指定容器名
 [root@master1 ~]#kubectl exec -it nginx-6799fc88d8-fcndt -- /bin/bash
 root@nginx-6799fc88d8-fcndt:/# nginx -v
 nginx version: nginx/1.21.5
@@ -586,10 +272,9 @@ kubernetes   ClusterIP   192.168.0.1   <none>        443/TCP   4d21h
 
 范例：创建和删除多个不同资源
 ```bash
-[root@master1 ~]#kubectl create deployment myapp --image registry.cn-
-beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas 3
+[root@master1 ~]#kubectl create deployment myapp --image=registry.cn-beijing.aliyuncs.com/bowen/pod-test:v0.1 --replicas=3
 
-[root@master1 ~]#kubectl create svc clusterip myapp --tcp 80
+[root@master1 ~]#kubectl expose deployment myapp --port=80 --target-port=80 --type=ClusterIP
 
 [root@master1 ~]#kubectl get svc,deployment
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
@@ -606,17 +291,13 @@ myapp-7dbd45d496-t6c5f   1/1     Running   0          38s
 myapp-7dbd45d496-xtn7t   1/1     Running   0          38s
 
 [root@master1 ~]#curl 10.106.80.174
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
-xtn7t, ServerIP: 10.244.1.131!
+kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-xtn7t, ServerIP: 10.244.1.131!
 [root@master1 ~]#curl 10.106.80.174
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
-c9rqv, ServerIP: 10.244.3.55!
+kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-c9rqv, ServerIP: 10.244.3.55!
 [root@master1 ~]#curl 10.106.80.174
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
-xtn7t, ServerIP: 10.244.1.131!
+kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-xtn7t, ServerIP: 10.244.1.131!
 [root@master1 ~]#curl 10.106.80.174
-kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-
-c9rqv, ServerIP: 10.244.3.55!
+kubernetes pod-test v0.1!! ClientIP: 10.244.0.0, ServerName: myapp-7dbd45d496-c9rqv, ServerIP: 10.244.3.55!
 
 [root@master1 ~]#kubectl delete deployment/myapp svc/myapp
 deployment.apps "myapp" deleted

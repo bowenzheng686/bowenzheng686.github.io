@@ -57,4 +57,8 @@ prometheus_notes: true
 - Prometheus 远程存储 VictoriaMetrics
 - Kubernetes 集成 Prometheus
 
+## 阅读路线
+
+初学者可先读第 01–04 章，理解监控链路、部署 Prometheus、接入 Node Exporter，再使用 Grafana 查看结果；随后阅读第 07–11 章，掌握 PromQL、标签与记录规则。需要通知时进入告警章节，需要动态目标时进入服务发现章节，最后再结合容器监控、远程存储和 Kubernetes 部署章节实践。每一章的旧版界面截图和历史命令都应与当前软件版本核对，正文会指出影响操作的差异。
+
 {% endraw %}

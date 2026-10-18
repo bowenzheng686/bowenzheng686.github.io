@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Prometheus · Pushgateway 自定义数据"
+title: "Prometheus · Pushgateway 与短时任务指标"
 subject_page: true
 prometheus_notes: true
 syntax_highlight: true
@@ -10,335 +10,101 @@ syntax_highlight: true
 
 {% raw %}
 
-# 06 Pushgateway 自定义数据
+# 06 Pushgateway 与短时任务指标
 
-## 2.7 Pushgateway 采集自定义数据
+Prometheus 通常主动抓取一直在线的目标。短时批处理任务可能在两次抓取之间启动又退出，Prometheus 来不及访问它的指标端点。Pushgateway 为此提供中转：**任务把结果推给 Pushgateway，Prometheus 再抓取 Pushgateway**。它不是让 Prometheus 改为直接接收推送，也不是所有自定义指标的默认入口；长期运行的服务更适合直接暴露 `/metrics` 或使用 Exporter。
 
-### 2.7.1 Pushgateway 介绍
 ```text
-  Ephemeral Process #1  pushes
-  Ephemeral Process #2  pushes  Pushgateway  scrapes  Prometheus
-  Ephemeral Process #3  pushes
+短时任务 ──推送──> Pushgateway ──被抓取──> Prometheus ──查询──> Grafana/告警
 ```
 
-官方连接
-https://prometheus.io/docs/practices/pushing/
+## 使用前先理解生命周期
 
-Pushgateway 是一项中介或代理服务，允许您从无法抓取的作业中推送指标
+Pushgateway 按分组键保存最近一次推送的指标，**任务退出后数据不会自动消失**。这使得“昨晚备份耗时”仍可被抓取，但也会让已停用任务的旧值长期留存。部署时应同时设计：谁负责推送、何时删除不再需要的分组，以及如何观察 `push_time_seconds` 是否过旧。
 
-虽然有很多的Exporter提供了丰富的数据,但生产环境中仍需要采集用户自定义的数据,可以利用Pushgateway实现
+另一个重要限制是：Prometheus 的 `up` 只能说明**Pushgateway 抓取是否成功**，不能证明上游批处理任务刚刚成功运行。需要通过任务自己的成功指标、完成时间或推送时间判断任务状态。高频运行的应用不应每秒用脚本推送动态指标；这会增加网关负担，也不解决正常的服务发现和实例健康问题。
 
-Pushgateway 是另⼀种采⽤客户端主动推送数据的⽅式,也可以获取监控数据的prometheus 插件
+## 部署 Pushgateway
 
-Pushgateway与exporter 不同, Exporter 是被动采集数据
+可从 [Prometheus 下载页](https://prometheus.io/download/) 获取与平台匹配的二进制文件；原资料中的 v1.4.3 只是历史示例，部署时应选择经过验证的版本。下面用容器演示，持久化文件可在网关重启后恢复已推送数据。9091 默认没有适合公网直接暴露的访问控制，应限制网络入口并按实际环境配置认证与 TLS。
 
-Pushgateway可以单独运⾏在任何节点上，并不⼀定要在被监控客户端安装
+![Pushgateway 下载页面示意](assets/img-fd957594bc7e364f.webp)
 
-⽤户⾃定义的脚本或程序将需要监控的数据推送给 Pushgateway ,然后prometheus server再向pushgateway拉取数据
-
-Pushgateway 缺点
-
-Pushgateway 会形成⼀个单点瓶颈，假如好多个应用同时发送给⼀个pushgateway的进程,如果这个进
-程有故障，那么监控数据也就无法获取了  
-将失去 Prometheus 通过 up 指标（每次抓取时生成）的自动实例运行状况监控。  
-Pushgateway 永远不会忘记推送给它的数据，并将它们永远暴露给 Prometheus，除非这些系列通过  
-Pushgateway 的 API 手动删除。  
-Pushgateway 并不能对发送过来的数据进⾏更智能的判断,假如脚本中间采集出问题,那么有问题的数据  
-pushgateway⼀样照单全收发送给prometheus  
-
-### 2.7.2 安装 Pushgateway
-
-#### 2.7.2.1 二进制安装
-https://prometheus.io/download/
-https://github.com/prometheus/pushgateway/releases
-
-![原 PDF 第 77 页插图](assets/img-fd957594bc7e364f.png)
-
-范例：二进制安装
 ```bash
-[root@prometheus ~]#wget
-https://github.com/prometheus/pushgateway/releases/download/v1.4.3/pushgateway-1.4.3.linux-amd64.tar.gz
-[root@prometheus ~]#tar xf pushgateway-1.4.3.linux-amd64.tar.gz  -C /usr/local/
-[root@prometheus ~]#ln -s pushgateway-1.4.3.linux-amd64/ pushgateway
-[root@prometheus ~]#ls /usr/local/pushgateway
-LICENSE  NOTICE pushgateway
-[root@prometheus ~]#mkdir /usr/local/pushgateway/bin
-[root@prometheus ~]#mv /usr/local/pushgateway/pushgateway /usr/local/pushgateway/bin
-[root@prometheus ~]#id prometheus &> /dev/null ||  useradd -r -s /sbin/nologin
-prometheus
-[root@prometheus ~]#ldd /usr/local/pushgateway/bin/pushgateway
-    不是动态可执行文件
-[root@prometheus ~]#ln -s /usr/local/pushgateway/bin/pushgateway /usr/local/bin/
-[root@prometheus ~]#pushgateway --help
-usage: pushgateway [<flags>]
-The Pushgateway
-Flags:
-  -h, --help                     Show context-sensitive help (also try --help-long
-and --help-man).
-      --web.config.file=""       [EXPERIMENTAL] Path to configuration file that can
-enable TLS or authentication.
-      --web.listen-address=":9091"
-                                 Address to listen on for the web interface, API, and
-telemetry.
-      --web.telemetry-path="/metrics"
-                                 Path under which to expose metrics.
-      --web.external-url=        The URL under which the Pushgateway is externally
-reachable.
-      --web.route-prefix=""      Prefix for the internal routes of web endpoints.
-Defaults to the path of --web.external-url.
-      --web.enable-lifecycle     Enable shutdown via HTTP request.
-      --web.enable-admin-api     Enable API endpoints for admin control actions.
-      --persistence.file=""      File to persist metrics. If empty, metrics are only
-kept in memory. 持久化
-      --persistence.interval=5m  The minimum interval at which to write out the
-persistence file持久化时间间隔
-      --push.disable-consistency-check
-                                 Do not check consistency of pushed metrics.
-DANGEROUS.
-      --log.level=info           Only log messages with the given severity or above.
-One of: [debug, info, warn, error]
-      --log.format=logfmt        Output format of log messages. One of: [logfmt,
-json]
-      --version                  Show application version.
-#前台启动
-[root@prometheus ~]#pushgateway
-ts=2022-08-06T14:55:02.911Z caller=main.go:85 level=info msg="starting pushgateway"
-version="(version=1.4.3, branch=HEAD,
-revision=f9dc1c8664050edbc75916c3664be1df595a1958)"
-ts=2022-08-06T14:55:02.911Z caller=main.go:86 level=info build_context="(go=go1.18.2,
-user=root@75e397dd33fe, date=20220530-19:02:00)"
-ts=2022-08-06T14:55:02.913Z caller=main.go:139 level=info listen_address=:9091
-ts=2022-08-06T14:55:02.914Z caller=tls_config.go:195 level=info msg="TLS is
-disabled." http2=false
-#准备service文件
-[root@prometheus ~]#cat > /lib/systemd/system/pushgateway.service <<EOF
-[Unit]
-Description=Prometheus Pushgateway
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/pushgateway/bin/pushgateway
-ExecReload=/bin/kill -HUP \$MAINPID
-Restart=on-failure
-User=prometheus
-Group=prometheus
-[Install]
-WantedBy=multi-user.target
-EOF
-#启动服务
-[root@prometheus ~]#systemctl daemon-reload
-[root@prometheus ~]#systemctl enable --now pushgateway.service
-#浏览器访问
-http://pushgateway.bowen.org:9091/
-http://pushgateway.bowen.org:9091/metrics
+docker volume create pushgateway_data
+docker run -d --name pushgateway --restart unless-stopped \
+  -p 9091:9091 \
+  -v pushgateway_data:/data \
+  prom/pushgateway:<版本> \
+  --persistence.file=/data/metrics
+curl http://127.0.0.1:9091/metrics
 ```
 
-![原 PDF 第 79 页插图](assets/img-d64174ab8b47492d.png)
+如果选择 systemd 安装，则让服务以非特权用户运行，并把持久化路径放在该用户可写目录。二进制部署、容器部署和 Ansible 角色是替代方案，不需要混用。
 
-![原 PDF 第 79 页插图](assets/img-868b90ad46cb17ca.png)
+![Pushgateway 服务页面](assets/img-d64174ab8b47492d.webp)
 
-![原 PDF 第 79 页插图](assets/img-8db9e0e3206be6fd.png)
+![Pushgateway 指标端点](assets/img-868b90ad46cb17ca.webp)
 
-#### 2.7.2.2 Docker 安装
+![Pushgateway 初始状态](assets/img-8db9e0e3206be6fd.webp)
 
-范例: docker 安装
-```bash
-docker pull prom/pushgateway
-docker run -d -p 9091:9091 prom/pushgateway
-```
+## 让 Prometheus 抓取网关
 
-#### 2.7.2.3 Ansible 安装
-https://github.com/prometheus-community/ansible/tree/main/roles/pushgateway
+把下列 job 合并进现有 `prometheus.yml` 的 `scrape_configs`。目标地址必须从 Prometheus 所在环境可达。对 Pushgateway 通常设置 `honor_labels: true`，以保留推送时分组键里的 `job` 和 `instance`；不设置时，Prometheus 的抓取标签可能覆盖同名标签，把原值改记为 `exported_job`、`exported_instance`。
 
-### 2.7.3 配置 Prometheus 收集 Pushgateway 数据
-
-范例：静态发现
 ```yaml
-[root@prometheus ~]#vim /usr/local/prometheus/conf/prometheus.yml
-  - job_name: "pushgateway"
-    honor_labels: true  #可选项，设置为true，Prometheus将使用Pushgateway上的job和
-instance标签。如果设置为false那么它将重命名这些值，在它们前面加上exported_前缀，并在服务器上为这些
-标签附加新值。
-    scrape_interval: 10s  #可选项
-    static_configs:
-     - targets: #可以写在同一行,比如:["pushgateway.bowen.org:9091"]
-        - "pushgateway.bowen.org:9091"
-[root@prometheus ~]#promtool check config  /usr/local/prometheus/conf/prometheus.yml
-Checking /usr/local/prometheus/conf/prometheus.yml
- SUCCESS: /usr/local/prometheus/conf/prometheus.yml is valid prometheus config file
-syntax
-[root@prometheus ~]#curl -XPOST http://127.0.0.1:9090/-/reload
-```
-
-范例：支持文件形式的自动发现格式
-```yaml
-[root@prometheus ~]#vim /usr/local/prometheus/conf/prometheus.yml
+scrape_configs:
   - job_name: pushgateway
     honor_labels: true
-    file_sd_configs:
-    - files:
-      - targets/pushgateway/*.json
-      refresh_interval: 5m
-#pushgateway目标:
-[root@prometheus ~]#vim /usr/local/prometheus/conf/targets/pushgateway/test.json
-[{"targets": ["pushgateway1.bowen.org：9091"]}]
-[root@prometheus ~]#curl -XPOST http://127.0.0.1:9090/-/reload
+    static_configs:
+      - targets: ['pushgateway.example.local:9091']
 ```
 
-### 2.7.4 配置客户端发送数据给 Pushgateway
-https://github.com/prometheus/pushgateway/blob/master/README.md
+配置后先运行 `promtool check config /path/to/prometheus.yml`，再按当前 Prometheus 服务的方式重载。若采用文件服务发现，目标文件也应是合法 JSON，地址端口使用半角冒号；原资料中的全角 `：9091` 不能被当作有效目标。
 
-Examples:
+## 推送一个完整的任务结果
 
-Push a single sample into the group identified by   :
+分组键位于 URL 中，例如 `/metrics/job/nightly_backup/instance/db-1`；每一个不同的分组键对应一组独立指标。下面示例演示一次任务完成后推送耗时，而不是无限循环发送。使用 `PUT` 会替换该分组中此前保存的指标集，便于避免旧指标残留；`POST` 则用于追加或更新部分指标。
+
 ```bash
-                        {job="some_job"}
-     echo "some_metric 3.14" | curl --data-binary @-
-     http://pushgateway.example.org:9091/metrics/job/some_job
+printf '# HELP batch_duration_seconds 最近一次批处理耗时\n# TYPE batch_duration_seconds gauge\nbatch_duration_seconds 12.4\n' |
+  curl --fail --show-error --data-binary @- -X PUT \
+    http://pushgateway.example.local:9091/metrics/job/nightly_backup/instance/db-1
 ```
 
-Since no type information has been provided,    will be of type   .
-```text
-                        some_metric  untyped
-```
+实际脚本应在任务完成后由程序计算耗时，并根据成功/失败状态推送相应指标。不要把 `hostname -I` 的完整输出直接放进 URL：它可能包含多个地址和空格，产生意外分组。需要主机维度时，使用稳定、明确的实例名；也不要把每次运行的唯一 ID 作为标签，避免分组与序列无限增长。
 
-Push something more complex into the group identified by
-:  
+![Pushgateway 接收自定义指标](assets/img-5c05a4f7d9d1c97c.webp)
+
+![分组标签显示](assets/img-c1bc022a8f3cb1b7.webp)
+
+![Prometheus 查询推送指标](assets/img-669f2dd7c290455d.webp)
+
+## 验证、过期判断与清理
+
+验证分三层：先在 Pushgateway 的 `/metrics` 看 `batch_duration_seconds`，再在 Prometheus Targets 页确认网关为 UP，最后查询 `batch_duration_seconds{job="nightly_backup"}`。若任务不再推送，旧耗时仍会留在网关；查询 `time() - push_time_seconds{job="nightly_backup"}` 可判断距离上次推送过去多久，再据任务预期周期设置告警。
+
+![Pushgateway 中的推送结果](assets/img-fabdea976cb03aad.webp)
+
+![Prometheus 目标状态](assets/img-d58e7d4ee2622586.webp)
+
+![Prometheus 中的指标查询](assets/img-9b5dc30d429562d3.webp)
+
+![Prometheus 查询时间序列](assets/img-ca7ab7bebef2bb57.webp)
+
+![Grafana 中的指标展示](assets/img-4b6b0ac0b4088d95.webp)
+
+任务退役后，按**完整分组键**删除对应数据；删除 `job=nightly_backup` 不会同时删除其 `instance=db-1` 子分组。清空所有分组的管理 API 影响整个网关，不适合日常脚本调用。
+
 ```bash
-   {job="some_job",instance="some_instance"}
-     cat <<EOF | curl --data-binary @-
-     http://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance
-     # TYPE some_metric counter
-     some_metric{label="val1"} 42
-     # TYPE another_metric gauge
-     # HELP another_metric Just an example.
-     another_metric 2398.283
-     EOF
+curl --fail --show-error -X DELETE \
+  http://pushgateway.example.local:9091/metrics/job/nightly_backup/instance/db-1
 ```
-
-Note how type information and help strings are provided. Those lines are optional, but strongly
-encouraged for anything more complex.  
-Delete all metrics in the group identified by   :  
-```bash
-                        {job="some_job",instance="some_instance"}
-     curl -X DELETE
-     http://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance
-```
-
-Delete all metrics in the group identified by    (note that this does not include
-```text
-                        {job="some_job"}
-```
-
-metrics in the    group from the previous example,
-```text
-                {job="some_job",instance="some_instance"}
-```
-
-even if those metrics have the same job label):
-```bash
-     curl -X DELETE http://pushgateway.example.org:9091/metrics/job/some_job
-```
-
-Delete all metrics in all groups (requires to enable the admin API via the command line flag --
-```bash
-             -  -  ):
-   web.enableadminapi
-     curl -X PUT http://pushgateway.example.org:9091/api/v1/admin/wipe
-```
-
-要推送一个度量值，需要使用以下URL路径定义向Pushgateway端点发送一个内容为"name value"HTTP请求。
-
-推送 Metric 格式
-```text
-http://<pushgateway_address>:
-<push_port>/metrics/job/<job_name>/[<label_name1>/<label_value1>]/[<label_nameN>/<lab
-el_valueN>]
-#<job_name> 在Prometheus中指标的新加标签exported_<job_name>的值，在Pushgateway中是job名称
-#<label_name>/<label_value〉将成为额外的标签/值对。
-```
-
-删除 Metric 命令格式，或者通过Pushgateway 图形删除
-```bash
-#删除指定job_name中的所有metric
-curl -X DELETE http://<pushgateway_address>:<push_port/metrics/job/<job_name>
-#删除指定实例的metric
-curl -X DELETE http://<pushgateway_address>:
-<push_port/metrics/job/<job_name>/instance/<instance_name>
-```
-
-范例: 命令
-```bash
-#下面为发送一次数据,如果想周期性发送,可以通过cron或脚本循环实现
-[root@ubuntu2004 ~]#echo "age 18" | curl --data-binary @-
-http://pushgateway.bowen.org:9091/metrics/job/pushgateway/instance/`hostname -I`
-#说明
-pushgateway.bowen.org:9091  #安装为Pushgateway主机的IP和端口
-pushgateway   #指定jobname,会自动添加一个新标签名称为exported_pushgateway
-`hostname -I` #取当前主机的IP为instance名称
-@file #表示从file中读取数据
-@-    #表示从标准输入读取数据
-```
-
-![原 PDF 第 82 页插图](assets/img-5c05a4f7d9d1c97c.png)
-
-![原 PDF 第 82 页插图](assets/img-c1bc022a8f3cb1b7.png)
-
-![原 PDF 第 83 页插图](assets/img-669f2dd7c290455d.png)
-
-范例: 通用脚本
-```bash
-#编写自定义的metric的脚本
-[root@ubuntu2004 ~]#vim pushgateway_metric.sh
-#!/bin/bash
-#
-#FileName:          pushgateway_metric.sh
-#Description:       The test script
-METRIC_NAME=login_number
-METRIC_VALUE_CMD="who | wc -l"
-METRIC_TYPE=gauge
-METRIC_HELP="login use number"
-#METRIC_NAME=mem_free
-#METRIC_VALUE_CMD="free -b  | awk 'NR==2{print \$4}'"
-#METRIC_TYPE=gauge
-#METRIC_HELP="free memory"
-PUSHGATEWAY_HOST=pushgateway.bowen.org:9091
-EXPORTED_JOB=pushgateway_job
-INSTANCE=`hostname -I|awk '{print $1}'`
-SLEEP_TIME=1
-CURL_URL="curl --data-binary @-
-http://${PUSHGATEWAY_HOST}/metrics/job/${EXPORTED_JOB}/instance/${INSTANCE}"
-push_metric()  {
-    while true ;do
-         VALUE=`eval "$METRIC_VALUE_CMD"`
-         cat  <<EOF |  $CURL_URL
-# HELP ${METRIC_NAME} ${METRIC_HELP}
-# TYPE ${METRIC_NAME} ${METRIC_TYPE}
-${METRIC_NAME} ${VALUE}
-EOF
-         sleep $SLEEP_TIME
-    done
-}
-push_metric
-[root@ubuntu2004 ~]#bash pushgateway_metric.sh
-```
-
-### 2.7.5 验证数据
-
-![原 PDF 第 84 页插图](assets/img-fabdea976cb03aad.png)
-
-![原 PDF 第 84 页插图](assets/img-d58e7d4ee2622586.png)
-
-![原 PDF 第 84 页插图](assets/img-9b5dc30d429562d3.png)
-
-![原 PDF 第 85 页插图](assets/img-ca7ab7bebef2bb57.png)
-
-![原 PDF 第 85 页插图](assets/img-4b6b0ac0b4088d95.png)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Prometheus/05-zookeeper-monitoring.html' | relative_url }}">← 上一章：Zookeeper 监控</a>
+  <a href="{{ '/subjects/Prometheus/05-zookeeper-monitoring.html' | relative_url }}">← 上一章：ZooKeeper 监控</a>
   <a href="{{ '/subjects/Prometheus/' | relative_url }}">返回 Prometheus 目录</a>
   <a href="{{ '/subjects/Prometheus/07-promql-foundations.html' | relative_url }}">下一章：PromQL 指标与基础 →</a>
 </nav>

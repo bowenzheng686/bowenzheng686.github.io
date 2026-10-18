@@ -11,27 +11,28 @@ syntax_highlight: true
 {% raw %}
 
 # 16 GitLab 项目管理
-### 3.5 GitLab 项目管理
+
+本章先创建项目，再配置成员权限，最后通过 HTTPS 或 SSH 验证克隆、提交和合并请求。不同版本的页面布局不同，以项目的实际命名空间和默认分支为准。
 
 ### 创建项目
 
 ### 新建项目
 
-项目project属于一个group组,即一般project对应一个项目中的功能模块或服务
+GitLab 项目属于某个命名空间：可以是个人，也可以是组。一个项目通常对应一个代码仓库及其协作设置，是否按服务或模块拆分取决于团队边界与发布方式。
 
-注意: 此处在新建项目时先不进行初始化
+若准备推送已有本地仓库，可创建**空项目**以避免默认 README 产生额外初始提交；若从零开始，直接初始化 README 也可以，但后续推送须先整合远程历史。
 
-![Git 与 GitLab 版本管理第 123 页插图](assets/img-81cd5d119cd7e59e.png)
+![Git 与 GitLab 版本管理第 123 页插图](assets/img-81cd5d119cd7e59e.webp)
 
 新版界面
 
-![Git 与 GitLab 版本管理第 123 页插图](assets/img-2bfb657d07b59dce.png)
+![Git 与 GitLab 版本管理第 123 页插图](assets/img-2bfb657d07b59dce.webp)
 
 创建项目,指定项目属于组,并选择不进行初始化项目仓库
 
-![Git 与 GitLab 版本管理第 123 页插图](assets/img-b1de0ef7fc45f1a2.png)
+![Git 与 GitLab 版本管理第 123 页插图](assets/img-b1de0ef7fc45f1a2.webp)
 
-![Git 与 GitLab 版本管理第 124 页插图](assets/img-3753ea26c68fbda0.png)
+![Git 与 GitLab 版本管理第 124 页插图](assets/img-3753ea26c68fbda0.webp)
 
 命令行指引
 
@@ -49,7 +50,7 @@ git config --global user.email "admin@example.com"
 ```text
 git clone http://gitlab.bowen.org/dev/meta.git
 cd meta
-git switch -c main
+git switch -c main  # 仅当空仓库克隆后尚未处于 main 时执行
 touch README.md
 git add README.md
 git commit -m "add README"
@@ -79,15 +80,15 @@ git push -u origin --tags
 
 旧版界面
 
-![Git 与 GitLab 版本管理第 125 页插图](assets/img-1827db2fc43e3d2e.png)
+![Git 与 GitLab 版本管理第 125 页插图](assets/img-1827db2fc43e3d2e.webp)
 
 使用管理员创建项目：
 
-![Git 与 GitLab 版本管理第 125 页插图](assets/img-f471758abb22e520.png)
+![Git 与 GitLab 版本管理第 125 页插图](assets/img-f471758abb22e520.webp)
 
 创建后的项目效果：
 
-![Git 与 GitLab 版本管理第 126 页插图](assets/img-bf0595dc531c68ab.png)
+![Git 与 GitLab 版本管理第 126 页插图](assets/img-bf0595dc531c68ab.webp)
 
 ### 导入项目
 
@@ -95,11 +96,11 @@ git push -u origin --tags
 
 搜索--管理中心--设置-- 通用--导入和导出设置
 
-![Git 与 GitLab 版本管理第 126 页插图](assets/img-b2bf90d02be422c2.png)
+![Git 与 GitLab 版本管理第 126 页插图](assets/img-b2bf90d02be422c2.webp)
 
-![Git 与 GitLab 版本管理第 126 页插图](assets/img-161a6fc896d2c2af.png)
+![Git 与 GitLab 版本管理第 126 页插图](assets/img-161a6fc896d2c2af.webp)
 
-![Git 与 GitLab 版本管理第 127 页插图](assets/img-e7d61b62ae64c06a.png)
+![Git 与 GitLab 版本管理第 127 页插图](assets/img-e7d61b62ae64c06a.webp)
 
 ### 将用户添加到组或项目并指定角色
 
@@ -109,31 +110,37 @@ git push -u origin --tags
 
 <https://docs.gitlab.com/ce/user/permissions.html>
 
-![Git 与 GitLab 版本管理第 128 页插图](assets/img-83c4038dcceb89bd.png)
+![Git 与 GitLab 版本管理第 128 页插图](assets/img-83c4038dcceb89bd.webp)
 
-Gitlab用户在组里面有5种不同权限:
+常见角色按权限递增，实际能力还受 GitLab 版本、项目设置和保护分支规则影响：
 
-Guest: 可以创建issue、发表评论，不能读写版本库 Reporter:可以克隆代码，不能提交，QA、PM可以赋予这个权限 Developer:可以克隆代码、开发、提交、 push(非保护分支Protected branches)，普通开发可以赋予这个权限 Maintainer:可以创建项目、添加tag、保护分支、添加项目成员、编辑项目，核心开发人员可以赋予这个权限 Owner:可以设置项目访问权限Visibility Level、删除项目、迁移项目、管理组成员，开发组组长可以赋予这个权限
+| 角色 | 常见能力与边界 |
+| --- | --- |
+| Guest | 参与部分议题和评论；对私有仓库源码的访问受具体权限配置限制。 |
+| Reporter | 读取代码和结果，通常不能推送。 |
+| Developer | 在允许的分支推送并创建合并请求；受保护分支可能禁止直接推送。 |
+| Maintainer | 管理项目设置、成员及发布规则，权限高于普通开发者。 |
+| Owner | 主要是组级最高权限，涉及组成员与组设置；不是每个项目都单独有 Owner。 |
 
 在组中添加用户并指定角色
 
-![Git 与 GitLab 版本管理第 129 页插图](assets/img-b3eb7595274ad620.png)
+![Git 与 GitLab 版本管理第 129 页插图](assets/img-b3eb7595274ad620.webp)
 
-注意: 设为maintainer角色才能push代码,developer角色(对保护分支,如master)只能pull不能push
+Developer 通常可以推送非保护分支；对受保护的 `main`/`master` 是否能推送，由具体保护规则决定。不要为了让开发者推送功能分支就授予 Maintainer 权限。
 
-![Git 与 GitLab 版本管理第 129 页插图](assets/img-c66db547bb0bf0f7.png)
+![Git 与 GitLab 版本管理第 129 页插图](assets/img-c66db547bb0bf0f7.webp)
 
-![Git 与 GitLab 版本管理第 129 页插图](assets/img-2c6257f23a86ff20.png)
+![Git 与 GitLab 版本管理第 129 页插图](assets/img-2c6257f23a86ff20.webp)
 
 或者在项目中添加用户进行角色指定，此方式后续管理不太方便，不建议加用户到项目，建议将用户加入组中
 
-![Git 与 GitLab 版本管理第 130 页插图](assets/img-5df5577942ccb700.png)
+![Git 与 GitLab 版本管理第 130 页插图](assets/img-5df5577942ccb700.webp)
 
 旧版界面
 
-![Git 与 GitLab 版本管理第 130 页插图](assets/img-ad9bac60abf3d149.png)
+![Git 与 GitLab 版本管理第 130 页插图](assets/img-ad9bac60abf3d149.webp)
 
-![Git 与 GitLab 版本管理第 131 页插图](assets/img-45a595d82e5a902a.png)
+![Git 与 GitLab 版本管理第 131 页插图](assets/img-45a595d82e5a902a.webp)
 
 ### 使用项目
 
@@ -141,27 +148,27 @@ Guest: 可以创建issue、发表评论，不能读写版本库 Reporter:可以�
 
 用上面创建的用户bowen登录，找到项目界面,在项目中新建文件
 
-![Git 与 GitLab 版本管理第 131 页插图](assets/img-51362ca8f4062ba0.png)
+![Git 与 GitLab 版本管理第 131 页插图](assets/img-51362ca8f4062ba0.webp)
 
-![Git 与 GitLab 版本管理第 132 页插图](assets/img-9c440a3a4e2f8e93.png)
+![Git 与 GitLab 版本管理第 132 页插图](assets/img-9c440a3a4e2f8e93.webp)
 
 旧版界面
 
-![Git 与 GitLab 版本管理第 132 页插图](assets/img-cdd375deb4200cf7.png)
+![Git 与 GitLab 版本管理第 132 页插图](assets/img-cdd375deb4200cf7.webp)
 
-填写READE.md文件内容
+填写 `README.md` 文件内容，说明项目用途、运行方式和协作约定。
 
-![Git 与 GitLab 版本管理第 132 页插图](assets/img-242497ba479e5ce5.png)
+![Git 与 GitLab 版本管理第 132 页插图](assets/img-242497ba479e5ce5.webp)
 
 新建项目文件
 
-![Git 与 GitLab 版本管理第 133 页插图](assets/img-de85574f6f94c8d6.png)
+![Git 与 GitLab 版本管理第 133 页插图](assets/img-de85574f6f94c8d6.webp)
 
-![Git 与 GitLab 版本管理第 133 页插图](assets/img-5eca40737d67c9c9.png)
+![Git 与 GitLab 版本管理第 133 页插图](assets/img-5eca40737d67c9c9.webp)
 
 ### 在linux客户端测试clone和提交项目
 
-![Git 与 GitLab 版本管理第 133 页插图](assets/img-945309aaa0cf9fe0.png)
+![Git 与 GitLab 版本管理第 133 页插图](assets/img-945309aaa0cf9fe0.webp)
 
 命令行指引
 
@@ -211,8 +218,7 @@ git push -u origin --tags
 [root@ubuntu1804 ~]#cd /data
 [root@ubuntu1804 data]#ls
 lost+found
-[root@ubuntu1804 data]#git clone
-http://gitlab.bowen.org/testgroup/testproject.git
+[root@ubuntu1804 data]#git clone https://gitlab.example.com/testgroup/testproject.git
 Cloning into 'testproject'...
 Username for 'http://10.0.0.100': bowen
 Password for 'http://bowen@10.0.0.100':
@@ -267,37 +273,29 @@ To http://10.0.0.100/testgroup/testproject.git
 
 <https://git-scm.com/download/win>
 
-![Git 与 GitLab 版本管理第 136 页插图](assets/img-013051ffec9909e1.png)
+![Git 与 GitLab 版本管理第 136 页插图](assets/img-013051ffec9909e1.webp)
 
-![Git 与 GitLab 版本管理第 136 页插图](assets/img-62fc1105c08c9fe4.png)
+![Git 与 GitLab 版本管理第 136 页插图](assets/img-62fc1105c08c9fe4.webp)
 
-![Git 与 GitLab 版本管理第 136 页插图](assets/img-5a12e56b7528b661.png)
+![Git 与 GitLab 版本管理第 136 页插图](assets/img-5a12e56b7528b661.webp)
 
 ### Web端验证数据
 
-![Git 与 GitLab 版本管理第 137 页插图](assets/img-a9e9c618635158b1.png)
+![Git 与 GitLab 版本管理第 137 页插图](assets/img-a9e9c618635158b1.webp)
 
-![Git 与 GitLab 版本管理第 137 页插图](assets/img-fe32f485a66437b1.png)
+![Git 与 GitLab 版本管理第 137 页插图](assets/img-fe32f485a66437b1.webp)
 
 ### 实现 ssh 基于key验证的 git 访问
 
 ```bash
-[root@centos8 ~]#ssh-keygen
-[root@centos8 ~]#cat .ssh/id_rsa.pub
-ssh-rsa
-AAAAB3NzaC1yc2EAAAADAQABAAABgQDQerYDHH/IWvYfIzCiIvp9oHzCNVepAOcP37M3cmhz0NFnN655
-cA66lp5j00qCOfjh9DFq4RNMUiL9XvqQ/Q4N7/ZLoUlVO2L3XPTTmwLtKg3snGExn0owj4B49wi5BTjs
-wo9HOmf3Qh7KGHKO9VlG0O+/QFU8W1nySrPJvdi5mQaofqyXXMMsK2lIFgdDH0QhZcY3IkpC63BEhfgb
-vnhlXjVjwepu8lcJYWU8We30XOm6j6/dIjdP+AzamdiIntj/Oby5P0yuN/kNYjQvsbiaw1nO8z+Z/cqA
-4e2pmmA7sHwUIqUve5RL7+DDue71sL7aODWQjcgOkRj5BYSNWcavF1hispfQIhakz9pdROhB90wXVcyr
-RehnHK73IMGc+abu0/9oz8e58LyEaRdSaQ6nRywcso/rmX1aoH/KTFmRe42O+pOeri1KzbSfrrTIQmma
-0wF9k1YQEoTI0fpQpyvGWM5nGtEm7W+iG0zPiMaDzAzGcetu8AkJyFy37GwuDL8=
-root@centos8.bowen.org
+[root@centos8 ~]#ssh-keygen -t ed25519 -C "you@example.com"
+[root@centos8 ~]#cat ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAA... you@example.com
 ```
 
-![Git 与 GitLab 版本管理第 138 页插图](assets/img-576db9bcedf76171.png)
+![Git 与 GitLab 版本管理第 138 页插图](assets/img-576db9bcedf76171.webp)
 
-![Git 与 GitLab 版本管理第 138 页插图](assets/img-9b85acac7bc2ee95.png)
+![Git 与 GitLab 版本管理第 138 页插图](assets/img-9b85acac7bc2ee95.webp)
 
 ```bash
 [root@centos8 ~]#cd /opt
@@ -321,7 +319,7 @@ Receiving objects: 100% (6/6), done.
 
 也可以将其它分支进行保护,防止指定分支被破环
 
-![Git 与 GitLab 版本管理第 139 页插图](assets/img-a7422ac9511a27ee.png)
+![Git 与 GitLab 版本管理第 139 页插图](assets/img-a7422ac9511a27ee.webp)
 
 ### 合并分支
 
@@ -335,13 +333,13 @@ Receiving objects: 100% (6/6), done.
 
 最终实现 master 代码的更新
 
-![Git 与 GitLab 版本管理第 140 页插图](assets/img-e7d2662ebb302b72.png)
+![Git 与 GitLab 版本管理第 140 页插图](assets/img-e7d2662ebb302b72.webp)
 
-![Git 与 GitLab 版本管理第 140 页插图](assets/img-4fc1f1d50cb2c9ea.png)
+![Git 与 GitLab 版本管理第 140 页插图](assets/img-4fc1f1d50cb2c9ea.webp)
 
-![Git 与 GitLab 版本管理第 141 页插图](assets/img-5c272788cc609562.png)
+![Git 与 GitLab 版本管理第 141 页插图](assets/img-5c272788cc609562.webp)
 
-![Git 与 GitLab 版本管理第 142 页插图](assets/img-daa75e8dee41fcc6.png)
+![Git 与 GitLab 版本管理第 142 页插图](assets/img-daa75e8dee41fcc6.webp)
 
 ### Gitlab 协议和格式
 
@@ -362,7 +360,7 @@ ssh 协议
 #格式
 git@host:group/project.git
 #如果使用非标准端口,使用下面格式
-ssh://[user@host:port]/group/project.git
+ssh://git@host:port/group/project.git
 #或者使用下面配置文件实现
 ~/.ssh/config
 Host gitlab.bowen.org
@@ -377,7 +375,7 @@ ssh://git@gitlab.bowen.org:30022/testgroup/testproject.git
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/15-gitlab-user-and-group-management.html' | relative_url }}">← Previous: GitLab User and Group Management</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/17-gitlab-data-backup-and-recovery.html' | relative_url }}">Next: GitLab Data Backup and Recovery →</a>
+  <a href="{{ '/subjects/Git-GitLab/15-gitlab-user-and-group-management.html' | relative_url }}">← 上一篇：GitLab 用户和组管理</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/17-gitlab-data-backup-and-recovery.html' | relative_url }}">下一篇：GitLab 数据备份与恢复 →</a>
 </nav>

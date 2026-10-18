@@ -6,209 +6,76 @@ pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
 # 14 扩容
-## 5 MINIO 扩容和缩容
 
-### 5.1 扩容
+当容量、对象数量或吞吐接近规划阈值时，应提前扩容，而不是等到空间耗尽。原资料以“使用率 70%”作为提醒，可以作为运维预警起点，但实际触发点还要考虑写入增长速度、可用容量计算、纠删码开销和扩容所需时间。
 
-通常当MinIO容量使用到70%时,建议考虑进行扩容。
+先区分两种不同动作：**扩大已有数据卷**改变文件系统容量，不增加 MinIO 的磁盘／节点故障域；**增加服务器池**为集群加入新的节点和独立磁盘，可扩展故障域及容量。二者不能互相替代，也不能把一个大 LVM 卷切成多个目录当作多盘扩容。
 
-扩容有两种方案
+## 扩大现有 LVM 数据卷
 
-通过LVM逻辑卷扩容,前提安装时事先使用LVM 通过一个相同规格的集群扩容
+只有原数据路径本来就位于可扩展 LV 上，并且所用 MinIO 版本及存储方案允许此操作时，才考虑扩卷。先备份、核对底层 PV／VG／LV 与文件系统类型，确认新增物理磁盘不会让多个逻辑“磁盘”共享同一故障域。原资料的“LV 不得超过 2 TB”不是通用硬限制；实际限制应从版本文档、硬件能力和性能测试获得。
 
-### 基于 LVM 扩容
+![扩容前容量状态](assets/img-69a2cbe6bc00d22c.webp)
 
-使用lvm逻辑卷进行扩容minio集群，通过在原有节点增加硬盘来进行扩容minio集群
-
-如果通过lvm逻辑卷扩容，部署原有集群时,minio数据目录需要使用lvm逻辑卷
-
-lvm逻辑卷单个的大小不要超过2T，文件系统过大会导致minio集群IO降低
-
-例如：部署原有MinIO集群时使用4块1T的磁盘使用逻辑卷的方式部署四个数据目录，之后扩容时再增加 4块1T新的磁盘把四个数据目录扩容到2T，相应的minio集群容量也会扩容1倍
-
-范例: 添加新磁盘扩容
-
-```text
-#添加新磁盘到pv
-#pvcreate /dev/sdc
-#把pv添加到卷组
-#vgextend minio /dev/sdc
-#扩容逻辑卷
-lvresize -r -l +100%FREE /dev/ubuntu-vg/minio
-```
-
-范例: 基于2.3.2.1 环境LVM扩容
-
-扩容前查看如下
-
-![MinIO 对象存储第 80 页插图](assets/img-69a2cbe6bc00d22c.png)
-
-在所有节点上执行下面操作扩容
+例如，确认 `/dev/ubuntu-vg/minio` 是目标 LV 且 VG 有空闲空间后，文件系统与 LV 可由 `lvextend -r` 一起增长：
 
 ```bash
-[root@minioX ~]#lvextend -r -L +10G /dev/ubuntu-vg/minio
+lsblk -f
+pvs
+vgs
+lvs
+findmnt /data
+sudo lvextend -r -L +10G /dev/ubuntu-vg/minio
+findmnt /data
+df -h /data
 ```
 
-扩容后,可查看到如下效果
+上述命令只是该 LV 的示例，不能套用到每个节点的所有磁盘。扩容后应检查 MinIO 报告的可用容量、对象读写与服务日志；操作前还需明确文件系统在线扩容能力与回滚办法。
 
-![MinIO 对象存储第 81 页插图](assets/img-613c5c315ba62373.png)
+![扩容后容量状态](assets/img-613c5c315ba62373.webp)
 
-### 通过增加相同规格的集群节点扩容
+## 增加服务器池
 
-扩容流程
+分布式集群可通过新增服务器池增加容量。已有池与新增池的节点数、驱动器数、纠删码集合和版本兼容性受当前 MinIO 版本约束，**不能仅凭“与原集群规格相同或整数倍”这一句话下结论**。先根据官方扩容文档设计新池，再在测试环境模拟启动与故障恢复。
 
-扩容需要准备一个跟原有minio服务器相同规格的集群，进行服务器初始化以及安装minio 需要所有minio服务器的配置文件进行修改，并重启所有节点的服务最后负载均衡服务中添加新节点服务器
-
-注意
-
-集群扩容时，需要新准备一个和原有集群相同或整数倍的节点和磁盘资源。
-
-比如原集群为8节点16个数据盘,则可以扩展为16节点32数据盘,或者24个节点48块磁盘
-
-扩容节点的数据盘大小配置要跟原有集群一致
-
-新加的所有节点必须是没旧MinIO数据新系统，如果有需要清除干净
-
-范例：扩展现有的分布式集群
+以第 07 章的四节点、每节点四盘拓扑为例，原池的端点为：
 
 ```text
-#例如启动MinIO原有集群，共1024块磁盘，命令行如下:
-export MINIO_ROOT_USER=admin
-export MINIO_ROOT_PASSWORD=12345678
-minio server http://host{1...32}/export{1...32}
-#MinIO支持通过命令，指定新的集群来扩展现有集群(纠删码模式)，扩展后磁盘为2048块，命令行如下:
-export MINIO_ROOT_USER=admin
-export MINIO_ROOT_PASSWORD=12345678
-#扩展增加一倍空间
-minio server http://host{1...32}/export{1...32} http://host{33...64
-}/export{1...32}
-#扩展增加两倍空间
-minio server http://host{1...32}/export{1...32} http://host{33...64
-}/export{1...32} http://host{65...96 }/export{1...32}
-#新的对象上传请求会自动分配到最少使用的集群节点上。通过以上扩展策略，您就可以按需扩展您的集群。重
-新配置后重启集群，会立即在集群中生效，并对现有集群无影响。如上命令中，我们可以把原来的集群看做一
-个区，新增集群看做另一个区，新对象按每个区域中的可用空间比例放置在区域中。在每个区域内，基于确定
-性哈希算法确定位置。
-#说明:您添加的每个区域必须具有与原始区域相同的磁盘数量（纠删码集)大小，以便维持相同的数据冗余
-SLA。例如，第一个区有8个磁盘，您可以将集群扩展为16个、32个或1024个磁盘的区域，您只需确保部署的
-SLA是原始区域的倍数即可。
+http://minio{1...4}:9000/data/minio{1...4}
 ```
 
-范例: 基于 2.3.2.1 基于LVM实现二进制部署MinIO 实现3节点的分布式高可用集群的环境扩容
+计划新增 `minio5` 至 `minio8` 四个节点，每个节点也有四块独立新盘。扩容后的配置**保留原池端点不变**，将新池作为第二组参数追加：
 
-```bash
-#在原有集群节点停上河北务
-[root@ubuntu2404 ~]#systemctl stop minio.service
-#在所有节点修改hosts文件
-[root@ubuntu2204 ~]#vim  /etc/hosts
-10.0.0.101 minio1.bowen.org
-10.0.0.102 minio2.bowen.org
-10.0.0.103 minio3.bowen.org
-#添加下面三行
-10.0.0.104 minio4.bowen.org
-10.0.0.105 minio5.bowen.org
-10.0.0.106 minio6.bowen.org
-#在新添加的节点上执行
-[root@minio4 ~]#lvcreate -n minio -l 100%free  ubuntu-vg
-#[root@minio4 ~]#lvcreate -n minio -L 10G ubuntu-vg
-[root@minio4 ~]#mkfs.ext4 /dev/ubuntu-vg/minio
-[root@minio4 ~]#mkdir /data/
-[root@minio4 ~]#echo /dev/ubuntu-vg/minio /data/ ext4 defaults 0 0 >> /etc/fstab
-[root@minio4 ~]#mount -a
-[root@minio4 ~]#mkdir -p /data/minio{1..4}
-#在新添加的节点上准备用户和权限
-[root@minio4 ~]#useradd -r -s /sbin/nologin minio
-[root@minio4 ~]#chown -R minio: /data/minio{1..4}
-#在新添加的节点上准备程序
-[root@minio4 ~]#scp minio1.bowen.org:/usr/local/bin/minio /usr/local/bin/minio
-#在所有节点上修改配置文件
-[root@minio1 ~]#vim /etc/default/minio
-MINIO_ROOT_USER=admin
-MINIO_ROOT_PASSWORD=12345678
-#只修改下面行
-MINIO_VOLUMES='http://minio{1...3}.bowen.org:9000/data/minio{1...4}
-http://minio{4...6}.bowen.org:9000/data/minio{1...4}'
-MINIO_OPTS='--console-address :9001'
-MINIO_PROMETHEUS_AUTH_TYPE="public"
-#复制配置到新的节点上
-[root@minio4 ~]#scp minio1.bowen.org:/etc/default/minio /etc/default/minio
-#复制service配置到新的节点上
-[root@minio4 ~]#scp minio1.bowen.org:/lib/systemd/system/minio.service
-/lib/systemd/system/minio.service
-[root@minio4 ~]#cat /lib/systemd/system/minio.service
-[Unit]
-Description=MinIO
-Documentation=https://docs.min.io
-Wants=network-noline.target
-After=network-noline.target
-[Service]
-WorkingDirectory=/usr/local
-User=minio
-Group=minio
-EnvironmentFile=-/etc/default/minio
-ExecStartPre=/bin/bash -c "if [ -z \"${MINIO_VOLUMES}\" ]; then echo \"Variable
-MINIO_VOLUMES not set in /etc/default/minio\"; exit 1; fi"
-ExecStart=/usr/local/bin/minio server $MINIO_OPTS $MINIO_VOLUMES
-Restart=always
-[Install]
-WantedBy=multi-user.target
-#在所有节点上重启服务
-[root@minio4 ~]#systemctl daemon-reload
-[root@minio4 ~]#systemctl enable --now minio.service
-[root@minio4 ~]#systemctl restart minio.service
-#查看日志
-[root@minio1 ~]#tail -f /var/log/syslog
-Oct 19 12:02:09 minio1 minio[75077]: Waiting for all MinIO sub-systems to be
-initialize...
-Oct 19 12:02:09 minio1 minio[75077]: Automatically configured API requests per
-node based on available memory on the system: 15
-Oct 19 12:02:09 minio1 minio[75077]: All MinIO sub-systems initialized
-successfully in 14.008095ms
-......
-#修改haproxy代理配置
-[root@ubuntu2204 ~]#vim /etc/haproxy/haproxy.cfg
-.....
-listen minio
-bind 10.0.0.100:9000
-mode http
-log global
-server 10.0.0.101 10.0.0.101:9000 check inter 3000 fall 2 rise 5
-server 10.0.0.102 10.0.0.102:9000 check inter 3000 fall 2 rise 5
-server 10.0.0.103 10.0.0.103:9000 check inter 3000 fall 2 rise 5
-server 10.0.0.104 10.0.0.104:9000 check inter 3000 fall 2 rise 5
-server 10.0.0.105 10.0.0.105:9000 check inter 3000 fall 2 rise 5
-server 10.0.0.106 10.0.0.106:9000 check inter 3000 fall 2 rise 5
-listen minio_console
-bind 10.0.0.100:9001
-mode http
-log global
-server 10.0.0.101 10.0.0.101:9001 check inter 3000 fall 2 rise 5
-server 10.0.0.102 10.0.0.102:9001 check inter 3000 fall 2 rise 5
-server 10.0.0.103 10.0.0.103:9001 check inter 3000 fall 2 rise 5
-server 10.0.0.104 10.0.0.104:9001 check inter 3000 fall 2 rise 5
-server 10.0.0.105 10.0.0.105:9001 check inter 3000 fall 2 rise 5
-server 10.0.0.106 10.0.0.106:9001 check inter 3000 fall 2 rise 5
-[root@ubuntu2204 ~]#systemctl reload haproxy
-#登录Haproxy,查看状态
+```ini
+MINIO_VOLUMES="http://minio{1...4}:9000/data/minio{1...4} http://minio{5...8}:9000/data/minio{1...4}"
 ```
 
-![MinIO 对象存储第 84 页插图](assets/img-f3b868c743284081.png)
+这里展示的是配置形态，不是让读者在生产环境直接替换文件并一次性重启全部节点。扩容实施应按版本文档确定停机或滚动步骤，避免在仍有故障节点时操作。原资料的演示命令中 `{33...64
+}` 被硬换行打断，不能作为 shell 命令使用。
 
-```text
-#登录控制台,可看到扩容成功
-```
+建议按下面顺序准备和验证：
 
-![MinIO 对象存储第 84 页插图](assets/img-41a450bc492fc56e.png)
+1. 扩容前记录 `mc admin info`、已有池的端点列表、版本、容量和健康状态；确认备份可恢复，现有集群没有未处理的离线盘。
+2. 为新增节点准备独立磁盘、挂载、网络、时间同步、主机名解析、相同服务版本与根凭据；新盘应为空，不能混入旧 MinIO 元数据。
+3. 在所有相关节点保持一致的完整池列表和启动配置，按当前版本的扩容操作手册执行启停；不要随意改变原池端点的拼写、顺序或路径。
+4. 新池上线后检查各节点与驱动器、健康端点、跨池对象读写，再将新节点加入负载均衡后端。
+5. 观察容量分布和性能。新增池不会自动把所有旧对象平均搬过去；若版本支持且业务需要，可评估 `mc admin rebalance`，先阅读该命令的版本说明、成本与中断风险。
+
+![扩容后负载均衡状态示意](assets/img-f3b868c743284081.webp)
+
+![扩容后 Console 状态示意](assets/img-41a450bc492fc56e.webp)
+
+负载均衡器增加新节点后，还需验证 API 与 Console 的代理配置。单个 HAProxy 实例本身仍是入口单点。**扩容成功**的判断应包括新池全部预期驱动器在线、可用容量变化符合预期、对象读写正常、监控与备份覆盖新节点，而不仅是 Console 出现了新主机名。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/13-recovering-a-node-after-os-reinstallation.html' | relative_url }}">← Previous: Recovering a Node After OS Reinstallation</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/15-scaling-in.html' | relative_url }}">Next: Scaling In →</a>
+  <a href="{{ '/subjects/MinIO/13-recovering-a-node-after-os-reinstallation.html' | relative_url }}">← 上一篇：系统重装后的节点恢复</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/15-scaling-in.html' | relative_url }}">下一篇：缩容 →</a>
 </nav>

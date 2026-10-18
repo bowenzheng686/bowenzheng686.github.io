@@ -10,8 +10,9 @@ syntax_highlight: true
 
 {% raw %}
 
-# 17 GitLab 的数据备份和恢复
-### 3.6 GitLab 的数据备份和恢复
+# 17 GitLab 数据备份与恢复
+
+先区分“备份是否成功生成”和“是否能够恢复”：前者只检查输出与文件，后者还需要匹配版本、配置密钥、外部依赖与实际项目读写验证。下列旧版本终端记录用于理解步骤，恢复命令会覆盖目标实例数据，不能直接对仍在服务的生产实例试验。
 
 数据备份和恢复官方帮助：
 
@@ -73,148 +74,42 @@ gitlab-rake gitlab:backup:create
 #默认在/etc/gitlab/gitlab.rb文件中指定备份路径，如果目录空间不足，可以修改新的目录
 #注意：修改完配置需要执行gitlab-ctl reconfigure
 # gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
-#备份的文件权限，所有者和所属组为git
-# gitlab_rails['backup_archive_permissions'] = 0644
-#默认备份过期时长为7天，单位为s, 之后会被自动删除
+#备份文件含仓库和用户数据，应限制访问；不要示范设为对所有用户可读的 0644。
+#备份保留时长应按业务 RPO/RTO 和存储容量确定，不应假定默认为 7 天。
 # gitlab_rails['backup_keep_time'] = 604800
 ```
 
-范例：新版备份
+### 执行备份并核对结果
+
+软件包安装的 GitLab 可使用 `gitlab-backup create` 创建应用数据备份；较旧版本曾使用 `gitlab-rake gitlab:backup:create`。命令输出中的数据库、仓库、上传文件、CI 制品等项目应分别显示完成或明确说明跳过原因。
 
 ```bash
-[root@ubuntu1804 ~]#gitlab-backup create
-2021-07-26 11:02:32 +0800 -- Dumping database ...
-Dumping PostgreSQL database gitlabhq_production ... [DONE]
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping repositories ...
-* gitlab-instance-d0dfe28d/Monitoring
-(@hashed/6b/86/6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b)
-...
-* gitlab-instance-d0dfe28d/Monitoring
-(@hashed/6b/86/6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b)
-... [EMPTY] [SKIPPED]
-* gitlab-instance-d0dfe28d/Monitoring.wiki
-(@hashed/6b/86/6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b.
-wiki) ...
-* gitlab-instance-d0dfe28d/Monitoring.wiki
-(@hashed/6b/86/6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b.
-wiki) ... [EMPTY] [SKIPPED]
-* gitlab-instance-d0dfe28d/Monitoring.design
-(@hashed/6b/86/6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b.
-design) ...
-* gitlab-instance-d0dfe28d/Monitoring.design
-(@hashed/6b/86/6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b.
-design) ... [EMPTY] [SKIPPED]
-* testgroup/testproject
-(@hashed/d4/73/d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35)
-...
-* testgroup/testproject
-(@hashed/d4/73/d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35)
-... [DONE]
-* testgroup/testproject.wiki
-(@hashed/d4/73/d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35.
-wiki) ...
-* testgroup/testproject.wiki
-(@hashed/d4/73/d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35.
-wiki) ... [EMPTY] [SKIPPED]
-* testgroup/testproject.design
-(@hashed/d4/73/d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35.
-design) ...
-* testgroup/testproject.design
-(@hashed/d4/73/d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35.
-design) ... [EMPTY] [SKIPPED]
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping uploads ...
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping builds ...
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping artifacts ...
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping pages ...
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping lfs objects ...
-2021-07-26 11:02:35 +0800 -- done
-2021-07-26 11:02:35 +0800 -- Dumping container registry images ...
-2021-07-26 11:02:35 +0800 -- [DISABLED]
-Creating backup archive: 1627268555_2021_07_26_14.1.0_gitlab_backup.tar ... done
-Uploading backup archive to remote storage  ... skipped
-Deleting tmp directories ... done
-done
-done
-done
-done
-done
-done
-done
-Deleting old backups ... skipping
-Warning: Your gitlab.rb and gitlab-secrets.json files contain sensitive data
-and are not included in this backup. You will need these files to restore a
-backup.
-Please back them up manually.
-Backup task is done.
-#默认备份保存在下面目录
-[root@ubuntu1804 ~]#ll /var/opt/gitlab/backups/
--rw-------  1 git  git  307200 Jul 26 11:02
-1627268555_2021_07_26_14.1.0_gitlab_backup.tar
+gitlab-backup create
+ls -lh /var/opt/gitlab/backups/
+gitlab-ctl backup-etc
+ls -lh /etc/gitlab/config_backup/
 ```
 
-范例： 旧版备份数据
+**应用备份与配置备份必须同时保存。** 应用备份通常不包含 `/etc/gitlab/gitlab.rb` 和 `/etc/gitlab/gitlab-secrets.json`；后者丢失可能使加密数据不可解密。备份文件应复制到受控的独立存储，限制访问，并定期在隔离环境做恢复演练。容器、对象存储和外部数据库部署的备份范围应按实际架构另行核对。
 
-```bash
-#在任意目录即可备份当前gitlab数据
-[root@ubuntu1804 ~]#gitlab-rake gitlab:backup:create
-2020-03-07 14:34:56 +0800 -- Dumping database ...
-Dumping PostgreSQL database gitlabhq_production ... [DONE]
-2020-03-07 14:34:57 +0800 -- done
-2020-03-07 14:34:57 +0800 -- Dumping repositories ...
-* testgroup/testproject ... [DONE]
-[SKIPPED] Wiki
-2020-03-07 14:34:58 +0800 -- done
-2020-03-07 14:34:58 +0800 -- Dumping uploads ...
-2020-03-07 14:34:58 +0800 -- done
-2020-03-07 14:34:58 +0800 -- Dumping builds ...
-2020-03-07 14:34:58 +0800 -- done
-2020-03-07 14:34:58 +0800 -- Dumping artifacts ...
-2020-03-07 14:34:58 +0800 -- done
-2020-03-07 14:34:58 +0800 -- Dumping pages ...
-2020-03-07 14:34:58 +0800 -- done
-2020-03-07 14:34:58 +0800 -- Dumping lfs objects ...
-2020-03-07 14:34:58 +0800 -- done
-2020-03-07 14:34:58 +0800 -- Dumping container registry images ...
-2020-03-07 14:34:58 +0800 -- [DISABLED]
-Creating backup archive: 1583562898_2020_03_07_11.11.8_gitlab_backup.tar ...
-done
-Uploading backup archive to remote storage  ... skipped
-Deleting tmp directories ... done
-done
-done
-done
-done
-done
-done
-done
-Deleting old backups ... skipping
-[root@ubuntu1804 ~]#ll /var/opt/gitlab/backups/
--rw-------  1 git git 102400 Mar  7 14:34
-1583562898_2020_03_07_11.11.8_gitlab_backup.tar
-```
+### 恢复演练场景
 
-### 模拟删除项目
+截图中的“删除项目”仅用于隔离实验实例验证恢复能力。恢复前要记录目标实例当前数据，并确认备份包含目标项目；真实业务环境应使用独立恢复实例，避免为了测试而删除项目。
 
-![Git 与 GitLab 版本管理第 146 页插图](assets/img-035175ab2e0396fd.png)
+![Git 与 GitLab 版本管理第 146 页插图](assets/img-035175ab2e0396fd.webp)
 
-![Git 与 GitLab 版本管理第 147 页插图](assets/img-cd43800bf0ff7ebb.png)
+![Git 与 GitLab 版本管理第 147 页插图](assets/img-cd43800bf0ff7ebb.webp)
 
-![Git 与 GitLab 版本管理第 147 页插图](assets/img-1a7bd363bdcd7e79.png)
+![Git 与 GitLab 版本管理第 147 页插图](assets/img-1a7bd363bdcd7e79.webp)
 
 ### 执行恢复
 
 恢复的前提条件
 
 ```text
-备份和恢复使用的版本要一致
-还原相关配置文件后，执行gitlab-ctl reconfigure
-确保gitlab正在运行状态
+核对源与目标 GitLab 版本、类型及依赖是否满足目标版本的恢复要求；通常要求相同版本。
+备份 gitlab.rb 与 gitlab-secrets.json，核对存储权限和外部对象存储范围。
+先在隔离实例演练，确认备份文件可读、空间充足且恢复会覆盖的目标数据已另行保存。
 ```
 
 新版恢复方法
@@ -224,14 +119,14 @@ Deleting old backups ... skipping
 [root@ubuntu1804 ~]#gitlab-ctl stop puma
 [root@ubuntu1804 ~]#gitlab-ctl stop sidekiq
 #恢复时指定备份文件的时间部分，不需要指定文件的全名
-[root@ubuntu1804 ~]#gitlab-backup restore BACKUP=备份文件名的时间部分_Gitlab版本
+[root@ubuntu1804 ~]#gitlab-backup restore BACKUP=<去掉 _gitlab_backup.tar 后缀的备份 ID>
 #示例
-[root@ubuntu1804 ~]#gitlab-backup restore BACKUP=1583562898_2020_03_07_11.11.8
+[root@ubuntu1804 ~]#gitlab-backup restore BACKUP=1627268555_2021_07_26_14.1.0
 #Next, restore /etc/gitlab/gitlab-secrets.json if necessary, as previously
 mentioned.Reconfigure, restart and check GitLab:
 [root@ubuntu1804 ~]#gitlab-ctl reconfigure
 [root@ubuntu1804 ~]#gitlab-ctl restart
-#后续检查可选做
+# 后续检查不能只看页面是否打开；至少运行内置检查并验证用户、仓库读写和关键附件。
 [root@ubuntu1804 ~]#gitlab-rake gitlab:check SANITIZE=true
 #In GitLab 13.1 and later, check database values can be decrypted especially if
 /etc/gitlab/gitlab-secrets.json was restored, or if a different server is the
@@ -298,15 +193,15 @@ ok: run: sidekiq: (pid 2041) 0s
 [root@ubuntu1804 ~]#gitlab-ctl  tail
 ```
 
-![Git 与 GitLab 版本管理第 149 页插图](assets/img-a1ef3d1652d90ae4.png)
+![Git 与 GitLab 版本管理第 149 页插图](assets/img-a1ef3d1652d90ae4.webp)
 
 范例：旧版恢复过程
 
-![Git 与 GitLab 版本管理第 149 页插图](assets/img-710dd341e25c70df.png)
+![Git 与 GitLab 版本管理第 149 页插图](assets/img-710dd341e25c70df.webp)
 
 确认恢复数据：
 
-![Git 与 GitLab 版本管理第 150 页插图](assets/img-f515130a78b121da.png)
+![Git 与 GitLab 版本管理第 150 页插图](assets/img-f515130a78b121da.webp)
 
 恢复后再将之前停止的两个服务启动
 
@@ -321,16 +216,16 @@ ok: run: unicorn: (pid 16882) 1s
 
 ### 确保还原完成
 
-恢复后，项目及用户信息都已还原
+恢复后检查项目与用户信息，并实际克隆测试仓库、核对附件或 CI 制品；再确认后台作业和邮件、SSO 等外部集成正常。只有页面可访问并不能证明恢复完整。
 
 注意：可能需要等一段时间才能打开浏览器进行访问
 
-![Git 与 GitLab 版本管理第 150 页插图](assets/img-f2871a71af2ce0ca.png)
+![Git 与 GitLab 版本管理第 150 页插图](assets/img-f2871a71af2ce0ca.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/16-gitlab-project-management.html' | relative_url }}">← Previous: GitLab Project Management</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/18-gitlab-localization.html' | relative_url }}">Next: GitLab Localization →</a>
+  <a href="{{ '/subjects/Git-GitLab/16-gitlab-project-management.html' | relative_url }}">← 上一篇：GitLab 项目管理</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/18-gitlab-localization.html' | relative_url }}">下一篇：GitLab 汉化 →</a>
 </nav>

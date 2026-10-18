@@ -11,38 +11,31 @@ syntax_highlight: true
 {% raw %}
 
 # 05 JumpServer 组成
-### 1.5 JumpServer 组成
 
-![JumpServer 堡垒机第 8 页插图](assets/img-44fb8cf28dc7691e.png)
+理解组件时，先看访问路径：用户在前端登录，经核心服务完成身份与授权检查，再由对应协议组件连接资产；数据库和缓存保存平台状态，录像则进入配置的存储。下图展示的是某一版本的组件布局，名称和拆分方式可能随版本变化。
 
-Core 组件是 JumpServer 的核心组件，其他组件依赖此组件启动。 Koko 是服务于类 Unix 资产平台的组件，通过 SSH、Telnet 协议提供字符型连接。 Lion 是服务于 Windows 资产平台的组件，用于 Web 端访问 Windows 资产。 XRDP 是服务于 RDP 协议组件，该组件主要功能是通过 JumpServer Client 方式访问 windows 2000、XP 等系统的资产。 Razor 是服务于 RDP 协议组件，JumpServer Client 默认使用 Razor 组件访问 Windows 资产。 Magnus 是服务于数据库的组件，用于通过客户端代理访问数据库资产。 Kael 是服务于 GPT 资产平台的组件，用于纳管 ChatGPT 资产。 Chen 是服务于数据库的组件，用于通过 Web GUI 方式访问数据库资产。 Celery 是处理异步任务的组件，用于执行 JumpServer 相关的自动化任务。 Video 是专门处理 Razor 组件和 Lion 组件产生录像的格式转换工作，将产生的会话录像转化为 MP4 格式。
+![JumpServer 堡垒机第 8 页插图](assets/img-44fb8cf28dc7691e.webp)
 
-![JumpServer 堡垒机第 8 页插图](assets/img-3fdd7c0303f87e93.png)
+| 层次 | 组件示例 | 在访问链路中的作用 |
+| --- | --- | --- |
+| 展示层 | Lina、Luna | 分别承担管理界面和 Web 终端等前端页面 |
+| 核心层 | Core | 提供用户、资产、授权和会话等管理接口 |
+| 连接层 | KoKo、Lion、Razor、Chen、Magnus 等 | 按 SSH、RDP 或数据库等协议代理与记录连接；具体可用组件取决于版本 |
+| 后台处理 | Celery、Video 等 | 处理异步任务与部分会话录像转换工作 |
+| 数据与存储 | MySQL、Redis、录像存储 | 保存平台数据、任务状态与审计内容，需分别设计备份与容量 |
 
-![JumpServer 堡垒机第 9 页插图](assets/img-f50d82d1830dfb20.jpeg)
+图中还列有 Kael、Tinker、Panda 等连接组件，对应特定资产类型或应用发布场景。是否需要部署它们，应从实际资产类型出发，而不是照图把所有组件都装上。特别是图片里出现的旧系统名称只反映原资料年代，不代表建议继续使用已停止维护的系统。
 
-Lina
+![JumpServer 堡垒机第 8 页插图](assets/img-3fdd7c0303f87e93.webp)
 
-前端 UI 项目，实现web页面展示，主要使用 Vue，Element UI 完成
+![JumpServer 堡垒机第 9 页插图](assets/img-f50d82d1830dfb20.webp)
 
-Core 现指 Jumpserver 管理后台，是核心组件（Core）, 使用 Django Class Based View 风格开发，支持 Restful API。
-
-Coco/Koko
-
-实现了 SSH Server 和 Web Terminal Server 的组件，提供 SSH 和 WebSocket 接口, 使用 Paramiko 和 Flask 开发。
-
-Koko 是 Go 版本的 coco，重构了 coco 的 SSH/SFTP 服务和 Web Terminal 服务。
-
-Luna 现在是 Web Terminal 前端，计划前端页面都由该项目提供，Jumpserver 只提供 API，不再负责后台渲染html等。主要使用Angular CLI 完成
-
-Lion
-
-Lion 使用了 Apache 软件基金会的开源项目 Guacamole，JumpServer 使用 Golang 和 Vue 重构了 Guacamole 实现 RDP/VNC 协议跳板机功能。
+另一张图包含较早期的 Coco/Koko、Luna、Lina 与 Lion 命名。Coco 到 KoKo 的演进说明连接组件可能随版本替换；升级或排障时，应先确认**当前部署实际运行了哪些服务**，再对照该版本的组件文档。若 Web 页面能打开但 SSH 连接失败，重点检查 KoKo 及其到目标资产的网络；若登录、资产列表均异常，则先检查 Core、数据库和缓存。这样的分层排查比记住每个组件采用什么编程语言更有用。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/JumpServer/04-jumpserver-features-and-benefits.html' | relative_url }}">← Previous: JumpServer Features and Benefits</a>
-  <a href="{{ '/subjects/JumpServer/' | relative_url }}">Back to JumpServer Bastion Host Index</a>
-  <a href="{{ '/subjects/JumpServer/06-installation-requirements.html' | relative_url }}">Next: Installation Requirements →</a>
+  <a href="{{ '/subjects/JumpServer/04-jumpserver-features-and-benefits.html' | relative_url }}">← 上一篇：优势与功能</a>
+  <a href="{{ '/subjects/JumpServer/' | relative_url }}">返回 JumpServer 专题目录</a>
+  <a href="{{ '/subjects/JumpServer/06-installation-requirements.html' | relative_url }}">下一篇：安装要求 →</a>
 </nav>

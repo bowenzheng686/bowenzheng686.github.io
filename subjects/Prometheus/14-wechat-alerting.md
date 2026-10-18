@@ -10,467 +10,160 @@ syntax_highlight: true
 
 {% raw %}
 
-# 14 微信告警
+# 14 企业微信告警
 
-## 5.7 微信告警
+本章沿用前两章的 `InstanceDown` 和高 QPS 告警，新增企业微信通知渠道。目标是：严重的服务失联通知企业微信；一般的性能告警继续发邮件。企业微信应用的接口凭据与个人微信账号不是一回事，Alertmanager 使用的是企业微信应用接口。
 
-### 5.7.1 微信告警说明
+## 5.7 企业微信告警的准备
 
-微信是我们日常使用的通信工具，而且通信的效率非常的高，下面介绍微信的告警方式。
+### 5.7.1 需要哪些信息
 
-就目前来说，使用微信告警的方式主要有以下三种：
+在 [企业微信管理后台](https://work.weixin.qq.com/) 创建企业、部门或成员，再创建有相应可见范围的自建应用。实施前记录以下四项，并核对应用的可见范围确实包含目标成员或部门：
 
-用个人号发送告警 - 一般需要借助于专属的开发工具来实现
-用公众号发送告警 -  借助于软件本身的机制来实现。  
-用企业号发送告警 -  借助于软件本身的机制来实现。此为推荐方式  
+| 字段 | 用途 |
+| --- | --- |
+| 企业 ID（CorpID） | 标识企业 |
+| 应用 Secret | 获取访问令牌，属于敏感凭据 |
+| 应用 AgentId | 标识发送消息的应用 |
+| 成员账号或部门 ID | 指定接收人或接收部门 |
 
-对于公众号发送告警。但是很多个人公众号并没有开启了相关功能，无法测试很多功能，所以我们在测试微信公众号之前，可以采用官方的测试接口来实现告警功能。
+原资料中的企业 ID、AgentId、Secret 和访问令牌只对应旧截图中的示例环境，不能用于新部署；其中 Secret 与令牌不应在文档或命令输出中公开。请使用自己的配置值，并妥善保存，必要时在企业微信后台轮换。后台页面随版本变化，但“创建应用 → 确认可见范围 → 记录四项参数”的逻辑不变。
 
-微信公众号测试的接口地址:
-https://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=sandbox/login
+![企业微信后台入口](assets/img-2adb974da4747095.webp)
 
-企业微信目前更为便利和普遍,如下采用企业微信实现告警
+![创建应用并指定可见范围](assets/img-96fa11f378cf1d01.webp)
 
-企业微信接口
-```text
-#获取认证token
-https://qyapi.weixin.qq.com/cgi-bin/gettoken
-#发送告警信息
-https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="企业微信token"
-#帮助手册：
-获取认证：https://developer.work.weixin.qq.com/document/10013
-发送消息：https://developer.work.weixin.qq.com/document/path/90236
-```
+![成员与部门设置](assets/img-12eda2398f14fdbd.webp)
 
-实现步骤
+### 5.7.2 在接入 Alertmanager 前测试接口
 
-企业微信后台配置
+直接测试企业微信 API 可以先区分“应用凭据或可见范围错误”与“告警路由错误”。以下命令依赖 `jq`，只演示参数关系；运行时从受保护的环境或密钥管理系统注入变量，不要把真实 Secret 写入脚本仓库。
 
-创建企业微信、自定义告警部门
-创建企业应用认证信息  
-Alertmanager配置告警通知人和告警模板  
-Prometheus配置告警规则  
-
-### 5.7.2 微信告警案例
-
-#### 5.7.2.1 企业微信配置
-
-5.7.2.1.1 注册企业微信
-
-微信告警首先得注册一个企业微信，然后才能实现微信告警。
-
-浏览器访问下面链接,注册企业微信
-https://work.weixin.qq.com/
-
-使用个人微信扫码登录后，定制自己的企业信息
-
-注意：注册一个企业，没有任何限制，无需认证
-
-![原 PDF 第 182 页插图](assets/img-2adb974da4747095.png)
-
-![原 PDF 第 183 页插图](assets/img-1c92a9633a2535d3.png)
-
-![原 PDF 第 184 页插图](assets/img-932e37134cb993b3.png)
-
-用浏览器进入管理后台
-
-![原 PDF 第 184 页插图](assets/img-12c041a01e7c31b7.png)
-
-或者安装企业微信的PC端登录
-
-![原 PDF 第 185 页插图](assets/img-676b49e382870882.png)
-```text
-查看到企业ID的值为 ww644a0d95807e476b
-```
-
-![原 PDF 第 185 页插图](assets/img-d865c02932d96206.png)
-
-5.7.2.1.2 创建部门和人员
-
-5.7.2.1.2.1 创建部门
-
-![原 PDF 第 186 页插图](assets/img-e391701f36db7500.png)
-```text
-注意: 创建的部门的部门ID为2
-```
-
-![原 PDF 第 186 页插图](assets/img-12eda2398f14fdbd.png)
-
-5.7.2.1.2.2 部门加入人员
-
-方法1: 直接微信邀请,让相关人员自行扫码加入
-
-![原 PDF 第 187 页插图](assets/img-c898a28e033a782e.png)
-
-方法2 手动添加人员
-
-![原 PDF 第 187 页插图](assets/img-03e05ed9dea58c5a.png)
-
-![原 PDF 第 188 页插图](assets/img-fb47c04e06098162.png)
-
-5.7.2.1.3 创建微信应用
-
-![原 PDF 第 188 页插图](assets/img-ffb9ed12372d870b.png)
-
-上传Logo和指定应用名称,并选择范围
-
-![原 PDF 第 189 页插图](assets/img-96fa11f378cf1d01.png)
-
-注意记下以下信息：
-应用的 AgentId值1000004
-应用的 Secret的值qYgLlipdHtZidsd8qAZaTKKkGkzIyWxuQSeQOk9Si0M
-
-![原 PDF 第 189 页插图](assets/img-ffe62d9cfa53bdb7.png)
-
-5.7.2.1.4 测试发送微信消息
-
-可以给加入的员工发送微信消息
-
-![原 PDF 第 190 页插图](assets/img-b179f217e6585b1d.png)
-
-![原 PDF 第 190 页插图](assets/img-5ffb0a01e10cb161.png)
-
-![原 PDF 第 190 页插图](assets/img-ada55959690465c4.png)
-
-员工个人微信可以收到以下信息
-
-![原 PDF 第 191 页插图](assets/img-675bb8b7fad96b4c.png)
-
-#### 5.7.2.2 微信告警消息命令
-
-官方微信教程
-https://developer.work.weixin.qq.com/document/path/90487
-https://work.weixin.qq.com/api/doc/90000/90003/90487
-
-![原 PDF 第 191 页插图](assets/img-fc2aa31cffa22f78.png)
-
-官方微信API参考文档
-https://developer.work.weixin.qq.com/document/path/91039
-https://work.weixin.qq.com/api/doc/90000/90135/91039
-
-![原 PDF 第 191 页插图](assets/img-439db912f02aa924.png)
-
-总结相关信息如下
-查看到企业ID的值: ww644a0d95807e476b
-部门ID的值: 2
-应用的 AgentId的值: 1000004
-应用的 Secret的值:qYgLlipdHtZidsd8qAZaTKKkGkzIyWxuQSeQOk9Si0M
-
-5.7.2.2.1 获取 Token
 ```bash
-#获取通信token格式：
-curl -H "Content-Type: application/json" -d '{"corpid":"企业id", "corpsecret": "应用
-secret"}' https://qyapi.weixin.qq.com/cgi-bin/gettoken
+export WECHAT_CORP_ID='CORP_ID'
+export WECHAT_SECRET='APP_SECRET'
+export WECHAT_AGENT_ID='AGENT_ID'
+export WECHAT_PARTY_ID='PARTY_ID'
+
+TOKEN=$(curl -fsSG \
+  --data-urlencode "corpid=$WECHAT_CORP_ID" \
+  --data-urlencode "corpsecret=$WECHAT_SECRET" \
+  'https://qyapi.weixin.qq.com/cgi-bin/gettoken' | jq -r '.access_token')
+test -n "$TOKEN" && test "$TOKEN" != null
 ```
 
-范例: 获取 Token
+接口响应中 `errcode: 0` 表示取得令牌；访问令牌有有效期，不能作为长期静态凭据。再发送一条测试文本：
+
 ```bash
-#示例：
-[root@prometheus ~]#curl -H "Content-Type: application/json" -d
-'{"corpid":"ww644a0d95807e476b", "corpsecret":
-"qYgLlipdHtZidsd8qAZaTKKkGkzIyWxuQSeQOk9Si0M"}' https://qyapi.weixin.qq.com/cgi-bin/gettoken
-#返回token
-{"errcode":0,"errmsg":"ok","access_token":"NMaWPA8xfYmcN5v8so7TdqsBwym78Vs53X5OsOy69-
-Q6Kv3GGXGU_V-8keGaArYkurIXrKMJGrdFbhYy-QqmKsr5x61-wv6yXZy0kiooXE-
-QfbDoNRumBSjiJg0AqkEOeBqaT1dc8_DryE-RGVD39J4Iu61TU3HWsyZVkGuRTU6ejM-
-qauflSOuy5cbDSONNXi9zUPwUmlg4XkAobrLgOw","expires_in":7200}
+jq -n --arg party "$WECHAT_PARTY_ID" --argjson agent "$WECHAT_AGENT_ID" \
+  '{toparty:$party,msgtype:"text",agentid:$agent,text:{content:"Prometheus 告警通道测试"}}' |
+curl -fsS -H 'Content-Type: application/json' \
+  --data-binary @- \
+  "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$TOKEN"
 ```
 
-5.7.2.2.2 命令发送测试信息
-```bash
-#发送信息信息要求Json格式如下：
-    Data = {
-         "toparty": 部门id,
-         "msgtype": "text",
-         "agentid": Agentid,
-         "text": {"content": "消息内容主题"},
-         "safe": "0"
-    }
-#格式：
-curl -H "Content-Type: application/json" -d '{"toparty": "部门id",
-"msgtype":"text","agentid": "agentid", "text":{"content":"告警内容"}, "safe": "安全级
-别"}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="企业微信token"
-```
+响应 `errcode: 0` 只说明接口接受了请求；仍需在目标成员的企业微信中确认实际收到消息。若失败，优先核对应用 Secret、部门 ID、应用可见范围与接口返回的错误码。官方文档可查阅 [获取访问令牌](https://developer.work.weixin.qq.com/document/10013) 与 [发送应用消息](https://developer.work.weixin.qq.com/document/path/90236)。
 
-范例:
-```bash
-#利用上面的token发送信息,注意:token有时间期限
-[root@prometheus ~]#curl -H "Content-Type: application/json" -d '{"toparty": "2",
-"msgtype":"text","agentid": "1000004", "text":{"content":"PromAlert - prometheus 告警
-测试"}, "safe": "0"}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="TOKEN"
-#返回成功提示
-{"errcode":0,"errmsg":"ok","msgid":"MESSAGE_ID"}
-```
+![手工发送测试消息](assets/img-832f98f89553aca9.webp)
 
-手机微信收到下面信息
+## 5.8 在 Alertmanager 中增加企业微信接收者
 
-![原 PDF 第 193 页插图](assets/img-832f98f89553aca9.png)
+在已有的 Alertmanager 配置中保留邮件接收者，增加企业微信全局参数和接收者。以下片段展示相关字段，需与原配置**合并**，不能再复制出另一套同名顶层 `route` 或 `receivers`。部署时将占位值放到受保护的本地配置，不要把真实 Secret 提交到仓库。
 
-5.7.2.2.3 发送微信告警脚本
-
-发送微信可以使用各种语言,下面使用shell脚本实现
-```bash
-cat wechat.sh
-#!/bin/bash
-#
-#FileName:          wechat.sh
-#Description:       Send message from wechat for prometheus monitor
-CorpID="CORPID"
-Secret="SECRET"
-agentid=1000004  #改为 AgentId 在创建的应用那里看
-PartyID=2  #通讯录中的部门ID
-GURL="https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=$CorpID&corpsecret=$Secret"
-Token=$(curl -s -G $GURL |awk -F\": '{print $4}'|awk -F\" '{print $2}')
-#echo $Token
-PURL="https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$Token"
-function body(){
-        local userid=$1  #发送的用户位于$1的字符串
-        local partyid=$PartyID
-        local msg=$(echo "$@" | cut -d" " -f2-)
-        printf '{\n'
-        printf '\t"touser": "'"$userid"\"",\n"
-        printf '\t"toparty": "'"$PartyID"\"",\n"
-        printf '\t"msgtype": "text",\n'
-        printf '\t"agentid": "'"$agentid"\"",\n"
-        printf '\t"text": {\n'
-        printf '\t\t"content": "'"$msg"\""\n"
-        printf '\t},\n'
-        printf '\t"safe":"0"\n'
-        printf '}\n'
-}
-curl --data-ascii "$(body $*)" $PURL
-#添加执行权限
-chmod +x wechat.sh
-#发送测试微信，其中bowen为企业微信的帐号，并且不区分大小写
-./wechat.sh bowen 微信告警测试标题 微信告警测试信息内容
-{"errcode":0,"errmsg":"ok","msgid":"TGvhsTpDOJtMR4-
-VhJqudSvxsnPPPXmSuXbb2iXiXw9Hk43lbS1TQ19-MDvEMZmCE02GJL9zRlG49u-hQHaXJg"}
-```
-
-在手机企业微信APP中可以收到下面提示
-
-![原 PDF 第 194 页插图](assets/img-25e1b35a3b7f76f6.png)
-
-#### 5.7.2.3 Alertmanager 配置
-
-5.7.2.3.1 定制告警的配置信息
 ```yaml
-cat /usr/local/alertmanager/conf/alertmanager.yml
-# 全局配置
 global:
-  resolve_timeout: 5m
-  #邮件信息
-  smtp_smarthost: 'smtp.qq.com:25'
-  smtp_from: '29308620@qq.com'
-  smtp_auth_username: '29308620@qq.com'
-  smtp_auth_password: 'dgezyimkdswwbhea'
-  smtp_hello: 'qq.com'
-  smtp_require_tls: false
-  #必须项
-  wechat_api_corp_id: 'ww644a0d95807e476b'
-  #此处的微信信息可省略,下面wechat_configs 也提供了相关信息
   wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
-  wechat_api_secret: 'qYgLlipdHtZidsd8qAZaTKKkGkzIyWxuQSeQOk9Si0M'
-# 模板配置
-templates:
-  - '../tmpl/*.tmpl'
-# 路由配置,分级告警,critical级才发微信告警,一般只发邮件告警
+  wechat_api_corp_id: 'CORP_ID'
+  wechat_api_secret: 'APP_SECRET'
+
 route:
-  group_by: ['instance', 'cluster']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 10s
-  receiver: 'email'
+  receiver: email
+  group_by: ['alertname', 'instance']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
   routes:
-  - receiver: 'wechat'  #新版写法
-    matchers:
-    - severity = "critical"
-  #- match:                   #旧版写法
-  #    severity: critical
-  #  receiver: 'wechat'
-# 收信人员
+    - receiver: wechat
+      matchers:
+        - 'severity="critical"'
+
 receivers:
-- name: 'email'
-  email_configs:
-  - to: 'root@bowen.com'
-    send_resolved: true
-    html: '{{ template "test.html" . }}'
-    headers: { Subject: "[WARN] 报警邮件"}
-#在下面添加微信配置文件
-- name: 'wechat'
-  wechat_configs:
-  - to_party: '2'
-    #to_user: '@all' #支持给企业内所有人发送
-    agent_id: '1000004'
-    #api_secret: 'qYgLlipdHtZidsd8qAZaTKKkGkzIyWxuQSeQOk9Si0M'
-    send_resolved: true
-    message: '{{ template "wechat.default.message" . }}'
-#上面的配置，关键的信息必须准确，否则无法实现告警
-group_wait       #初次发送告警延时
-group_interval   #距离第一次发送告警，等待多久再次发送告警
-repeat_interval  #告警重发时间
-#重启alertmanager服务
-systemctl restart alertmanager
-systemctl status alertmanager
+  - name: email
+    email_configs:
+      - to: 'oncall@example.com'
+        send_resolved: true
+  - name: wechat
+    wechat_configs:
+      - to_party: 'PARTY_ID'
+        agent_id: 'AGENT_ID'
+        send_resolved: true
+        message: '{{ template "wechat.message" . }}'
 ```
 
-5.7.2.3.2 定制告警的模板配置信息
+顶层的 `email` 是默认路由，`critical` 告警命中子路由后只发送企业微信；`warning` 没有命中子路由，会发往默认邮箱。如果严重告警需要**同时**发邮件和企业微信，可设计两个并列子路由并配置 `continue`，或将两种通知配置放进同一接收者；不要以为顶层默认接收者必然再收到一份。
+
+模板文件 `/usr/local/alertmanager/tmpl/wechat.tmpl` 可以显示同一分组中的多条告警。配置中的 `templates` 必须包含该文件，例如 `templates: ['/usr/local/alertmanager/tmpl/*.tmpl']`：
+
+```gotemplate
+{{ define "wechat.message" }}
+{{ range .Alerts }}
+状态：{{ .Status }}
+级别：{{ .Labels.severity }}
+告警：{{ .Labels.alertname }}
+实例：{{ .Labels.instance }}
+摘要：{{ .Annotations.summary }}
+开始：{{ .StartsAt.Format "2006-01-02 15:04:05" }}
+{{ if eq .Status "resolved" }}恢复：{{ .EndsAt.Format "2006-01-02 15:04:05" }}{{ end }}
+---
+{{ end }}
+{{ end }}
+```
+
+时间格式使用 Go 的参考日期。显示时区取决于 Alertmanager 的运行环境；原资料直接给时间加 8 小时，遇到时区配置变化可能重复偏移。应统一服务进程时区，并用实际收到的消息核对时间。
+
 ```bash
-# vim /usr/local/alertmanager/tmpl/wechat.tmpl
-{{ define "wechat.default.message" }}
-{{- if gt (len .Alerts.Firing) 0 -}}
-{{- range $index, $alert := .Alerts -}}
-{{- if eq $index 0 }}
-========= 监控报警 =========
-告警状态：{{   .Status }}
-告警级别：{{ .Labels.severity }}
-告警类型：{{ $alert.Labels.alertname }}
-故障主机: {{ $alert.Labels.instance }}
-告警主题: {{ $alert.Annotations.summary }}
-告警详情: {{ $alert.Annotations.message }}{{ $alert.Annotations.description}};
-触发阀值：{{ .Annotations.value }}
-故障时间: {{ ($alert.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}  #注意:此为
-golang的时间Format,表示123456
-========= = end = =========
-{{- end }}
-{{- end }}
-{{- end }}
-{{- if gt (len .Alerts.Resolved) 0 -}}
-{{- range $index, $alert := .Alerts -}}
-{{- if eq $index 0 }}
-========= 异常恢复 =========
-告警类型：{{ .Labels.alertname }}
-告警状态：{{   .Status }}
-告警主题: {{ $alert.Annotations.summary }}
-告警详情: {{ $alert.Annotations.message }}{{ $alert.Annotations.description}};
-故障时间: {{ ($alert.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}
-恢复时间: {{ ($alert.EndsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}
-{{- if gt (len $alert.Labels.instance) 0 }}
-实例信息: {{ $alert.Labels.instance }}
-{{- end }}
-========= = end = =========
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-#重启alertmanager服务
-systemctl reload alertmanager
-systemctl status alertmanager
-#检查效果
-ss -tnulp | grep alert
-udp     UNCONN   0  0                      *:9094                 *:*
-users:(("alertmanager",pid=31732,fd=7))
-tcp     LISTEN   0  4096                   *:9093                 *:*
-users:(("alertmanager",pid=31732,fd=8))
-tcp     LISTEN   0  4096                   *:9094                 *:*
-users:(("alertmanager",pid=31732,fd=3))
+amtool check-config /usr/local/alertmanager/conf/alertmanager.yml
+systemctl restart alertmanager.service
+systemctl status alertmanager.service
 ```
 
-#### 5.7.2.4 Prometheus 集成配置
+配置检查通过后，再看 Alertmanager 日志是否有企业微信接口返回的错误。只看到端口 `9093` 在监听，并不能证明通知已送达。
 
-5.7.2.4.1 定制告警规则
+## 5.9 Prometheus 规则与端到端验证
+
+沿用第 13 章的两条规则：`InstanceDown` 带 `severity: critical`；`InstanceQPSHigh` 带 `severity: warning`。若重新建立规则，可用下面的片段，保存后先执行 `promtool check rules <规则文件>`：
+
 ```yaml
-#创建告警规则文件
-vim /usr/local/prometheus/rules/prometheus_alert_route.yml
 groups:
-- name: flask_web
-  rules:
-  - alert: InstanceDown
-    expr: up{job="my_metric"} == 0
-    for: 10s
-    labels:
-      severity: critical  #指定告警级别
-    annotations:
-      summary: "Instance {{ $labels.instance  }} 停止工作"
-      description: "{{ $labels.instance  }} job {{ $labels.job  }} 已经停止1分钟以上"
-      value: "{{$value}}"
-- name: flask_QPS
-  rules:
-  - alert: InstanceQPSIsHight
-    expr: increase(request_count_total{job="my_metric"}[1m]) > 500
-    for: 10s
-    labels:
-      severity: warning
-    annotations:
-      summary: "Instance {{ $labels.instance  }} QPS 持续过高"
-      description: "{{ $labels.instance  }} job {{ $labels.job  }} QPS 持续过高"
-      value: "{{$value}}"
+  - name: flask-web
+    rules:
+      - alert: InstanceDown
+        expr: up{job="my_metric"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance }} 指标服务失联"
+      - alert: InstanceQPSHigh
+        expr: rate(request_count_total{job="my_metric"}[1m]) > 500
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} QPS 持续超过 500"
 ```
 
-5.7.2.4.2 修改 Prometheus 配置文件
-```yaml
-#在prometheus里面，配置告警规则文件生效
-grep -Ev '^.*#|^$' /usr/local/prometheus/conf/prometheus.yml
-global:
-alerting:
-  alertmanagers:
-    - static_configs:
-         - targets:
-             - 10.0.0.100:9093
-rule_files:
-  - "../rules/*.yml"
-scrape_configs:
-  - job_name: "prometheus"
-    static_configs:
-      - targets: ["localhost:9090"]
-  - job_name: 'node_exporter'
-    static_configs:
-    - targets: ['10.0.0.104:9100','10.0.0.105:9100','10.0.0.106:9100']
-      labels: {app: 'k8s-node'}
-  - job_name: 'my_metric'
-    static_configs:
-    - targets: ['10.0.0.101:8000']
-      labels: {app: 'flask_web'}
-#重启服务
-systemctl restart prometheus
-systemctl status prometheus
-#检查效果
-ss  -tnulp | grep prometheus
-tcp     LISTEN   0  4096                   *:9090                 *:*
-users:(("prometheus",pid=57535,fd=8))
-```
+`rate(...[1m])` 的单位是每秒，表达式与“QPS 超过 500”一致；原资料使用 `increase(...[1m]) > 500` 实际表示一分钟内超过 500 次请求。停止 Flask 指标服务后，依次核对 Targets 为 `DOWN`、告警从 `pending` 变为 `firing`、Alertmanager 收到 `critical`、目标部门收到企业微信消息。恢复服务后，如启用了 `send_resolved`，应收到恢复消息。
 
-#### 5.7.2.5 验证结果
+![Prometheus 中服务失联的告警](assets/img-4486a5b40adbb3b8.webp)
 
-5.7.2.5.1 停止和恢复 flask_web服务
+![企业微信收到严重告警](assets/img-a325b1e76cbfdf8f.webp)
 
-![原 PDF 第 198 页插图](assets/img-79d42c0e93e9486e.png)
+![企业微信收到恢复通知](assets/img-3acf9cc943f8aeb9.webp)
 
-查看prometheus的告警动作
+测试高 QPS 时应以应用计数器和 PromQL 查询结果为准，而不是仅运行几十次 `curl` 就认定达到每秒 500 次。高 QPS 告警应走邮件默认路由，不应进入企业微信。若两个渠道都未通知，先检查 Prometheus 是否产生 `firing`；若只微信失败，检查企业微信接口和应用权限；若路由不符，核对 `severity` 标签及 Alertmanager 的路由树。
 
-![原 PDF 第 198 页插图](assets/img-4486a5b40adbb3b8.png)
-
-![原 PDF 第 198 页插图](assets/img-7acbd513a0feb0cf.png)
-
-查看企业微信的告警信息
-
-![原 PDF 第 199 页插图](assets/img-a325b1e76cbfdf8f.png)
-
-恢复 flask_web服务,可以看到微信信息如下
-
-![原 PDF 第 200 页插图](assets/img-3acf9cc943f8aeb9.png)
-
-![原 PDF 第 201 页插图](assets/img-3acf9cc943f8aeb9.png)
-
-5.7.2.5.2 高并发访问只触发邮件告警
-```bash
-#运行下面脚本触发高并发访问
-cat curl_metrics.sh
-#!/bin/bash
-URL=http://127.0.0.1:8001/metrics
-while true;do
-    curl_num=$(($RANDOM%50+1))
-    sleep_num=$(($RANDOM%5+1))
-    for c_num in `seq $curl_num`;do
-         curl -s $URL &> /dev/null
-    done
-    #sleep $sleep_num
-done
-bash curl_metrics.sh
-```
-
-![原 PDF 第 201 页插图](assets/img-2bb18830c07957c0.png)
-
+![高 QPS 告警走邮件路由](assets/img-2bb18830c07957c0.webp)
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

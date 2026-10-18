@@ -11,25 +11,23 @@ syntax_highlight: true
 {% raw %}
 
 # 10 公有云仓库
-### 2.4 公有云仓库
 
 git 创建本地仓库后,可以将本地仓库和远程仓库进行同步.实现网络共享和备份
 
 远程仓库可以分为公有云仓库和私有仓库
 
-公有云仓库: 如github,gitee等,免费给个人或公司用使用,依赖互联网私有仓库: 如gitlab,适合于公司等组织内部网络使用
+“公有云托管”和“仓库是否公开”是两个维度：GitHub、Gitee 等云服务也能托管私有仓库；GitLab 既可自建，也有云端服务。选择时应看访问控制、合规要求、可用性和备份策略。
 
 ### 使用 github
 
 <https://github.com/>
 
-范例: 使用 github 创建仓库并将本地仓库上传至远程
+范例：在平台创建空仓库后，将本地 Git 仓库关联到远程。下方旧终端记录中的仓库地址和 `master` 分支只作示例，实际操作应替换为自己的地址与分支名。
 
-![Git 与 GitLab 版本管理第 80 页插图](assets/img-81c9f40c134b1cb4.png)
+![Git 与 GitLab 版本管理第 80 页插图](assets/img-81c9f40c134b1cb4.webp)
 
 ```bash
-[root@gitlab testproject]#git remote add origin git@github.com:lbtooth/hello-
-world.git
+[root@gitlab testproject]#git remote add origin git@github.com:lbtooth/hello-world.git
 [root@gitlab testproject]#git remote
 origin
 [root@gitlab testproject]#git remote  -v
@@ -45,17 +43,14 @@ git@github.com: Permission denied (publickey).
 fatal: Could not read from remote repository.
 Please make sure you have the correct access rights
 and the repository exists.
-[root@gitlab testproject]#git-keygen
-[root@gitlab testproject]#cat ~/.ssh/id_rsa.pub
-ssh-rsa
-AAAAB3NzaC1yc2EAAAADAQABAAABAQDgAoGJ4si2K3lz3xe1LJ8mUenQ6bKRhSjoQkDT6ALUp0vILsjH
-EywgHhoA3gmHY3Vy+QXPhqDWQ/4zT3+e0DrEcXiWv+HuBOU07QtJgk4/r2NXg6dDfx3snmdbOpfIeTPM
-gRmZxZDLstk2m8RqEv3Bh4SxsIrGHd/AIlDnolqPrn0zorXJYDjJtN014ESPF5XPfewkZAly9TYBowbG
-t0EFIYcwIsEVEH21rl/cXoTJ3L0lEQqlIZtJPEWMGPW4qbs8RIcC9O1Xnm1kdDrC6dvSERrdh3FDDkhF
-CtcNqE72iikjjNxkQkeSDN392GEVnDhwhm3jM2xPNcZOs9F3OPnX root@ubuntu1804.bowen.org
+[root@gitlab testproject]#ssh-keygen -t ed25519 -C "you@example.com"
+[root@gitlab testproject]#cat ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAA... you@example.com
 ```
 
-![Git 与 GitLab 版本管理第 81 页插图](assets/img-f9e732589ac3f546.png)
+![Git 与 GitLab 版本管理第 81 页插图](assets/img-f9e732589ac3f546.webp)
+
+上例首次推送因没有配置可用 SSH 公钥而失败。先核对远程主机指纹，再把生成的**公钥**添加到代码托管平台；私钥始终留在本机。完成后重新执行 `git push -u origin master`，下方输出才代表推送成功。
 
 ```bash
 [root@gitlab testproject]#git push -u origin master
@@ -73,14 +68,14 @@ Branch 'master' set up to track remote branch 'master' from 'origin'.
 
 范例: 国内码云创建仓库
 
-![Git 与 GitLab 版本管理第 82 页插图](assets/img-ae533e6e94314082.png)
+![Git 与 GitLab 版本管理第 82 页插图](assets/img-ae533e6e94314082.webp)
 
-![Git 与 GitLab 版本管理第 83 页插图](assets/img-5130a14b27114a1c.png)
+![Git 与 GitLab 版本管理第 83 页插图](assets/img-5130a14b27114a1c.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/09-git-command-syntax.html' | relative_url }}">← Previous: Git Command Syntax</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/11-case-study-a-metaverse-startup.html' | relative_url }}">Next: Case Study: A Metaverse Startup →</a>
+  <a href="{{ '/subjects/Git-GitLab/09-git-command-syntax.html' | relative_url }}">← 上一篇：Git 常用语法</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/11-case-study-a-metaverse-startup.html' | relative_url }}">下一篇：综合案例：从个人开发到团队协作 →</a>
 </nav>

@@ -12,441 +12,161 @@ syntax_highlight: true
 
 # 32 Kubernetes Operator 部署
 
-## 11.1.3 基于 Operator 部署 Prometheus
+## 11.1.3 用 Operator 管理 Prometheus
 
-注意:镜像下载需要科学上网
+Prometheus Operator 是监听 Kubernetes 自定义资源并持续协调实际工作负载的控制器；[kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) 是包含 Operator、Prometheus、Alertmanager、Grafana、Exporters、规则和看板等组件的一套预制清单。两者相关，但不等同于“安装一个 Prometheus Pod”。本章使用 kube-prometheus 清单示范部署顺序，再通过 ServiceMonitor 和 Probe 理解声明式采集。
 
-#### 11.1.3.1 Operator 部署 Prometheus 说明
+Operator 引入的常见资源包括：`Prometheus` 与 `Alertmanager`（实例）、`ServiceMonitor` 与 `PodMonitor`（采集目标）、`Probe`（黑盒探测）、`PrometheusRule`（记录和告警规则）、`AlertmanagerConfig`（通知配置片段）。具体 CRD 随版本变化，应以所选 release 的清单为准。
 
-部署Prometheus及其相关的各组件是一项复杂的任务，而 Prometheus Operator项目能够在Kubernetes环境上简化和自动化该过程。
+![Operator 与自定义资源的关系](assets/img-54c5089ff9470757.webp)
 
-Operator建立在Kubernetes的两个关键原则之上：自定义资源 (CR)，它通过自定义资源定义 (CRD) 和自定义的Controller实现。
+### 11.1.3.1 固定版本并检查前提
 
-Kube-Prometheus Opertor的主要目的，是用于简化和自动化管理在Kubernetes集群上运行的Prometheus监控套件。本质上，它是一个自定义控制器，用于监视通过以下CRD引入的资源类型下的对象。
+Kubernetes 版本、kube-prometheus release、镜像版本和 CRD 必须兼容。原资料同时混用 `v0.9.0`、`v0.15.0` 的下载链接，还对旧镜像做跨版本替换，难以保证清单一致。选择**一个**经过兼容性核对的 release，再使用该 release 的整套 `manifests`；以下命令以固定的 `v0.15.0` 说明操作方式，执行前仍应核对项目 README 中的兼容矩阵：
 
-Prometheus：编排运行Prometheus Server实例
-Alertmanager：编排运行Alertmanager实例  
-ServiceMonitor：定义要监视Kubernetes Service资源对象  
-PodMonitor：定义要监视的Pod资源对象  
-Probe：定义要监控的Ingess或静态Target，黑盒监控模式  
-PrometheusRule：为Prometheus Server定义告警规划或记录规则  
-AlertmanagerConfig：以声明方式为Alertmanager提供配置段  
-PrometheusAgent：编排运行Prometheus Agent  
-scrapeconfigs：为Prometheus Server提供scrape_config相关的配置段  
-thanosrulers：  
-
-github 参考链接
-https://github.com/prometheus-operator/kube-prometheus
-https://github.com/prometheus-operator/kube-prometheus/tree/main/manifests
-
-![原 PDF 第 438 页插图](assets/img-54c5089ff9470757.png)
-
-![原 PDF 第 439 页插图](assets/img-41ba19a6d06a5bed.png)
-
-![原 PDF 第 439 页插图](assets/img-26de55b5380bd35a.png)
-
-#### 11.1.3.2 获取代码
 ```bash
-#方法1
-cd /usr/local
-VERSION=0.15
-wget https://github.com/prometheus-operator/kube-
-prometheus/archive/refs/tags/v${VERSION}.0.tar.gz
-wget https://github.com/prometheus-operator/kube-prometheus/archive/refs/tags/v0.9.0.tar.gz
-tar xf v0.9.0.tar.gz
-cd /usr/local/kube-prometheus-0.9.0/manifests/
-du -sh  /usr/local/kube-prometheus-0.9.0
-4.0M
-#方法2
-git clone -b v0.9.0 https://github.com/prometheus-operator/kube-prometheus.git
+git clone --depth 1 --branch v0.15.0 https://github.com/prometheus-operator/kube-prometheus.git
 cd kube-prometheus
-19M
+kubectl version
+kubectl get nodes
 ```
 
-#### 11.1.3.3 修改配置
-```yaml
-#创建命名空间
-kubectl create ns monitoring
-#修改prometheus的service
-vim /usr/local/kube-prometheus-0.9.0/manifests/prometheus-service.yaml
-...
-spec:
-  ports:
-  - name: web
-    port: 9090
-    targetPort: web
-    nodePort: 30090 #加下面两行
-  #type: NodePort
-  type: LoadBalancer
-  ...
-#修改grafana的service
-vim /usr/local/kube-prometheus-0.9.0/manifests/grafana-service.yaml
-...
-spec:
-  ports:
-  - name: http
-    port: 3000
-    targetPort: http
-    nodePort: 30030 #加下面两行
-  #type: NodePort
-  type: LoadBalancer
-  ...
-#修改alertmanager的service
-vim /usr/local/kube-prometheus-0.9.0/manifests/alertmanager-service.yaml
-...
-spec:
-  ports:
-  - name: web
-    port: 9093
-    targetPort: web
-    nodePort: 30093 #加下面两行
-  #type: NodePort
-  type: LoadBalancer
-  ...
-#默认有些镜像无法下载,修改依赖镜像,将相关镜像都改为私有仓库里面的镜像
-cd /usr/local/kube-prometheus-0.9.0/manifests/
-#如果可以科学上网，无需修改下面内容
-sed -i -e 's#quay.io/brancz/kube-rbac-proxy:v0.11.0#harbor.bowen.org:80/helm/kube-
-rbac-proxy:v0.11.0#' -e 's#quay.io/prometheus/node-
-exporter:v1.2.2#harbor.bowen.org:80/helm/node-exporter:v1.2.2#' -e
-'s#k8s.gcr.io/prometheus-adapter/prometheus-
-adapter:v0.9.0#harbor.bowen.org:80/helm/prometheus-adapter:v0.9.1#' -e
-'s#quay.io/prometheus/prometheus:v2.29.1#harbor.bowen.org:80/helm/prometheus:2.30.2-
-debian-10-r3#' -e
-'s#quay.io/prometheus/alertmanager:v0.22.2#harbor.bowen.org:80/helm/alertmanager:0.23.
-0-debian-10-r41#' -e 's#quay.io/prometheus/blackbox-
-exporter:v0.19.0#harbor.bowen.org:80/helm/blackbox-exporter:v0.19.0#' -e
-'s#jimmidyson/configmap-reload:v0.5.0#harbor.bowen.org:80/helm/configmap-
-reload:v0.5.0#' -e "s#k8s.gcr.io/kube-state-metrics/kube-state-
-metrics:v2.1.1#harbor.bowen.org:80/helm/kube-state-metrics:v2.2.0#" -e
-'s#grafana/grafana:8.1.1#harbor.bowen.org:80/helm/grafana:8.1.1#' -e
-'s#quay.io/prometheus-operator/prometheus-
-operator:v0.49.0#harbor.bowen.org:80/helm/prometheus-operator:0.51.2-debian-10-r1#' -e
-'s#quay.io/prometheus-operator/prometheus-config-
-reloader:v0.49.0#harbor.bowen.org:80/helm/prometheus-config-reloader:v0.49.0#' *.yaml
-setup/*.yaml
-[root@prometheus manifests]#grep  image: *.yaml setup/*.yaml
-alertmanager-alertmanager.yaml:  image: harbor.bowen.org:80/helm/alertmanager:0.23.0-
-debian-10-r41
-blackbox-exporter-deployment.yaml:        image: harbor.bowen.org:80/helm/blackbox-
-exporter:v0.19.0
-blackbox-exporter-deployment.yaml:        image: harbor.bowen.org:80/helm/configmap-
-reload:v0.5.0
-blackbox-exporter-deployment.yaml:        image: harbor.bowen.org:80/helm/kube-rbac-
-proxy:v0.11.0
-grafana-deployment.yaml:        image: harbor.bowen.org:80/helm/grafana:8.1.1
-kube-state-metrics-deployment.yaml:        image: harbor.bowen.org:80/helm/kube-state-
-metrics:v2.2.0
-kube-state-metrics-deployment.yaml:        image: harbor.bowen.org:80/helm/kube-rbac-
-proxy:v0.11.0
-kube-state-metrics-deployment.yaml:        image: harbor.bowen.org:80/helm/kube-rbac-
-proxy:v0.11.0
-node-exporter-daemonset.yaml:        image: harbor.bowen.org:80/helm/node-
-exporter:v1.2.2
-node-exporter-daemonset.yaml:        image: harbor.bowen.org:80/helm/kube-rbac-
-proxy:v0.11.0
-prometheus-adapter-deployment.yaml:        image: harbor.bowen.org:80/helm/prometheus-
-adapter:v0.9.1
-prometheus-prometheus.yaml:  image: harbor.bowen.org:80/helm/prometheus:2.30.2-debian-
-10-r3
-setup/prometheus-operator-deployment.yaml:        image:
-harbor.bowen.org:80/helm/prometheus-operator:0.51.2-debian-10-r1
-setup/prometheus-operator-deployment.yaml:        image:
-harbor.bowen.org:80/helm/kube-rbac-proxy:v0.11.0
-```
+如果环境不能直接拉取某些镜像，应准备与清单**同版本、同架构**的镜像源并逐项核对 digest；不要用一个跨多行的 `sed` 把 Operator、Prometheus、Alertmanager 的镜像版本随意替换。镜像拉取失败应先查看 Pod Events 和镜像仓库可达性。
 
-#### 11.1.3.4 启动
+### 11.1.3.2 先安装 CRD 与 Operator，再安装整套组件
+
+kube-prometheus 的 `manifests/setup` 通常包含命名空间、CRD 与 Operator 等基础资源，普通 `manifests` 中的 `Prometheus`、`ServiceMonitor` 等对象依赖这些 CRD。不要把两个目录无序合并后一次提交。
+
 ```bash
-#启动项目
-cd /usr/local/kube-prometheus-0.9.0
-kubectl apply -f manifests/setup/
-#如果提示Too long出错,使用下面解决
-kubectl create -f manifests/setup/
+kubectl apply --server-side -f manifests/setup
+kubectl wait --for=condition=Established --all crd --timeout=120s
 kubectl apply -f manifests/
-#注意:新版中需要删除相应的networkPolicy才能访问，如果是使用calico的网络插件，需要删除下面的
-networkPolicy
-kubectl delete -f manifests/prometheus-networkPolicy.yaml
-kubectl delete -f manifests/grafana-networkPolicy.yaml
-#检查效果
-[root@prometheus ~]#kubectl get pods -n monitoring
-NAME                                  READY   STATUS    RESTARTS         AGE
-alertmanager-main-0                   1/2     Running   2 (2m59s ago)    11m
-alertmanager-main-1                   2/2     Running   0                11m
-alertmanager-main-2                   1/2     Running   2 (61s ago)      11m
-blackbox-exporter-84dd4585c7-8g6rx    3/3     Running   3 (67s ago)      11m
-grafana-cd5769bb6-zgmzx               1/1     Running   1 (67s ago)      11m
-kube-state-metrics-5f4467bcb6-jck6v   3/3     Running   3 (61s ago)      11m
-node-exporter-54q5x                   2/2     Running   0                11m
-node-exporter-hrxts                   2/2     Running   13 (61s ago)     11m
-node-exporter-kmtgk                   2/2     Running   0                11m
-node-exporter-lccvb                   2/2     Running   14 (3m5s ago)    11m
-node-exporter-rdtsc                   2/2     Running   13 (2m32s ago)   11m
-node-exporter-ss2m5                   2/2     Running   0                11m
-prometheus-adapter-67c6947497-55csz   1/1     Running   1 (3m4s ago)     11m
-prometheus-adapter-67c6947497-lvk5v   1/1     Running   0                11m
-prometheus-k8s-0                      2/2     Running   2 (3m ago)       11m
-prometheus-k8s-1                      2/2     Running   0                11m
-prometheus-operator-9f859c859-jr7gq   2/2     Running   2 (61s ago)      12m
-[root@prometheus ~]#kubectl get svc -n monitoring
-NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)
-           AGE
-alertmanager-main       NodePort    10.105.67.238    <none>        9093:30093/TCP
-          12m
-alertmanager-operated   ClusterIP   None             <none>
- 9093/TCP,9094/TCP,9094/UDP   12m
-blackbox-exporter       ClusterIP   10.109.208.248   <none>        9115/TCP,19115/TCP
-          12m
-grafana                 NodePort    10.99.20.248     <none>        3000:30030/TCP
-          12m
-kube-state-metrics      ClusterIP   None             <none>        8443/TCP,9443/TCP
-           12m
-node-exporter           ClusterIP   None             <none>        9100/TCP
-          12m
-prometheus-adapter      ClusterIP   10.98.36.176     <none>        443/TCP
-           12m
-prometheus-k8s          NodePort    10.98.248.0      <none>        9090:30090/TCP
-          12m
-prometheus-operated     ClusterIP   None             <none>        9090/TCP
-          12m
-prometheus-operator     NodePort    10.111.4.57      <none>        8443:30443/TCP
-          12m
-[root@prometheus ~]#kubectl get ep -n monitoring
-NAME                    ENDPOINTS
-AGE
-alertmanager-main       10.244.3.7:9093
-12m
-alertmanager-operated   10.244.3.7:9094,10.244.3.7:9094,10.244.3.7:9093
-12m
-blackbox-exporter       10.244.4.2:9115,10.244.4.2:19115
-12m
-grafana                 10.244.4.4:3000
-12m
-kube-state-metrics      10.244.5.2:8443,10.244.5.2:9443
-12m
-node-exporter           10.0.0.101:9100,10.0.0.102:9100,10.0.0.103:9100 + 3 more...
-12m
-prometheus-adapter      10.244.3.8:6443,10.244.4.6:6443
-12m
-prometheus-k8s          10.244.3.9:9090,10.244.5.3:9090
-12m
-prometheus-operated     10.244.3.9:9090,10.244.5.3:9090
-12m
-prometheus-operator     10.244.5.6:8443
-12m
-[root@prometheus ~]#kubectl -n monitoring get all
-NAME                                      READY   STATUS    RESTARTS         AGE
-pod/alertmanager-main-0                   1/2     Running   3 (41s ago)      13m
-pod/alertmanager-main-1                   2/2     Running   0                13m
-pod/alertmanager-main-2                   1/2     Running   3 (39s ago)      13m
-pod/blackbox-exporter-84dd4585c7-8g6rx    3/3     Running   3 (2m48s ago)    13m
-pod/grafana-cd5769bb6-zgmzx               1/1     Running   1 (2m48s ago)    13m
-pod/kube-state-metrics-5f4467bcb6-jck6v   3/3     Running   3 (2m42s ago)    13m
-pod/node-exporter-54q5x                   2/2     Running   0                13m
-pod/node-exporter-hrxts                   2/2     Running   13 (2m42s ago)   13m
-pod/node-exporter-kmtgk                   2/2     Running   0                13m
-pod/node-exporter-lccvb                   2/2     Running   14 (4m46s ago)   13m
-pod/node-exporter-rdtsc                   2/2     Running   13 (4m13s ago)   13m
-pod/node-exporter-ss2m5                   2/2     Running   0                13m
-pod/prometheus-adapter-67c6947497-55csz   1/1     Running   1 (4m45s ago)    13m
-pod/prometheus-adapter-67c6947497-lvk5v   1/1     Running   0                13m
-pod/prometheus-k8s-0                      2/2     Running   2 (4m41s ago)    13m
-pod/prometheus-k8s-1                      2/2     Running   0                13m
-pod/prometheus-operator-9f859c859-jr7gq   2/2     Running   2 (2m42s ago)    13m
-NAME                            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)
-                   AGE
-service/alertmanager-main       NodePort    10.105.67.238    <none>
- 9093:30093/TCP               13m
-service/alertmanager-operated   ClusterIP   None             <none>
- 9093/TCP,9094/TCP,9094/UDP   13m
-service/blackbox-exporter       ClusterIP   10.109.208.248   <none>
- 9115/TCP,19115/TCP           13m
-service/grafana                 NodePort    10.99.20.248     <none>
- 3000:30030/TCP               13m
-service/kube-state-metrics      ClusterIP   None             <none>
- 8443/TCP,9443/TCP            13m
-service/node-exporter           ClusterIP   None             <none>        9100/TCP
-                  13m
-service/prometheus-adapter      ClusterIP   10.98.36.176     <none>        443/TCP
-                   13m
-service/prometheus-k8s          NodePort    10.98.248.0      <none>
- 9090:30090/TCP               13m
-service/prometheus-operated     ClusterIP   None             <none>        9090/TCP
-                  13m
-service/prometheus-operator     NodePort    10.111.4.57      <none>
- 8443:30443/TCP               13m
-NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE
-NODE SELECTOR            AGE
-daemonset.apps/node-exporter   6  6  6  6  6
-kubernetes.io/os=linux   13m
-NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/blackbox-exporter     1/1     1  1           13m
-deployment.apps/grafana               1/1     1  1           13m
-deployment.apps/kube-state-metrics    1/1     1  1           13m
-deployment.apps/prometheus-adapter    2/2     2  2           13m
-deployment.apps/prometheus-operator   1/1     1  1           13m
-NAME                                            DESIRED   CURRENT   READY   AGE
-replicaset.apps/blackbox-exporter-84dd4585c7    1  1  1       13m
-replicaset.apps/grafana-cd5769bb6               1  1  1       13m
-replicaset.apps/kube-state-metrics-5f4467bcb6   1  1  1       13m
-replicaset.apps/prometheus-adapter-67c6947497   2  2  2       13m
-replicaset.apps/prometheus-operator-9f859c859   1  1  1       13m
-NAME                                 READY   AGE
-statefulset.apps/alertmanager-main   1/3     13m
-statefulset.apps/prometheus-k8s      2/2     13m
+kubectl get pods -n monitoring
+kubectl get prometheus,alertmanager,servicemonitor -n monitoring
 ```
 
-#### 11.1.3.5 创建 Ingress
+如果所用 release 的命名空间或 setup 目录不同，按其 README 调整。原记录中的部分 Alertmanager Pod 仅 `1/2 Ready`、StatefulSet `1/3 Ready`，不能据此宣称部署成功。应等关键 Pod 全部 Ready，并逐个检查异常组件：
 
-默认SVC是clusterIP模式，无法外部访问，可以创建Ingress实现外部访问
+```bash
+kubectl -n monitoring get pods
+kubectl -n monitoring describe pod <异常-Pod>
+kubectl -n monitoring logs <异常-Pod> --all-containers --tail=100
+```
+
+CRD 过大或 API 服务暂时未就绪时，先看具体错误和 CRD 状态，再决定是否重试；不要把任意错误都归因于“Too long”。也不要为了访问 UI 直接删除默认 NetworkPolicy，它可能正用于隔离监控组件。
+
+![kube-prometheus 组件状态](assets/img-41ba19a6d06a5bed.webp)
+
+### 11.1.3.3 先用端口转发验证组件
+
+在没有 Ingress 或负载均衡器的环境中，可以先通过 `kubectl port-forward` 从管理主机验证 UI，不必把服务改为 NodePort 或 LoadBalancer：
+
+```bash
+kubectl -n monitoring port-forward svc/prometheus-k8s 9090:9090
+kubectl -n monitoring port-forward svc/alertmanager-main 9093:9093
+kubectl -n monitoring port-forward svc/grafana 3000:3000
+```
+
+三条命令应分别在独立终端运行。确认 Prometheus Targets、Alertmanager 状态和 Grafana 数据源后，再决定是否需要对外暴露。原资料给 `LoadBalancer` 服务硬写 NodePort，在没有云负载均衡器的集群中也不能保证外部可达。
+
+如使用 Ingress，先确认集群已有 Ingress Controller、域名解析、TLS 和访问认证。下面仅示范 Prometheus 一个入口；Grafana 与 Alertmanager 若需要外部入口，应分别评估权限与认证：
+
 ```yaml
-[root@master1 ~]#cat kube-prometheus-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: prometheus
+  name: prometheus-ui
   namespace: monitoring
-  labels:
-    app: prometheus
 spec:
-  ingressClassName: 'nginx'
+  ingressClassName: nginx
+  tls:
+    - hosts: [prometheus.example.org]
+      secretName: prometheus-ui-tls
   rules:
-  - host: prometheus.bowen.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-           service:
-            name: prometheus-k8s
-            port:
-              number: 9090
-  - host: grafana.bowen.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-           service:
-            name: grafana
-            port:
-              number: 3000
-  - host: alertmanager.bowen.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-           service:
-            name: alertmanager-main
-            port:
-              number: 9093
-  - host: blackbox.bowen.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-           service:
-            name: blackbox-exporter
-            port:
-              number: 19115 #9115对应https
+    - host: prometheus.example.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-k8s
+                port:
+                  number: 9090
 ```
 
-#### 11.1.3.6 测试使用
+这只是入口清单，`prometheus-ui-tls` Secret 和认证策略需要事先准备；Ingress 本身并不提供身份认证。
+
+### 11.1.3.4 用 ServiceMonitor 增加应用指标
+
+ServiceMonitor 选择的是 **Service**，并通过 Service 的**命名端口**定位指标端点；Pod 上仅添加 `prometheus.io/scrape` 注解，不保证被 Operator 管理的 Prometheus 自动发现。下例假定应用和 ServiceMonitor 均在 `monitoring` 命名空间。应用需要真的在 `8080/metrics` 输出 Prometheus 格式指标：
+
 ```yaml
-#准备黑盒监控信息
-[root@master1 ~]#cat probe-example.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: web-probe-demo
-  namespace: monitoring
-spec:
-  jobName: http-get
-  interval: 60s
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc:19115
-    scheme: http
-    path: /probe
-  targets:
-    staticConfig:
-      static:
-      - http://www.bowen.com
-      - https://www.google.com
-#准备Service的监控信息
-[root@master1 ~]#cat servicemonitor-example.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-    name: metrics-app
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: metrics-app
-      controller: metrics-app
-  template:
-    metadata:
-      labels:
-        app: metrics-app
-        controller: metrics-app
-      annotations:
-        prometheus.io/scrape: "true"  #允许prometheus 抓取指标，默认不允许
-        prometheus.io/port: "80"  #允许prometheus 抓取指标的端口
-        prometheus.io/path: "/metrics"  #允许prometheus 抓取指标的URL，此为默认值
-    spec:
-      containers:
-      - image: registry.cn-beijing.aliyuncs.com/bowen/metrics-app:v0.1
-        name: metrics-app
-        ports:
-         - name: web
-          containerPort: 80
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "500m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
----
 apiVersion: v1
 kind: Service
 metadata:
   name: metrics-app
+  namespace: monitoring
   labels:
     app: metrics-app
 spec:
-  type: ClusterIP
-  ports:
-  - name: web
-    port: 80
-    targetPort: 80
   selector:
     app: metrics-app
-    controller: metrics-app
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: metrics
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: metrics-app-servicemonitor
+  name: metrics-app
+  namespace: monitoring
   labels:
     app: metrics-app
-    release: prometheus
 spec:
   selector:
     matchLabels:
       app: metrics-app
-  #namespaceSelector:
-  #  matchNames:
-  #  - default
   endpoints:
-  - port: web
-    interval: 15s
-#应用配置
-kubectl apply -f yaml/probe-example.yaml -f yaml/servicemonitor-example.yaml
+    - port: metrics
+      path: /metrics
+      interval: 15s
 ```
 
+对应 Pod 容器端口也应命名为 `metrics`，且 Pod 标签为 `app: metrics-app`。这里的 ServiceMonitor `metadata.labels` **仍需与 Prometheus CR 的 `serviceMonitorSelector` 匹配**；同时检查 `serviceMonitorNamespaceSelector` 是否允许该命名空间。原示例硬加 `release: prometheus`，但 kube-prometheus 清单未必按这个标签选择，结果可能创建了 ServiceMonitor 却没有采集目标。
+
+```bash
+kubectl -n monitoring get prometheus -o yaml
+kubectl -n monitoring get servicemonitor metrics-app -o yaml
+kubectl -n monitoring get svc metrics-app
+```
+
+应用 Deployment 及其指标接口必须另行部署。验证时依次看 Prometheus CR 选择器、ServiceMonitor、Service endpoints、Targets 页面，而不是只看 YAML 是否 `apply` 成功。
+
+### 11.1.3.5 用 Probe 做黑盒探测
+
+`Probe` 描述要探测的外部目标，真正执行 HTTP/TCP/ICMP 请求的是 Blackbox Exporter。Prober 的 URL 必须指向当前部署中可达的 Blackbox Exporter 服务和端口；模块名要在 Blackbox 配置中存在。与 ServiceMonitor 一样，`Probe` 还需匹配 Prometheus CR 的 `probeSelector` 和命名空间选择器。
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: example-web
+  namespace: monitoring
+spec:
+  jobName: example-web
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc:9115
+    path: /probe
+  targets:
+    staticConfig:
+      static:
+        - https://example.org
+```
+
+先验证 Blackbox 服务本身可访问，再检查 Prometheus Targets 中是否出现 Probe 任务和 `probe_success`。原资料使用另一个端口 `19115`，那是特定清单中可能存在的代理端口；应以当前 `kubectl -n monitoring get svc blackbox-exporter` 的实际端口为准。
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

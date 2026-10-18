@@ -11,9 +11,8 @@ syntax_highlight: true
 {% raw %}
 
 # 07 Git 相关概念和原理
-## 2 版本控制系统 Git
 
-### 2.1 Git 相关概念和原理
+先区分工作区、暂存区和提交历史，再理解分支与标签如何引用提交。后文的命令以已初始化的 Git 仓库为前提。
 
 ### Git 的区域
 
@@ -21,7 +20,7 @@ Git 的数据存储从物理上分为当前项目目录和当前项目目录下�
 
 Git 版本库逻辑上又分为暂存区和本地仓库
 
-![Git 与 GitLab 版本管理第 31 页插图](assets/img-eb993f01fa111524.png)
+![Git 与 GitLab 版本管理第 31 页插图](assets/img-eb993f01fa111524.webp)
 
 工作区 Workspace：
 
@@ -29,13 +28,11 @@ Git 版本库逻辑上又分为暂存区和本地仓库
 
 在这里你可以添加、修改或删除文件。工作区中的文件可以是已被Git跟踪的文件，也可以是未被跟踪的文件。
 
-工作区中的文件的变更不受Git的跟踪和管理，无法实现版本回滚等功能
-
-需要将工作的的变更，通过 git add 命令加入暂存区后，才可纳入Git 的版本管理控制的范畴
+Git 能识别已跟踪文件在工作区中的未提交修改，但这些修改尚未写入历史，不能作为已提交版本恢复。对新文件执行 `git add` 后，才会将其内容纳入下一次提交候选。
 
 暂存区 Staging Area/Index/Cached：
 
-也称为索引区,缓存区，用于存储在工作区中对代码进行修改后的文件所保存的地方，只有放入此区的文件才能被git进行管理,使用 git add添加,对应为<项目目录>/.git/index文件
+暂存区（index）保存**下一次提交的内容快照**。执行 `git add` 会更新该快照；它并不是存放所有工作区修改的普通目录，索引元数据通常位于 `.git/index`。
 
 暂存区主要用于临时保存文件少量变更，类似于邮件中的草稿箱
 
@@ -47,11 +44,7 @@ Git 版本库逻辑上又分为暂存区和本地仓库
 
 每一次commit 会生成一个唯一的ID，通常用于表示一个阶段性的新的版本
 
-checkout命令执行了同commit命令相反的操作，它将版本中存储的commit所代表着的某个版本恢复至工作区中 checkout命令完成后，工作区中的文件内容与其检出的提交那一刻的状态相同
-
-若工作区中存储此前未被提交的新文件，这些文件的未被提交的新的更改会被存储仓库的旧内容覆盖
-
-当然，用户也可以暂存这些新文件，并将带有新文件的工作区提交到版本库中，这将是新的暂存和提交循环
+`git checkout` 有切换分支和恢复文件等历史用法；新版本 Git 更推荐用 `git switch` 切换分支、`git restore` 恢复文件。它不是 `git commit` 的逆操作。切换分支时若未提交修改可能被覆盖，Git 通常会阻止切换；但显式强制恢复会丢弃修改，所以执行前先用 `git status` 检查并按需提交或暂存。
 
 远程仓库 Remote Repository ：
 
@@ -59,25 +52,25 @@ checkout命令执行了同commit命令相反的操作，它将版本中存储的
 
 利用远程仓库，可以实现异地备份和远程协作
 
-![Git 与 GitLab 版本管理第 32 页插图](assets/img-e572e430bace45d4.png)
+![Git 与 GitLab 版本管理第 32 页插图](assets/img-e572e430bace45d4.webp)
 
 ### Git 提交历史和提交链
 
-![Git 与 GitLab 版本管理第 32 页插图](assets/img-e576dc511efe61bc.png)
+![Git 与 GitLab 版本管理第 32 页插图](assets/img-e576dc511efe61bc.webp)
 
 版本库上的commit历史组合起来会形成一个提交链
 
 除了初始commit，每个commit都会都会有一个父commit，也可能会有多个父commit(比如：分支合并)
 
-除了最新一次的commit，每个commit都会有一个子commit，也可能会有多个子commit(比如：创建新分支)
+提交对象只记录父提交，不直接记录“子提交”。从某个提交创建分支只创建新引用；直到新分支上产生提交，历史中才会出现新的后继提交。
 
 这个提交链上的commit还可以使用字符串进行引用
 
-通常，Git会为默认创建的提交链上的最新一次提交创建一个基于字符串的引用master/main
+仓库初始化时会创建默认分支引用，名称可能是 `main`、`master` 或自定义名称，不是同时存在 `master/main` 两个分支。
 
 而该提交链也称为版本库的一个分支（Branch），master/main 也是分支的名称标识
 
-另外自动创建的还有一个HEAD引用，它代表提交链的“头”，表示当前工作区所关联到的提交链上的特定提交，通常是最新一次提交
+`HEAD` 通常指向当前分支，分支再指向其最新提交；处于分离 HEAD 状态时，它直接指向某个提交。
 
 基于HEAD指向的commit，还能够以相对方式引用历史中的提交，例如HEAD~表示前一个提交 git show HEAD命令可以查看HEAD当前所指向的commit的信息
 
@@ -89,15 +82,15 @@ branch 分支
 
 <https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell>
 
-![Git 与 GitLab 版本管理第 33 页插图](assets/img-e576dc511efe61bc.png)
+![Git 与 GitLab 版本管理第 33 页插图](assets/img-e576dc511efe61bc.webp)
 
 Git 的分支，其实本质上仅仅是指向提交对象的可变指针
 
 Git 的默认分支名字是 master/main 。 在多次提交操作之后，你其实已经有一个指向最后那个提交对象的 master/main 分支。 master 分支会在每次提交时自动向前移动。
 
-Git的分支实现对文件的多个副本,可以实现多个不同用途的软件版本同时的演进,实现多个开发版本的隔离
+分支是可移动的提交引用，不是整个文件目录的物理副本。不同分支可以独立演进，切换时 Git 根据目标提交更新工作区文件。
 
-![Git 与 GitLab 版本管理第 33 页插图](assets/img-69de3abed1669c70.png)
+![Git 与 GitLab 版本管理第 33 页插图](assets/img-69de3abed1669c70.webp)
 
 假设你准备开发一个新功能，但是需要两周才能完成，第一周你写了50%的代码，如果立刻提交， 由于代码还没写完，不完整的代码库会导致别人不能测试等工作。如果等代码全部写完再一次提交，又存在丢失每天进度的巨大风险。
 
@@ -113,13 +106,13 @@ tag是git版本库的一个标记，指向某个commit的指针。为某个commi
 
 tag主要用于发布版本的管理，一个版本发布之后，可以为git打上 v1.0.1,v1.0.2 ...这样的类似的标签。
 
-通常，用户应该每天下班前提交代码并完成推送，以备份代码；只有待需要发一个版本时，才会基于tag对相应commit进行标记
+应在完成一个逻辑上完整、可说明的改动时提交；何时推送由团队协作与备份策略决定。发布时可给对应提交创建标签，但标签并非只用于发布。
 
 tag跟branch有点相似，但是本质上和分工上是不同的：
 
 tag 对应某次commit, 是一个点，是不可移动的。
 
-branch 对应一系列commit，是很多提交点连成的一根线形成的，有一个HEAD 指针，是可以依靠 HEAD 指针移动的。
+branch 指向一个提交，并随该分支上的新提交向前移动；`HEAD` 指示当前检出的分支，不是每个分支各自拥有一个 HEAD。
 
 所以，两者的区别决定了使用方式，改动代码用 branch ,不改动只查看用 tag。
 
@@ -129,11 +122,11 @@ tag 和 branch 的相互配合使用，有时候起到非常方便的效果
 
 常用的版本标记格式
 
-version-number.release-no.modificaton-no (e.g., v1.3.2) version-number.release-no.upgrade-no_modificaton-no (e.g., v1.9.3_6)
+常见格式是 `v主版本.次版本.修订号`，例如 `v1.3.2`。团队也可采用自己的版本约定，但应保持一致并清楚说明兼容性含义。
 
 Git支持使用两种标签：轻量标签（lightweight）与附注标签（annotated）
 
-轻量标签：仅为某个commit的引用附注标签：存储在 Git 数据库中的一个完整对象，其中包含打标签者的名字、电子邮件地址、 日期时间， 此外还会包含一个message
+轻量标签只是指向提交的引用；附注标签是独立对象，可保存创建者、时间和说明，并可签名。
 
 ### Git 开发分支流程
 
@@ -147,9 +140,9 @@ Git支持使用两种标签：轻量标签（lightweight）与附注标签（ann
 
 “如果说多人软件协作项目中有一个灵魂的话，我认为，这个灵魂就是分支策略。可以说，分支策略就是软件协作模式和发布模式的风向标。选择一种符合 DevOps 开发模式的分支策略，对于 DevOps 的实践落地也会大有帮助。” —— 石雪峰
 
-![Git 与 GitLab 版本管理第 35 页插图](assets/img-03801d2d852df9ec.jpeg)
+![Git 与 GitLab 版本管理第 35 页插图](assets/img-03801d2d852df9ec.webp)
 
-![Git 与 GitLab 版本管理第 35 页插图](assets/img-f85fe83905c6b24b.png)
+![Git 与 GitLab 版本管理第 35 页插图](assets/img-f85fe83905c6b24b.webp)
 
 几种常见的分支模型
 
@@ -177,7 +170,7 @@ develop分支的开发不会影响到master分支的构建过程，但不利于�
 
 master/develop/feature
 
-![Git 与 GitLab 版本管理第 36 页插图](assets/img-6b51b1de9dd1c9e9.png)
+![Git 与 GitLab 版本管理第 36 页插图](assets/img-6b51b1de9dd1c9e9.webp)
 
 master和develop 都是长期分支
 
@@ -192,7 +185,7 @@ feature短期分支，保存研发人员研发过程
 开作流程
 
 ```text
-git chechout -b feature #from develop，完成开发和特性测试
+git checkout -b feature # from develop，完成开发和特性测试
 git checkout develop
 git merge feature
 git branch --delete feature #完成集成测试和发布
@@ -202,7 +195,7 @@ git merge develop
 
 master/develop/feature/release
 
-![Git 与 GitLab 版本管理第 37 页插图](assets/img-1e5463388b93813e.png)
+![Git 与 GitLab 版本管理第 37 页插图](assets/img-1e5463388b93813e.webp)
 
 在前一分支模型的基础上，使用单独的release分支进行构建和bug修复
 
@@ -213,7 +206,7 @@ release：短期分支，承载发布过程
 工作流程
 
 ```text
-git chechout -b feature #from develop，完成开发和特性测试
+git checkout -b feature # from develop，完成开发和特性测试
 git checkout develop
 git merge feature
 git branch --delete feature
@@ -227,7 +220,7 @@ git branch --delete release #删除releae分支
 
 master/develop/feature/release/hotfix
 
-![Git 与 GitLab 版本管理第 38 页插图](assets/img-44b019dd112fc3b0.png)
+![Git 与 GitLab 版本管理第 38 页插图](assets/img-44b019dd112fc3b0.webp)
 
 从master单独拉一个短期的hotfix分支进行问题修复
 
@@ -240,19 +233,20 @@ hotfix: 从master拉出来的分支，短期分支
 工作流程
 
 ```text
-git checkout -b hotfix # from master,完成修复和测试
+git checkout master
+git checkout -b hotfix # 从 master 创建，完成修复和测试
 git checkout master
 git merge hotfix #合并hotfix分支至master
 git checkout develop
 git merge hotfix #合并hotfix分支至develop
 git branch --delete hotfix #删除hotfix分支
-git checkout release # from devclop
-git rebasc develop # releasc分支变基,在release分支上完成测试和发布
+git checkout release # 已存在的 release 分支
+git merge develop # 如需同步 develop，先评估发布冻结与冲突风险
 git checkout develop
-git merge relcasc  #将relcasc分支合并至develop
+git merge release  # 将 release 分支合并至 develop
 git checkout master
 git merge release #将releasc分支合并至master
-git branch --delete release #删除relcasc分支
+git branch --delete release # 删除 release 分支
 ```
 
 ### Git 分支合并
@@ -265,11 +259,11 @@ git branch --delete release #删除relcasc分支
 
 分支合并存在两种情形
 
-快进式合并（Fast-Forward Merge） 三路合并（3-Way Merge）
+一种是目标分支没有新提交时的快进式合并（Fast-Forward）；另一种是分支已各自演进时，基于共同祖先进行的三路合并（Three-Way Merge）。
 
 快进式合并
 
-![Git 与 GitLab 版本管理第 39 页插图](assets/img-5905edd346540e72.png)
+![Git 与 GitLab 版本管理第 39 页插图](assets/img-5905edd346540e72.webp)
 
 三路合并
 
@@ -281,11 +275,11 @@ git branch --delete release #删除relcasc分支
 
 合并时，若某文件存在无法合并的修改，则意味着存在“冲突”的可能，如果冲突，需要用户手动解决冲突后创建提交完成合并
 
-![Git 与 GitLab 版本管理第 39 页插图](assets/img-0610401d5a8e5d41.png)
+![Git 与 GitLab 版本管理第 39 页插图](assets/img-0610401d5a8e5d41.webp)
 
 ### Git 使用远程仓库
 
-![Git 与 GitLab 版本管理第 39 页插图](assets/img-665596b824b6adbd.png)
+![Git 与 GitLab 版本管理第 39 页插图](assets/img-665596b824b6adbd.webp)
 
 通过远程仓库，基于HTTP、SSH 及 Git 多种传输协议可以实现异地备份和远程协作
 
@@ -293,7 +287,7 @@ git branch --delete release #删除relcasc分支
 
 在某个Git托管服务上注册一个账号，比如：GitHub，Gitee，GitLAB
 
-在Git托管服务上创建一个仓库在本地版本库上，使用git remote add  命令添加关联的远程库
+在托管平台创建仓库后，用 `git remote add origin <远程仓库 URL>` 给本地仓库配置远程地址。
 
 远程仓库，一般默认名称为origin 相关的url在远程库上可以直接获取到
 
@@ -301,42 +295,25 @@ git push 推送本地仓库到远程仓库，git pull 可以拉取远程仓库�
 
 没有本地仓库的其它主机通过git clone 可以将远程仓库克隆到本地
 
-设定远程仓库
+下列命令中的 `main` 应换成实际分支名；运行前先确认当前仓库和远程地址。
 
-添加： git remote add 列出： git remote -v 删除： git remote rm 重命名： git remote rename
-
-克隆远程仓库
-
-克隆： git clone 克隆到指定工作目录： git clone
-
-远程协作
-
-抓取远程仓库所有分支上的变更： git fetch
-
-抓取远程仓库指定分支上的变更： git fetch
-
-列出所有远程分支：git branch -r
-
-将远程分支合并至本地分支，通常应该将存在映射关系（通常为同一个分支名称）的分支进行合并
-
-git checkout git merge origin/
-
-拉取远程仓库上的变更
-
-拉取并合并当前分支映射的远程分支上的变更至本地工作区：git pull
-
-git pull 相当于如下两个命令生成的结果
-
-git fetch git merge
-
-推送本地变更到远程仓库
-
-推送指定的分支：git push 推送本地仓库中的所有分支：git push  --all 推送本地仓库中的所有标签：git push  --tag
+| 任务 | 命令 |
+| --- | --- |
+| 添加远程 | `git remote add origin <远程仓库 URL>` |
+| 查看远程 | `git remote -v` |
+| 重命名 / 删除远程 | `git remote rename origin upstream` / `git remote remove origin` |
+| 克隆仓库 | `git clone <远程仓库 URL> [目录名]` |
+| 抓取远程更新 | `git fetch origin` |
+| 抓取指定分支 | `git fetch origin main` |
+| 查看远程分支 | `git branch -r` |
+| 合并远程跟踪分支 | 在本地 `main` 上执行 `git merge origin/main` |
+| 拉取并合并 | `git pull origin main`；概念上相当于先 `fetch` 再 `merge`，实际行为还受配置影响 |
+| 推送分支 / 全部分支 / 全部标签 | `git push origin main` / `git push origin --all` / `git push origin --tags` |
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/06-common-software-deployment-models.html' | relative_url }}">← Previous: Common Software Deployment Models</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/08-installing-git.html' | relative_url }}">Next: Installing Git →</a>
+  <a href="{{ '/subjects/Git-GitLab/06-common-software-deployment-models.html' | relative_url }}">← 上一篇：常见的软件部署模式</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/08-installing-git.html' | relative_url }}">下一篇：Git 安装 →</a>
 </nav>

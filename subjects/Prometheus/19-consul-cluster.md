@@ -12,354 +12,112 @@ syntax_highlight: true
 
 # 19 Consul 集群部署
 
-## 6.4.2.2 部署 Consul 集群
+上一章的单节点 server 能演示服务注册，但该主机故障后就失去查询和写入能力。本章建立三个 server 的实验集群，重点检查**成员是否加入**与**Raft 是否有三个投票节点**。这两项不能混为一谈：原资料的日志里 node2、node3 显示为 `client`，虽然 `consul members` 列出了三台机器，实际并不是三 server 高可用集群。
 
-6.4.2.2.1 Consul 集群说明
+## 6.4.2.2 三节点集群的角色与前提
 
-帮助
-https://developer.hashicorp.com/consul/docs/agent/config/config-files
-https://developer.hashicorp.com/consul/docs/agent/config/cli-flags
+Consul agent 的 **server** 持有集群状态并参与 Raft；**client** 负责本地服务注册、查询转发和健康检查，不参与投票。三台 server 通常可以容忍其中一台故障，前提是仍有两台保持通信，即满足多数派。两台 server 不能比三台 server 多容忍一台故障，因此不要把“`bootstrap_expect=2`”理解成高可用的推荐值。
 
-集群架构说明
-https://developer.hashicorp.com/consul/docs/install/glossary
+本例使用三台独立主机：
 
-Consul 集群架构
+| 节点 | 地址 | 角色 |
+| --- | --- | --- |
+| node1 | `10.0.0.201` | server |
+| node2 | `10.0.0.202` | server |
+| node3 | `10.0.0.203` | server |
 
-Server是consul服务端高可用集群，Client是consul客户端。
+三台应位于同一数据中心标识 `dc1`，彼此的 `8300/TCP`（server RPC）、`8301/TCP/UDP`（LAN gossip）可达。HTTP API 默认在 `8500/TCP`，DNS 默认在 `8600/TCP/UDP`；开放范围应按访问需求限制。生产环境还需 ACL、TLS 与 gossip 加密，并将每台数据目录放在可靠存储上。详细选项见 [官方 Agent 配置文档](https://developer.hashicorp.com/consul/docs/agent/config/config-files)。
 
-consul客户端不保存数据，客户端将接收到的请求转发给响应的Server端。
+### 6.4.2.2.1 在三台主机配置 server
 
-Server之间通过局域网或广域网通信实现数据一致性。
+先在每台机器安装相同兼容版本的 Consul，并创建各自独立的数据目录；不要将第 18 章**已运行的单机集群数据目录**直接复制到另外两台，否则节点 ID 和 Raft 状态会冲突。以下是 node1 的 `/etc/consul.d/consul.hcl`，node2、node3 分别替换 `node_name` 和 `bind_addr`，其余字段保持一致：
 
-每个Server或Client都是一个consul agent 程序实现的。
-
-Consul集群节点之间使用了GOSSIP协议通信和raft一致性算法。
-
-Consul 集群中的每个 Agent 生命周期
-https://developer.hashicorp.com/consul/docs/agent
-
-Agent 可以手动启动，也可以通过自动化或程序化过程启动。新启动的 Agent 不知道集群中的其他节
-点。  
-Agent 加入集群，使 Agent 能够发现 Agent 对等点。当发出加入命令或根据自动加入配置时， Agent  
-会在启动时加入集群。  
-有关 Agent 的信息被传递到整个集群。结果，所有节点最终都会相互了解。  
-如果 Agent 是 Server，现有服务器将开始复制到新节点。  
-
-6.4.2.2.2 Consul 部署
-
-6.4.2.2.2.1 二进制部署 Consul 集群
-
-官方说明
-https://developer.hashicorp.com/consul/docs/agent/config/cli-flags
-
-consul agent  选项说明
-```text
--server  #使用server 模式运行consul 服务,consul支持以server或client的模式运行, server是服
-务发现模块的核心, client主要用于转发请求
--bootstrap #首次部署使用初始化模式
--bostrap-expect 2 #集群至少两台服务器，才能选举集群leader,默认值为3
--bind #该地址用来在集群内部的通讯，集群内的所有节点到地址都必须是可达的，默认是0.0.0.0,有多个IP需要
-手动指定,否则可能会出错
--client #设置客户端访问的监听地址,此地址提供HTTP、DNS、RPC等服务，默认是127.0.0.1
--data-dir #指定数据保存路径
--ui #运行 web 控制台,监听8500/tcp端口
--node #此节点的名称,群集中必须唯一
--datacenter=dc1 #数据中心名称，默认是dc1
--retry-join #指定要加入的集群中已有consul节点的地址，失败会重试, 可多次指定不同的地址,代替旧版本中
-的-join选项
+```hcl
+datacenter = "dc1"
+node_name = "node1"
+data_dir = "/data/consul"
+server = true
+bootstrap_expect = 3
+bind_addr = "10.0.0.201"
+client_addr = "127.0.0.1"
+retry_join = ["10.0.0.201", "10.0.0.202", "10.0.0.203"]
+ui_config {
+  enabled = true
+}
 ```
 
-范例:
-```text
-#node1:
-consul agent -server -bind=10.0.0.201 -client=0.0.0.0 -data-dir=/data/consul -
-node=node1 -ui -bootstrap
-#node2:
-consul agent -server -bind=10.0.0.202 -client=0.0.0.0 -data-dir=/data/consul -
-node=node2  -retry-join=10.0.0.201 -ui -bootstrap-expect 2
-#node3:
-consul agent -server -bind=10.0.0.203 -client=0.0.0.0 -data-dir=/data/consul -
-node=node3  -retry-join=10.0.0.201 -ui -bootstrap-expect 2
-```
+`bootstrap_expect = 3` 表示首次引导等待三台 server；不能只给 node1 使用旧的 `-bootstrap`，再给另外两台设置 `bootstrap_expect`。原资料正是把两种引导方式混用，日志显示 node2 与 node3 为 client。三个 `retry_join` 地址用于节点启动时互相发现；`bind_addr` 则必须是该节点真实可达的地址。
 
-范例:
+在每台主机运行：
+
 ```bash
-#启动第1个节点
-[root@ubuntu2204 ~]#consul agent -bind=10.0.0.201 -client=0.0.0.0 -data-
-dir=/data/consul -node=node1 -ui -server -bootstrap
-==> Starting Consul agent...
-              Version: '1.13.3'
-           Build Date: '2022-10-19 19:49:59 +0000 UTC'
-              Node ID: 'aa153028-5541-0678-bfc7-e0b531d1344f'
-            Node name: 'node1'
-           Datacenter: 'dc1' (Segment: '<all>')
-               Server: true (Bootstrap: true)
-          Client Addr: [0.0.0.0] (HTTP: 8500, HTTPS: -1, gRPC: -1, DNS: 8600)
-         Cluster Addr: 10.0.0.201 (LAN: 8301, WAN: 8302)
-    Gossip Encryption: false
-     Auto-Encrypt-TLS: false
-            HTTPS TLS: Verify Incoming: false, Verify Outgoing: false, Min Version:
-TLSv1_2
-             gRPC TLS: Verify Incoming: false, Min Version: TLSv1_2
-     Internal RPC TLS: Verify Incoming: false, Verify Outgoing: false (Verify
-Hostname: false), Min Version: TLSv1_2
-==> Log data will now stream in as it occurs:
-2022-10-29T16:57:05.284+0800 [WARN]  agent: bootstrap = true: do not enable unless
-necessary
-2022-10-29T16:57:05.288+0800 [WARN]  agent.auto_config: bootstrap = true: do not
-enable unless necessary
-2022-10-29T16:57:05.289+0800 [INFO]  agent.server.raft: initial configuration:
-index=1 servers="[{Suffrage:Voter ID:aa153028-5541-0678-bfc7-e0b531d1344f
-Address:10.0.0.201:8300}]"
-2022-10-29T16:57:05.290+0800 [INFO]  agent.server.raft: entering follower state:
-follower="Node at 10.0.0.201:8300 [Follower]" leader-address= leader-id=
-2022-10-29T16:57:05.290+0800 [INFO]  agent.server.serf.wan: serf: EventMemberJoin:
-node1.dc1 10.0.0.201
-2022-10-29T16:57:05.290+0800 [INFO]  agent.server.serf.wan: serf: Attempting re-join
-to previously known node: consul.dc1: 10.0.0.201:8302
-2022-10-29T16:57:05.290+0800 [INFO]  agent.server.serf.lan: serf: EventMemberJoin:
-node1 10.0.0.201
-2022-10-29T16:57:05.290+0800 [INFO]  agent.router: Initializing LAN area manager
-2022-10-29T16:57:05.291+0800 [INFO]  agent.server.autopilot: reconciliation now
-disabled
-2022-10-29T16:57:05.291+0800 [INFO]  agent.server.serf.lan: serf: Attempting re-join
-to previously known node: consul: 10.0.0.201:8301
-2022-10-29T16:57:05.291+0800 [INFO]  agent.server: Adding LAN server: server="node1
-(Addr: tcp/10.0.0.201:8300) (DC: dc1)"
-2022-10-29T16:57:05.291+0800 [INFO]  agent.server: Handled event for server in area:
-event=member-join server=node1.dc1 area=wan
-2022-10-29T16:57:05.292+0800 [WARN]  agent: [core]grpc: addrConn.createTransport
-failed to connect to {dc1-10.0.0.201:8300 node1 <nil> 0 <nil>}. Err: connection
-error: desc = "transport: Error while dialing dial tcp 10.0.0.201:0->10.0.0.201:8300:
-operation was canceled". Reconnecting...
-2022-10-29T16:57:05.292+0800 [INFO]  agent.server.serf.wan: serf: Re-joined to
-previously known node: consul.dc1: 10.0.0.201:8302
-2022-10-29T16:57:05.293+0800 [INFO]  agent.server.serf.lan: serf: Re-joined to
-previously known node: consul: 10.0.0.201:8301
-2022-10-29T16:57:05.294+0800 [INFO]  agent: Started DNS server: address=0.0.0.0:8600
-network=udp
-2022-10-29T16:57:05.294+0800 [INFO]  agent: Started DNS server: address=0.0.0.0:8600
-network=tcp
-2022-10-29T16:57:05.294+0800 [INFO]  agent: Starting server: address=[::]:8500
-network=tcp protocol=http
-2022-10-29T16:57:05.296+0800 [INFO]  agent: started state syncer
-2022-10-29T16:57:05.296+0800 [INFO]  agent: Consul agent running!
-2022-10-29T16:57:10.836+0800 [WARN]  agent.server.raft: heartbeat timeout reached,
-starting election: last-leader-addr= last-leader-id=
-2022-10-29T16:57:10.836+0800 [INFO]  agent.server.raft: entering candidate state:
-node="Node at 10.0.0.201:8300 [Candidate]" term=3
-2022-10-29T16:57:10.837+0800 [INFO]  agent.server.raft: election won: tally=1
-2022-10-29T16:57:10.837+0800 [INFO]  agent.server.raft: entering leader state:
-leader="Node at 10.0.0.201:8300 [Leader]"
-2022-10-29T16:57:10.837+0800 [INFO]  agent.server: cluster leadership acquired
-2022-10-29T16:57:10.837+0800 [INFO]  agent.server: New leader elected: payload=node1
-2022-10-29T16:57:10.839+0800 [INFO]  agent.server.autopilot: reconciliation now
-enabled
-2022-10-29T16:57:10.839+0800 [INFO]  agent.leader: started routine:
-routine="federation state anti-entropy"
-2022-10-29T16:57:10.839+0800 [INFO]  agent.leader: started routine:
-routine="federation state pruning"
-2022-10-29T16:57:10.839+0800 [INFO]  agent.server: member joined, marking health
-alive: member=node1 partition=default
-2022-10-29T16:57:10.884+0800 [INFO]  agent: Synced node info
-2022-10-29T16:57:25.188+0800 [INFO]  agent.server.serf.lan: serf: EventMemberJoin:
-node2 10.0.0.202
-2022-10-29T16:57:25.188+0800 [INFO]  agent.server: member joined, marking health
-alive: member=node2 partition=default
-2022-10-29T16:58:12.847+0800 [INFO]  agent.server.serf.lan: serf: EventMemberJoin:
-node3 10.0.0.203
-2022-10-29T16:58:12.847+0800 [INFO]  agent.server: member joined, marking health
-alive: member=node3 partition=default
-2022-10-29T16:58:31.184+0800 [ERROR] agent.http: Request error: method=GET
-url=/v1/discovery-chain/consul?dc=dc1 from=10.0.0.1:7515 error="Connect must be
-enabled in order to use this endpoint"
-#启动第2个节点
-[root@ubuntu2204 ~]#consul agent -bind=10.0.0.202 -client=0.0.0.0 -data-
-dir=/data/consul -node=node2 -retry-join=10.0.0.201 -ui  -server -bootstrap-expect 2
-==> Starting Consul agent...
-              Version: '1.13.3'
-           Build Date: '2022-10-19 19:49:59 +0000 UTC'
-              Node ID: '96af8fd9-c023-ad17-7407-736c6ba7bc50'
-            Node name: 'node2'
-           Datacenter: 'dc1' (Segment: '')
-               Server: false (Bootstrap: false)
-          Client Addr: [0.0.0.0] (HTTP: 8500, HTTPS: -1, gRPC: -1, DNS: 8600)
-         Cluster Addr: 10.0.0.202 (LAN: 8301, WAN: 8302)
-    Gossip Encryption: false
-     Auto-Encrypt-TLS: false
-            HTTPS TLS: Verify Incoming: false, Verify Outgoing: false, Min Version:
-TLSv1_2
-             gRPC TLS: Verify Incoming: false, Min Version: TLSv1_2
-     Internal RPC TLS: Verify Incoming: false, Verify Outgoing: false (Verify
-Hostname: false), Min Version: TLSv1_2
-==> Log data will now stream in as it occurs:
-2022-10-29T16:57:25.153+0800 [INFO]  agent.client.serf.lan: serf: EventMemberJoin:
-node2 10.0.0.202
-2022-10-29T16:57:25.153+0800 [INFO]  agent.router: Initializing LAN area manager
-2022-10-29T16:57:25.153+0800 [INFO]  agent: Started DNS server: address=0.0.0.0:8600
-network=udp
-2022-10-29T16:57:25.154+0800 [INFO]  agent.client.serf.lan: serf: Attempting re-join
-to previously known node: consul: 10.0.0.202:8301
-2022-10-29T16:57:25.154+0800 [INFO]  agent: Started DNS server: address=0.0.0.0:8600
-network=tcp
-2022-10-29T16:57:25.154+0800 [INFO]  agent: Starting server: address=[::]:8500
-network=tcp protocol=http
-2022-10-29T16:57:25.155+0800 [INFO]  agent.client.serf.lan: serf: Re-joined to
-previously known node: consul: 10.0.0.202:8301
-2022-10-29T16:57:25.155+0800 [INFO]  agent: Joining cluster
-2022-10-29T16:57:25.155+0800 [INFO]  agent: (LAN) joining: lan_addresses=[10.0.0.201]
-2022-10-29T16:57:25.157+0800 [INFO]  agent.client.serf.lan: serf: EventMemberJoin:
-node1 10.0.0.201
-2022-10-29T16:57:25.157+0800 [INFO]  agent: (LAN) joined: number_of_nodes=1
-2022-10-29T16:57:25.157+0800 [INFO]  agent: Join completed. Initial agents synced
-with: agent_count=1
-2022-10-29T16:57:25.157+0800 [INFO]  agent: started state syncer
-2022-10-29T16:57:25.157+0800 [INFO]  agent: Consul agent running!
-2022-10-29T16:57:25.157+0800 [INFO]  agent.client: adding server: server="node1
-(Addr: tcp/10.0.0.201:8300) (DC: dc1)"
-2022-10-29T16:57:25.157+0800 [WARN]  agent.router.manager: No servers available
-2022-10-29T16:57:25.158+0800 [ERROR] agent.anti_entropy: failed to sync remote state:
-error="No known Consul servers"
-2022-10-29T16:57:25.616+0800 [INFO]  agent: Synced node info
-2022-10-29T16:58:12.861+0800 [INFO]  agent.client.serf.lan: serf: EventMemberJoin:
-node3 10.0.0.203
-#启动第3个节点
-[root@ubuntu2204 ~]#consul agent -bind=10.0.0.203 -client=0.0.0.0 -data-
-dir=/data/consul -node=node3 -retry-join=10.0.0.201 -ui  -server -bootstrap-expect 2
-==> Starting Consul agent...
-              Version: '1.13.3'
-           Build Date: '2022-10-19 19:49:59 +0000 UTC'
-              Node ID: '5483a4ba-507d-51b7-4b07-5c8c823b4c30'
-            Node name: 'node3'
-           Datacenter: 'dc1' (Segment: '')
-               Server: false (Bootstrap: false)
-          Client Addr: [0.0.0.0] (HTTP: 8500, HTTPS: -1, gRPC: -1, DNS: 8600)
-         Cluster Addr: 10.0.0.203 (LAN: 8301, WAN: 8302)
-    Gossip Encryption: false
-     Auto-Encrypt-TLS: false
-            HTTPS TLS: Verify Incoming: false, Verify Outgoing: false, Min Version:
-TLSv1_2
-             gRPC TLS: Verify Incoming: false, Min Version: TLSv1_2
-     Internal RPC TLS: Verify Incoming: false, Verify Outgoing: false (Verify
-Hostname: false), Min Version: TLSv1_2
-==> Log data will now stream in as it occurs:
-2022-10-29T16:58:12.815+0800 [INFO]  agent.client.serf.lan: serf: EventMemberJoin:
-node3 10.0.0.203
-2022-10-29T16:58:12.815+0800 [INFO]  agent.router: Initializing LAN area manager
-2022-10-29T16:58:12.815+0800 [INFO]  agent.client.serf.lan: serf: Attempting re-join
-to previously known node: consul: 10.0.0.203:8301
-2022-10-29T16:58:12.815+0800 [INFO]  agent: Started DNS server: address=0.0.0.0:8600
-network=udp
-2022-10-29T16:58:12.816+0800 [INFO]  agent: Started DNS server: address=0.0.0.0:8600
-network=tcp
-2022-10-29T16:58:12.816+0800 [INFO]  agent: Starting server: address=[::]:8500
-network=tcp protocol=http
-2022-10-29T16:58:12.816+0800 [INFO]  agent: Joining cluster
-2022-10-29T16:58:12.817+0800 [INFO]  agent: (LAN) joining: lan_addresses=[10.0.0.201]
-2022-10-29T16:58:12.818+0800 [INFO]  agent.client.serf.lan: serf: Re-joined to
-previously known node: consul: 10.0.0.203:8301
-2022-10-29T16:58:12.819+0800 [INFO]  agent.client.serf.lan: serf: EventMemberJoin:
-node2 10.0.0.202
-2022-10-29T16:58:12.819+0800 [INFO]  agent.client.serf.lan: serf: EventMemberJoin:
-node1 10.0.0.201
-2022-10-29T16:58:12.819+0800 [INFO]  agent: (LAN) joined: number_of_nodes=1
-2022-10-29T16:58:12.819+0800 [INFO]  agent: Join completed. Initial agents synced
-with: agent_count=1
-2022-10-29T16:58:12.819+0800 [INFO]  agent: started state syncer
-2022-10-29T16:58:12.819+0800 [INFO]  agent: Consul agent running!
-2022-10-29T16:58:12.819+0800 [INFO]  agent.client: adding server: server="node1
-(Addr: tcp/10.0.0.201:8300) (DC: dc1)"
-2022-10-29T16:58:12.824+0800 [INFO]  agent: Synced node info
+sudo install -d -o consul -g consul /data/consul
+sudo consul validate /etc/consul.d
+sudo systemctl enable --now consul
+sudo systemctl status consul
 ```
 
-启动成功后，可以访问下面链接
-```text
-http://consul.bowen.org:8500
-#访问第一个有-ui功能的节点
-```
+沿用第 18 章的 systemd 服务文件即可，其 `ExecStart` 应为 `consul agent -config-dir=/etc/consul.d`。新节点开始时可能出现“尚无 leader”的日志，待三个 server 都加入后再判断是否异常。不同主机的 systemd 日志可用 `journalctl -u consul -e` 查看。
 
-![原 PDF 第 267 页插图](assets/img-4bacd0633d68eecc.png)
+### 6.4.2.2.2 核对成员和 Raft 投票节点
 
-6.4.2.2.2.2 基于 Docker-compose 部署 Consul 集群
+在任一节点运行：
+
 ```bash
-[root@ubuntu2204 ~]#apt -y install docker-compose
-[root@ubuntu2204 ~]#docker-compose -v
-docker-compose version 1.29.2, build unknown
-[root@ubuntu2204 ~]#mkdir -p /data/consul/
-[root@ubuntu2204 ~]#cat > /data/consul/docker-compose.yaml << EOF
-version: '2'
-networks:
-  consul:
+consul members
+consul operator raft list-peers
+curl -fsS http://127.0.0.1:8500/v1/status/leader
+```
+
+`consul members` 应列出 node1、node2、node3，且 `Type` 都是 `server`、`Status` 都是 `alive`。`raft list-peers` 应列出三个 server 的投票信息，且有且仅有一个 leader。最后的 HTTP 接口应返回非空的 leader 地址。成员状态正常却只有一个 Raft peer 时，优先检查 `server = true`、`bootstrap_expect`、旧数据目录、节点间端口与日志。
+
+![三节点集群的 Web 界面](assets/img-4bacd0633d68eecc.webp)
+
+可以在维护窗口短暂停止其中一台 server，确认剩余两台仍能选出 leader、HTTP 查询正常，再重新启动。**不要同时停两台**；失去多数派会导致写入不可用。恢复后再次检查三个成员与 Raft peer。
+
+### 6.4.2.2.3 容器实验与宿主机故障域
+
+在单台宿主机上用 Compose 起三个 server，能演示 Raft 和路由流程，但**不能**抵御宿主机故障。下面每个 server 使用独立卷，三个容器在同一私有网络相互发现。不要和前面的主机版服务同时占用 `8500`。
+
+```yaml
 services:
   consul1:
-    image: consul:1.13.3
-    container_name: node1
+    image: hashicorp/consul:1.21
+    command: agent -server -bootstrap-expect=3 -node=consul1 -bind=0.0.0.0 -client=0.0.0.0 -data-dir=/consul/data -retry-join=consul2 -retry-join=consul3
     volumes:
-      - /data/consul/conf_with_acl:/consul/config
-    command: agent -server -ui -bootstrap-expect=2 -node=node1 -bind=0.0.0.0 -
-client=0.0.0.0 -config-dir=/consul/config
+      - consul1_data:/consul/data
     ports:
-      - 8500:8500
-    networks:
-      - consul
+      - "8500:8500"
   consul2:
-    image: consul:1.13.3
-    container_name: node2
+    image: hashicorp/consul:1.21
+    command: agent -server -bootstrap-expect=3 -node=consul2 -bind=0.0.0.0 -client=0.0.0.0 -data-dir=/consul/data -retry-join=consul1 -retry-join=consul3
     volumes:
-      - /data/consul/conf_with_acl:/consul/config
-    command: agent -server -retry-join=node1 -node=node2 -bind=0.0.0.0 -
-client=0.0.0.0 -config-dir=/consul/config
-    depends_on:
-         - consul1
-    networks:
-      - consul
+      - consul2_data:/consul/data
   consul3:
-    image: consul:1.13.3
+    image: hashicorp/consul:1.21
+    command: agent -server -bootstrap-expect=3 -node=consul3 -bind=0.0.0.0 -client=0.0.0.0 -data-dir=/consul/data -retry-join=consul1 -retry-join=consul2
     volumes:
-      - /data/consul/conf_with_acl:/consul/config
-    container_name: node3
-    command: agent -server -retry-join=node1 -node=node3 -bind=0.0.0.0 -
-client=0.0.0.0 -config-dir=/consul/config
-    depends_on:
-         - consul1
-    networks:
-      - consul
-EOF
-[root@ubuntu2204 ~]#cd /data/consul/
-[root@ubuntu2204 ~]#docker-compose up -d
+      - consul3_data:/consul/data
+
+volumes:
+  consul1_data:
+  consul2_data:
+  consul3_data:
 ```
 
-![原 PDF 第 268 页插图](assets/img-a33c5af3e0e67fbb.png)
-
-6.4.2.2.3 Consul 集群管理
-
-查看集群成员
-
-使用consul members命令
 ```bash
-consul members Node
-[root@ubuntu2204 ~]#consul members Node
-Node   Address          Status  Type    Build   Protocol  DC   Partition  Segment
-node1  10.0.0.201:8301  alive   server  1.15.0  2         dc1  default    <all>
-node2  10.0.0.202:8301  alive   client  1.15.0  2         dc1  default    <default>
-node3  10.0.0.203:8301  alive   client  1.15.0  2         dc1  default    <default>
+docker compose up -d
+docker compose exec consul1 consul members
+docker compose exec consul1 consul operator raft list-peers
 ```
 
-通过HTTP API进行
-```bash
-curl localhost:8500/v1/catalog/nodes
-```
+若容器镜像版本与本文示例不同，先核对对应版本的官方镜像名称与参数。部署在多台宿主机时还要处理容器网络、对外通告地址和跨主机端口，不能直接把这个单机 Compose 文件当作生产集群。
 
-在Server上添加其它agent
-```text
-consul join [options] address ...
-```
+![Compose 集群实验](assets/img-a33c5af3e0e67fbb.webp)
 
-在agent主机上，设置该agent离开集群并关闭agent
-```text
-consul leave
-```
+### 6.4.2.2.4 日常操作的边界
 
+`consul join <地址>` 用于让已启动的 agent 加入现有集群；`consul leave` 让当前 agent 有序离开。HTTP API `/v1/catalog/nodes` 可列出目录节点，但它不能取代 Raft peer 检查。新增或迁移 server、调整投票成员之前，先确认集群健康与数据备份；下一章再将服务实例注册进这个集群，并让 Prometheus 从 Consul 获取抓取目标。
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

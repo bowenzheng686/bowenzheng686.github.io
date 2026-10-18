@@ -13,22 +13,18 @@ syntax_highlight: true
 # 04 SOA 面向服务架构
 ### 1.4 SOA
 
-SOA（Service Oriented Architecture）是由多个服务组成的分布式系统
+SOA（面向服务架构）通过明确的服务契约，把订单、客户或结算等业务能力提供给其他系统使用。重点不只是“拆成多个进程”，而是跨系统约定接口、消息格式、身份认证和版本演进。它常见于多套异构系统需要共享能力的企业环境。
 
-各个子系统之间没有采用统一的通信标准,导致系统间通信与数据交互变得异常复杂各个服务之间通过ESB(Enterprise Service Bus)进行通信,ESB是一个由大量规则和原则集成的软件架构，可以将一系列不同的应用程序集成到单个基础架构中，由于没有好的开源方案，只能使用商业公司的产品,因此成本很高
+企业服务总线 **ESB** 是一种集成方式，可集中处理路由、协议转换和消息编排，但 SOA 并不要求所有服务都经过 ESB，也不意味着只能购买商业产品。集中集成逻辑能够减少系统间的两两对接，同时也需要高可用部署、容量规划和清晰的变更治理，否则可能成为性能瓶颈或单点故障。
 
-此外ESB属于重量级产品，部署规划异常笨重
+![微服务技术第 3 页插图](assets/img-3db078bc9e24002b.webp)
 
-ESB的单点依赖和商业ESB的费用问题反而成为了所有服务的瓶颈
-
-![微服务技术第 3 页插图](assets/img-3db078bc9e24002b.png)
-
-特点:  降低服务耦合度,有利于升级扩展,服务相互访问复杂
+与下一篇的微服务相比，SOA 更关注跨系统复用与集成治理；微服务更强调按业务边界形成可独立交付的服务。两者有交集，不能简单理解为“SOA 1.0、微服务 2.0”的线性替代。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/03-model-view-controller-mvc.html' | relative_url }}">← Previous: Model-View-Controller (MVC)</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/05-microservices.html' | relative_url }}">Next: Microservices →</a>
+  <a href="{{ '/subjects/Microservices/03-model-view-controller-mvc.html' | relative_url }}">← 上一篇：MVC 模型—视图—控制器</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/05-microservices.html' | relative_url }}">下一篇：微服务 →</a>
 </nav>

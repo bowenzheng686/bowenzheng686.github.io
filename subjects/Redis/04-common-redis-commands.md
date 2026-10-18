@@ -1,205 +1,76 @@
 ---
 layout: default
-title: "Redis 数据库 · Redis 常用命令"
+title: "Redis 数据库 · 常用管理命令"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
+[← 返回 Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 04 Redis 常用命令
-## 2 Redis 基础功能
+# 04 常用管理命令
 
-### 2.1 Redis 常用命令
+这一节先认识实例状态、数据库选择、键统计与服务关闭。字符串、哈希、列表等数据类型命令见第 09 篇。不同 Redis 版本的命令选项可能变化，需以[官方命令参考](https://redis.io/commands/)和当前实例的 `COMMAND DOCS` 为准。
 
-官方文档：
+## INFO：看实例状态
 
-<https://redis.io/commands>
-
-参考链接:
-
-<http://redisdoc.com/>
-
-<http://doc.redisfans.com/>
-
-<https://www.php.cn/manual/view/36359.html>
-
-### INFO
-
-显示当前节点redis运行状态信息
-
-```bash
-127.0.0.1:6379> INFO
-# Server
-redis_version:5.0.3
-redis_git_sha1:00000000
-redis_git_dirty:0
-redis_build_id:8c0bf22bfba82c8f
-redis_mode:standalone
-os:Linux 4.18.0-147.el8.x86_64 x86_64
-arch_bits:64
-multiplexing_api:epoll
-atomicvar_api:atomic-builtin
-gcc_version:8.2.1
-process_id:725
-run_id:8af0d3fba2b7c5520e0981b125cc49c3ce4d2a2f
-tcp_port:6379
-uptime_in_seconds:18552
-......
-#只显示指定部分的内容
-[root@ubuntu2004 ~]#redis-cli info server
-# Server
-redis_version:6.2.6
-redis_git_sha1:00000000
-redis_git_dirty:0
-redis_build_id:7559afb376c61733
-```
-
-```bash
-[root@ubuntu2004 ~]#redis-cli info Cluster
-# Cluster
-cluster_enabled:0
-```
-
-### SELECT
-
-切换数据库，相当于在MySQL的 USE DBNAME 指令
-
-```bash
-[root@centos8 ~]#redis-cli
-127.0.0.1:6379> info cluster
-# Cluster
-cluster_enabled:0
-127.0.0.1:6379[15]> SELECT 0
-OK
-127.0.0.1:6379> SELECT 1
-OK
-127.0.0.1:6379[1]> SELECT 15
-OK
-127.0.0.1:6379[15]> SELECT 16
-(error) ERR DB index is out of range
-127.0.0.1:6379[15]>
-```
-
-注意: 在 Redis cluster 模式下不支持多个数据库,会出现下面错误
-
-```bash
-[root@centos8 ~]#redis-cli
-127.0.0.1:6379> info cluster
-# Cluster
-cluster_enabled:1
-127.0.0.1:6379> select 0
-OK
-127.0.0.1:6379> select 1
-(error) ERR SELECT is not allowed in cluster mode
-```
-
-### KEYS
-
-查看当前库下的所有key，此命令慎用！
-
-![Redis 数据库第 59 页插图](assets/img-baff44ef87d37f80.jpeg)
-
-![Redis 数据库第 59 页插图](assets/img-fbbf97a2d48d65f1.png)
+`INFO` 返回多个分类的运行指标；生产排障时按分类查询更容易阅读：
 
 ```text
-127.0.0.1:6379[15]> SELECT 0
-OK
-127.0.0.1:6379> KEYS *
-1) "9527"
-2) "9526"
-3) "course"
-4) "list1"
-127.0.0.1:6379> SELECT 1
-OK
-127.0.0.1:6379[1]> KEYS *
-(empty list or set)
-127.0.0.1:6379[1]>
-redis>MSET one 1 two 2 three 3 four 4  # 一次设置 4 个 key
-OK
-redis> KEYS *o*
-1) "four"
-2) "two"
-3) "one"
-redis> KEYS t??
-1) "two"
-redis> KEYS t[w]*
-1) "two"
-redis> KEYS *  # 匹配数据库内所有 key
-1) "four"
-2) "three"
-3) "two"
-4) "one"
+INFO server
+INFO clients
+INFO memory
+INFO persistence
+INFO replication
+INFO cluster
 ```
 
-### DBSIZE
+例如 `INFO server` 可确认 Redis 版本、运行时长和端口；`INFO persistence` 关注 RDB／AOF 的最近状态，`INFO replication` 关注主从角色与连接。原资料复制的数百行旧版本 `INFO` 输出仅是一次采样，不应把其中的内存、端口和角色当成固定结果。
 
-返回当前库下的所有key 数量
+## SELECT：逻辑数据库
+
+单机 Redis 默认有多个逻辑数据库，`SELECT 1` 将当前连接切到 DB 1，`SELECT 0` 切回 DB 0。它们不是 MySQL 那样有独立权限和物理隔离的数据库；多个 DB 仍共享进程资源与持久化文件。DB 数量由配置决定，超出范围会报错。
 
 ```text
-127.0.0.1:6379> DBSIZE
-(integer) 4
-127.0.0.1:6379> SELECT 1
-OK
-127.0.0.1:6379[1]> DBSIZE
-(integer) 0
+SELECT 1
+DBSIZE
+SELECT 0
 ```
 
-### FLUSHDB
+**Redis Cluster 只使用 DB 0**，不支持切换到其他编号；`SELECT 0` 在部分版本中仍可返回成功，但不能据此认为 Cluster 支持多 DB。多租户隔离应使用键命名、ACL 或独立实例来规划。
 
-强制清空当前库中的所有key，此命令慎用！
+## KEYS、SCAN 与 DBSIZE
+
+`KEYS pattern` 会在当前数据库遍历所有键，时间复杂度随键数量增长，可能阻塞繁忙实例；适合空实例或很小的测试库，不适合作为生产分页接口。模式 `*`、`?`、字符集合等可以匹配键名，但不会降低全库遍历的代价。
+
+![KEYS 命令示意](assets/img-baff44ef87d37f80.webp)
+
+![键名模式匹配示意](assets/img-fbbf97a2d48d65f1.webp)
+
+线上排查更适合用 `SCAN` 按游标渐进遍历，例如：
 
 ```text
-127.0.0.1:6379[1]> SELECT 0
-OK
-127.0.0.1:6379> DBSIZE
-(integer) 4
-127.0.0.1:6379> FLUSHDB
-OK
-127.0.0.1:6379> DBSIZE
-(integer) 0
-127.0.0.1:6379>
+SCAN 0 MATCH user:* COUNT 100
 ```
 
-### FLUSHALL
+返回值包含**下一次游标和本批键**；继续请求直到游标再次为 `0`。`COUNT` 是提示而非严格页大小，遍历期间键变动可能导致重复或遗漏，因此业务逻辑不能把 `SCAN` 当成一致性快照。命令行也可用 `redis-cli --scan --pattern 'user:*'`。`DBSIZE` 只返回当前逻辑数据库的键数量，不列出键，也不统计其他 DB。
 
-强制清空当前Redis服务器所有数据库中的所有key，即删除所有数据，此命令慎用！
+## FLUSHDB、FLUSHALL：高影响删除
 
-```text
-127.0.0.1:6379> FLUSHALL
-OK
-#生产建议修改配置使用rename-command禁用此命令
-vim /etc/redis.conf
-rename-command FLUSHALL ""  #flushdb和和AOF功能冲突，需要设置 appendonly no,不区分命令
-大小写，但和flushall （v7.2.3不冲突）
-```
+`FLUSHDB` 清空当前逻辑数据库，`FLUSHALL` 清空实例中的全部逻辑数据库。在 Cluster 中各节点拥有自己的键空间，不能把对单个节点的操作误认为已清理整个集群。两个命令都可能导致不可恢复的数据丢失；执行前应核对实例、DB、备份和业务窗口，并限制普通应用账户的权限。
 
-### SHUTDOWN
+在 Redis 6+ 中更适合用 ACL 控制高影响命令，而不是只依赖 `rename-command`。重命名或禁用命令会影响客户端、运维工具与持久化重放等行为，需在测试环境验证。原资料关于“FLUSHDB 与 AOF 冲突，必须关闭 AOF”的断言不成立；AOF 是否开启与是否允许清空数据库是两个不同决策。
 
-```text
-可用版本： >= 1.0.0
-时间复杂度： O(N)，其中 N 为关机时需要保存的数据库键数量。
-SHUTDOWN 命令执行以下操作：
-关闭Redis服务,停止所有客户端连接
-如果有至少一个保存点在等待，执行 SAVE 命令
-如果 AOF 选项被打开，更新 AOF 文件
-关闭 redis 服务器(server)
-如果持久化被打开的话， SHUTDOWN 命令会保证服务器正常关闭而不丢失任何数据。
-另一方面，假如只是单纯地执行 SAVE 命令，然后再执行 QUIT 命令，则没有这一保证 —— 因为在执行
-SAVE 之后、执行 QUIT 之前的这段时间中间，其他客户端可能正在和服务器进行通讯，这时如果执行 QUIT
-就会造成数据丢失。
-#建议禁用此指令
-vim /etc/redis.conf
-rename-command shutdown ""
-```
+## SHUTDOWN 与 QUIT
+
+`QUIT` 只断开当前客户端，不停止 Redis；`SHUTDOWN` 停止服务器，并按当前持久化设置尝试完成相应保存或写盘。不能把“执行过 `SAVE` 然后 `QUIT`”当作停止服务或完整备份，因为服务仍可能接收其他写入。由 systemd 管理的实例，日常停机优先使用 `systemctl stop`，观察退出码和持久化日志。是否发生数据丢失取决于持久化模式、写盘策略和故障时点，不能无条件承诺 `SHUTDOWN` 后零丢失。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Redis/03-redis-tools-and-client-connections.html' | relative_url }}">← Previous: Redis Tools and Client Connections</a>
-  <a href="{{ '/subjects/Redis/' | relative_url }}">Back to Redis Database Index</a>
-  <a href="{{ '/subjects/Redis/05-redis-configuration-files.html' | relative_url }}">Next: Redis Configuration Files →</a>
+  <a href="{{ '/subjects/Redis/03-redis-tools-and-client-connections.html' | relative_url }}">← 上一篇：工具与客户端连接</a>
+  <a href="{{ '/subjects/Redis/' | relative_url }}">返回 Redis 数据库目录</a>
+  <a href="{{ '/subjects/Redis/05-redis-configuration-files.html' | relative_url }}">下一篇：配置文件 →</a>
 </nav>

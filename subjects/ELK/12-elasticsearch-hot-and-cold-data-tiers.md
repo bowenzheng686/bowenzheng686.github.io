@@ -13,151 +13,68 @@ syntax_highlight: true
 # 12 Elasticsearch 数据冷热分离
 ### 2.8 Elasticsearch 数据冷热分离
 
-### 冷热分离原理
+### 为什么按数据温度分层
 
-为了保证Elasticsearch的读写性能，官方建议磁盘使用SSD固态硬盘。然而Elasticsearch要解决的是海量数据的存储和检索问题，海量的数据就意味需要大量的存储空间，如果都使用SSD固态硬盘成本将成为一个很大的问题，这也是制约许多企业和个人使用Elasticsearch的因素之一。为了解决这个问题， Elasticsearch冷热分离架构应运而生。 传统的Elasticsearch集群中所有节点均采用相同的配置，然而Elasticsearch并没有对节点的规格一致性做要求，换而言之就是每个节点可以是任意规格，当然这样做会导致集群各节点性能不一致，影响集群稳定性。但是如果有规则的将集群的节点分成不同类型，部分是高性能的节点用于存储热点数据，部分是性能相对差些的大容量节点用于存储冷数据，却可以一方面保证热数据的性能，另一方面保证冷数据的存储，降低存储成本，这也是Elasticsearch冷热分离架构的基本思想
+近期写入、频繁查询的日志适合放在性能较高的热层；查询较少但仍需保留的数据可以迁往成本较低的温层或冷层。分层目标是平衡检索性能、存储成本和保留时间，而不是仅凭磁盘类型把节点分组。具体的磁盘选择仍应按写入量、查询负载与副本需求测试。
 
-### 配置方法
+| 层级 | 典型用途 | 规划重点 |
+| --- | --- | --- |
+| 热层 | 持续写入和高频查询 | 写入吞吐、低延迟、足够的副本空间。 |
+| 温层 | 写入减少、偶尔查询 | 成本与查询性能的平衡。 |
+| 冷层 | 很少查询的历史数据 | 较长保留期、恢复时间与存储成本。 |
 
-### 准备硬件配置不同的多个节点
+例如三台热节点和两台冷节点可以采用不同的 CPU、内存和磁盘规格，但必须确认每层都能容纳目标分片及其副本。只有一台冷节点时，要求两个副本分布到冷层可能无法满足。
 
-如下图为一个3热节点，2冷节点的冷热分离Elasticsearch集群
+### 当前版本：数据层与生命周期策略
 
-节点 CPU 内存存储
+较新的 Elasticsearch 版本提供 `data_hot`、`data_warm`、`data_cold` 等数据层角色，并通常由索引生命周期管理（ILM）把索引从热层迁往后续层级。先为各节点设置对应角色，再定义索引模板和 ILM 策略；迁移前应验证目标层容量、索引是否仍在写入及所用版本的功能支持情况。分片分配偏好可通过 `_tier_preference` 查看：
 
-Node1 16C 64G 1TB SSD
-
-Node2 16C 64G 1TB SSD
-
-Node3 16C 64G 1TB SSD
-
-Node4 8C 32G 5TB HDD
-
-Node5 8C 32G 5TB HDD
-
-### 指定节点的冷热属性
-
-仅仅将不同的节点设置为不同的规格还不够，为了能明确区分出哪些节点是热节点，哪些节点是冷节点，需要为对应节点打标签
-
-Elasticsearch支持给节点打标签，具体方式是在elasticsearch.yml文件中增加
-
-```text
-node.attr.{attribute}: {value}
-#其中attribute为用户自定义的任意标签名，value为该节点对应的该标签的值
+```http
+GET /my-index/_settings/index.routing.allocation.include._tier_preference
+GET /_cat/shards/my-index?v&h=index,shard,prirep,node
 ```
 
-例如对于冷热分离，可以使用如下设置
+此处 `my-index` 是实际索引名占位符。新版本优先采用数据层和 ILM，不要把下面的手工属性过滤与 `_tier_preference` 混用而产生相互矛盾的分配约束。
 
-```text
-#示例
-vim elasticsearch.yml
-node.attr.temperature: hot //热节点
-node.attr.temperature: warm  //冷节点
+### 旧版方案：自定义节点属性与索引过滤
+
+在仍使用自定义属性的版本中，可给节点设置 `node.attr.temperature: hot` 或 `node.attr.temperature: cold`，然后按索引要求分片落在对应节点。例如：
+
+```yaml
+# 热节点的 elasticsearch.yml
+node.attr.temperature: hot
 ```
 
-```text
-#验证
-GET _cat/nodeattrs?v&h=node,attr,value&s=attr:desc
-node        attr        value
-node1   temperature     hot
-node2   temperature     hot
-node3   temperature     warm
-node4   temperature     hot
-node5   temperature     warm
+```yaml
+# 冷节点的 elasticsearch.yml
+node.attr.temperature: cold
 ```
 
-```bash
-[root@ubuntu2404 ~]#curl 'http://10.0.0.101:9200/_cat/nodeattrs?
-v&h=node,attr,value&s=attr:desc'
-node   attr                           value
-node-1 xpack.installed                true
-node-3 xpack.installed                true
-node-2 xpack.installed                true
-node-1 transform.config_version       10.0.0
-node-3 transform.config_version       10.0.0
-node-2 transform.config_version       10.0.0
-node-1 temperature                    hot
-node-3 temperature                    cold
-node-2 temperature                    hot
-node-1 ml.max_jvm_size                2030043136
-node-3 ml.max_jvm_size                2030043136
-node-2 ml.max_jvm_size                2030043136
-node-1 ml.machine_memory              4056039424
-node-3 ml.machine_memory              4056064000
-node-2 ml.machine_memory              4056064000
-node-1 ml.config_version              12.0.0
-node-3 ml.config_version              12.0.0
-node-2 ml.config_version              12.0.0
-node-1 ml.allocated_processors_double 2.0
-node-3 ml.allocated_processors_double 2.0
-node-2 ml.allocated_processors_double 2.0
-node-1 ml.allocated_processors        2
-node-3 ml.allocated_processors        2
-node-2 ml.allocated_processors        2
-```
+在 Dev Tools 中查看节点属性，并把已有索引限制在热节点：
 
-### 指定索引冷热属性
+```http
+GET /_cat/nodeattrs?v&h=node,attr,value
 
-指定数据的冷热属性，来设置和调整数据分布。冷热分离方案中数据冷热分布的基本单位是索引，即指定某个索引为热索引，另一个索引为冷索引。通过索引的分布来实现控制数据分布的目的。
-
-Elasticsearch提供了index shard filtering功能(2.x开始)，该功能在索引配置中提供了如下几个配置
-
-用户可以在创建索引，或后续的任意时刻设置这些配置来控制索引在不同标签节点上的分配动作。
-
-```text
-index.routing.allocation.include.{attribute} #表示索引可以分配在包含多个逗号分隔的值中其
-中一个的节点上。
-index.routing.allocation.require.{attribute} #表示索引要分配在包含索引指定多个逗号分隔的
-值的节点上,并且多个值都要匹配
-index.routing.allocation.exclude.{attribute} #表示索引只能分配在不包含指定多个逗号分隔的
-值值的节点上。
-```
-
-业务方可以根据实际情况决定索引的冷热属性
-
-范例:
-
-```json
-#对于热数据，索引设置如下
-PUT hot_warm_test_index/_settings
+PUT /my-index/_settings
 {
-"index.routing.allocation.require.temperature": "hot"
+  "index.routing.allocation.require.temperature": "hot"
 }
-#示例:将index1索引设亩hot的属性
-curl -XPUT http://10.0.0.101:9200/index1/_settings -H 'Content-Type:
-application/json'  -d '
-{
-"index.routing.allocation.require.temperature": "hot"
-}'
+
+GET /_cat/shards/my-index?v&h=index,shard,prirep,node
 ```
 
-```bash
-#查看分片分配,发现分片均分配在热节点上
-GET _cat/shards/hot_warm_test_index?v&h=index,shard,prirep,node&s=node
-#查看index1的数据只存放在hot节点node-1和node-2节点上
-[root@ubuntu2404 ~]#curl 'http://10.0.0.101:9200/_cat/shards/index1?
-v&h=index,shard,prirep,node&s=node'
-index  shard prirep node
-index1 0     r      node-1
-index1 1     p      node-1
-index1 0     p      node-2
-index1 1     r      node-2
-```
+需要迁往冷节点时，将 `hot` 改为 `cold`，并在变更后持续观察分片恢复与磁盘水位。`include` 表示可落在匹配节点，`require` 表示必须满足属性条件，`exclude` 表示排除匹配节点；具体多个值的匹配语义以当前版本文档为准。原资料把 `warm`、`cold` 混称，并把 HTTP 请求与 JSON 混在同一代码块，容易导致读者复制后执行失败。
 
-```json
-#对于冷数据，索引设置
-PUT hot_warm_test_index/_settings
-{
-"index.routing.allocation.require.temperature": "warm"
-}
-#查看分片分配，发现分片均分配到冷节点上
-GET _cat/shards/hot_warm_test_index?v&h=index,shard,prirep,node&s=node
+如果分片迟迟没有迁移，先用分配解释 API 检查原因，不要继续叠加过滤条件：
+
+```http
+GET /_cluster/allocation/explain
 ```
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/ELK/11-scaling-elasticsearch-clusters.html' | relative_url }}">← Previous: Scaling Elasticsearch Clusters</a>
-  <a href="{{ '/subjects/ELK/' | relative_url }}">Back to ELK Log Analytics Index</a>
-  <a href="{{ '/subjects/ELK/13-monitoring-performance-with-metricbeat.html' | relative_url }}">Next: Monitoring Performance with Metricbeat →</a>
+  <a href="{{ '/subjects/ELK/11-scaling-elasticsearch-clusters.html' | relative_url }}">← 上一篇：Elasticsearch 集群扩容和缩容</a>
+  <a href="{{ '/subjects/ELK/' | relative_url }}">返回 ELK 日志分析目录</a>
+  <a href="{{ '/subjects/ELK/13-monitoring-performance-with-metricbeat.html' | relative_url }}">下一篇：利用 Metricbeat 监控性能相关指标 →</a>
 </nav>

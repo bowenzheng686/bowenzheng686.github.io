@@ -11,352 +11,118 @@ syntax_highlight: true
 {% raw %}
 
 # 25 Nacos 案例
-### 4.3 Nacos 案例
 
-### Nacos 项目服务注册和发现
+本篇用两个场景串起前面的概念：先让消费者通过服务名找到提供者，再让应用从 Nacos 读取配置。原始记录混有不同 Spring Boot、JDK 和 Nacos 版本的运行输出；实际复现时应选定一组兼容版本，不要把每条安装命令都执行一遍。
 
-利用 Nacos 实现 JAVA 应用消费者和提供者调用
+## 场景一：服务注册与发现
 
-![微服务技术第 124 页插图](assets/img-5152f258837de609.png)
+示意拓扑包含 Nacos（`10.0.0.100:8848`）、提供者（`10.0.0.101:8001`）和消费者（`10.0.0.102:8002`）。这些是原实验网络地址，部署时应替换为当前环境地址。消费者访问 Nacos 获取提供者实例列表，然后向提供者发起请求；业务流量并不经过 Nacos。
 
-IP 备注
+![服务注册与调用示意](assets/img-5152f258837de609.webp)
 
-10.0.0.100:8848 Nacos 服务
+### 先验证 Nacos 可用
 
-10.0.0.101:8001 Provider 应用
-
-10.0.0.102:8002 Consumer 应用
-
-### 安装 Nacos
+若已完成第 24 篇的部署，直接复用现有 Nacos。若需临时容器，可选择与本实验客户端兼容的固定 2.x 镜像标签，而不是同时启动原记录中的多个版本：
 
 ```bash
-[root@ubuntu2204 ~]#apt update && apt -y install docker.io
-[root@ubuntu2204 ~]#docker run --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -d --restart always
-registry.cn-beijing.aliyuncs.com/bowenxiaochun/nacos-server:v2.4.3-slim
-[root@ubuntu2204 ~]#docker run --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -d --restart always
-nacos/nacos-server:v2.4.3
-[root@ubuntu2204 ~]#docker run --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -d --restart always
-registry.cn-beijing.aliyuncs.com/bowenxiaochun/nacos-server:v2.2.3-slim
-[root@ubuntu2204 ~]#docker images
-REPOSITORY           TAG           IMAGE ID       CREATED        SIZE
-nacos/nacos-server   v2.2.3-slim   2266763b639b   6 months ago   383MB
-[root@ubuntu2204 ~]#docker ps
-CONTAINER ID   IMAGE                            COMMAND                  CREATED             STATUS
-PORTS                                                                                  NAMES
-35671af621ad   nacos/nacos-server:v2.2.3-slim   "bin/docker-startup.…"   About an hour ago   Up About an hour
-0.0.0.0:8848->8848/tcp, :::8848->8848/tcp, 0.0.0.0:9848->9848/tcp, :::9848->9848/tcp   nacos
+docker run -d --name nacos-demo -e MODE=standalone \
+  -p 8848:8848 -p 9848:9848 nacos/nacos-server:v2.2.3
+docker logs -f nacos-demo
 ```
 
-### 运行服务提供者的JAVA应用
+确保两台应用主机均能连到 8848 和 9848。若启用了鉴权，还要给客户端配置对应账号。JDK 版本由所选 Spring Boot / Spring Cloud Alibaba 组合决定，不能概括为“JDK 8、17、21 都支持同一个应用”。
 
-在10.0.0.101 主机上运行
+### 提供者与消费者分别配置
 
-```bash
-#Nacos服务主机的名称解析
-[root@ubuntu2204 ~]#cat /etc/hosts
-10.0.0.100 nacos.bowen.org
-#安装JDK21,17,8都支持
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-21-jdk
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-17-jdk
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-8-jdk
-[root@ubuntu2404 ~]#apt update &&apt -y install maven
-[root@ubuntu2404 ~]#mvn -v
-Apache Maven 3.8.7
-Maven home: /usr/share/maven
-Java version: 21.0.8, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
-Default locale: en_US, platform encoding: UTF-8
-OS name: "linux", version: "6.8.0-48-generic", arch: "amd64", family: "unix"
-#准备JAVA应用
-[root@ubuntu2204 nacos-provider]#ls
-pom.xml  src  target
-#配置nacos服务相关信息
-[root@ubuntu2204 nacos-provider]#cat src/main/resources/application.properties
+两个应用都需要各自的 `spring.application.name`，且都指向同一 Nacos 集群。以下展示原资料的核心属性；实际项目还需在构建文件中引入兼容版本的 Nacos Discovery starter，并由提供者实现 `/echo/{name}` 接口、消费者实现按服务名调用提供者的逻辑。
+
+```properties
+# 提供者 application.properties
 server.port=8001
 spring.application.name=nacos-provider-api
-spring.cloud.nacos.discovery.server-addr=nacos.bowen.org:8848
-[root@ubuntu2204 nacos-provider]#mvn clean package -Dmaven.test.skip=true
-[INFO] Replacing main artifact with repackaged archive
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  02:02 min
-[INFO] Finished at: 2024-05-15T11:59:48+08:00
-[INFO] ------------------------------------------------------------------------
-#运行JAVA应用
-[root@ubuntu2204 nacos-provider]#java -jar target/nacos-provider-1.0-SNAPSHOT.jar
-#如果临时修改nacos地址信息
-[root@ubuntu2204 nacos-provider]#java -Dspring.cloud.nacos.discovery.server-addr=nacos.bowen.org:8848 -
-Dspring.cloud.nacos.config.server-addr=nacos.bowen.org:8848 -jar target/nacos-provider-1.0-SNAPSHOT.jar
-[root@ubuntu2204 ~]#ss -ntlp|grep java
-LISTEN 0      100                *:8001            *:*    users:(("java",pid=4736,fd=30))
+spring.cloud.nacos.discovery.server-addr=10.0.0.100:8848
 ```
 
-### 运行服务消费者的JAVA应用
-
-在10.0.0.102 主机上运行
-
-```bash
-#Nacos服务主机的名称解析
-[root@ubuntu2204 ~]#cat /etc/hosts
-10.0.0.100 nacos.bowen.org
-#安装JDK21,17,8都支持
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-21-jdk
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-17-jdk
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-8-jdk
-[root@ubuntu2404 ~]#apt update &&apt -y install maven
-[root@ubuntu2404 ~]#mvn -v
-Apache Maven 3.8.7
-Maven home: /usr/share/maven
-Java version: 21.0.8, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
-Default locale: en_US, platform encoding: UTF-8
-OS name: "linux", version: "6.8.0-48-generic", arch: "amd64", family: "unix"
-#准备JAVA应用
-[root@ubuntu2204 nacos-consumer]#ls
-pom.xml  src  target
-#配置nacos服务相关信息
-[root@ubuntu2204 nacos-consumer]#cat src/main/resources/application.properties
+```properties
+# 消费者 application.properties
 server.port=8002
 spring.application.name=nacos-consumer-api
-spring.cloud.nacos.discovery.server-addr=nacos.bowen.org:8848
-[root@ubuntu2204 nacos-consumer]#mvn clean package -Dmaven.test.skip=true
-....
-[INFO] Replacing main artifact with repackaged archive
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  02:15 min
-[INFO] Finished at: 2024-05-15T12:00:09+08:00
-[INFO] ------------------------------------------------------------------------
-#运行JAVA应用
-[root@ubuntu2204 nacos-consumer]#java -jar target/nacos-consumer-1.0-SNAPSHOT.jar
-#如果临时修改nacos地址信息
-[root@ubuntu2204 nacos-consumer]#java -Dspring.cloud.nacos.discovery.server-addr=nacos.bowen.org:8848 -
-Dspring.cloud.nacos.config.server-addr=nacos.bowen.org:8848 -jar target/nacos-consumer-1.0-SNAPSHOT.jar
-[root@ubuntu2204 ~]#ss -ntlp|grep java
-LISTEN 0      100                *:8002            *:*    users:(("java",pid=4699,fd=30))
+spring.cloud.nacos.discovery.server-addr=10.0.0.100:8848
 ```
 
-### 访问 JAVA 应用
-
-```text
-#访问服务提供者
-http://10.0.0.101:8001/echo/bowenxiaochun
-#访问服务消费者
-http://10.0.0.102:8002/echo/bowenxiaochun
-```
-
-![微服务技术第 126 页插图](assets/img-bf02885071ce246b.png)
-
-### 确认Nacos服务注册和发现
-
-```text
-#2.X之前
-http://nacos.bowen.org:8848/nacos/
-#从3.0开始
-http://nacos.bowen.org:8080
-```
-
-![微服务技术第 126 页插图](assets/img-d95b0e2b94b47b9b.png)
-
-### Nacos 项目服务注册和配置管理
-
-基于 Nacos 实现JAVA服务的配置管理
-
-### 安装 Redis 服务
+在各自源码目录执行 `mvn clean package`，按应用实际生成的 JAR 文件名运行。不要在一条 `java` 命令中把 `-D...` 参数折成两行；如需临时覆盖地址，应把 JVM 系统属性放在 `-jar` 之前，并确认所用配置机制会读取该属性。
 
 ```bash
-#方式1:容器运行
-[root@ubuntu2204 ~]#apt update && apt -y install docker.io
-[root@ubuntu2204 ~]#docker run -d --name redis -p 6379:6379 registry.cn-
-beijing.aliyuncs.com/bowenxiaochun/redis:7.2.5  --requirepass 123456
-#方式2:传统服务运行
-[root@ubuntu2204 ~]#apt update && apt  -y install redis
-#修改连接地址和密码
-[root@ubuntu2204 ~]#vim /etc/redis/redis.conf
-bind 0.0.0.0
-requirepass 123456
-#重启生效
-[root@ubuntu2204 ~]#systemctl restart redis
+curl http://10.0.0.101:8001/echo/test
+curl http://10.0.0.102:8002/echo/test
 ```
 
-### 安装 Nacos
+第一条验证提供者自身接口，第二条验证消费者经服务发现完成调用。仅看到两个端口监听，不能证明消费者真的用了 Nacos；还应在控制台检查两个服务的实例与健康状态，并停止提供者观察消费者如何处理实例消失。
 
-```bash
-#容器运行
-[root@ubuntu2204 ~]#apt update && apt -y install docker.io
-[root@ubuntu2204 ~]#docker run --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -d --restart always
-registry.cn-beijing.aliyuncs.com/bowenxiaochun/nacos-server:v2.2.3-slim
-#地址为
-http://nacos.bowen.org:8848/nacos
-```
+![提供者和消费者的调用结果](assets/img-bf02885071ce246b.webp)
+![Nacos 中的服务列表](assets/img-d95b0e2b94b47b9b.webp)
 
-### 配置 Nacos
+## 场景二：从 Nacos 读取应用配置
 
-4.3.2.3.1 创建名称空间为 dev
+原例让 Java 应用从 Nacos 获取 Redis 连接参数，然后访问 Redis。它说明的是**配置集中管理**，并不表示 Nacos 本身连接 Redis。正式环境的数据库密码不宜作为普通明文配置长期存放；应结合密钥管理、权限和审计。
 
-![微服务技术第 127 页插图](assets/img-60ea7d4e56ab90d0.png)
+### 1. 确定配置的完整身份
 
-4.3.2.3.2 在dev空间中创建配置
+在控制台创建 `dev` 命名空间时，记录其**命名空间 ID**。显示名与 ID 未必相同。随后在该命名空间创建 YAML 配置，约定 `group=DEFAULT_GROUP`、`dataId=api-service.yml`。Data ID 必须与客户端实际寻找的名称一致，不能一边写 `api-service`，另一边让客户端拼接 `.yml` 却不验证结果。
 
-如下
+![创建 dev 命名空间](assets/img-60ea7d4e56ab90d0.webp)
+![在命名空间中创建配置](assets/img-6efa50421dc98c38.webp)
+![配置内容示例](assets/img-98d99abbe82fe9c2.webp)
 
-![微服务技术第 127 页插图](assets/img-6efa50421dc98c38.png)
-
-![微服务技术第 127 页插图](assets/img-98d99abbe82fe9c2.png)
-
-```text
-#名称空间：dev
-#DataID: api-service
-#将JAVA应用连接Redis的配置信息写在Nacos配置中
-#YAML格式
+```yaml
 server:
-port: 9999
+  port: 9999
 spring:
-redis:
-host: redis.bowen.org
-port: 6379
-password: 123456
-database: 0
+  redis:
+    host: REDIS_HOST
+    port: 6379
+    password: REDIS_PASSWORD
+    database: 0
 ```
 
-### 修改 JAVA 应用的配置
+以上缩进是有效 YAML；原记录中的无缩进版本会改变结构。若项目使用较新的 Spring Boot，Redis 属性前缀或配置加载方式可能变化，应按所选版本的官方文档核对。
 
-范例：方法1，修改配置重新编译
+### 2. 指向 Nacos 配置
 
-```bash
-#安装JDK21,17,8都支持
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-21-jdk
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-17-jdk
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-8-jdk
-[root@ubuntu2404 ~]#apt update &&apt -y install maven
-[root@ubuntu2404 ~]#mvn -v
-Apache Maven 3.8.7
-Maven home: /usr/share/maven
-Java version: 21.0.8, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
-Default locale: en_US, platform encoding: UTF-8
-OS name: "linux", version: "6.8.0-48-generic", arch: "amd64", family: "unix"
-[root@ubuntu2204 nacos-redis-demo]#vim src/main/resources/bootstrap.properties
-#配置命令空间的ID，修改此行
-nacos.server.namespace=dev
-#微服务的名称，根据需要随意写
+下面沿用原实验的 `bootstrap.properties` 配置模式。只有项目确实引入相应 bootstrap 支持时它才会在启动阶段加载；新版本项目也可按其版本文档使用 `spring.config.import`。两种方式不要不加区分地混写。
+
+```properties
 spring.application.name=cloud-api
-#nacos的地址
-spring.cloud.nacos.server-addr=nacos.bowen.org:8848
-#配置命令空间的ID，修改此行
-spring.cloud.nacos.config.namespace=dev
-#配置文件的组名
+spring.cloud.nacos.config.server-addr=10.0.0.100:8848
+spring.cloud.nacos.config.namespace=DEV_NAMESPACE_ID
 spring.cloud.nacos.config.group=DEFAULT_GROUP
-#配置文件的名称 Data ID
 spring.cloud.nacos.config.prefix=api-service
-spring.profiles.active=dev
-spring.cloud.nacos.config.auto-refreshed=true
 spring.cloud.nacos.config.file-extension=yml
-#nacos的地址
-spring.cloud.nacos.discovery.server-addr=nacos.bowen.org:8848
-#配置命令空间的ID，修改此行
-spring.cloud.nacos.discovery.namespace=dev
-#编译打包
-[root@ubuntu2204 nacos-redis-demo]#mvn clean  package  -Dmaven.test.skip=true
+spring.cloud.nacos.discovery.server-addr=10.0.0.100:8848
+spring.cloud.nacos.discovery.namespace=DEV_NAMESPACE_ID
 ```
 
-范例：方法2，无需重新编译，直接修改 nacos-1.0-SNAPSHOT.jar文件
+如果应用拼接出的 Data ID 是 `api-service.yml`，便与控制台配置对应。配置刷新是否影响已创建的连接对象，取决于应用的绑定与刷新实现，不能仅凭控制台“发布成功”判断 Redis 连接已重建。**不要解压修改构建好的 JAR 再改名**：这会破坏可追溯性，也容易引入错误；应修改源码重新构建，或使用该版本支持的外部化配置。
 
-```text
-#修改nacos-1.0-SNAPSHOT.jar后缀为zip，解压缩后，修改下面文件
-#按环境修改BOOT-INF/classes/bootstrap.properties即可
-#配置命名空间的ID
-nacos.server.namespace=dev
-#微服务的名称，这个可以随意写
-spring.application.name=cloud-api
-#nacos的地址
-spring.cloud.nacos.server-addr=nacos.bowen.org:8848
-#配置命令空间的ID
-spring.cloud.nacos.config.namespace=dev
-#配文件的组名
-spring.cloud.nacos.config.group=DEFAULT_GROUP
-#配置文件的名称 data id
-spring.cloud.nacos.config.prefix=api-service
-spring.profiles.active=dev
-spring.cloud.nacos.config.auto-refreshed=true
-spring.cloud.nacos.config.file-extension=yml
-#nacos的地址
-spring.cloud.nacos.discovery.server-addr=nacos.bowen.org:8848
-#配置命名空间的ID
-spring.cloud.nacos.discovery.namespace=dev
-[root@ubuntu2204 nacos-redis-demo]#mv target/nacos-1.0-SNAPSHOT.jar.zip target/nacos-1.0-SNAPSHOT.jar
-```
+### 3. 逐项验证
 
-### 运行 JAVA 应用
+先确认应用能连接 Nacos 与 Redis，再启动 JAR 并调用它实际实现的 API。原资料的新旧示例路径分别是 `/api/redis/` 与 `/redis`，应按所运行的项目代码选一个，而不是两个都当作固定接口。验证顺序为：
 
-```bash
-#配置名称解析
-[root@ubuntu2204 ~]#cat /etc/hosts
-10.0.0.100 nacos.bowen.org redis.bowen.org
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-8-jdk
-[root@ubuntu2204 ~]#java -version
-openjdk version "1.8.0_382"
-OpenJDK Runtime Environment (build 1.8.0_382-8u382-ga-1~22.04.1-b05)
-OpenJDK 64-Bit Server VM (build 25.382-b05, mixed mode)
-#启动应用
-#新版
-[root@ubuntu2404 nacos-redis-demo]#java -jar target/nacos-redis-demo-1.0.0.jar
-#旧版
-[root@ubuntu2204 nacos-redis-demo]#java -jar target/nacos-1.0-SNAPSHOT.jar
-.   ____          _            __ _ _
-/\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
-\\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-'  |____| .__|_| |_|_| |_\__, | / / / /
-=========|_|==============|___/=/_/_/_/
-:: Spring Boot ::                (v2.6.7)
-......
-#检查服务端口打开
-[root@ubuntu2204 ~]#ss -ntlp|grep java
-LISTEN 0      100                *:9999            *:*    users:(("java",pid=4432,fd=31))
-```
+1. Nacos 控制台确认 `dev` 命名空间下的 `api-service.yml` 已发布，并能读回内容。
+2. 应用启动日志确认配置加载和服务注册成功，监听端口为配置中的 9999。
+3. 调用应用接口，确认返回成功；再用 Redis 客户端查询**预期键**，避免在生产库执行无边界的 `KEYS *`。
+4. 修改可安全热更新的测试配置，观察应用是否收到刷新事件并体现变化；若没有，检查所用版本的刷新机制。
 
-### 访问 JAVA 应用
+![应用访问 Redis 的结果](assets/img-7aede9c276e8986f.webp)
+![Nacos 中的应用实例](assets/img-7ba4c8fe3d715bab.webp)
+![Nacos 中的配置记录](assets/img-4a88463a75014f2e.webp)
 
-```text
-#浏览器访问JAVA应用
-#新版
-curl http://localhost:9999/api/redis/
-数据插入成功! 已保存用户信息和系统信息到Redis
-#旧版
-http://myapp.bowen.org:9999/redis
-```
-
-![微服务技术第 129 页插图](assets/img-7aede9c276e8986f.png)
-
-### 验证结果
-
-验证 nacos 服务注册成功
-
-![微服务技术第 130 页插图](assets/img-7ba4c8fe3d715bab.png)
-
-![微服务技术第 130 页插图](assets/img-4a88463a75014f2e.png)
-
-```bash
-#验证redis数据生成
-[root@ubuntu2404 ~]#apt update && apt -y  install redis-tools
-#新版
-[root@ubuntu2404 ~]#redis-cli -a 123456  keys '*'
-Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
-1) "system:version"
-2) "user:bowenxiaochun"
-3) "system:startup_time"
-4) "user:weixinhang"
-#旧版
-[root@ubuntu2204 ~]#redis-cli -a 123456 keys '*'
-Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
-1) "bowenxiaochun"
-2) "weixinhang"
-```
+这两个实验分别验证“服务名到实例地址”与“配置身份到配置内容”。排障时先分清是发现失败、配置未加载、还是业务接口或 Redis 自身的问题。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/24-deploying-nacos.html' | relative_url }}">← Previous: Deploying Nacos</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/26-sentinel-architecture-and-mechanisms.html' | relative_url }}">Next: Sentinel Architecture and Mechanisms →</a>
+  <a href="{{ '/subjects/Microservices/24-deploying-nacos.html' | relative_url }}">← 上一篇：Nacos 部署</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回专题目录</a>
+  <a href="{{ '/subjects/Microservices/26-sentinel-architecture-and-mechanisms.html' | relative_url }}">下一篇：Sentinel 架构与机制 →</a>
 </nav>

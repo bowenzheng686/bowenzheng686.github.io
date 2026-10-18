@@ -1,322 +1,179 @@
 ---
 layout: default
-title: "MinIO 对象存储 · 编程语言API访问"
+title: "MinIO 对象存储 · 编程接口访问"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 11 编程语言API访问
-### 3.3 编程语言API访问
+# 11 编程接口访问 MinIO
 
-<https://min.io/docs/minio/linux/developers/minio-drivers.html>
+MinIO 实现 S3 兼容 API，应用可使用 MinIO 官方 SDK 或相应语言的 S3 SDK。无论使用 Python、Go 还是 Java，基本流程都是：配置 **API 端点**与访问密钥、确认存储桶、上传对象、再下载验证。API 地址不是 Console 地址；上一章示例中分别为 `9000` 和 `9001`。
 
-![MinIO 对象存储第 68 页插图](assets/img-17df863db7525efb.png)
+![不同语言 SDK 入口](assets/img-17df863db7525efb.webp)
 
-### Python 访问
+以下代码以测试桶 `mybucket` 和本地文件 `example.txt` 为例。先通过 Console 创建一个仅授予测试桶所需权限的访问密钥，把端点、Access Key 与 Secret Key 放进运行环境；不要把凭据硬编码进代码或提交到仓库。若端点启用了 HTTPS，SDK 的 TLS 设置也必须对应开启。
 
-<https://min.io/docs/minio/linux/developers/minio-drivers.html#python-sdk>
+## Python：上传与下载
 
-<https://min.io/docs/minio/linux/developers/python/minio-py.html>
-
-<https://github.com/minio/minio-py/tree/master/examples>
-
-范例：
+参考 [minio-py 文档](https://min.io/docs/minio/linux/developers/python/minio-py.html)。建议在虚拟环境中安装，不要为了演示而使用 `--break-system-packages` 修改系统 Python：
 
 ```bash
-[root@ubuntu2204 ~]#apt update && apt -y install python3-pip
-[root@ubuntu2204 ~]#python3 -m pip config set global.index-url
-https://mirrors.aliyun.com/pypi/simple/
-[root@ubuntu2404 ~]#pip3 install minio --break-system-packages
-[root@ubuntu2204 ~]#pip3 install minio
-#使用以下代码作为示例来访问 MinIO 服务器
-[root@ubuntu2204 ~]#cat access_minio.py
-#!/usr/bin/python3
-import os
-from minio import Minio
-from minio.error import S3Error
-#from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
-BucketAlreadyExists)
-# 初始化MinIO客户端
-minio_client = Minio(
-endpoint='localhost:9000',
-access_key="kH3qu9EQdPY6L7Y4bvA4",
-secret_key="jC7ravHdJG5Gkre5T9sNrhXECWJF5suNIYkBrxu5",
-secure=False  # 如果使用SSL，请将此项设置为True
-)
-bucket_name = "mybucket"
-object_name = "example-object.txt"
-local_file_path = "/var/log/syslog"
-try:
-# 检查存储桶是否存在，如果不存在则创建
-if not minio_client.bucket_exists(bucket_name):
-minio_client.make_bucket(bucket_name)
-print(f"Bucket '{bucket_name}' created successfully.")
-else:
-print(f"Bucket '{bucket_name}' already exists.")
-# 上传文件到存储桶
-minio_client.fput_object(bucket_name, object_name, local_file_path)
-print(f"Successfully uploaded '{local_file_path}' to '{object_name}'.")
-except ResponseError as e:
-print(f"An error occurred: {e}")
-# 下载存储桶中的对象
-downloaded_file_path = "example-object.txt"
-try:
-minio_client.fget_object(bucket_name, object_name, downloaded_file_path)
-print(f"Successfully downloaded '{object_name}' to
-'{downloaded_file_path}'.")
-except ResponseError as e:
-print(f"An error occurred while downloading '{object_name}': {e}")
-#运行程序
-[root@ubuntu2204 ~]#python3 access_minio.py
-Bucket 'mybucket' created successfully.
-Successfully uploaded '/var/log/syslog' to 'example-object.txt'.
-Successfully downloaded 'example-object.txt' to 'example-object.txt'.
-#查看存储的数据文件
-[root@ubuntu2204 ~]#tree /data/minio/
-/data/minio/
-└── mybucket
-└── example-object.txt
-├── 16add02d-b997-49fc-b03e-637856b3c1be
-│   └── part.1
-└── xl.meta
-3 directories, 2 files
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install minio
 ```
 
-![MinIO 对象存储第 70 页插图](assets/img-1cd688b191be2489.png)
-
-### Golang 访问
-
-<https://min.io/docs/minio/linux/developers/go/minio-go.html>
-
-在运行代码之前，确保已经安装了 Go，并且已经启动了一个 MinIO 服务器并获取accessKey和 secretKey
-
-注意：要求golang-v1.20以上版本
-
-```bash
-#示例代码
-[root@ubuntu2204 minio-demo]#ls
-main.go
-[root@ubuntu2204 minio-demo]#cat main.go
-package main
-import (
-"context"
-"fmt"
-"log"
-"github.com/minio/minio-go/v7"
-"github.com/minio/minio-go/v7/pkg/credentials"
-)
-func main() {
-endpoint := "localhost:9000"
-accessKey := "xCLmTTXFrBGRYCY2eqh7"                    //指定事先生成的
-accessKey,也可以使用MINIO_ROOT_USER
-secretKey := "SmfdeMiZwRWIfoO4iKwkaGe0scBxDmbQvNWCr1"  //指定事先生成的
-secretKey,也可以使用MINIO_ROOT_PASSWORD
-useSSL := false // Change to true if you're using SSL
-// Initialize a new MinIO client object.
-minioClient, err := minio.New(endpoint, &minio.Options{
-Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
-Secure: useSSL,
-})
-if err != nil {
-log.Fatalln(err)
-}
-bucketName := "mybucket"
-objectName := "example-object.txt"
-localFilePath := "/var/log/syslog"
-ctx := context.Background()
-// Create a new bucket if it doesn't exist.
-err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
-if err != nil {
-exists, errBucketExists := minioClient.BucketExists(ctx, bucketName)
-if errBucketExists == nil && exists {
-fmt.Printf("Bucket '%s' already exists.\n", bucketName)
-} else {
-log.Fatalln(err)
-}
-} else {
-fmt.Printf("Created bucket '%s'.\n", bucketName)
-}
-// Upload a file to the bucket.
-_, err = minioClient.FPutObject(ctx, bucketName, objectName, localFilePath,
-minio.PutObjectOptions{})
-if err != nil {
-log.Fatalln(err)
-}
-fmt.Printf("Successfully uploaded '%s' to '%s'.\n", localFilePath,
-objectName)
-// Download the uploaded object.
-downloadFilePath := "downloaded/file.txt"
-err = minioClient.FGetObject(ctx, bucketName, objectName, downloadFilePath,
-minio.GetObjectOptions{})
-if err != nil {
-log.Fatalln(err)
-}
-fmt.Printf("Successfully downloaded '%s' to '%s'.\n", objectName,
-downloadFilePath)
-}
-#安装golang，注意：要求go-v1.20以上版本
-[root@ubuntu2204 minio-demo]#bash install_go.sh
-#配置代理
-[root@ubuntu2204 minio-demo]#export GOPROXY=https://goproxy.cn
-#初始化项和,指定默认的程序名为minio-demo
-[root@ubuntu2204 minio-demo]#go mod init minio-demo
-go: creating new go.mod: module minio-demo
-go: to add module requirements and sums:
-go mod tidy
-#生成初始化文件
-[root@ubuntu2204 minio-demo]#ls
-go.mod  main.go
-[root@ubuntu2204 minio-demo]#cat go.mod
-module minio-demo
-go 1.18
-#下载相关依赖
-[root@ubuntu2204 minio-demo]#go get github.com/minio/minio-go/v7
-go: added github.com/dustin/go-humanize v1.0.1
-go: added github.com/google/uuid v1.3.0
-go: added github.com/json-iterator/go v1.1.12
-go: added github.com/klauspost/compress v1.16.7
-go: added github.com/klauspost/cpuid/v2 v2.2.5
-go: added github.com/minio/md5-simd v1.1.2
-go: added github.com/minio/minio-go/v7 v7.0.63
-go: added github.com/minio/sha256-simd v1.0.1
-go: added github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
-go: added github.com/modern-go/reflect2 v1.0.2
-go: added github.com/rs/xid v1.5.0
-go: added github.com/sirupsen/logrus v1.9.3
-go: added golang.org/x/crypto v0.12.0
-go: added golang.org/x/net v0.14.0
-go: added golang.org/x/sys v0.11.0
-go: added golang.org/x/text v0.12.0
-go: added gopkg.in/ini.v1 v1.67.0
-[root@ubuntu2204 minio-demo]#ls
-go.mod  go.sum  main.go
-[root@ubuntu2204 minio-demo]#cat go.mod
-module minio-demo
-go 1.18
-require (
-github.com/dustin/go-humanize v1.0.1 // indirect
-github.com/google/uuid v1.3.0 // indirect
-github.com/json-iterator/go v1.1.12 // indirect
-github.com/klauspost/compress v1.16.7 // indirect
-github.com/klauspost/cpuid/v2 v2.2.5 // indirect
-github.com/minio/md5-simd v1.1.2 // indirect
-github.com/minio/minio-go/v7 v7.0.63 // indirect
-github.com/minio/sha256-simd v1.0.1 // indirect
-github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd //
-indirect
-github.com/modern-go/reflect2 v1.0.2 // indirect
-github.com/rs/xid v1.5.0 // indirect
-github.com/sirupsen/logrus v1.9.3 // indirect
-golang.org/x/crypto v0.12.0 // indirect
-golang.org/x/net v0.14.0 // indirect
-golang.org/x/sys v0.11.0 // indirect
-golang.org/x/text v0.12.0 // indirect
-gopkg.in/ini.v1 v1.67.0 // indirect
-)
-[root@ubuntu2204 minio-demo]#cat go.sum
-github.com/davecgh/go-spew v1.1.0/go.mod
-h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/davecgh/go-spew v1.1.1/go.mod
-h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dustin/go-humanize v1.0.1
-h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
-github.com/dustin/go-humanize v1.0.1/go.mod
-h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
-......
-#编译默认生成项目名称的二进制程序
-[root@ubuntu2204 minio-demo]#CGO_ENABLED=0 go build
-#或者编译生成指定的二进制程序名
-[root@ubuntu2204 minio-demo]#CGO_ENABLED=0 go build -o minio-demo
-[root@ubuntu2204 minio-demo]#ls
-go.mod  go.sum  main.go  minio-demo
-#运行
-[root@ubuntu2204 minio-demo]#./minio-demo
-Created bucket 'mybucket'.
-Successfully uploaded '/var/log/syslog' to 'example-object.txt'.
-Successfully downloaded 'example-object.txt' to 'downloaded/file.txt'.
-[root@ubuntu2204 minio-demo]#tree
-.
-├── downloaded
-│   └── file.txt
-├── go.mod
-├── go.sum
-├── main.go
-└── minio-demo
-1 directory, 5 files
-[root@ubuntu2204 minio-demo]#diff downloaded/file.txt /var/log/syslog
-#登录验证文件上传成功
-```
-
-![MinIO 对象存储第 73 页插图](assets/img-4135a36b832c24b6.png)
-
-![MinIO 对象存储第 74 页插图](assets/img-fc69e4f71b2e457f.png)
-
-### JAVA 访问
-
-<https://min.io/docs/minio/linux/developers/java/minio-java.html>
-
-范例
+将以下内容保存为 `access_minio.py`。`endpoint` 不带 URL 方案；`secure` 根据 `MINIO_SECURE` 决定。异常用当前 SDK 的 `S3Error` 捕获，原资料中的 `ResponseError` 已不适用于这段示例。
 
 ```python
+import os
+from pathlib import Path
+
+from minio import Minio
+from minio.error import S3Error
+
+client = Minio(
+    os.environ.get("MINIO_ENDPOINT", "127.0.0.1:9000"),
+    access_key=os.environ["MINIO_ACCESS_KEY"],
+    secret_key=os.environ["MINIO_SECRET_KEY"],
+    secure=os.environ.get("MINIO_SECURE", "false").lower() == "true",
+)
+
+bucket = "mybucket"
+source = Path("example.txt")
+destination = Path("downloaded.txt")
+source.write_text("hello MinIO\n", encoding="utf-8")
+
+try:
+    if not client.bucket_exists(bucket):
+        client.make_bucket(bucket)
+    client.fput_object(bucket, source.name, str(source))
+    client.fget_object(bucket, source.name, str(destination))
+    print(destination.read_text(encoding="utf-8"))
+except S3Error as exc:
+    raise SystemExit(f"S3 操作失败：{exc}") from exc
+```
+
+运行前在当前终端配置 `MINIO_ACCESS_KEY`、`MINIO_SECRET_KEY` 和必要时的 `MINIO_ENDPOINT`；执行 `python access_minio.py` 后确认输出为 `hello MinIO`。对象的底层磁盘布局由服务端管理，不要通过直接修改 `xl.meta` 或 `part.1` 来“修复”上传结果。
+
+![Python 示例上传结果](assets/img-1cd688b191be2489.webp)
+
+## Go：使用 minio-go/v7
+
+参考 [minio-go 文档](https://min.io/docs/minio/linux/developers/go/minio-go.html)。Go SDK 通过 `context.Context` 传递取消与超时信号，适合在服务端应用中把请求生命周期传入对象操作。下面示例读取环境变量，避免把实验密钥写入源码。
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/minio/minio-go/v7"
+    "github.com/minio/minio-go/v7/pkg/credentials"
+)
+
+func main() {
+    endpoint := os.Getenv("MINIO_ENDPOINT")
+    if endpoint == "" {
+        endpoint = "127.0.0.1:9000"
+    }
+    accessKey := os.Getenv("MINIO_ACCESS_KEY")
+    secretKey := os.Getenv("MINIO_SECRET_KEY")
+    if accessKey == "" || secretKey == "" {
+        log.Fatal("请配置 MINIO_ACCESS_KEY 和 MINIO_SECRET_KEY")
+    }
+
+    client, err := minio.New(endpoint, &minio.Options{
+        Creds: credentials.NewStaticV4(accessKey, secretKey, ""),
+        Secure: os.Getenv("MINIO_SECURE") == "true",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    ctx := context.Background()
+    bucket := "mybucket"
+    exists, err := client.BucketExists(ctx, bucket)
+    if err != nil {
+        log.Fatal(err)
+    }
+    if !exists {
+        if err := client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{}); err != nil {
+            log.Fatal(err)
+        }
+    }
+
+    if err := os.WriteFile("example.txt", []byte("hello MinIO\n"), 0600); err != nil {
+        log.Fatal(err)
+    }
+    _, err = client.FPutObject(ctx, bucket, "example.txt", "example.txt", minio.PutObjectOptions{})
+    if err != nil {
+        log.Fatal(err)
+    }
+    if err := client.FGetObject(ctx, bucket, "example.txt", "downloaded.txt", minio.GetObjectOptions{}); err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("上传及下载完成")
+}
+```
+
+在空目录中执行 `go mod init minio-demo`、`go get github.com/minio/minio-go/v7`、`go run .`。Go 版本要求随 SDK 版本调整，请以当前模块说明为准；原资料同时写“要求 Go 1.20 以上”和 `go.mod` 中的 `go 1.18`，不能把两者视为一致的要求。
+
+![Go 示例编译与运行结果](assets/img-4135a36b832c24b6.webp)
+
+![Console 中查看 Go 上传对象](assets/img-fc69e4f71b2e457f.webp)
+
+## Java：同一工作流
+
+参考 [MinIO Java SDK 文档](https://min.io/docs/minio/linux/developers/java/minio-java.html)。通过 Maven／Gradle 引入当前兼容的 `io.minio:minio` 版本后，构建客户端、确认桶、上传对象。以下展示核心调用；应由应用配置或密钥服务注入环境变量。
+
+```java
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
-import io.minio.errors.MinioException;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+
 public class FileUploader {
-public static void main(String[] args)
-throws IOException, NoSuchAlgorithmException, InvalidKeyException {
-try {
-// Create a minioClient with the MinIO server playground, its access key
-and secret key.
-MinioClient minioClient =
-MinioClient.builder()
-.endpoint("https://play.min.io")
-.credentials("Q3AM3UQ867SPQQA43P2F",
-"zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
-.build();
-// Make 'asiatrip' bucket if not exist.
-boolean found =
-minioClient.bucketExists(BucketExistsArgs.builder().bucket("asiatrip").build())
-;
-if (!found) {
-// Make a new bucket called 'asiatrip'.
-minioClient.makeBucket(MakeBucketArgs.builder().bucket("asiatrip").build());
-} else {
-System.out.println("Bucket 'asiatrip' already exists.");
-}
-// Upload '/home/user/Photos/asiaphotos.zip' as object name 'asiaphotos-
-2015.zip' to bucket
-// 'asiatrip'.
-minioClient.uploadObject(
-UploadObjectArgs.builder()
-.bucket("asiatrip")
-.object("asiaphotos-2015.zip")
-.filename("/home/user/Photos/asiaphotos.zip")
-.build());
-System.out.println(
-"'/home/user/Photos/asiaphotos.zip' is successfully uploaded as "
-+ "object 'asiaphotos-2015.zip' to bucket 'asiatrip'.");
-} catch (MinioException e) {
-System.out.println("Error occurred: " + e);
-System.out.println("HTTP trace: " + e.httpTrace());
-}
-}
+    public static void main(String[] args) throws Exception {
+        String endpoint = System.getenv().getOrDefault("MINIO_URL", "http://127.0.0.1:9000");
+        String accessKey = System.getenv("MINIO_ACCESS_KEY");
+        String secretKey = System.getenv("MINIO_SECRET_KEY");
+        if (accessKey == null || secretKey == null) {
+            throw new IllegalStateException("缺少 MinIO 访问凭据");
+        }
+
+        MinioClient client = MinioClient.builder()
+                .endpoint(endpoint)
+                .credentials(accessKey, secretKey)
+                .build();
+        String bucket = "mybucket";
+        if (!client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
+            client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+        }
+        client.uploadObject(UploadObjectArgs.builder()
+                .bucket(bucket)
+                .object("example.txt")
+                .filename("example.txt")
+                .build());
+        System.out.println("上传完成：" + bucket + "/example.txt");
+    }
 }
 ```
+
+Java 示例只展示上传；可用 `DownloadObjectArgs` 下载验证。真实应用还需设置连接超时、重试、日志、凭据轮换和异常处理。上传完成后，以 SDK 返回结果或 `mc stat` 验证对象，不要把磁盘内部的文件数量当成 API 成功依据。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/10-minio-client-mc.html' | relative_url }}">← Previous: MinIO Client (mc)</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/12-automatic-recovery-after-a-node-service-restart.html' | relative_url }}">Next: Automatic Recovery After a Node Service Restart →</a>
+  <a href="{{ '/subjects/MinIO/10-minio-client-mc.html' | relative_url }}">← 上一篇：MinIO 客户端 mc</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/12-automatic-recovery-after-a-node-service-restart.html' | relative_url }}">下一篇：节点重启后的自动恢复 →</a>
 </nav>

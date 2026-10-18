@@ -1,280 +1,158 @@
 ---
 layout: default
-title: "Redis 数据库 · Redis 工具和客户端连接"
+title: "Redis 数据库 · 工具与客户端连接"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
+[← 返回 Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 03 Redis 工具和客户端连接
-### 1.3 Redis 工具和客户端连接
+# 03 工具与客户端连接
 
-### 安装的相关程序介绍
+安装 Redis 后，通常会得到 `redis-server`（服务端）、`redis-cli`（交互式客户端）、`redis-benchmark`（基准测试）、`redis-check-rdb`／`redis-check-aof`（持久化文件检查工具）以及 `redis-sentinel`（哨兵模式入口）。某些命令可能是指向同一个二进制的软链接，文件大小和目录布局随打包方式变化，不必依赖原资料的 `ls -l` 长输出。
 
-```bash
-#Redis7.0以上
-[root@ubuntu2204 ~]#ll /apps/redis/bin/
-total 32772
--rwxr-xr-x 1 root root 4366792 Feb 16 21:12 redis-benchmark #性能测试程序
--rwxr-xr-x 1 root root 8125184 Feb 16 21:12 redis-check-aof -> redis-server #AOF
-文件检查程序
--rwxr-xr-x 1 root root 8125184 Feb 16 21:12 redis-check-rdb -> redis-server #RDB
-文件检查程序
--rwxr-xr-x 1 root root 4807856 Feb 16 21:12 redis-cli       #客户端程序
-lrwxrwxrwx 1 root root      12 Feb 16 21:12 redis-sentinel -> redis-server #哨兵程
-序，软连
-接到服务器端主程序
--rwxr-xr-x 1 root root 8125184 Feb 16 21:12 redis-server #服务端主程序
-#Redis6.0以下
-[root@centos8 ~]#ll /apps/redis/bin/
-total 32772
--rwxr-xr-x 1 root root 4366792 Feb 16 21:12 redis-benchmark #性能测试程序
--rwxr-xr-x 1 root root 8125184 Feb 16 21:12 redis-check-aof #AOF文件检查程序
--rwxr-xr-x 1 root root 8125184 Feb 16 21:12 redis-check-rdb #RDB文件检查程序
--rwxr-xr-x 1 root root 4807856 Feb 16 21:12 redis-cli       #客户端程序
-lrwxrwxrwx 1 root root      12 Feb 16 21:12 redis-sentinel -> redis-server #哨兵程
-序，软连
-接到服务器端主程序
--rwxr-xr-x 1 root root 8125184 Feb 16 21:12 redis-server #服务端主程序
-```
+## 使用 redis-cli
 
-### 客户端程序 redis-cli
-
-```text
-#默认为本机无密码连接
-redis-cli
-#远程客户端连接,注意:Redis没有用户的概念
-redis-cli -h <Redis服务器IP> -p <PORT> -a <PASSWORD> --no-auth-warning
-```
-
-### 程序连接 Redis
-
-Redis 支持多种开发语言访问
-
-<https://redis.io/clients>
-
-![Redis 数据库第 48 页插图](assets/img-5bad2704bcb5142b.jpeg)
-
-![Redis 数据库第 48 页插图](assets/img-6a40524219a86a38.png)
-
-注意：新版redis默认的RDB路径错误，会导致下面脚本执行过程中失败
+本地默认端口为 `6379`。未配置认证且仅监听环回地址的测试实例可以这样验证：
 
 ```bash
-[root@ubuntu2204 ~]#vi /apps/redis/etc/redis.conf
-#修改下面行的注释
-dir /apps/redis/data
-[root@ubuntu2204 ~]#systemctl restart redis
+redis-cli -h 127.0.0.1 -p 6379 PING
+redis-cli -h 127.0.0.1 -p 6379 INFO server
 ```
 
-### Shell 脚本访问 Redis
+返回 `PONG` 说明连接和当前命令可用，不说明持久化、复制或安全配置均正常。Redis 6 起支持 ACL **用户**，因此原文“Redis 没有用户的概念”只适用于更早的认证模型。使用 ACL 时应指定用户名和密码；`-a 密码` 会在进程参数中暴露，交互终端可用 `--askpass`，自动化则采用受保护的密钥注入方式。
 
 ```bash
-[root@centos8 ~]#cat redis_test.sh
-#!/bin/bash
-NUM=100
-PASS=123456
-for i in `seq $NUM`;do
-redis-cli -h 127.0.0.1 -a "$PASS"  --no-auth-warning  set key${i} value${i}
-echo "key${i} value${i} 写入完成"
+redis-cli -h redis.example.internal -p 6379 --user app-reader --askpass PING
+```
+
+若启用 TLS，还需 `--tls` 及信任的 CA 等证书参数。远程访问失败时依次检查监听地址、防火墙／网络、TLS、ACL 权限和服务器日志，不要为了排障直接把服务暴露到所有接口。
+
+## 程序连接的共同原则
+
+各语言客户端都要明确主机、端口、认证、TLS、超时、连接池和异常处理。密码放在环境变量或密钥服务，不写在源码里。若程序能连接但写入后重启丢数据，应检查第 08 篇的 RDB／AOF 配置、数据目录权限与持久化日志；原文将其笼统归因于“新版默认 RDB 路径错误”并不准确。
+
+可从[Redis 客户端列表](https://redis.io/docs/latest/develop/clients/)选择受维护的库。
+
+![Redis 客户端生态示意](assets/img-5bad2704bcb5142b.webp)
+
+![客户端选择页面](assets/img-6a40524219a86a38.webp)
+
+### Shell：少量命令验证
+
+Shell 适合健康检查或短脚本，不适合大量高频写入。下面示例仅写入三个带过期时间的测试键，避免无限积累；运行前应设置受保护的 `REDISCLI_AUTH` 或在受控终端交互输入。
+
+```bash
+for i in 1 2 3; do
+  redis-cli -h 127.0.0.1 -p 6379 SET "demo:$i" "value:$i" EX 60
 done
-echo "$NUM个key写入完成"
+redis-cli -h 127.0.0.1 -p 6379 GET demo:1
 ```
 
-### Python 程序连接 Redis
+### Python：redis-py
 
-python 提供了多种开发库,都可以支持连接访问 Redis
-
-<https://redis.io/clients>
-
-![Redis 数据库第 50 页插图](assets/img-0d82a5a2df6ae8eb.png)
-
-下面选择使用redis-py 库连接 Redis
-
-github redis-py库 :
-
-<https://github.com/andymccurdy/redis-py>
-
-范例:
+使用虚拟环境安装 `redis` 包，脚本文件**不要命名为 `redis.py`**，否则会遮蔽同名库。
 
 ```bash
-#Ubuntu安装
-[root@ubuntu2404 ~]#apt update && apt -y install  python3-redis
-[root@ubuntu2204 ~]#apt update && apt -y install  python3-redis
-[root@ubuntu2004 ~]#apt update && apt -y install  python3-redis
-#CentOS安装
-[root@centos8 ~]#yum info  python3-redis
-Last metadata expiration check: 1 day, 10:19:31 ago on Thu 15 Oct 2020 11:03:33
-PM CST.
-Installed Packages
-Name         : python3-redis
-Version      : 3.3.8
-Release      : 1.el8
-Architecture : noarch
-Size         : 523 k
-Source       : python-redis-3.3.8-1.el8.src.rpm
-Repository   : @System
-From repo    : epel
-Summary      : Python 3 interface to the Redis key-value store
-URL          : https://github.com/andymccurdy/redis-py
-License      : MIT
-Description  : This is a Python 3 interface to the Redis key-value store.
-[root@centos8 ~]#yum -y install python3 python3-redis
-#注意文件名不要为redis,会和redis模块名称冲突
-[root@centos8 ~]#cat redis_test.py
-#!/usr/bin/python3
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install redis
+```
+
+```python
+import os
 import redis
-pool =
-redis.ConnectionPool(host="127.0.0.1",port=6379,password="123456",decode_respons
-es=True)
-c = redis.Redis(connection_pool=pool)
-for i in range(100):
-c.set("k%d" % i,"v%d" % i)
-data=c.get("k%d" % i)
-print(data)
-[root@centos8 ~]# python3 redis_test.py
-......
-'v94'
-'v95'
-'v96'
-'v97'
-'v98'
-'v99'
-[root@centos8 ~]#redis-cli
-127.0.0.1:6379> get k10
-"v10"
-127.0.0.1:6379>
+
+client = redis.Redis(
+    host=os.getenv("REDIS_HOST", "127.0.0.1"),
+    port=int(os.getenv("REDIS_PORT", "6379")),
+    username=os.getenv("REDIS_USER") or None,
+    password=os.getenv("REDIS_PASSWORD") or None,
+    socket_connect_timeout=3,
+    socket_timeout=3,
+    decode_responses=True,
+)
+
+client.ping()
+client.set("demo:python", "hello", ex=60)
+print(client.get("demo:python"))
+client.close()
 ```
 
-### Golang 程序连接 Redis
+按实际 TLS 配置再设置 `ssl=True`、CA 等参数。连接池可由客户端复用，但不要在每次请求里无限新建客户端。原资料中的 `pool =` 与下一行构造函数被硬换行打断，`for` 循环主体也失去缩进，不能作为 Python 程序执行。
 
-```bash
-#准备Golang代码，注意：文件名为main.go
-[root@ubuntu2204 redis-go]#cat main.go
+![redis-py 连接示意](assets/img-0d82a5a2df6ae8eb.webp)
+
+### Go：go-redis/v9
+
+`go-redis/v9` 支持通过 `context` 传递超时与取消。以下只写入并读取一个测试键，不用 `KEYS` 进行全库扫描；原示例每写一个键都调用 `KEYS`，在大实例中代价很高。
+
+```go
 package main
+
 import (
-"context"
-"fmt"
-"github.com/redis/go-redis/v9"
+    "context"
+    "fmt"
+    "log"
+    "os"
+    "time"
+
+    "github.com/redis/go-redis/v9"
 )
-var ctx = context.Background()
+
 func main() {
-rdb := redis.NewClient(&redis.Options{
-Addr:     "127.0.0.1:6379",
-Password: "123456",
-DB:       0,
-})
-_, err := rdb.Ping(ctx).Result()
-if err != nil {
-fmt.Printf("连接redis出错，错误信息：%v", err)
-return
+    addr := os.Getenv("REDIS_ADDR")
+    if addr == "" {
+        addr = "127.0.0.1:6379"
+    }
+    client := redis.NewClient(&redis.Options{
+        Addr: addr, Username: os.Getenv("REDIS_USER"),
+        Password: os.Getenv("REDIS_PASSWORD"), DB: 0,
+    })
+    defer client.Close()
+
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+    if err := client.Set(ctx, "demo:go", "hello", time.Minute).Err(); err != nil {
+        log.Fatal(err)
+    }
+    value, err := client.Get(ctx, "demo:go").Result()
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println(value)
 }
-for i:=1;i<=10000;i++ {
-key := fmt.Sprintf("key%d", i)
-value := fmt.Sprintf("value%d", i)
-err = rdb.Set(ctx, key, value,0).Err()
-if err != nil {
-panic(err)
-}
-keys, err := rdb.Keys(ctx, key).Result()
-if err != nil {
-panic(err)
-}
-fmt.Println(keys)
-}
-}
-[root@ubuntu2204 redis-go]#apt update && apt -y install golang
-#初始化并定义模块名，即默认生成的程序名
-[root@ubuntu2204 redis-go]#go mod init redis-go
-#上面命令会生成go.mod文件
-[root@ubuntu2204 redis-go]#cat go.mod
-module redis-go
-go 1.18
-#镜像加速
-[root@ubuntu2204 redis-go]#go env -w GOPROXY=https://goproxy.cn,direct
-#指定项目所依赖相关包及版本
-[root@ubuntu2204 redis-go]#go get github.com/redis/go-redis/v9
-#上面命令会修改go.mod文件生成依赖信息
-[root@ubuntu2204 redis-go]#cat go.mod
-module redis-go
-go 1.18
-require (
-github.com/cespare/xxhash/v2 v2.2.0 // indirect
-github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f //
-indirect
-github.com/redis/go-redis/v9 v9.0.3 // indirect
-)
-[root@ubuntu2204 redis-go]#cat go.sum
-github.com/cespare/xxhash/v2 v2.2.0
-h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
-github.com/cespare/xxhash/v2 v2.2.0/go.mod
-h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
-h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
-github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod
-h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
-github.com/redis/go-redis/v9 v9.0.3
-h1:+7mmR26M0IvyLxGZUHxu4GiBkJkVDid0Un+j4ScYu4k=
-github.com/redis/go-redis/v9 v9.0.3/go.mod
-h1:WqMKv5vnQbRuZstUwxQI195wHy+t4PuXDOjzMvcuQHk=
-#静态编译并指定生成的文件名myredi
-[root@ubuntu2204 redis-go]#CGO_ENABLED=0 go build -o myredis
-[root@ubuntu2204 redis-go]#ls
-go.mod  go.sum  main.go  myredis
-[root@ubuntu2204 redis-go]#ldd myredis
-不是动态可执行文件
-#或者动态编译文件名为redis-go，如果不指定-o myredis，默认生成的名称为go mod init redis-go
-指定的名称
-[root@ubuntu2204 redis-go]#go build
-[root@ubuntu2204 redis-go]#ls
-go.mod  go.sum  main.go  redis-go
-[root@ubuntu2204 redis-go]#ldd redis-go
-linux-vdso.so.1 (0x00007fff5b15e000)
-libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f4fc1c18000)
-/lib64/ld-linux-x86-64.so.2 (0x00007f4fc1e48000)
-#运行
-[root@ubuntu2204 redis-go]#./redis-go
 ```
 
-### 图形工具
+在空目录执行 `go mod init redis-demo`、`go get github.com/redis/go-redis/v9`、`go run .`。Go 版本与模块依赖以当前 SDK 的 `go.mod` 要求为准；不需要在教程中逐行复制机器生成的 `go.sum`。
 
-有一些第三方开发的图形工具也可以连接redis
+## 图形客户端
 
-### RedisInsight
+RedisInsight 提供浏览键、命令与分析界面；其他社区桌面客户端的维护状态和功能取决于版本。图形工具应通过受控网络和专用 ACL 身份连接，避免在客户端保存根用户凭据。原文把某次连接失败归结为 Redis 7.2.1、7.2.2 或 7.2.3 的固定兼容边界，缺少工具版本、TLS／ACL 和错误日志，不能作为普适结论。
 
-<https://apps.microsoft.com/store/detail/redisinsight/XP8K1GHCB0F1R2>
+![RedisInsight 首页](assets/img-7aa7dc5d2656d622.webp)
 
-![Redis 数据库第 54 页插图](assets/img-7aa7dc5d2656d622.png)
+![Another Redis Desktop Manager 界面](assets/img-729a3d2bcc000aa8.webp)
 
-### Another-Redis-Desktop-Manager
+![桌面客户端连接配置](assets/img-755edf8072d045da.webp)
 
-注意：当前 Redis7.2.1 无法连接，Redis7.2.2以后版本可以
+![桌面客户端键浏览](assets/img-5273ad01ed887f1f.webp)
 
-<https://github.com/qishibo/AnotherRedisDesktopManager>
+![Redis Desktop Manager 界面](assets/img-1a17b57c7864c813.webp)
 
-![Redis 数据库第 54 页插图](assets/img-729a3d2bcc000aa8.png)
+![桌面工具连接示意](assets/img-f9c5716f845776aa.webp)
 
-![Redis 数据库第 55 页插图](assets/img-755edf8072d045da.png)
+![桌面工具对象浏览](assets/img-844bf7de8f726161.webp)
 
-![Redis 数据库第 56 页插图](assets/img-5273ad01ed887f1f.png)
-
-### RedisDesktopManager
-
-注意: 当前 Redis-v7.2.1 无法连接，redis-v7.2.3以后版本可以支持连接
-
-![Redis 数据库第 56 页插图](assets/img-1a17b57c7864c813.png)
-
-![Redis 数据库第 57 页插图](assets/img-f9c5716f845776aa.png)
-
-![Redis 数据库第 57 页插图](assets/img-844bf7de8f726161.png)
+阅读这些截图时，重点是区分连接参数、数据库编号、键名和过期时间；菜单位置随工具版本改变，不影响 Redis 命令本身的语义。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Redis/02-installing-redis.html' | relative_url }}">← Previous: Installing Redis</a>
-  <a href="{{ '/subjects/Redis/' | relative_url }}">Back to Redis Database Index</a>
-  <a href="{{ '/subjects/Redis/04-common-redis-commands.html' | relative_url }}">Next: Common Redis Commands →</a>
+  <a href="{{ '/subjects/Redis/02-installing-redis.html' | relative_url }}">← 上一篇：安装 Redis</a>
+  <a href="{{ '/subjects/Redis/' | relative_url }}">返回 Redis 数据库目录</a>
+  <a href="{{ '/subjects/Redis/04-common-redis-commands.html' | relative_url }}">下一篇：常用命令 →</a>
 </nav>

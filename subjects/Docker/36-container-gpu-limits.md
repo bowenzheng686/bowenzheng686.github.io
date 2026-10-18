@@ -13,103 +13,52 @@ syntax_highlight: true
 # 36 容器的 GPU 限制 （了解）
 ### 7.5 容器的 GPU 限制 （了解）
 
-<https://docs.docker.com/engine/containers/resource_constraints/#gpu>
+Docker 的 `--gpus` 参数用于**选择容器可见的 GPU 设备**，并不自动为每个容器设定 GPU 显存或计算量的硬上限。需要资源配额与多租户隔离时，应另行评估硬件分区、驱动功能或编排平台能力。
 
-### 使用 NVIDIA GPU 先决条件
+参考：[Docker GPU 文档](https://docs.docker.com/engine/containers/resource_constraints/#gpu)、[NVIDIA Container Toolkit 安装说明](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。
 
-访问官方NVIDIA 驱动程序页面下载并安装正确的驱动程序。一旦你有完成。
+### 1. 准备宿主机
 
-验证您的 GPU 是否正在运行且可访问。
-
-<https://www.nvidia.com/Download/index.aspx>
-
-![Docker 容器技术第 479 页插图](assets/img-504b9fb4f7413ae5.png)
-
-安装 nvidia-container-toolkit
-
-关注官方 NVIDIA Container Toolkit安装说明.
-
-<https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>
-
-![Docker 容器技术第 480 页插图](assets/img-4ce9537dbcaea0e7.png)
-
-### 使用 GPU
-
-### 公开 GPU 以供使用
-
-在启动容器以访问 GPU 资源时包含标志。指定要使用的 GPU 数量。 例如：--gpus
+先在宿主机安装与硬件和系统兼容的 NVIDIA 驱动，用 `nvidia-smi` 验证 GPU 可见；然后按 NVIDIA 官方说明安装 `nvidia-container-toolkit`。工具包安装完成后配置 Docker 运行时：
 
 ```bash
-$ docker run -it --rm --gpus all ubuntu nvidia-smi
+nvidia-smi
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
 ```
 
-公开所有可用的 GPU 并返回类似于以下内容的结果：
+重启 Docker 可能影响现有容器，应在维护窗口操作。不要只安装 CUDA 镜像就认为容器能访问 GPU：宿主机驱动和运行时配置也必须正常。
 
-```text
-解释+----------------------------------------------------------------------------
----+
-| NVIDIA-SMI 384.130                Driver Version: 384.130                 |
-|-------------------------------+----------------------+------------------------
-+
-| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC
-|
-| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M.
-|
-|===============================+======================+========================
-|
-|   0  GRID K520        Off  | 00000000:00:03.0 Off |                  N/A
-|
-| N/A   36C P0    39W / 125W |      0MiB /  4036MiB |      0%   Default |
-+-------------------------------+----------------------+------------------------
-+
-+-------------------------------------------------------------------------------
-+
-| Processes:                                                       GPU Memory
-|
-|  GPU      PID   Type   Process name                           Usage   |
-|===============================================================================
-|
-|  No running processes found
-|
-+-------------------------------------------------------------------------------
-+
-```
+![Docker 容器技术第 479 页插图](assets/img-504b9fb4f7413ae5.webp)
 
-### 使用该选项指定 GPU。 例如：device
+![Docker 容器技术第 480 页插图](assets/img-4ce9537dbcaea0e7.webp)
+
+### 2. 选择 GPU 并验证
+
+下面命令以 Bash 为例；CUDA 镜像标签应按所需 CUDA 版本和宿主机驱动兼容性选择：
 
 ```bash
-$ docker run -it --rm --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
-ubuntu nvidia-smi
+# 所有可用 GPU
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+
+# 任意一块 GPU
+docker run --rm --gpus 1 nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+
+# 指定第 0、2 块 GPU（Bash 的引号形式）
+docker run --rm --gpus '"device=0,2"' \
+  nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
 
-公开该特定 GPU
+也可以通过 GPU UUID 选择特定设备。`nvidia-smi` 输出中的 GPU 数量应与命令选择一致；若报找不到运行时或设备，应分别检查宿主机驱动、Toolkit 配置、Docker 重启结果及镜像与驱动的兼容性。GPU 编号可能因硬件变化而改变，长期部署可考虑使用 UUID。
 
-```bash
-$ docker run -it --rm --gpus '"device=0,2"' ubuntu nvidia-smi
-```
+### 3. 驱动能力与后续限制
 
-公开第一个和第三个 GPU。注意:NVIDIA GPU 只能由运行单个引擎的系统访问。
-
-### 设置 NVIDIA 功能
-
-您可以手动设置功能。例如，在 Ubuntu 上，您可以运行 以后：
-
-```bash
-$ docker run --gpus 'all,capabilities=utility' --rm ubuntu nvidia-smi
-```
-
-这将启用驱动程序功能，该功能将工具utility``nvidia-smi 添加到容器中
-
-功能以及其他配置可以通过环境变量在镜像中设置。
-
-有关有效变量的更多信息，请参阅nvidia-container-toolkit （英伟达容器工具包）文档。 可以在 Dockerfile 中设置这些变量。
-
-您还可以使用 CUDA 映像来自动设置这些变量。请参阅 官方CUDA 映像NGC 目录页面。
+`utility` 能力用于 `nvidia-smi` 等管理工具；实际计算应用通常还需要 `compute`。可通过 NVIDIA 运行时的能力配置或相关环境变量控制暴露的驱动功能，具体取值以所用 Toolkit 版本文档为准。GPU 设备选择与 GPU 资源配额是两回事：即使指定 `--gpus 1`，同一 GPU 上的显存竞争仍需在应用和平台层面监控。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Docker/35-container-cpu-limits.html' | relative_url }}">← Previous: Container CPU Limits</a>
-  <a href="{{ '/subjects/Docker/' | relative_url }}">Back to Docker Container Technology Index</a>
-  <a href="{{ '/subjects/Docker/37-common-interview-questions.html' | relative_url }}">Next: Common Interview Questions →</a>
+  <a href="{{ '/subjects/Docker/35-container-cpu-limits.html' | relative_url }}">← 上一篇：容器的 CPU 限制</a>
+  <a href="{{ '/subjects/Docker/' | relative_url }}">返回 Docker 容器技术目录</a>
+  <a href="{{ '/subjects/Docker/37-common-interview-questions.html' | relative_url }}">下一篇：常见面试题 →</a>
 </nav>

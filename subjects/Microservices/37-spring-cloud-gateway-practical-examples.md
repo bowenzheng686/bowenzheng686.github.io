@@ -11,268 +11,85 @@ syntax_highlight: true
 {% raw %}
 
 # 37 Spring Cloud Gateway 实战案例
-### 7.4 Spring Cloud Gateway 实战案例
 
-### 案例1: mall-microservice 项目
+本篇从已有项目的路由配置提炼可复用的判断方法，再用“Gateway + Nacos + Provider”验证一条动态路由。原资料中的几个项目处于不同技术版本，配置不能整份拼接；尤其需要分清**路由配置、服务发现、权限白名单和监控端点**的职责。
 
-```text
-#https://gitee.com/lbtooth/mall-microservice/blob/master/mall-gateway/src/main/resources/application.yml
-server:
-port: 8201
+## 案例一：商城项目如何组织多条路由
+
+原商城示例为 `mall-auth`、`mall-admin`、`mall-portal`、`mall-search` 等服务分别设置 `Path=/<服务名>/**`，并用 `StripPrefix=1` 去掉对外前缀。可以抽象为下面两条有效 YAML，其他服务按相同模式添加：
+
+```yaml
 spring:
-mvc:
-pathmatch:
-matching-strategy: ant_path_matcher
-cloud:
-gateway:
-discovery:
-locator:
-enabled: true
-lower-case-service-id: true #使用小写service-id
-routes: #配置路由路径
-- id: mall-auth
-uri: lb://mall-auth
-predicates:
-- Path=/mall-auth/**
-filters:
-- StripPrefix=1
-- id: mall-admin
-uri: lb://mall-admin
-predicates:
-- Path=/mall-admin/**
-filters:
-- StripPrefix=1
-- id: mall-portal
-uri: lb://mall-portal
-predicates:
-- Path=/mall-portal/**
-filters:
-- StripPrefix=1
-- id: mall-search
-uri: lb://mall-search
-predicates:
-- Path=/mall-search/**
-filters:
-- StripPrefix=1
-- id: mall-demo
-uri: lb://mall-demo
-predicates:
-- Path=/mall-demo/**
-filters:
-- StripPrefix=1
-security:
-oauth2:
-resourceserver:
-jwt:
-jwk-set-uri: 'http://localhost:8201/mall-auth/rsa/publicKey' #配置RSA的公钥访问地址
-redis:
-database: 0
-port: 6379
-host: localhost
-password:
-secure:
-ignore:
-urls: #配置白名单路径
-- "/doc.html"
-- "/swagger-resources/**"
-- "/swagger/**"
-- "/*/v2/api-docs"
-- "/*/*.js"
-- "/*/*.css"
-- "/*/*.png"
-- "/*/*.ico"
-- "/webjars/**"
-- "/actuator/**"
-- "/mall-auth/oauth/token"
-- "/mall-auth/rsa/publicKey"
-- "/mall-search/**"
-- "/mall-portal/sso/login"
-- "/mall-portal/sso/register"
-- "/mall-portal/sso/getAuthCode"
-- "/mall-portal/home/**"
-- "/mall-portal/product/**"
-- "/mall-portal/brand/**"
-- "/mall-admin/admin/login"
-- "/mall-admin/admin/register"
-- "/mall-admin/minio/upload"
-management: #开启SpringBoot Admin的监控
-endpoints:
-web:
-exposure:
-include: '*'
-endpoint:
-health:
-show-details: always
+  cloud:
+    gateway:
+      routes:
+        - id: mall-auth
+          uri: lb://mall-auth
+          predicates:
+            - Path=/mall-auth/**
+          filters:
+            - StripPrefix=1
+        - id: mall-portal
+          uri: lb://mall-portal
+          predicates:
+            - Path=/mall-portal/**
+          filters:
+            - StripPrefix=1
 ```
 
-### 案例2: 若依微服务版
+例如外部请求 `/mall-auth/login` 转给后端时路径变为 `/login`。每新增一条路由，都要确认目标服务名与注册中心一致、后端是否预期被剥离的路径，以及更具体的路由是否被宽泛路由抢先匹配。
 
-```text
-#若依微服务，将路由规则放在MySQL，后导入Nacos的配置管理中
-https://gitee.com/lbtooth/RuoYi-Cloud/raw/master/sql/ry_config_20231204.sql
-```
+原资料还将 JWT 公钥地址、Redis、权限白名单和 `management.endpoints.web.exposure.include='*'` 放进一大段无缩进文本。这些不是 Gateway 路由自动提供的能力，而是项目自身的认证和配置模块。白名单只表示某些路径跳过特定认证规则，不代表接口可无条件公开；Actuator 端点也不应为方便调试全部对外暴露。WebFlux Gateway 项目中放入 `spring.mvc.pathmatch` 配置并不能解决网关路径匹配问题。
 
-### 案例3: Spring Cloud Gateway 结合Nacos的 JAVA 综合项目
+## 案例二：若依项目的动态配置
 
-![微服务技术第 218 页插图](assets/img-1cbd5b3b34fc8cb5.png)
+若依微服务版可能把路由配置保存在数据库，再由 Nacos 管理配置发布。**路由存储位置**与**路由实际生效**是两回事：数据库记录需经过配置加载或动态刷新，才能成为 Gateway 的运行时路由。排查时查看 Nacos 中最终的 Data ID、配置内容、网关加载日志和实际请求结果，而不是仅看到 SQL 导入成功。动态发布应保留版本与回滚能力，并防止错误路由瞬间影响所有流量。
 
-### 安装 Nacos 服务并名称解析
+## 案例三：Gateway + Nacos + Provider
 
-```bash
-#安装 nacos 服务
-[root@ubuntu2404 ~]#apt update && apt install -y docker.io
-[root@ubuntu2204 ~]#apt update && apt install -y docker.io
-[root@ubuntu2204 ~]#docker run --name nacos  -e MODE=standalone  -p 8848:8848 -p 9848:9848  -d registry.cn-
-beijing.aliyuncs.com/bowenxiaochun/nacos-server:v2.4.3-slim
-[root@ubuntu2204 ~]#docker run --name nacos  -e MODE=standalone  -p 8848:8848 -p 9848:9848  -d nacos/nacos-
-server:v2.2.0
-#名称解析
-[root@ubuntu2204 ~]#cat /etc/hosts
-10.0.0.100 nacos.bowen.org
-```
+![网关、注册中心和服务提供者拓扑](assets/img-1cbd5b3b34fc8cb5.webp)
 
-### 运行后面的微服务 nacos-provider
+假设 Provider 注册为 `nacos-provider-api`，提供 `GET /echo/{name}`。Gateway 通过 Nacos 获取该服务的健康实例，并把外部 `/api/echo/test` 转成后端 `/echo/test`。在同一兼容的 Spring Boot / Spring Cloud Alibaba 版本组合下，网关至少需要 Gateway、Nacos Discovery 和 LoadBalancer 依赖。配置可写为：
 
-```bash
-#方法1：如果编译
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-8-jdk && apt -y install maven
-[root@ubuntu2204 ~]#mvn -v
-Apache Maven 3.6.3
-Maven home: /usr/share/maven
-Java version: 1.8.0_392, vendor: Private Build, runtime: /usr/lib/jvm/java-8-openjdk-amd64/jre
-Default locale: en_US, platform encoding: UTF-8
-OS name: "linux", version: "5.15.0-67-generic", arch: "amd64", family: "unix"
-[root@ubuntu2204 nacos-provider]#mvn clean package -Dmaven.test.skip=true
-#方法2：直接运行，可以支持JDK-17,21
-[root@ubuntu2404 ~]#apt update && apt install -y openjdk-21-jre
-[root@ubuntu2204 ~]#apt update && apt install -y openjdk-17-jre
-[root@ubuntu2204 ~]#java -version
-openjdk version "17.0.13" 2024-10-15
-OpenJDK Runtime Environment (build 17.0.13+11-Ubuntu-2ubuntu122.04)
-OpenJDK 64-Bit Server VM (build 17.0.13+11-Ubuntu-2ubuntu122.04, mixed mode, sharing)
-[root@ubuntu2204 nacos-provider]#java -jar target/nacos-provider-1.0-SNAPSHOT.jar
-```
-
-### 准备 Spring Cloud Gateway Demo 项目
-
-查看应用的路由配置
-
-```bash
-[root@ubuntu2204 spring-cloud-gateway-demo]#ls
-src pom.xml
-[root@ubuntu2204 spring-cloud-gateway-demo]#cat src/main/resources/application.yml
+```yaml
 server:
-port: 8000
+  port: 8000
 spring:
-application:
-name: spring-cloud-gateway-demo
-cloud:
-nacos:
-discovery:
-server-addr: nacos.bowen.org:8848
-config:
-server-addr: nacos.bowen.org:8848
-gateway:
-routes:
-- id: baidu
-uri: https://www.baidu.com
-predicates:
-- Host=*.bowen.org
-- id: httpbin
-uri: http://httpbin.org
-predicates:
-- Path=/httpbin/**
-filters:
-- StripPrefix=1
-- id: nacos-provider-api
-uri: lb://nacos-provider-api
-predicates:
-- Path=/api/**
-filters:
-- StripPrefix=1
+  application:
+    name: spring-cloud-gateway-demo
+  cloud:
+    nacos:
+      discovery:
+        server-addr: NACOS_HOST:8848
+    gateway:
+      routes:
+        - id: provider-api
+          uri: lb://nacos-provider-api
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=1
 ```
 
-### 编译打包 Spring Cloud Gateway Demo
+原资料还演示了将请求按 Host 转发到公网网站、按 `/httpbin/**` 转发到外部测试服务。它们有助于理解断言与固定 URI，但不是验证 Nacos 发现的必要条件。对公网目标的连通性、TLS、转发 Host 头和外部服务稳定性都可能影响结果；为了定位问题，先只保留本地 Provider 路由。
 
-```bash
-#如果编译
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-8-jdk && apt -y install maven
-[root@ubuntu2204 ~]#mvn -v
-Apache Maven 3.6.3
-Maven home: /usr/share/maven
-Java version: 1.8.0_392, vendor: Private Build, runtime: /usr/lib/jvm/java-8-openjdk-amd64/jre
-Default locale: en_US, platform encoding: UTF-8
-OS name: "linux", version: "5.15.0-67-generic", arch: "amd64", family: "unix"
-[root@ubuntu2204 spring-cloud-gateway-demo]#mvn clean package -Dmaven.test.skip=true
-```
+按下面顺序验收：
 
-### 运行 Spring Cloud Gateway Demo
+1. 从 Gateway 主机直连 Provider 的 `/echo/test`，确定后端自身可用。
+2. 在 Nacos 中确认 `nacos-provider-api` 的实例 IP 和端口从 Gateway 可达；Nacos 2.x 的 8848/9848 也应按客户端要求连通。
+3. 请求 `http://GATEWAY_HOST:8000/api/echo/test`，确认响应来自 Provider；查看网关日志是否匹配 `provider-api` 路由。
+4. 停止 Provider，观察网关如何返回不可用错误；重新启动后确认服务发现恢复。不要把所有 404 或 503 都归咎于网关本身。
 
-```bash
-#如果已经有编译后的包,可以直接运行可以支持JDK-17
-[root@ubuntu2204 ~]#apt update && apt -y install openjdk-17-jdk
-[root@ubuntu2204 ~]#java -version
-openjdk version "17.0.13" 2024-10-15
-OpenJDK Runtime Environment (build 17.0.13+11-Ubuntu-2ubuntu122.04)
-OpenJDK 64-Bit Server VM (build 17.0.13+11-Ubuntu-2ubuntu122.04, mixed mode, sharing)
-[root@ubuntu2204 spring-cloud-gateway-demo]#java -jar target/spring-cloud-gateway-demo-0.0.1-SNAPSHOT.jar
-```
+![通过 Gateway 访问 Provider](assets/img-d1428ca009c98a5f.webp)
+![Nacos 中的 Gateway 服务](assets/img-7241d78b40fd4eb1.webp)
+![Nacos 中的 Provider 实例](assets/img-8f218d62377a5510.webp)
 
-### 验证访问
-
-```json
-[root@ubuntu2204 ~]#curl -H"host: demo.bowen.org" 127.0.0.1:8000 -I
-HTTP/1.1 200 OK
-Accept-Ranges: bytes
-Cache-Control: private, no-cache, no-store, proxy-revalidate, no-transform
-Content-Length: 277
-Content-Type: text/html
-Date: Thu, 04 Jan 2024 09:58:09 GMT
-Etag: "575e1f59-115"
-Last-Modified: Mon, 13 Jun 2016 02:50:01 GMT
-Pragma: no-cache
-Server: bfe/1.0.8.18
-[root@ubuntu2204 ~]#curl 127.0.0.1:8000/api/
-Hello,bowenxiaochun!
-[root@ubuntu2204 ~]#curl 127.0.0.1:8000/api/echo/bowenxiaochun
-Nacos Discovery Provider Service Message : bowenxiaochun
-#访问/httpbin可看效果
-[root@ubuntu2204 ~]#curl http://10.0.0.100:8000/httpbin/anything/bowenxiaochun
-{
-"args": {},
-"data": "",
-"files": {},
-"form": {},
-"headers": {
-"Accept": "*/*",
-"Content-Length": "0",
-"Forwarded": "proto=http;host=\"10.0.0.100:8000\";for=\"10.0.0.202:40690\"",
-"Host": "httpbin.org",
-"User-Agent": "curl/7.81.0",
-"X-Amzn-Trace-Id": "Root=1-65dc31c2-53f48ceb5dcc45fa10afaf0a",
-"X-Forwarded-Host": "10.0.0.206:8000",
-"X-Forwarded-Prefix": "/httpbin"
-},
-"json": null,
-"method": "GET",
-"origin": "10.0.0.201, 1.203.173.52",
-"url": "http://10.0.0.100:8000/anything/bowenxiaochun"
-}
-#10.0.0.100:8000/httpbin/
-```
-
-![微服务技术第 220 页插图](assets/img-d1428ca009c98a5f.png)
-
-查看nacos 显示服务注册成功
-
-![微服务技术第 220 页插图](assets/img-7241d78b40fd4eb1.png)
-
-![微服务技术第 220 页插图](assets/img-8f218d62377a5510.png)
+原记录的 `curl -I` 只发送 HEAD 请求，后端若只实现 GET，返回值可能与浏览器访问不同。检验路由时应先用与业务接口一致的方法和路径，再核对响应体与状态码。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/36-developing-with-spring-cloud-gateway.html' | relative_url }}">← Previous: Developing with Spring Cloud Gateway</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/38-introduction-to-apache-apisix.html' | relative_url }}">Next: Introduction to Apache APISIX →</a>
+  <a href="{{ '/subjects/Microservices/36-developing-with-spring-cloud-gateway.html' | relative_url }}">← 上一篇：Spring Cloud Gateway 开发</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回专题目录</a>
+  <a href="{{ '/subjects/Microservices/38-introduction-to-apache-apisix.html' | relative_url }}">下一篇：Apache APISIX 介绍 →</a>
 </nav>

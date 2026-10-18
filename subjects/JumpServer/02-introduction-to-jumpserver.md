@@ -11,28 +11,25 @@ syntax_highlight: true
 {% raw %}
 
 # 02 JumpServer 简介
-### 1.2 JumpServer 简介
 
-JumpServer 是全球首款完全开源的堡垒机, 使用 GNU GPL v2.0 开源协议, 是符合 4A 的专业运维审计系统。为互联网企业提供了认证，授权，审计，自动化运维等功能。 JumpServer 使用 Python / Django 进行开发, 遵循 Web 2.0 规范, 配备了业界领先的 Web Terminal 解决方案, 交互界面美观、用户体验好。
+JumpServer 是面向运维访问的堡垒机平台。它把人员、资产和资产账号集中管理，让用户在授权范围内通过 Web 终端或受支持的客户端连接目标资产，并保留会话和操作审计。上一章提到的“4A”——认证、账号、授权、审计——分别对应平台的不同环节，不能只启用登录页面就认为审计已完整落地。
 
-JumpServer 采纳分布式架构, 支持多机房跨区域部署, 中心节点提供 API, 各机房部署登录节点, 可横向扩展、无并发访问限制。
+JumpServer 由管理后台、前端和多种协议连接组件组成，常见连接场景包括 SSH、RDP、VNC 与数据库访问。实际支持的协议、插件和许可证范围会随版本变化，应以所部署版本的官方文档核对。部署规模较大时可分离接入组件和核心服务，但并发能力仍受计算资源、数据库、Redis、网络与录像存储限制，不存在“无并发限制”的通用保证。
 
-JumpServer 现已支持管理 SSH、 Telnet、 RDP、 VNC 协议资产。
+![JumpServer 堡垒机第 3 页插图](assets/img-6127a72d0db89a70.webp)
 
-![JumpServer 堡垒机第 3 页插图](assets/img-6127a72d0db89a70.png)
+下图记录项目的历史版本，阅读时注意区分当时的架构与当前版本的组件名称。
 
-JumpServer 历史
+![JumpServer 堡垒机第 3 页插图](assets/img-737e64dc6595f853.webp)
 
-![JumpServer 堡垒机第 3 页插图](assets/img-737e64dc6595f853.jpeg)
+项目文档：<https://docs.jumpserver.org/>
 
-官方地址： http://www.jumpserver.org/
-
-github项目: https://github.com/jumpserver
+源代码入口：<https://github.com/jumpserver>
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/JumpServer/01-jump-hosts-and-bastion-hosts.html' | relative_url }}">← Previous: Jump Hosts and Bastion Hosts</a>
-  <a href="{{ '/subjects/JumpServer/' | relative_url }}">Back to JumpServer Bastion Host Index</a>
-  <a href="{{ '/subjects/JumpServer/03-jumpserver-production-use-cases.html' | relative_url }}">Next: JumpServer Production Use Cases →</a>
+  <a href="{{ '/subjects/JumpServer/01-jump-hosts-and-bastion-hosts.html' | relative_url }}">← 上一篇：跳板机与堡垒机</a>
+  <a href="{{ '/subjects/JumpServer/' | relative_url }}">返回 JumpServer 专题目录</a>
+  <a href="{{ '/subjects/JumpServer/03-jumpserver-production-use-cases.html' | relative_url }}">下一篇：生产应用场景 →</a>
 </nav>

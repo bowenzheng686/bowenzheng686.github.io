@@ -23,259 +23,48 @@ syntax_highlight: true
 
 <https://git-scm.com/book/zh/v2>
 
-![Git 与 GitLab 版本管理第 53 页插图](assets/img-0cf22fd127fa17c6.png)
+![Git 与 GitLab 版本管理第 53 页插图](assets/img-0cf22fd127fa17c6.webp)
 
 区域间文件操作
 
-![Git 与 GitLab 版本管理第 53 页插图](assets/img-2bc00c18e07eea77.png)
+![Git 与 GitLab 版本管理第 53 页插图](assets/img-2bc00c18e07eea77.webp)
 
-git 命令常见用法
+git 的命令应按工作流理解，而不是记忆一张混合了参数、注释和换行的长清单。下面各行都是独立命令；尖括号表示需要替换的值，不要原样输入。
 
-```text
-#查看git及子命令的帮助
-git help <子命令> #不加<子命令>是查看git命令的帮助
-git <子命令> --help #不加<子命令>是查看git命令的帮助
-man git-<子命令>
-git version  #查看版本
-git init       #本地仓库初始化
-git init --initial-branch=main  #初始化主分支为main，默认为master,注意:此为新版用法
-git init --bare #创建无工作区的祼仓库,适用于充当远程仓库,一般对应的目录以.git为后缀
-git clone <repository_url>  [workdir]      #克隆url指定的项目的所有分支和标签对应文件到
-指定目录（默认为当前目录）,并在本地创建此项目的git仓库，默认只显示master分支，而不晃示其它支
-支，但可以执行git checkout 分支，即可查看到其它分支的文件
-git clone -b develop <repository_url>      #克隆url指定的项目,并切换到develop分支
-git clone -b tag <repository_url>          #克隆url指定的项目，并切换到指定的tag
-git config --global user.name "bowenxiaochun" #设置当前用户的git全局用户名,和下面两项都
-存放在~/.gitconfig文件中
-git config --global user.email "29308620@qq.com" #设置全局邮箱
-git config --global color.ui true   #让Git显示颜色，会让命令输出看起来更醒目
-git config --global core.editor vim #git默认的编辑器为nano，不常用，需要修改为vim
-git config --global --list|-l  #列出用户全局设置,默认保存在~/.gitconfig文件中
-git config --global -e #交互编辑配置
-#文件操作
-git add index.html / . #添加指定文件、目录或当前目录下所有数据到暂存区
-git mv file_oldname file_newname    #将已经进入版本仓库的文件改名，注意：不支持在工作区没
-有存入暂存区的新创建的文件
-git rm --cached file   #只删除暂存区的文件,不删除工作区文件,相当于git add 反操作，和git
-restore --staged 功能相同
-git rm  file           #从删除工作目录和暂存区删除文件
-git checkout file      #从暂存区复制文件到工作目录
-git restore --staged <file>     #新版EXPERIMENTAL命令,撤销add到暂存区的文件回到工作区，
-重新成为untracked状态
-git restore <file>     #撤消已跟踪但尚未加入暂存区中的文件变更，撤消了工作区中文件的所有新的
-更改
-git restore -s <commitid> <pathspec>  #从某个提交中恢复文件
-#示例：从前一次提交中恢复README.md文件：git
-restore -s HEAD~ READEME.md
-#查看文件列表和内容
-git ls-files           #查看暂存区文件,选项-s显示mode bits, object name and stage
-number,-o显示untracked文件
-git cat-file -p <blogid>  #查看仓库对象的内容,仓库对象存放在.git/objects目录下
-#查看文件变化
-git diff [<path>...]                            #对比工作区和暂存区的区别
-git diff --staged|cached  [<path>...]           #对比暂存区和本地仓库的前一次提交的区别
-git diff --cached <commit> [<path>...]          #对比暂存区与指定的提交
-git diff [<commit>] [--] [<path>...]            #对比工作区和指定提交的文件的区别
-git diff <commit>...<commit> [--] [<path>...]   #提交和提交之间的文件的区别
-#提交
-git commit -m  “comment“         #提交文件到工作区
-git commit -am "comment"         #添加所有修改(不包括新文件)到暂存区并提交,相当于git add
-+ git commit
-git commit --amend --no-edit     #重新覆盖上次的提交
-git commit --amend -m "comment"  #重新提交,覆盖上次的提交
-git show [HEAD]                   #查看最近一次提交的详细信息,即查看HEAD当前所指向的
-commit的信息
-#查看日志
-git status #查看工作区的状态
-git log #查看提交日志
-git log --oneline #查看提交日志的简要信息，一个提交一行，只显示commit id的前七位
-git log --oneline -N  #查看最近N条commit日志
-git log  --pretty=oneline #查看提交日志的简要信息，一个提交一行，显示commit id 全部位
-git log  --pretty=raw     #查看提交信息，包括对应的tree对象，父提交，作者等
-git log --stats #查看提交的文件的统计信息
-git log -p [commit_id] #查看指定提交和之前提交的变化详细信息
-git log --author="<author-name-pattern>" #查看指定作者的提交
-git log <file-pattern> #查看指定文件的提交
-git log origin/main  #查看远程仓库的日志
-git reflog  #查看分支或其它引用在本地仓库的完整历史记录
-#回滚提交，本质上是将HEAD和master引用移到指定的commit上，是否基于指定的commit连同重置暂存区
-和工作区则取决于使用的选项
-git reset --hard|soft|minxed HEAD^^ #git版本回滚， HEAD为当前版本，加一个^为上一个，^^
-为上上一个版本，也可以将^换成~
-git reset --hard|soft|minxed HEAD~n #回滚前n个版本，0表示当前commit，~或者~1表示前一个
-commit,即相当于HEAD^
-git reset --hard|soft|minxed 5ae4b06 #回退到指定id的版本,使用 git reflog 获取每次提交
-的ID
-git reset --hard|soft|minxed v1.0    #支持tag,此处的v1.0为tag
-#分支管理
-git branch #查看分支及当前所处的分支
-git branch -av #查看所有本地和远程分支
-git branch <分支名> #创建分支<分支名>
-git branch <分支名> <commit_id> #基于指定提交创建新分支
-git branch -d <分支名>  #删除分支
-git branch -m dev develop #修改分支名dev为develop
-git branch -M main #修改当前分支名称为main
-git branch -r      #列出所有远程分支
-#切换分支
-git checkout <分支名>    #切换到已有的分支，HEAD也会自动指向目标分支上的最新提交
-git checkout <tag>     #切换至指定标签，检出到标签，会导致分离头指针，且新创建的提交也将处于
-分离的状态
-git checkout -b <分支名> #创建并切换到一个新分支
-git checkout -b <分支名> origin/<分支名> #利用服务器远程仓库的分支，同步在本地创建分支
-git checkout [<commit>]-- <file> ...  #找回在工作区删除的已存入暂存区或提交的文件
-git merge master -m  <message>  #将master分支合并至当前分支,无选项-m, 则为交互式输入信息
-git merge orgin/<branch_name>   #将远程分支合并到本地当前分支，通常应该将存在映射关系（通
-常为同一个分支名称）的分支进行合并
-git merge --abort     #取消合并
-git switch <branchname>    #切换分支.是Git 2.23 版本引入的新命令,git switch 是一个只专
-注于分支切换的命令，而 git checkout 则是一个历史更久,有更多的用途。除了切换分支外，git
-checkout 还可以用于还原文件、切换到特定的提交、创建新的分支等更通用的命令
-git switch -c <new-branch>      #切抽并创建分支,相当于git branch <new-branch> && git
-switch <new-branch>
-#标签
-git tag <tagname>                          #当前commit创建轻量标签
-git tag <tagname>  <commit_id>             #将指定commit创建轻量标签
-git tag -a <tagname>  -m <message>         #将当前commit创建附注标签
-git tag -a <tagname>  -m <message> <commit_id>  #将指定commit创建附注标签
-git tag -d <tagname>                    #删除标签
-git reset --hard <tagname>              #回滚到指定标签
-git tag                                 #查看标签
-git tag -l [<pattern>]                  #查看指定模式的标签
-git show <tagname>                      #查看指定标签详细信息
-#远程仓库
-git remote -v #查看远程仓库
-git remote show <remote_name> #查看远程仓库详细信息，<remote_name>默认origin
-git remote add <remote_name> <url> #创建远程仓库，<remote_name> 默认为origin
-git remote add origin git@gitlab.example.com:testgroup/testproject.git #建立远程仓
-库和本地origin关联
-git remote rename origin new-origin  #修改默认远程仓库名称origin为新的名称new-origin
-git remote remove|rm origin #删除远程仓库的关联
-#和远程仓库推和位
-git push #将本地仓库提交代码到远程服务器
-git push <remote_name> <branch_name> #推送指定分支到指定的远程仓库
-git push origin master #将本地master分支推送到远程的 master 分支,和当前分支是否为master
-分支无关
-git push origin dev    #将本地dev分支推送到远程的dev分支,如果远程没有dev会自动创建,和当前
-分支是否为dev分支无关
-git push -u|--set-upstream origin master #将本地master分支推送到远程仓库master,-u表示
-以后可用git push 代替此命令
-git push origin main:dev #将本地main分支推送至远程dev分支
-git push origin :dev #将空分支推送到远程dev,即删除远程dev分支
-git push <remote_name> --all #推送本地仓库的的所有有分支到远程
-git push -u origin --all     #推送所有分支
-git push origin <tagname>       #推送本地仓库指定的tag到远程
-git push origin --tag <tagname> #推送本地仓库指定的tag到远程
-git push <remote_name> --tags          #将本地仓库所有的tag都推送到远程,默认不会推送标签
-git push --delete origin <tagname> #删除远程仓库的标签
-git pull               #从远程服务器获取所有分支的代码到本地仓库,并自动合并到本地仓库和工作
-区
-git pull <remote_name> #拉取并合并远程分支变更到当前分支，相当于git fetch <remote_name>
-和git merge <remote_name>
-git pull origin dev    #从远程服务器指定的分支dev拉取代码到本地仓库,并自动合并到本地仓库和
-工作区
-git fetch <remote_name> #获取远程仓库所有分支上的变更
-git fetch <remote_name>   <branch_name> #获取远程仓库指定分支上的变更，但不合并
-git fetch origin master #从远程仓库origin的master分支获取最新版本到本地仓库,但不合并至工
-作区，需要手动完成合并
-#忽略文件，实现不跟踪指定文件
-vim .gitignore #定义忽略文件，即不放在仓库的文件
+| 阶段 | 常用命令 | 作用 |
+| --- | --- | --- |
+| 创建仓库 | `git init -b main` / `git clone <仓库 URL>` | 初始化本地仓库，或克隆已有远程仓库。 |
+| 设置身份 | `git config --global user.name "你的姓名"` / `git config --global user.email "you@example.com"` | 设置提交作者信息；不是远程登录凭据。 |
+| 查看状态 | `git status` / `git diff` / `git diff --staged` | 分别检查工作树、未暂存差异和已暂存差异。 |
+| 暂存并提交 | `git add <路径>` / `git commit -m "说明"` | 选择要提交的内容并生成提交。`git commit -am` 不包括未跟踪的新文件。 |
+| 撤销暂存 | `git restore --staged <路径>` | 从暂存区移除变更，保留工作区文件。 |
+| 丢弃工作区修改 | `git restore <路径>` | 将已跟踪文件恢复为暂存区版本；未提交的修改会丢失。 |
+| 查看历史 | `git log --oneline --graph --all` / `git show <提交>` | 阅读提交图和具体差异。 |
+| 新建并切换分支 | `git switch -c <分支名>` / `git switch <分支名>` | 隔离开发和切换工作线。 |
+| 合并 | 在目标分支执行 `git merge <来源分支>` | 把来源分支的变更带入当前分支。 |
+| 标记发布 | `git tag -a v1.0.0 -m "发布说明"` | 给当前提交创建附注标签。 |
+| 关联远程 | `git remote add origin <仓库 URL>` / `git remote -v` | 添加并检查远程地址；并不在平台上创建仓库。 |
+| 同步 | `git fetch origin` / `git pull --ff-only origin main` / `git push -u origin main` | 先抓取、按策略整合、再推送。`pull` 的行为还受配置影响。 |
+
+**容易混淆的操作：** `git rm <路径>` 会删除工作区文件并暂存删除；`git rm --cached <路径>` 只停止跟踪，不删除工作区文件。`git reset --hard <提交>` 会丢弃未提交修改并移动当前分支，不适合直接处理已共享历史；已推送的错误提交通常用 `git revert <提交>` 生成抵消提交。
+
+### 自定义提交日志
+
+`git log --oneline --graph --all` 足够用于日常追踪。需要自定义输出时，可用：
+
+```bash
+git log --graph --pretty=format:'%h %ad %an %s' --date=short
 ```
 
-git log 显示日志格式
+上例依次显示短提交 ID、作者日期、作者姓名和标题。常用占位符如下，更多格式以 `git help log` 中的 PRETTY FORMATS 为准。
 
-```text
-git log --graph --pretty=format:'参数'
-```
-
-参数说明
-
-参数说明
-
-%H commit hash
-
-%h commit short hash
-
-%T tree hash
-
-%t tree short hash
-
-%P parent hash
-
-%p parent short hash
-
-%an 作者名字
-
-%aN .mailmap 中对应的作者名字
-
-%ae 作者邮箱
-
-%aE .mailmap 中对应的作者邮箱
-
-%ad –date=制定的日期格式
-
-%aD RFC2822 日期格式
-
-%ar 日期格式，例如：1 day ago
-
-%at UNIX timestamp 日期格式
-
-%ai ISO 8601 日期格式
-
-%cn 提交者名字
-
-%cN .mailmap 对应的提交的名字
-
-%ce 提交者邮箱
-
-%cE .mailmap 对应的提交者的邮箱
-
-%cd –data=制定的提交日期的格式
-
-%cD RFC2822 提交日期的格式
-
-%cr 提交日期的格式，例如：1day ago
-
-%ct UNIX timestamp 提交日期的格式
-
-%ci ISO 8601 提交日期的格式
-
-%d ref 名称
-
-%e encoding
-
-%s commit 信息标题
-
-%f 过滤 commit 信息的标题使之可以作为文件名
-
-%b commit 信息内容
-
-%N commit notes 参数说明
-
-%gD reflog selector, e.g., refs/stash@{1}
-
-%gd shortened reflog selector, e.g., stash@{1}
-
-%gs reflog subject
-
-%Cred 切换至红色
-
-%Cgreen 切换至绿色
-
-%Cblue 切换至蓝色
-
-%Creset 重设颜色
-
-%C(color) 制定颜色，as described in color.branch.* config option
-
-%m left right or boundary mark
-
-%n 换行
-
-%% a raw %
-
-%x00 print a byte from a hex code
-
-%w([[,[,]]]) switch line wrapping, like the -w option of git-shortlog(1).
+| 占位符 | 含义 | 占位符 | 含义 |
+| --- | --- | --- | --- |
+| `%H` / `%h` | 完整 / 缩短的提交 ID | `%P` / `%p` | 完整 / 缩短的父提交 ID |
+| `%an` / `%ae` | 作者姓名 / 邮箱 | `%cn` / `%ce` | 提交者姓名 / 邮箱 |
+| `%ad` / `%ar` | 作者日期 / 相对时间 | `%cd` / `%cr` | 提交者日期 / 相对时间 |
+| `%s` / `%b` | 提交标题 / 正文 | `%d` | 分支和标签等引用名 |
+| `%n` / `%%` | 换行 / 字面百分号 | `%C(...)` / `%Creset` | 设置 / 重置输出颜色 |
 
 ### Git 案例
 
@@ -307,7 +96,7 @@ git log --graph --pretty=format:'参数'
 ├── heads               #分支相关信息的目录
 └── tags                #标签相关信息的目录
 9 directories, 17 files
-#设置git，提交commit之前需要先配置git的基本信息
+# 提交前设置作者身份；示例名称和邮箱需替换为自己的信息。
 #选项--system 表示针对所有用户的配置,保存在/etc/gitconfig文件中
 #选项--global 表示当前用户环境,保存在~/.gitconfig文件中,推荐使用
 #选项--local  表示只针对当前目录(项目)的配置,保存在当前目录的.git/config文件中，此为默认值，
@@ -318,7 +107,7 @@ git log --graph --pretty=format:'参数'
 #用户名，另外还可以使用author.name标记作者，以及使用committer.name标记提交者
 [root@gitlab ~]#git config --global user.name bowenxiaochun
 #用户的邮箱，还可以使用author.email标记作者邮箱和使用committer.email标记提交者邮箱
-[root@gitlab ~]#git config --global user.email root@bowenxiaochun.com
+[root@gitlab ~]#git config --global user.email you@example.com
 #为color.diff和color.grep设定默认值,true或auto表示启用语法着色功能,false或never表示关闭语
 法着色功能
 [root@gitlab ~]#git config --global color.ui true
@@ -329,13 +118,13 @@ git log --graph --pretty=format:'参数'
 #查看system,global和local的配置
 [root@gitlab ~]#git config -l
 user.name=bowenxiaochun             #global级优先级高于system
-user.email=root@bowenxiaochun.com
+user.email=you@example.com
 core.editor=vim
 core.ui=true
 [root@gitlab ~]#cat .gitconfig
 [user]
 name = bowenxiaochun
-email = 29308620@qq.com
+email = you@example.com
 #只查看global配置
 [root@gitlab ~]#git config -l --global
 #交互编辑配置
@@ -354,21 +143,21 @@ email = 29308620@qq.com
 
 注意:
 
-如果工作区和暂存区数据不一致,会显示红色的提示
+`git status` 会区分“尚未暂存”和“已暂存”的变更。终端颜色会受配置影响，因此不要只凭红绿判断，应阅读状态标题及 `git diff` / `git diff --staged` 的内容。
 
-![Git 与 GitLab 版本管理第 60 页插图](assets/img-d7818a44bdd480c4.png)
+![Git 与 GitLab 版本管理第 60 页插图](assets/img-d7818a44bdd480c4.webp)
 
-如果暂存区和本地仓库数据不一致,会显示绿色的提示
+下图展示了已暂存变更的状态；提交前再核对 `git diff --staged`，确认没有误加入文件。
 
-![Git 与 GitLab 版本管理第 60 页插图](assets/img-eb1a5903b7d34bd5.png)
+![Git 与 GitLab 版本管理第 60 页插图](assets/img-eb1a5903b7d34bd5.webp)
 
 ### 设置忽略文件
 
-配置.gitignore文件让 Git 不再管理当前目录下的某些文件。
+`.gitignore` 告诉 Git 不要自动加入**尚未跟踪**且匹配规则的文件；已跟踪文件不会因新增忽略规则而停止跟踪。必要时先从索引中移除，再提交该变更。
 
 生产中有如下几类文件可能需要忽略
 
-程序运行时产生的临时文件程序连接数据库这一类的配置文件程序本地开发使用的图片文件其它不想被共享的文件
+常见忽略对象包括构建产物、编辑器临时文件、本地缓存和含本机配置的文件。但不要把项目所需的图片或可共享的配置一概忽略；密钥更不应先提交再依赖 `.gitignore` 补救。
 
 范例: 忽略指定文件
 
@@ -381,7 +170,7 @@ email = 29308620@qq.com
 .settings
 *.h
 !test.h
-*.py[c|x]
+*.py[cx]
 # Java class files
 *.class
 # vim swap file
@@ -470,7 +259,7 @@ new file:   f1.txt
 #方法1
 [root@gitlab testproject]#git rm --cached f1.txt
 #方法2
-[root@gitlab testproject]#git restore --staged f1.txt
+[root@gitlab testproject]#git restore --staged f1.txt  # 与上一种方法择一，不要连续执行
 #确认是否从暂存区删除
 [root@gitlab testproject]#git status
 On branch master
@@ -492,15 +281,12 @@ nothing added to commit but untracked files present (use "git add" to track)
 #查看暂存区的文件
 [root@rocky8 testproject]#git ls-files -s
 100644 4871fd52755be519c29ae719f385bd5f2863627c 0   test.txt
-[root@rocky8 testproject]#file
-.git/objects/48/71fd52755be519c29ae719f385bd5f2863627c
+[root@rocky8 testproject]#file .git/objects/48/71fd52755be519c29ae719f385bd5f2863627c
 .git/objects/48/71fd52755be519c29ae719f385bd5f2863627c: VAX COFF executable -
 version 20741
-[root@rocky8 testproject]#git cat-file -t
-4871fd52755be519c29ae719f385bd5f2863627
+[root@rocky8 testproject]#git cat-file -t 4871fd52755be519c29ae719f385bd5f2863627c
 blob
-[root@rocky8 testproject]#git cat-file -p
-4871fd52755be519c29ae719f385bd5f2863627c
+[root@rocky8 testproject]#git cat-file -p 4871fd52755be519c29ae719f385bd5f2863627c
 testdata
 ```
 
@@ -518,7 +304,7 @@ test.txt
 README.md
 #从暂存区复制文件到工作目录，两种方式
 [root@gitlab testproject]#git restore test.txt
-[root@gitlab testproject]#git checkout test.txt
+[root@gitlab testproject]#git checkout -- test.txt  # 旧写法，与上一行择一
 [root@gitlab testproject]#ls
 README.md  test.txt
 ```
@@ -581,7 +367,7 @@ git reset 官方说明
 
 <https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified>
 
-git reset 是对本地仓库的项目进行回滚操作的命令，它主要有如下三个参数
+`git reset` 移动当前分支引用（分离 HEAD 状态下则移动 HEAD），并按选项决定是否重置索引与工作区。它不会“删除”提交对象，但原分支上的历史可能暂时不可见，可用 `git reflog` 找回。对已共享的分支通常不要直接改写历史。
 
 ```text
 --soft  #工作目录和暂存区都不会被改变，只是本地仓库中的文件回滚到指定的版本，仅移动HEAD和
@@ -590,23 +376,23 @@ master指针的指向，不会重置暂存区或工作区
 --hard  #本地仓库,暂存区和工作目录都回滚到指定的提交,该选项非常危险
 ```
 
-![Git 与 GitLab 版本管理第 65 页插图](assets/img-1671afbf70c0e39a.png)
+![Git 与 GitLab 版本管理第 65 页插图](assets/img-1671afbf70c0e39a.webp)
 
 回滚前的状态
 
-![Git 与 GitLab 版本管理第 65 页插图](assets/img-c9f16bf381e53287.png)
+![Git 与 GitLab 版本管理第 65 页插图](assets/img-c9f16bf381e53287.webp)
 
 git reset --soft HEAD~ 执行的效果
 
-![Git 与 GitLab 版本管理第 66 页插图](assets/img-a5f4a5a99aa15353.png)
+![Git 与 GitLab 版本管理第 66 页插图](assets/img-a5f4a5a99aa15353.webp)
 
 git reset --mixed HEAD~ 执行的效果
 
-![Git 与 GitLab 版本管理第 67 页插图](assets/img-945e9f5e58cb0bcc.png)
+![Git 与 GitLab 版本管理第 67 页插图](assets/img-945e9f5e58cb0bcc.webp)
 
 git reset --hard HEAD~ 执行的效果
 
-![Git 与 GitLab 版本管理第 68 页插图](assets/img-d8490e8f90160431.png)
+![Git 与 GitLab 版本管理第 68 页插图](assets/img-d8490e8f90160431.webp)
 
 ```bash
 [root@gitlab testproject]#cat f1.txt
@@ -763,9 +549,9 @@ fix: update docker-compose-arm64 yaml (#475)
 
 revert之后你的本地代码会回滚到指定的历史版本，然后再git push。
 
-![Git 与 GitLab 版本管理第 72 页插图](assets/img-20157a531a17674a.jpeg)
+![Git 与 GitLab 版本管理第 72 页插图](assets/img-20157a531a17674a.webp)
 
-![Git 与 GitLab 版本管理第 73 页插图](assets/img-20157a531a17674a.jpeg)
+![Git 与 GitLab 版本管理第 73 页插图](assets/img-20157a531a17674a.webp)
 
 git revert 用法
 
@@ -788,7 +574,7 @@ revert的内容正好相反，能够抵消要被revert的内容。
 
 各种分支模型
 
-![Git 与 GitLab 版本管理第 73 页插图](assets/img-dcf0b8bd4064fe61.png)
+![Git 与 GitLab 版本管理第 73 页插图](assets/img-dcf0b8bd4064fe61.webp)
 
 ```bash
 #查看分支,默认只有master分支
@@ -840,13 +626,13 @@ f2.txt
 ```
 
 ```bash
-#快进式合并：切换分支至dev分支，此分支为被合并的目标分支
+# 以下两个分支都修改了 f1.txt，因此是可能发生冲突的三路合并，不是快进式合并。
 [root@gitlab testproject]#git checkout dev
 #合并master分支到当前分支dev
 #交互式合并
 [root@gitlab testproject]#git merge master
 #或者非交互式
-[root@gitlab testproject]#git merge master -m "merge master"
+[root@gitlab testproject]#git merge master -m "merge master"  # 与上一行择一
 [root@gitlab testproject]#cat f1.txt
 <<<<<<< HEAD
 f1.txt dev data v1.0
@@ -894,7 +680,8 @@ Automatic merge failed; fix conflicts and then commit the result.
 [root@gitlab testproject]#cat f1.txt
 f1.txt dev data v1.0
 f1.txt master data v2.0
-[root@gitlab testproject]#git commit -am 'merge master'
+[root@gitlab testproject]#git add f1.txt
+[root@gitlab testproject]#git commit -m 'merge master'
 [root@gitlab testproject]#git log --pretty=oneline  --graph --all
 #合并效果如下
 [root@ubuntu2204 myai]#git log  --pretty --oneline --graph --all
@@ -974,7 +761,7 @@ v1.0
 
 注意: 新建仓库时,选择不初始化仓库
 
-![Git 与 GitLab 版本管理第 77 页插图](assets/img-45ed136d66627554.png)
+![Git 与 GitLab 版本管理第 77 页插图](assets/img-45ed136d66627554.webp)
 
 ```bash
 #在本机创建项目
@@ -988,10 +775,11 @@ v1.0
 #先注册并登录码云,创建名称为myapp的未初始化的空仓库后,可以执行下面操作建立本地仓库和远程码云的
 联系
 [root@centos8 myapp]#git remote add origin https://gitee.com/lbtooth/myapp.git
-#将本地main分支推送至码云的master分支
+# 先确认当前分支名；以下示例将 main 推送为远程 master
+[root@centos8 myapp]#git branch --show-current
 [root@centos8 myapp]#git push -u origin main:master
 Username for 'https://gitee.com': bowenxiaochun
-Password for 'https://lbtooth@gitee.com': 123456
+Password for 'https://lbtooth@gitee.com': <访问令牌或平台要求的凭据>
 [root@centos8 myapp]#git remote
 origin
 [root@centos8 myapp]#git remote -v
@@ -1004,10 +792,10 @@ origin  https://gitee.com/lbtooth/myapp.git (push)
 [root@centos8 myapp]#git add .
 [root@centos8 myapp]#git commit -m "v2.0"
 #查看日志
-[root@centos8 myapp]#git log --online
+[root@centos8 myapp]#git log --oneline
 #push到远程仓库，再次查看日志
 [root@centos8 myapp]#git push -u origin main:master
-[root@centos8 myapp]#git log --online
+[root@centos8 myapp]#git log --oneline
 #删除关联
 [root@centos8 myapp]#git remote remove origin
 [root@centos8 myapp]#git remote -v
@@ -1036,68 +824,25 @@ Switched to a new branch 'devel'
 master
 ```
 
-### github 代理
+### 访问远程仓库时的网络诊断
 
-github 从国内访问可能会失败,可以利用代理访问
+远程访问失败时，先用 `git remote -v` 核对仓库地址，再确认 DNS、HTTPS/SSH 连通性和所需权限。不要把访问令牌嵌入 URL 或命令行：它可能留在终端历史、进程列表或日志中。
 
-2.3.2.14.1 代理1
-
-```text
-将 https://github.com/ 修改为 https://githubfast.com/，其它不变，再下载
-```
-
-范例
+如果所在网络需要组织提供的代理，可按网络管理员给出的地址配置 Git，例如：
 
 ```bash
-[root@ubuntu2204 ~]#wget
-https://github.com/stilleshan/dockerfiles/archive/master.zip
-Connecting to github.com (github.com)|20.205.243.166|:443... failed: Connection
-refused.
-#修改链接地址为githubfast
-[root@ubuntu2204 ~]#wget
-https://githubfast.com/stilleshan/dockerfiles/archive/master.zip
---2025-04-10 20:54:01--
-https://githubfast.com/stilleshan/dockerfiles/archive/master.zip
-HTTP request sent, awaiting response... 200 OK
-Length: unspecified [application/zip]
-Saving to: ‘master.zip’
-master.zip                           [        <=>                      ]   2.76M
-1.87MB/s    in 1.5s
+git config --global http.proxy http://<代理主机>:<端口>
+git config --global --get http.proxy
+# 不再需要时撤销
+git config --global --unset http.proxy
 ```
 
-2.3.2.14.2 代理2
-
-<https://ghproxy.com/>
-
-![Git 与 GitLab 版本管理第 79 页插图](assets/img-3df53f464157ceca.png)
-
-```bash
-#访问格式
-git clone
-https://mirror.ghproxy.com/https://github.com/your_name/your_private_repo
-#git clone 私有仓库
-git clone
-https://user:your_token@mirror.ghproxy.com/https://github.com/your_name/your_pri
-vate_repo
-#wget & curl
-wget
-https://mirror.ghproxy.com/https://github.com/stilleshan/dockerfiles/archive/mas
-ter.zip
-wget
-https://mirror.ghproxy.com/https://raw.githubusercontent.com/stilleshan/dockerfi
-les/main/README.md
-curl -O
-https://mirror.ghproxy.com/https://github.com/stilleshan/dockerfiles/archive/mas
-ter.zip
-curl -O
-https://mirror.ghproxy.com/https://raw.githubusercontent.com/stilleshan/dockerfi
-les/main/README.md
-```
+第三方镜像或下载中转站可能不完整、不同步，也可能改变信任边界。特别是私有仓库和安装包，优先使用受信任的官方地址，并核验来源与校验值。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/08-installing-git.html' | relative_url }}">← Previous: Installing Git</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/10-public-cloud-repositories.html' | relative_url }}">Next: Public Cloud Repositories →</a>
+  <a href="{{ '/subjects/Git-GitLab/08-installing-git.html' | relative_url }}">← 上一篇：Git 安装</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/10-public-cloud-repositories.html' | relative_url }}">下一篇：公有云仓库 →</a>
 </nav>

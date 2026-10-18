@@ -1,140 +1,62 @@
 ---
 layout: default
-title: "MinIO 对象存储 · 节点服务故障重启后自动恢复"
+title: "MinIO 对象存储 · 节点服务重启后的恢复"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 12 节点服务故障重启后自动恢复
-## 4 MINIO 故障恢复
+# 12 节点服务重启后的恢复
 
-minio集群有纠删码机制，即使在集群数据盘挂掉一半的情况下，集群中数据也是安全的。
+本节只讨论**原有磁盘与数据仍在、MinIO 进程暂时停止后重启**的情形。操作系统重装、磁盘被更换或数据路径丢失属于不同故障，见下一章。把进程重启与磁盘损坏混为一谈，会让恢复步骤变得危险。
 
-但是如果集群想要正常读写,就需要有N/2+1的节点数才可以正常读写
+## 故障期间会发生什么
 
-如果现有minio集群有节点出现故障，就需要更换节点
+分布式集群使用纠删码和读写仲裁，但“半数盘在线就一定安全、半数加一节点就能读写”不是普适规则。能否继续读写取决于纠删码集合、校验分片数、故障位置与对象状态。即使服务仍能接受请求，也应把离线节点视为故障窗口，尽快恢复，并持续关注集群健康。
 
-注意事项
+当某节点服务停止时，`mc admin info` 会报告该节点或其磁盘离线。其他节点的请求能否成功，由当时的仲裁决定。故障期间写入成功的对象在节点恢复后可能需要后台修复；修复速度受数据量、磁盘和网络吞吐影响，不等同于“服务一启动就立即同步完全部数据”。
 
-如果更换节点旧节点数据量较大，在节点更换时可以正常使用请先备份原有节点数据到新节点，避免同步的数据过多导致网络带宽被占用如果数据量小，可以不进行备份数据，直接进行更换，节点启动完毕会自动同步数据如果节点挂掉时集群还在读写数据，会导致集群挂掉的节点与其他minio节点数据不同，这里在恢复节点后需修复数据（自动修复，无需人为干预） 最好部署minio集群时使用hosts文件做地址解析，避免更换节点时修改minio配置文件参数更换节点时需要停止minio集群客户端的读写更换的新节点所有配置信息要和旧节点保持一致，包括minio版本，配置文件，hosts解析文件，数据目录位置以及大小
+## 恢复原节点
 
-### 4.1 节点服务故障重启后自动恢复
+首先确认故障原因：进程异常、网络中断、磁盘未挂载、权限变化和存储损坏的处理方式不同。**不要为演示“自动恢复”而删除 `/data/minio*`**；原资料把 `rm -rf` 当作磁盘故障模拟，会直接销毁分片与元数据，不属于安全的服务重启实验。
 
-如果在写入数据时,节点服务故障,当节点服务启动后,会自动同步数据
-
-范例:  节点服务故障重启后自动恢复
+在原节点上检查数据路径和服务状态：
 
 ```bash
-#正在写入数据时,将某个节点服务停止
-[root@minio2 ~]#systemctl stop minio
-[root@ubuntu2204 ~]#mc admin  info minio-cluster
+systemctl status minio.service
+findmnt /data/minio1
+findmnt /data/minio2
+findmnt /data/minio3
+findmnt /data/minio4
+journalctl -u minio.service -n 100 --no-pager
 ```
 
-●  minio1.bowen.org:9000
-
-```text
-Uptime: 3 minutes
-Version: 2023-10-16T04:13:43Z
-Network: 2/3 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio2.bowen.org:9000
-
-```text
-Uptime: offline
-Drives: 0/4 OK
-```
-
-●  minio3.bowen.org:9000
+若仅是服务停止且挂载、数据和配置仍完好，保持原端点列表、凭据与版本不变，启动服务：
 
 ```bash
-Uptime: 14 minutes
-Version: 2023-10-16T04:13:43Z
-Network: 2/3 OK
-Drives: 4/4 OK
-Pool: 1
-Pools:
-1st, Erasure sets: 1, Drives per erasure set: 12
-3.7 GiB Used, 1 Bucket, 1 Object
-1 node offline, 8 drives online, 4 drives offline
-#数据写入仍然进行,完成后,可以看到不同节点的数据空间不同
-[root@minio1 ~]#df -h /data/
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G  8.1G   11G  44% /data
-[root@minio2 ~]#df -h /data
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G  2.5G   17G  14% /data
-[root@minio3 ~]#df -h /data
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G   11G  8.1G  57% /data
-#模拟磁盘损坏
-[root@minio2 ~]#rm -rf  /data/minio*
-[root@minio2 ~]#mkdir /data/minio{1..4}
-[root@minio2 ~]#chown -R minio.minio  /data/minio{1..4}
-#恢复故障节点的服务
-[root@minio2 ~]#systemctl start minio
-#多次执行空间查看,可以看到数据在同步中
-[root@minio2 ~]#df -h /data/
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G  3.2G   16G  18% /data
-[root@minio2 ~]#df -h /data/
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G  3.4G   16G  19% /data
-[root@minio2 ~]#df -h /data/
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G  3.9G   15G  21% /data
-[root@minio2 ~]#df -h /data/
-Filesystem                    Size  Used Avail Use% Mounted on
-/dev/mapper/ubuntu--vg-minio   20G  8.9G  9.9G  48% /data
-#集群状态恢复
-[root@ubuntu2204 ~]#mc admin  info minio-cluster
+sudo systemctl start minio.service
+sudo systemctl status minio.service
 ```
 
-●  minio1.bowen.org:9000
+集群侧使用管理别名检查状态：
 
-```text
-Uptime: 11 minutes
-Version: 2023-10-16T04:13:43Z
-Network: 3/3 OK
-Drives: 4/4 OK
-Pool: 1
+```bash
+mc admin info minio-cluster
+mc admin heal minio-cluster --dry-run
 ```
 
-●  minio2.bowen.org:9000
+`mc admin info` 应逐步显示节点与预期驱动器恢复在线。`mc admin heal --dry-run` 可查看待修复情况；不同版本的后台扫描与手动修复命令有差异，实际操作前先查看 `mc admin heal --help`。不能只用各节点的 `df -h` 数字是否相等判断修复完成，因为纠删码分片与文件系统开销本来就可能不同。
 
-```text
-Uptime: 5 minutes
-Version: 2023-10-16T04:13:43Z
-Network: 3/3 OK
-Drives: 4/4 OK
-Pool: 1
-```
-
-●  minio3.bowen.org:9000
-
-```text
-Uptime: 22 minutes
-Version: 2023-10-16T04:13:43Z
-Network: 3/3 OK
-Drives: 4/4 OK
-Pool: 1
-Pools:
-1st, Erasure sets: 1, Drives per erasure set: 12
-13 GiB Used, 1 Bucket, 2 Objects
-12 drives online, 0 drives offline
-```
+最后通过 API 验证故障前、故障期间写入的样本对象均可读取，并持续观察修复队列、错误日志与集群指标。若仍有离线磁盘，先处理挂载或硬件问题，不要通过新建空目录掩盖故障。正式环境的故障演练应有独立备份、可回滚方案和明确的维护窗口。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/11-accessing-minio-with-programming-apis.html' | relative_url }}">← Previous: Accessing MinIO with Programming APIs</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/13-recovering-a-node-after-os-reinstallation.html' | relative_url }}">Next: Recovering a Node After OS Reinstallation →</a>
+  <a href="{{ '/subjects/MinIO/11-accessing-minio-with-programming-apis.html' | relative_url }}">← 上一篇：编程接口访问</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/13-recovering-a-node-after-os-reinstallation.html' | relative_url }}">下一篇：系统重装后的节点恢复 →</a>
 </nav>

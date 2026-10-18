@@ -229,7 +229,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 内核模块与编译</span><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" title="上一章">← 上一章</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" aria-current="page" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 <header class="site-header"><h1>内核模块与编译</h1><p class="subtitle">理解 Linux 内核的操作 —— 模块化管理、参数调优、窥探内核状态</p><div class="meta-row editorial-meta"><span>关键概念：单体但模块化</span><span>管理工具：lsmod / modprobe / sysctl</span><span>内核窗口：procfs / sysfs</span></div></header>
@@ -301,7 +302,7 @@ find /lib/modules/$(<span class="hljs-built_in">uname</span><span class="hljs-at
 <div class="box box-info"><strong>模块的热插拔自动加载</strong><br>当你插入一个 USB 设备时，udev（用户空间设备管理器）会收到内核发出的 uevent，然后根据设备厂商 ID 和产品 ID 查询 <code>/lib/modules/$(uname -r)/modules.alias</code> 找到对应的模块名，调用 <code>modprobe</code> 自动加载。这就是为什么你插入 U 盘不需要手动运行任何命令——一切由 udev + modprobe 自动化完成。</div>
 </div></div>
 
-<figure class="merged-illustration" data-image-id="chapter11/01-monolithic-modular-kernel.png"><img src="assets/chapter11/01-monolithic-modular-kernel.png" alt="解释单体内核共享地址空间、模块进入内核空间及完整生命周期。" loading="lazy" decoding="async" width="1672" height="941"></figure><figure class="merged-illustration" data-image-id="chapter11/04-procfs-vs-sysfs.png"><img src="assets/chapter11/04-procfs-vs-sysfs.png" alt="对照进程/内核杂项和设备对象仓库，并强调二者都是内存伪文件系统。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 11-2 ======= -->
+<figure class="merged-illustration" data-image-id="chapter11/01-monolithic-modular-kernel.png"><img src="assets/chapter11/01-monolithic-modular-kernel.webp" alt="解释单体内核共享地址空间、模块进入内核空间及完整生命周期。" loading="lazy" decoding="async" width="1672" height="941"></figure><figure class="merged-illustration" data-image-id="chapter11/04-procfs-vs-sysfs.png"><img src="assets/chapter11/04-procfs-vs-sysfs.webp" alt="对照进程/内核杂项和设备对象仓库，并强调二者都是内存伪文件系统。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 11-2 ======= -->
 <h2 class="section-title" id="sec11-2"><span class="icon">2</span>lsmod / modprobe — 模块管理的核心命令</h2>
 <div class="card"><div class="card-header"><span class="badge badge-operate">操</span><h3>管理员日常与内核模块打交道就靠这几个命令——查、装、卸、查</h3><span class="tag tag-required">实操</span></div>
 <div class="card-body">
@@ -420,7 +421,7 @@ EOF</code></pre>
 <div class="gloss-inline"><span class="gi"><span class="gk">modprobe vs insmod 一句话区别</span> <code>modprobe</code> 按模块名加载（如 ext4），自动解析依赖，从标准模块目录加载。<code>insmod</code> 按文件路径加载（如 /path/to/mod.ko），不解析依赖，需要你自己确保所有依赖模块已加载。</span></div>
 </div></div>
 
-<figure class="merged-illustration" data-image-id="chapter11/02-module-autoload-and-dependencies.png"><img src="assets/chapter11/02-module-autoload-and-dependencies.png" alt="展示 uevent→udev→modules.alias→modprobe，以及依赖与引用计数。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 11-3 ======= -->
+<figure class="merged-illustration" data-image-id="chapter11/02-module-autoload-and-dependencies.png"><img src="assets/chapter11/02-module-autoload-and-dependencies.webp" alt="展示 uevent→udev→modules.alias→modprobe，以及依赖与引用计数。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 11-3 ======= -->
 <h2 class="section-title" id="sec11-3"><span class="icon">3</span>sysctl 内核参数调优 — 不停机调整系统行为</h2>
 <div class="card"><div class="card-header"><span class="badge badge-implement">实</span><h3>内核暴露了数百个可调参数，sysctl 让你在运行时调整内核行为——不需要重新编译</h3><span class="tag tag-required">核心</span></div>
 <div class="card-body">
@@ -458,27 +459,27 @@ sudo <span class="hljs-built_in">sysctl</span><span class="hljs-attr"> -p</span>
 </section>
 <section class="merged-subcard-section">
 <h5>vm.swappiness</h5>
-<p><strong>控制内核将内存页交换到 swap 的激进程度</strong>，取值范围 0-100。低值=尽量用 RAM，高值=积极用 swap。</p>
+<p><strong>控制匿名页与文件页回收的相对倾向</strong>。常见配置在 0–100 之间，新内核还允许更高的值；低值不是“永不使用 swap”，实际交换行为仍取决于内存压力与工作负载。</p>
 <p><code>sudo sysctl -w vm.swappiness=10</code></p>
-<p>DB 服务器建议设为 1 或 10（优先使用物理内存，减少 swap IO 对数据库性能的影响）。</p>
+<p>数据库服务器不要照抄单一推荐值；先观察交换活动、文件缓存命中和响应延迟，再在测试环境调整并记录前后指标。</p>
 </section>
 <section class="merged-subcard-section">
 <h5>fs.file-max</h5>
-<p><strong>内核可分配的最大文件句柄数</strong>。超过此值后新进程无法打开文件。</p>
+<p><strong>系统级文件句柄上限</strong>。它不同于进程的 <code>ulimit -n</code> 与 systemd 的 <code>LimitNOFILE</code>；即使提高此值，单个服务也可能先碰到自身限制。</p>
 <p><code>sudo sysctl -w fs.file-max=2097152</code></p>
 <p>高并发 Web/数据库服务器需要调大此值。查看当前使用量：<code>cat /proc/sys/fs/file-nr</code>。</p>
 </section>
 <section class="merged-subcard-section">
 <h5>net.core.somaxconn</h5>
-<p><strong>监听套接字的 SYN 队列最大长度</strong>（等待 accept 的连接数）。默认 128，高并发服务需要调大。</p>
+<p><strong>监听套接字的 accept 队列上限</strong>，控制已完成握手、等待应用接收的连接数量；SYN 半连接队列由其他参数管理。默认值依内核和发行版而异。</p>
 <p><code>sudo sysctl -w net.core.somaxconn=1024</code></p>
-<p>注意：应用程序自身的 listen backlog 参数不能超过此值（如 Nginx 的 <code>backlog=</code> 不能超过 somaxconn）。</p>
+<p>应用传给 <code>listen()</code> 的 backlog 还会受此值截断。先观察连接队列溢出与应用处理能力，再决定是否同时调整应用和内核配置。</p>
 </section>
 <section class="merged-subcard-section">
 <h5>kernel.pid_max</h5>
-<p><strong>系统允许的最大 PID 值</strong>。默认 32768（32 位）或 4194304（64 位）。</p>
+<p><strong>PID 分配的数值上界</strong>，默认值依内核与发行版而异；它不等于可同时运行的进程数，后者还受内存、<code>threads-max</code> 和 cgroup PID 限制约束。</p>
 <p><code>cat /proc/sys/kernel/pid_max</code></p>
-<p>如果服务器运行大量容器或短期进程，PID 可能被耗尽。</p>
+<p>大量进程或线程启动失败时，先检查 <code>pids.current</code>、<code>pids.max</code> 与系统线程限制，而不是直接调高 PID 数值上界。</p>
 </section>
 <section class="merged-subcard-section">
 <h5>net.netfilter.nf_conntrack_max</h5>
@@ -489,7 +490,7 @@ sudo <span class="hljs-built_in">sysctl</span><span class="hljs-attr"> -p</span>
 </div>
 
 <h4>sysctl.conf 持久化配置</h4>
-<figure class="merged-illustration" data-image-id="chapter11/03-sysctl-runtime-persistence.png"><img src="assets/chapter11/03-sysctl-runtime-persistence.png" alt="展示点号到 /proc/sys 路径映射、临时修改、持久化加载和安全调参闭环。" loading="lazy" decoding="async" width="1536" height="1024"></figure><pre data-presentation-code="v1" data-presentation-highlight="309458b08f587ffbe2a48a10d02462c9624ac422ccea75c61dfaff7bbf22e108"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 编辑主配置文件</span>
+<figure class="merged-illustration" data-image-id="chapter11/03-sysctl-runtime-persistence.png"><img src="assets/chapter11/03-sysctl-runtime-persistence.webp" alt="展示点号到 /proc/sys 路径映射、临时修改、持久化加载和安全调参闭环。" loading="lazy" decoding="async" width="1536" height="1024"></figure><pre data-presentation-code="v1" data-presentation-highlight="309458b08f587ffbe2a48a10d02462c9624ac422ccea75c61dfaff7bbf22e108"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 编辑主配置文件</span>
 sudo vi /etc/sysctl.conf
 
 <span class="hljs-comment"># 或使用模块化配置（推荐，不污染主文件）</span>
@@ -625,4 +626,6 @@ sudo <span class="hljs-built_in">sysctl</span><span class="hljs-attr"> -w</span>
 <!-- /container -->
 <section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>DB</b> · Database 数据库</p><p class="kc-annotation-line"><b>IPC</b> · Inter-Process Communication 进程间通信</p><p class="kc-annotation-line"><b>NAT</b> · Network Address Translation 网络地址转换</p><p class="kc-annotation-line"><b>VM</b> · Virtual Machine 虚拟机</p><p class="kc-annotation-line"><b>VPN</b> · Virtual Private Network 虚拟专用网络</p></div></div></section>
 </div><footer class="site-footer"><p>Linux 系统知识卡片系列 · 第11章 · 内核模块与编译</p><p style="margin-top:4px">单体但模块化 —— 理解 Linux 内核的操作</p></footer>
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

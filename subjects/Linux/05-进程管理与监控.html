@@ -225,7 +225,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 进程管理与监控</span><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" title="上一章">← 上一章</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" aria-current="page" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 <header class="site-header">
@@ -300,7 +301,7 @@ root      2341  0.0  0.1  34876  8120 ?        D    Jul30   1:23 [jbd2/sda1-8]</
         <td>用 fg 恢复到前台，或用 kill -CONT 继续运行</td>
       </tr>
     </tbody></table>
-    <figure class="merged-illustration" data-image-id="chapter05/01-process-state-transitions.png"><img src="assets/chapter05/01-process-state-transitions.png" alt="展示 R/S/D/T/Z 的合法转换，以及 D、Z 的正确处置。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+    <figure class="merged-illustration" data-image-id="chapter05/01-process-state-transitions.png"><img src="assets/chapter05/01-process-state-transitions.webp" alt="展示 R/S/D/T/Z 的合法转换，以及 D、Z 的正确处置。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
 
     <h4>STAT 列的附加标志</h4>
     <div class="table-wrap">
@@ -410,7 +411,7 @@ pkill<span class="hljs-attr"> -u</span> alice             <span class="hljs-comm
   </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter05/02-job-control-and-signals.png"><img src="assets/chapter05/02-job-control-and-signals.png" alt="合并前台/后台切换、SIGHUP、nohup/disown 与 TERM→KILL 顺序。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════════ 第三节 ═══════════ -->
+<figure class="merged-illustration" data-image-id="chapter05/02-job-control-and-signals.png"><img src="assets/chapter05/02-job-control-and-signals.webp" alt="合并前台/后台切换、SIGHUP、nohup/disown 与 TERM→KILL 顺序。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════════ 第三节 ═══════════ -->
 <h2 class="section-title" id="sec05-3"><span class="icon">3</span>ps / top / htop 实战</h2>
 <div class="card">
   <div class="card-header"><span class="badge badge-operate">操</span><h3>进程信息查看三位一体的武器库</h3><span class="tag tag-required">实操</span></div>
@@ -510,7 +511,7 @@ pkill <span class="hljs-built_in">nginx</span>                <span class="hljs-
   <div class="card-header"><span class="badge badge-concept">运</span><h3>后台服务 vs 前台命令 —— 两个世界的进程</h3><span class="tag tag-required">运维</span></div>
   <div class="card-body">
     <h4>问题：为什么 nginx 重启后还能继续运行，而 Ctrl+C 会杀死我的脚本？</h4>
-    <p>这是两种完全不同的进程模型：<strong>前台进程</strong>绑定了终端（TTY），终端关闭时进程收到 SIGHUP 信号后终止。而 <strong>daemon（守护进程）</strong>在启动后主动脱离终端、fork 出子进程、关闭标准输入/输出、将工作目录切换到 /——成为一个孤立的、持久运行的后台服务。</p>
+    <p>前台作业通常属于终端会话，终端退出可能使其收到 <code>SIGHUP</code>；能否继续运行还取决于 Shell、作业控制和进程自身处理。传统守护进程常通过 fork、脱离终端等步骤后台运行；现代 systemd 服务也可以让程序保持前台运行，由服务管理器负责启动、日志与重启。两种方式都不是“自动永不退出”。</p>
 
     <h4>daemon 的典型特征</h4>
     <pre data-presentation-code="v1" data-presentation-highlight="bb6d300370ffefd85189df70c5fe6a944113d4338283c98217ba6711fa767089"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 看 ps aux 中 daemon 的特征</span>
@@ -527,7 +528,7 @@ www-data  893  0.0  0.2  55680 14560 ?        S    Jul30   0:12 <span class="hlj
 
     <h4>systemd —— 现代 Linux 的服务管家</h4>
     <p>systemd (PID=1) 是所有用户态进程的祖先，负责启动、停止、重启、监控 daemon。</p>
-    <figure class="merged-illustration" data-image-id="chapter05/03-systemd-daemon-lifecycle.png"><img src="assets/chapter05/03-systemd-daemon-lifecycle.png" alt="对照前台进程与 daemon，并展示 unit、生命周期、重启策略和 journal。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="17290166c1ce078ea2a67afb4ceb371a733bc8a6e56be8ae6a19f0625c263e94"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># systemd 管理 daemon 的常用命令</span>
+    <figure class="merged-illustration" data-image-id="chapter05/03-systemd-daemon-lifecycle.png"><img src="assets/chapter05/03-systemd-daemon-lifecycle.webp" alt="对照前台进程与 daemon，并展示 unit、生命周期、重启策略和 journal。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="17290166c1ce078ea2a67afb4ceb371a733bc8a6e56be8ae6a19f0625c263e94"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># systemd 管理 daemon 的常用命令</span>
 
 <span class="hljs-built_in">systemctl</span> start <span class="hljs-built_in">nginx</span>      <span class="hljs-comment"># 启动服务</span>
 <span class="hljs-built_in">systemctl</span> stop <span class="hljs-built_in">nginx</span>       <span class="hljs-comment"># 停止服务</span>
@@ -580,8 +581,8 @@ WantedBy=multi-user.target    <span class="hljs-comment"># 系统进入多用户
   <div class="card-header"><span class="badge badge-operate">操</span><h3>系统资源诊断三板斧 —— 内存、负载、文件句柄</h3><span class="tag tag-suggested">诊断</span></div>
   <div class="card-body">
     <h4>free —— 内存使用全貌</h4>
-    <p>free 的输出最容易让人误解。<strong>不是 free 列越小内存越紧张</strong>——Linux 会用空闲内存做文件缓存（buff/cache），这些内存在需要时可以立即回收。</p>
-    <figure class="merged-illustration" data-image-id="chapter05/04-resource-diagnostics-map.png"><img src="assets/chapter05/04-resource-diagnostics-map.png" alt="建立 free、uptime、lsof、dmesg 与内存、负载、句柄、内核事件的对应关系。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="91478a3e39833cc92cb13b546af5498eed0b3a124c917a0b5b6f5b1cb1b92e03"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ free</span><span class="hljs-attr"> -h</span>
+    <p><code>free</code> 的 <code>free</code> 列较小不一定表示内存紧张：Linux 会利用空闲内存做缓存。优先结合 <code>available</code>、交换区使用、回收压力与 OOM 日志判断；缓存也不是在所有负载下都能“立即、无成本”回收。</p>
+    <figure class="merged-illustration" data-image-id="chapter05/04-resource-diagnostics-map.png"><img src="assets/chapter05/04-resource-diagnostics-map.webp" alt="建立 free、uptime、lsof、dmesg 与内存、负载、句柄、内核事件的对应关系。" loading="lazy" decoding="async" width="1672" height="941"></figure><pre data-presentation-code="v1" data-presentation-highlight="91478a3e39833cc92cb13b546af5498eed0b3a124c917a0b5b6f5b1cb1b92e03"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ free</span><span class="hljs-attr"> -h</span>
               total        used        free      shared  buff/cache   available
 Mem:           15Gi       3.2Gi       1.5Gi       234Mi        10Gi        11Gi
 Swap:         2.0Gi       512Mi       1.5Gi
@@ -657,4 +658,6 @@ dmesg<span class="hljs-attr"> -w</span>         <span class="hljs-comment"># 类
   <p>Linux 系统知识卡片系列 · 第5章</p>
   <p style="margin-top:4px">"进程是活动的程序 —— 理解状态转换就理解了系统的心跳"</p>
 </footer>
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

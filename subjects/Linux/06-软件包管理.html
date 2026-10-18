@@ -229,7 +229,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 软件包管理</span><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" title="上一章">← 上一章</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" aria-current="page" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 <header class="site-header">
@@ -307,7 +308,7 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 <span class="hljs-comment"># 卸载 nginx 后 libssl 可能不再被任何包需要</span>
 <span class="hljs-comment"># autoremove 会找出并清理这些"孤儿"依赖</span></code></pre>
 
-    <figure class="merged-illustration" data-image-id="chapter06/02-apt-lifecycle.png"><img src="assets/chapter06/02-apt-lifecycle.png" alt="区分 update、install、upgrade/full-upgrade、hold、remove/purge/autoremove/autoclean。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>dpkg —— APT 的底层引擎</h4>
+    <figure class="merged-illustration" data-image-id="chapter06/02-apt-lifecycle.png"><img src="assets/chapter06/02-apt-lifecycle.webp" alt="区分 update、install、upgrade/full-upgrade、hold、remove/purge/autoremove/autoclean。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>dpkg —— APT 的底层引擎</h4>
     <p>APT 本质上是 dpkg 的前端。APT 负责解析依赖、从仓库下载 .deb 文件，然后调用 dpkg 进行实际的安装/卸载操作。</p>
     <pre data-presentation-code="v1" data-presentation-highlight="ba83dd4f1b74db342c1623935775678c4d91eb550d672c9dfd09cef12913d4ec"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># dpkg 常用命令（底层操作，不处理依赖关系）</span>
 
@@ -423,7 +424,7 @@ rpm<span class="hljs-attr"> -Uvh</span> package.rpm           <span class="hljs-
 rpm<span class="hljs-attr"> -e</span> <span class="hljs-built_in">nginx</span>                   <span class="hljs-comment"># erase（卸载）</span>
 rpm<span class="hljs-attr"> -e</span><span class="hljs-attr"> --nodeps</span> <span class="hljs-built_in">nginx</span>          <span class="hljs-comment"># 忽略依赖强制卸载（危险！）</span></code></pre>
 
-    <figure class="merged-illustration" data-image-id="chapter06/01-package-manager-layered-architecture.png"><img src="assets/chapter06/01-package-manager-layered-architecture.png" alt="对照 APT/dpkg 与 DNF/RPM 的联网解依赖层和本地落盘层。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="box box-info"><strong>dnf provides —— 查找"这个命令在哪个包里"：</strong>你执行一个命令但提示 command not found，不知道要安装哪个包。DNF 可以帮你查找：<code>dnf provides */nginx</code> 或 <code>dnf provides /usr/bin/htop</code>。它会搜索所有仓库的包内容，告诉你哪个包包含这个文件。APT 对应的命令是 <code>apt-file search nginx</code>（需要先 <code>apt install apt-file &amp;&amp; apt-file update</code>）。</div>
+    <figure class="merged-illustration" data-image-id="chapter06/01-package-manager-layered-architecture.png"><img src="assets/chapter06/01-package-manager-layered-architecture.webp" alt="对照 APT/dpkg 与 DNF/RPM 的联网解依赖层和本地落盘层。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="box box-info"><strong>dnf provides —— 查找"这个命令在哪个包里"：</strong>你执行一个命令但提示 command not found，不知道要安装哪个包。DNF 可以帮你查找：<code>dnf provides */nginx</code> 或 <code>dnf provides /usr/bin/htop</code>。它会搜索所有仓库的包内容，告诉你哪个包包含这个文件。APT 对应的命令是 <code>apt-file search nginx</code>（需要先 <code>apt install apt-file &amp;&amp; apt-file update</code>）。</div>
   </div>
 </div>
 
@@ -485,7 +486,7 @@ module_hotfixes=<span class="hljs-literal">true</span>
 <span class="hljs-comment"># enabled=1   → 该仓库是否启用</span>
 <span class="hljs-comment"># gpgkey      → GPG 公钥 URL 或本地路径</span></code></pre>
 
-    <figure class="merged-illustration" data-image-id="chapter06/03-repository-trust-chain.png"><img src="assets/chapter06/03-repository-trust-chain.png" alt="展示来源配置、签名验证、事务预览、root 安装及第三方源信任边界。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>添加仓库的实战操作</h4>
+    <figure class="merged-illustration" data-image-id="chapter06/03-repository-trust-chain.png"><img src="assets/chapter06/03-repository-trust-chain.webp" alt="展示来源配置、签名验证、事务预览、root 安装及第三方源信任边界。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>添加仓库的实战操作</h4>
     <pre data-presentation-code="v1" data-presentation-highlight="a9b8e0bca0bf4e98670d0aca76d8debe2b8fc6f050bc15a89bb858c72e4f9613"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === Debian/Ubuntu ===</span>
 <span class="hljs-comment"># 方法1：add-apt-repository</span>
 add-<span class="hljs-built_in">apt</span>-repository <span class="hljs-string">"deb https://packages.example.com/ubuntu focal main"</span>
@@ -535,7 +536,7 @@ priority=1     <span class="hljs-comment"># 数字越小优先级越高（1-99�
   <div class="card-body">
     <h4>问题：为什么"apt install A"会自动装 B 和 C，而我根本没提它们？</h4>
     <p>因为 A 在它的包描述中声明了"我要用 B 提供的功能"和"C 提供的功能"。包管理器在安装前会递归解析整个依赖图——如果 B 又依赖 D，D 又依赖 E……这条链上的所有包都会被自动拉取。这就是包管理器最核心的价值：<strong>自动解决依赖关系。</strong></p>
-    <p>没有包管理器的时候（Windows 或源码编译），你要自己去下载 libssl、下载 libpcre、下载 zlib……每一个库还可能依赖别的库。包管理器把这个复杂度对你完全透明了。</p>
+    <p>如果脱离包管理器手工安装软件，就必须自己核对 libssl、libpcre、zlib 等依赖及其兼容版本。包管理器能自动求解并安装仓库中声明的依赖，但跨仓库版本冲突和运行时兼容问题仍需管理员判断。Windows 也有包管理工具，不能简单把它等同于“没有包管理器”。</p>
 
     <h4>依赖关系的两种类型</h4>
     <div class="table-wrap">
@@ -589,7 +590,7 @@ E: Unable to correct problems, you have held broken packages.
 
     <div class="box box-danger"><strong>依赖地狱是"容器化"诞生的直接推手：</strong>Docker 和其他容器技术的核心价值之一，就是让每个应用拥有独立的文件系统。应用 A 可以在"它的世界"里用 libssl 3.0，应用 B 在"它的世界"里用 libssl 1.1——两者互不干扰。容器化把"整个系统解决依赖冲突"变成了"每个应用各自解决自己的依赖"，把全局冲突化解为局部自治。</div>
 
-    <figure class="merged-illustration" data-image-id="chapter06/04-dependency-conflict-container-isolation.png"><img src="assets/chapter06/04-dependency-conflict-container-isolation.png" alt="展示递归依赖求解、版本范围无交集，以及容器用独立 rootfs 隔离用户态库。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>升级策略与最佳实践</h4>
+    <figure class="merged-illustration" data-image-id="chapter06/04-dependency-conflict-container-isolation.png"><img src="assets/chapter06/04-dependency-conflict-container-isolation.webp" alt="展示递归依赖求解、版本范围无交集，以及容器用独立 rootfs 隔离用户态库。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>升级策略与最佳实践</h4>
     <pre data-presentation-code="v1" data-presentation-highlight="7e17e058fa66233ae09d35814e3071694be95fe188eb942ee32de35956c0fb7e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 保守升级（生产环境推荐）===</span>
 
 <span class="hljs-comment"># 1. 先查看有哪些更新</span>
@@ -634,4 +635,6 @@ E: Unable to correct problems, you have held broken packages.
   <p>Linux 系统知识卡片系列 · 第6章</p>
   <p style="margin-top:4px">"包管理器让软件安装从手工作坊进化到工业流水线"</p>
 </footer>
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

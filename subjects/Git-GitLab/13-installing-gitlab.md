@@ -11,9 +11,8 @@ syntax_highlight: true
 {% raw %}
 
 # 13 GitLab 安装
-### 3.2 GitLab 安装
 
-GitLab 有两个版本：EE商业版和CE社区版，以下使用CE版
+GitLab 有不同发行版本和订阅层级。本篇旧实验使用 GitLab CE 软件包；实际安装前应以目标 GitLab 版本的官方安装说明核对操作系统、数据库、内存和升级路径，不能直接照搬旧版包名。
 
 ### 安装方法
 
@@ -21,11 +20,16 @@ Gitlab 服务的安装文档：
 
 <https://docs.gitlab.com/install/>
 
-安装方法说明
+安装方式包括 Linux 软件包、容器和 Kubernetes Helm Chart；下面先以单机 Linux 包为主线。其他方式的维护与备份策略不同，不应混用命令。
 
 <https://docs.gitlab.com/ee/install/install_methods.html>
 
-Linux 安装包：官方的 deb/rpm 安装包（也被称作 Omnibus GitLab）包含极狐GitLab 和依赖的组件，包括PostgreSQL、Redis 和 Sidekiq Source：源码安装，在GitLab没有提供适用的安装包的平台上（例如各类BSD系统）只能采用这种安装方式 Docker：Docker 容器化的极狐GitLab 软件包 GitLab Operator：Kubernetes Operator风格的部署模式 Helm Chart：用于在 Kubernetes 上安装极狐GitLab 及其所有组件的云原生 Helm chart GitLab Environment Toolkit（GET）：自动化工具集，用于在主流的公有云（Azure、GCP和 AWS）上部署GitLab
+| 方式 | 适用场景 |
+| --- | --- |
+| Linux 软件包（Omnibus） | 单机或自管理部署，打包 Web、数据库和后台服务。 |
+| Docker 容器 | 已有容器运维能力，需持久化配置、日志和数据目录。 |
+| Kubernetes Helm Chart | 集群化部署，需额外规划存储、Ingress、证书和升级。 |
+| 源码安装 | 特殊平台或开发场景，维护成本较高。 |
 
 ### 安装 GitLab 要求
 
@@ -35,17 +39,17 @@ Gitlab硬件和软件的环境要求：
 
 硬件配置要求较高：
 
-测试环境：内存4G以上，新版gitlab-ce_17.3.1建议8G以上生产环境：建议CPU2C以上，内存8G以上，磁盘10G以上配置，和用户数有关
+实验环境可能需要数 GiB 内存；生产容量应根据 GitLab 版本、用户数、仓库量、CI 作业和监控组件单独规划。原文中的“2 核、8 GiB、10 GiB 磁盘”不是通用最低规格，尤其磁盘应为仓库增长和备份保留预留空间。
 
 注意:如果内存较低,可以会导致Gitlab有些服务无法启动,建议4G以上内存
 
-![Git 与 GitLab 版本管理第 94 页插图](assets/img-df7afd80c9545aad.png)
+![Git 与 GitLab 版本管理第 94 页插图](assets/img-df7afd80c9545aad.webp)
 
 数据库要求:
 
 从GitLab 12.1 开始Linux包安装不再支持MySQL,只支持PostgreSQL
 
-![Git 与 GitLab 版本管理第 94 页插图](assets/img-f56b96c7d7609111.png)
+![Git 与 GitLab 版本管理第 94 页插图](assets/img-f56b96c7d7609111.webp)
 
 ### 安装前准备
 
@@ -53,43 +57,17 @@ Gitlab硬件和软件的环境要求：
 
 配置ubuntu 仓库
 
-配置阿里云或清华大学等国内镜像仓库实现加速
+旧实验以 Ubuntu 18.04 的 `bionic` 软件源为例，该系统已过常规支持期。不要把下面源列表复制到其他 Ubuntu 版本；新部署应使用受支持发行版与其匹配的软件源。
 
-```bash
-[root@ubuntu1804 ~]#vim /etc/apt/sources.list
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe
-multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted
-universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted
-universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main
-restricted universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted
-universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main
-restricted universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main restricted
-universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main
-restricted universe multiverse
-debhttps://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted
-universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main
-restricted universe multiverse
-```
+旧版 Ubuntu 软件源示例中的发行代号和行内换行均不可直接执行。准备新环境时，先检查 `cat /etc/os-release`，再按该版本的官方说明配置软件源；安装包必须与系统发行版和架构匹配。
 
 ### RHEL 系统环境安装前准备
 
-基于最小化服务器安装，建议修改配置如下：
+先设置可解析的主机名、时间同步、存储和必要端口策略。**安装 GitLab 不要求关闭防火墙或 SELinux**；应按官方文档开放所需端口并保持安全机制启用。以下旧实验中的 `disable firewalld` 和 `SELINUX=disabled` 不适合作为推荐步骤。
 
 ```bash
-[root@centos ~]# wget -O /etc/yum.repos.d/epel.repo
-http://mirrors.aliyun.com/repo/epel-7.repo
-[root@centos ~]# systemctl disable firewalld
-[root@centos ~]# sed -i '/SELINUX/s/enforcing/disabled/' /etc/sysconfig/selinux
 [root@centos ~]# hostnamectl set-hostname gitlab.example.com
-[root@centos ~]# reboot
+[root@centos ~]# getent hosts gitlab.example.com
 ```
 
 ### GitLab 安装
@@ -98,7 +76,7 @@ gitlab 安装有多种方式,下面选择包安装方式
 
 <https://docs.gitlab.com/ce/install/>
 
-![Git 与 GitLab 版本管理第 96 页插图](assets/img-92c8ba7cec97243f.png)
+![Git 与 GitLab 版本管理第 96 页插图](assets/img-92c8ba7cec97243f.webp)
 
 ### 安装 GitLab
 
@@ -106,7 +84,7 @@ gitlab 安装有多种方式,下面选择包安装方式
 
 <https://packages.gitlab.com/gitlab>
 
-![Git 与 GitLab 版本管理第 96 页插图](assets/img-4704661e557575f8.png)
+![Git 与 GitLab 版本管理第 96 页插图](assets/img-4704661e557575f8.webp)
 
 GitLab-CE 安装包官方下载地址：
 
@@ -118,34 +96,31 @@ yum源清华大学下载地址：
 
 CentOS 的yum源
 
-![Git 与 GitLab 版本管理第 97 页插图](assets/img-e8843e73f4236029.png)
+![Git 与 GitLab 版本管理第 97 页插图](assets/img-e8843e73f4236029.webp)
 
 Ubuntu 的deb源
 
 <https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/ubuntu/pool/>
 
-![Git 与 GitLab 版本管理第 97 页插图](assets/img-1e396d27d8dd917e.png)
+![Git 与 GitLab 版本管理第 97 页插图](assets/img-1e396d27d8dd917e.webp)
 
 范例：Ubuntu 国内镜像下载并安装 GitLab
 
 ```bash
 #新版下载和安装
-[root@ubuntu2204 ~]#wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-
-ce/ubuntu/pool/jammy/main/g/gitlab-ce/gitlab-ce_17.3.1-ce.0_amd64.deb
+[root@ubuntu2204 ~]#wget 'https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/ubuntu/pool/jammy/main/g/gitlab-ce/gitlab-ce_17.3.1-ce.0_amd64.deb'
 #旧版
-[root@ubuntu2004 ~]#wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-
-ce/ubuntu/pool/bionic/main/g/gitlab-ce/gitlab-ce_14.1.0-ce.0_amd64.deb
+[root@ubuntu1804 ~]#wget 'https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/ubuntu/pool/bionic/main/g/gitlab-ce/gitlab-ce_14.1.0-ce.0_amd64.deb'
 #方法1
 [root@ubuntu1804 ~]#dpkg -i gitlab-ce_14.1.0-ce.0_amd64.deb
 #方法2
-[root@ubuntu2204 ~]#apt install ./gitlab-ce_17.1.0-ce.0_amd64.deb
+[root@ubuntu2204 ~]#apt install ./gitlab-ce_17.3.1-ce.0_amd64.deb
 #旧版下载和安装
-[root@ubuntu1804 ~]#wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-
-ce/ubuntu/pool/bionic/main/g/gitlab-ce/gitlab-ce_11.11.8-ce.0_amd64.deb
+[root@ubuntu1804 ~]#wget 'https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/ubuntu/pool/bionic/main/g/gitlab-ce/gitlab-ce_11.11.8-ce.0_amd64.deb'
 [root@ubuntu1804 ~]#dpkg -i gitlab-ce_11.11.8-ce.0_amd64.deb
 ```
 
-![Git 与 GitLab 版本管理第 98 页插图](assets/img-8947a774be4c2287.png)
+![Git 与 GitLab 版本管理第 98 页插图](assets/img-8947a774be4c2287.webp)
 
 ### 修改 GitLab 配置
 
@@ -163,8 +138,8 @@ gitlab相关的目录：
 
 ```bash
 [root@ubuntu1804 ~]#vim /etc/gitlab/gitlab.rb
-[root@ubuntu1804 ~]#grep "^[a-Z]" /etc/gitlab/gitlab.rb
-external_url 'http://gitlab.bowen.org'   #修改此行
+[root@ubuntu1804 ~]#grep '^external_url' /etc/gitlab/gitlab.rb
+external_url 'https://gitlab.example.com'   # 与证书和 DNS 保持一致
 #可选,实现邮件通知设置,增加下面行(可以和上面行写在一起)
 gitlab_rails['smtp_enable'] = true
 gitlab_rails['smtp_address'] = "smtp.qq.com"
@@ -184,10 +159,10 @@ ssh://git@gitlab.bowen.org:2222/example/app.git
 #新版中增加下面行,给root用户指定初始密码才能登录，或者设置环境变量GITLAB_ROOT_PASSWORD实现初
 始密码
 #注意:密码至少8位并且复杂度要求才是有效密码
-gitlab_rails['initial_root_password'] = "bowen@123456"
+# 初始密码交由安装流程的受控机制管理，不把固定明文密码写进示例配置。
 #名称解析
 [root@ubuntu1804 ~]#vim /etc/hosts
-10.0.0.100 gitlab.bowen.org
+192.0.2.100 gitlab.example.com
 ```
 
 由于 Gitlab 主机功能是代码托管，默认有些额外的组件比较消耗资源，如果暂时不使用可以考虑关闭
@@ -216,7 +191,7 @@ grafana['enable'] = false
 [root@ubuntu1804 ~]#gitlab-ctl reconfigure
 ```
 
-![Git 与 GitLab 版本管理第 100 页插图](assets/img-b7efcc2d8430b44b.png)
+![Git 与 GitLab 版本管理第 100 页插图](assets/img-b7efcc2d8430b44b.webp)
 
 ### 验证 GitLab 启动完成
 
@@ -343,101 +318,17 @@ redis-exporter*
 sidekiq*
 ```
 
-### 一键安装 GitLab 脚本
+### 为什么不直接运行旧版一键安装脚本
 
-```bash
-#!/bin/bash
-#
-#FileName:          install_gitlab.sh
-#Description:       The test script
-#说明:安装GitLab 服务器内存建议至少4G,root密码至少8位
-GITLAB_VERSION=14.1.0
-URL="https://mirrors.tuna.tsinghua.edu.cn/gitlab-
-ce/ubuntu/pool/bionic/main/g/gitlab-ce/gitlab-ce_${GITLAB_VERSION}-
-ce.0_amd64.deb"
-#URL="https://mirrors.tuna.tsinghua.edu.cn/gitlab-
-ce/ubuntu/pool/bionic/main/g/gitlab-ce/gitlab-ce_12.3.5-ce.0_amd64.deb"
-#URL="https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/yum/el8/gitlab-ce-14.1.5-
-ce.0.el8.x86_64.rpm"
-#URL="https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/yum/el7/gitlab-ce-14.1.5-
-ce.0.el7.x86_64.rpm"
-#新版密码必须符合复杂性要求且至少8位
-GITLAB_ROOT_PASSWORD=bowen@123456
-SMTP_PASSWORD=xxxxxxxxxxxxxx
-HOST=gitlab.bowen.org
-#HOST=`hostname -I|awk '{print $1}'`
-. /etc/os-release
-color () {
-RES_COL=60
-MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-SETCOLOR_SUCCESS="echo -en \\033[1;32m"
-SETCOLOR_FAILURE="echo -en \\033[1;31m"
-SETCOLOR_WARNING="echo -en \\033[1;33m"
-SETCOLOR_NORMAL="echo -en \E[0m"
-echo -n "$1" && $MOVE_TO_COL
-echo -n "["
-if [ $2 = "success" -o $2 = "0" ] ;then
-${SETCOLOR_SUCCESS}
-echo -n $"  OK  "
-elif [ $2 = "failure" -o $2 = "1"  ] ;then
-${SETCOLOR_FAILURE}
-echo -n $"FAILED"
-else
-${SETCOLOR_WARNING}
-echo -n $"WARNING"
-fi
-${SETCOLOR_NORMAL}
-echo -n "]"
-echo
-}
-install_gitlab() {
-wget -P /usr/local/src/ $URL || { color  "下载失败!" 1 ;exit ; }
-PACK="/usr/local/src/${URL##*/}"
-if [ $ID = "centos" -o $ID = "rocky" ];then
-yum -y install $PACK
-else
-dpkg -i  $PACK
-fi
-if [ $? -eq 0 ];then
-color "安装gitlab完成!" 0
-else
-color "安装gitlab失败!" 1
-exit
-fi
-}
-config_gitlab() {
-sed -i.bak  "/^external_url.*/c external_url \'http://$HOST\'"
-/etc/gitlab/gitlab.rb
-cat  >> /etc/gitlab/gitlab.rb <<EOF
-gitlab_rails['smtp_enable'] = true
-gitlab_rails['smtp_address'] = "smtp.qq.com"
-gitlab_rails['smtp_port'] = 465
-gitlab_rails['smtp_user_name'] = "29308620@qq.com"
-gitlab_rails['smtp_password'] = "$SMTP_PASSWORD"
-gitlab_rails['smtp_domain'] = "qq.com"
-gitlab_rails['smtp_authentication'] = "login"
-gitlab_rails['smtp_enable_starttls_auto'] = true
-gitlab_rails['smtp_tls'] = true
-gitlab_rails['gitlab_email_from'] = "29308620@qq.com"
-gitlab_rails['initial_root_password'] = "$GITLAB_ROOT_PASSWORD"
-EOF
-gitlab-ctl reconfigure
-gitlab-ctl status
-if [ $?  -eq 0 ];then
-echo
-color "Gitlab安装完成!" 0
-echo "------------------------------------------------------------------
--"
-echo -e "请访问链接: \E[32;1mhttp://$HOST/\E[0m"
-echo -e "用户和密码: \E[32;1mroot/${GITLAB_ROOT_PASSWORD}\E[0m"
-else
-color "Gitlab安装失败!" 1
-exit
-fi
-}
-install_gitlab
-config_gitlab
-```
+原稿脚本把 Ubuntu 18.04 的包路径、固定管理员密码和邮件授权码写死，还含有换行损坏的 URL 与 Shell 语句，无法可靠安装当前版本。安装流程应按下列顺序逐步执行并检查结果：
+
+1. 核对系统支持矩阵、资源容量、DNS 与证书。
+2. 从官方渠道配置与系统版本匹配的软件源，选择受支持的 GitLab 版本并安装。
+3. 在 `/etc/gitlab/gitlab.rb` 配置 `external_url`，谨慎设置邮件、Registry 等可选组件。
+4. 执行 `gitlab-ctl reconfigure`，再用 `gitlab-ctl status` 和浏览器访问检查核心服务。
+5. 配置备份、升级窗口和日志监控；记录管理员初始凭据的安全交付方式。
+
+不要在安装日志或教程中输出实际密码，也不要只凭 `gitlab-ctl status` 的退出码判断 Web、SSH 和仓库读写功能都正常。
 
 ### 基于 Docker 安装 GitLab
 
@@ -445,7 +336,7 @@ config_gitlab
 
 <https://hub.docker.com/r/gitlab/gitlab-ce>
 
-![Git 与 GitLab 版本管理第 104 页插图](assets/img-3afc265bab354579.png)
+![Git 与 GitLab 版本管理第 104 页插图](assets/img-3afc265bab354579.webp)
 
 ```text
 https://docs.gitlab.com/ee/install/docker/configuration.html#pre-configure-
@@ -484,64 +375,14 @@ gitlab/gitlab-ce:17.0.1-ce.0
 
 ### 基于 Kubernetes 安装 GitLab
 
-<https://docs.gitlab.com/operator/installation.html>
+Kubernetes 安装不等于把单机命令直接复制进集群。应根据 [GitLab 官方 Helm Chart 文档](https://docs.gitlab.com/charts/) 核对与目标 Kubernetes 版本兼容的 Chart，并规划持久卷、Ingress、TLS 证书、外部域名、备份和升级。原稿中旧版 Operator 的多行 URL 与 YAML 缩进均已失效，不再作为可执行示例。
 
-范例：注意相关镜像可能需要科学上网
-
-```text
-#1)Deploy the GitLab Operator
-GL_OPERATOR_VERSION=0.8.1 # https://gitlab.com/gitlab-org/cloud-native/gitlab-
-operator/-/releases
-PLATFORM=kubernetes # or "openshift"
-kubectl create namespace gitlab-system
-kubectl apply -f
-https://gitlab.com/api/v4/projects/18899486/packages/generic/gitlab-
-operator/${GL_OPERATOR_VERSION}/gitlab-
-operator-${PLATFORM}-${GL_OPERATOR_VERSION}.yaml
-#或者
-helm repo add gitlab-operator
-https://gitlab.com/api/v4/projects/18899486/packages/helm/stable
-helm repo update
-#需要提前安装cert-manager证书管理组件
-kubectl apply -f https://github.com/cert-manager/cert-
-manager/releases/download/v1.6.3/cert-manager.yaml
-helm install gitlab-operator gitlab-operator/gitlab-operator --create-namespace
---namespace gitlab-system
-#2)Create a GitLab custom resource (CR).
-cat mygitlab.yaml
-apiVersion: apps.gitlab.com/v1beta1
-kind: GitLab
-metadata:
-name: gitlab
-spec:
-chart:
-version: "X.Y.Z" # https://gitlab.com/gitlab-org/cloud-native/gitlab-
-operator/-/blob/0.8.1/CHART_VERSIONS
-values:
-global:
-hosts:
-domain: example.com # use a real domain here
-ingress:
-configureCertmanager: true
-certmanager-issuer:
-email: youremail@example.com # use your real email address here
-kubectl -n gitlab-system apply -f mygitlab.yaml
-#3)观察结果
-kubectl -n gitlab-system logs deployment/gitlab-controller-manager -c manager -f
-$ kubectl -n gitlab-system get gitlab
-NAME     STATUS   VERSION
-gitlab   Ready    5.2.4
-```
-
-```text
-#4）访问
-https://gitlab.example.com.
-```
+验证时至少检查 Chart/Pod 状态、Web 登录、SSH/HTTPS 克隆与推送，以及备份恢复演练；某个控制器显示 `Ready` 并不代表整个服务可交付。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/12-introduction-to-gitlab.html' | relative_url }}">← Previous: Introduction to GitLab</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
-  <a href="{{ '/subjects/Git-GitLab/14-basic-gitlab-configuration.html' | relative_url }}">Next: Basic GitLab Configuration →</a>
+  <a href="{{ '/subjects/Git-GitLab/12-introduction-to-gitlab.html' | relative_url }}">← 上一篇：GitLab 介绍</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
+  <a href="{{ '/subjects/Git-GitLab/14-basic-gitlab-configuration.html' | relative_url }}">下一篇：GitLab 基本配置 →</a>
 </nav>

@@ -229,7 +229,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 文本处理三剑客</span><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" title="上一章">← 上一章</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" aria-current="page" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 <header class="site-header">
@@ -369,7 +370,7 @@ grep <span class="hljs-string">"sshd.*Accepted"</span> /var/log/auth.log | grep<
 grep <span class="hljs-string">"sudo.*COMMAND"</span> /var/log/auth.log | grep <span class="hljs-string">"USER=root"</span></code></pre>
 
     <div class="box box-warning"><strong>grep 的常见误区</strong><code>grep "404" access.log</code> 也会匹配 <code>/page/404.html</code> 这种 URL 路径中包含 404 的行，未必是真正的 404 状态码。更精确的写法是 <code>grep '" 404 '</code> 或 <code>grep -E '\s404\s'</code>，用空格限定边界。在日志分析中，精确匹配比泛匹配重要得多。</div>
-  <figure class="merged-illustration" data-image-id="chapter09/01-grep-line-filter-context.png"><img src="assets/chapter09/01-grep-line-filter-context.png" alt="说明 grep 以整行为单位、上下文不是匹配本身，以及状态码边界误报。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+  <figure class="merged-illustration" data-image-id="chapter09/01-grep-line-filter-context.png"><img src="assets/chapter09/01-grep-line-filter-context.webp" alt="说明 grep 以整行为单位、上下文不是匹配本身，以及状态码边界误报。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
 </div>
 
 <!-- ═══════ 第三节 ═══════ -->
@@ -513,7 +514,7 @@ sed<span class="hljs-attr"> -f</span> cleanup.sed <span class="hljs-built_in">ng
   </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter09/02-sed-pattern-space-safe-edit.png"><img src="assets/chapter09/02-sed-pattern-space-safe-edit.png" alt="展示逐行模式空间、默认输出、-n 与安全的 -i.bak 修改闭环。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第五节 ═══════ -->
+<figure class="merged-illustration" data-image-id="chapter09/02-sed-pattern-space-safe-edit.png"><img src="assets/chapter09/02-sed-pattern-space-safe-edit.webp" alt="展示逐行模式空间、默认输出、-n 与安全的 -i.bak 修改闭环。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第五节 ═══════ -->
 <h2 class="section-title" id="sec09-5"><span class="icon">5</span>awk 文本分析</h2>
 <div class="card">
   <div class="card-header"><span class="badge badge-implement">实</span><h3>awk —— 不只是"打印第 N 列"，是一台完整的文本数据分析引擎</h3><span class="tag tag-required">核心</span></div>
@@ -664,7 +665,7 @@ awk <span class="hljs-string">'{a[NR]=$10} END {
   </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter09/03-awk-fields-and-aggregation.png"><img src="assets/chapter09/03-awk-fields-and-aggregation.png" alt="展示 FS 分字段、模式—动作、BEGIN/END 与关联数组计数。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第七节 ═══════ -->
+<figure class="merged-illustration" data-image-id="chapter09/03-awk-fields-and-aggregation.png"><img src="assets/chapter09/03-awk-fields-and-aggregation.webp" alt="展示 FS 分字段、模式—动作、BEGIN/END 与关联数组计数。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第七节 ═══════ -->
 <h2 class="section-title" id="sec09-7"><span class="icon">7</span>三剑客管道组合</h2>
 <div class="card">
   <div class="card-header"><span class="badge badge-operate">运</span><h3>一加一加一大于三 —— grep + sed + awk 协同作战</h3><span class="tag tag-suggested">综合实战</span></div>
@@ -717,7 +718,7 @@ awk <span class="hljs-string">'$NF &gt; 1 {url[$7]++; time[$7]+=$NF}
 <span class="hljs-comment"># step1: grep -rl 找出包含 8080 的所有文件</span>
 <span class="hljs-comment"># step2: xargs 将文件名传给 sed</span>
 <span class="hljs-comment"># step3: sed -i.bak 批量修改（先备份！）</span>
-grep<span class="hljs-attr"> -rl</span> <span class="hljs-string">'8080'</span> /etc/nginx/sites-enabled/ | xargs sed<span class="hljs-attr"> -i</span>.bak <span class="hljs-string">'s/8080/80/g'</span>
+grep<span class="hljs-attr"> -rlZ</span> <span class="hljs-string">'8080'</span> /etc/nginx/sites-enabled/ | xargs<span class="hljs-attr"> -0 -r</span> sed<span class="hljs-attr"> -i</span>.bak <span class="hljs-string">'s/8080/80/g'</span>
 
 <span class="hljs-comment"># 确认修改内容</span>
 grep<span class="hljs-attr"> -r</span> <span class="hljs-string">'port.*80'</span> /etc/nginx/sites-enabled/
@@ -740,22 +741,22 @@ grep <span class="hljs-string">"Failed password"</span> /var/log/auth.log \
 192.0.2.99 失败 23 次</code></pre>
 
     <h4>三剑客协作黄金法则</h4>
-    <figure class="merged-illustration" data-image-id="chapter09/04-production-text-pipelines.png"><img src="assets/chapter09/04-production-text-pipelines.png" alt="展示 404 Top IP 分析流水线和 grep→xargs→sed 的安全批量修改。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="subcard-grid merged-waterfall-panel">
+    <figure class="merged-illustration" data-image-id="chapter09/04-production-text-pipelines.png"><img src="assets/chapter09/04-production-text-pipelines.webp" alt="展示 404 Top IP 分析流水线和 grep→xargs→sed 的安全批量修改。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="subcard-grid merged-waterfall-panel">
       <section class="merged-subcard-section">
         <h5>grep → awk → sort → uniq → sort</h5>
         <p>经典的"查找-提取-统计-聚合"流水线：grep 过滤 → awk 提取字段 → sort 排序 → uniq -c 计数 → sort -rn 降序 → head 取 top N。</p>
       </section>
       <section class="merged-subcard-section">
         <h5>grep → xargs → sed</h5>
-        <p>经典的"查找-批量修改"流水线：grep -rl 找到所有包含目标字符串的文件 → xargs 传递文件列表 → sed -i 批量修改。</p>
+<p>批量修改前先用 <code>grep -rl</code> 预览文件列表；实际传递文件名时使用 <code>grep -rlZ | xargs -0 -r</code>，避免空格、换行文件名被拆开，并让 <code>sed -i.bak</code> 保留可回退的副本。此例的替换会影响所有包含该数字的内容，生产配置应先缩小文件范围并检查 diff。</p>
       </section>
       <section class="merged-subcard-section">
         <h5>awk 一条就够了</h5>
-        <p>简单的过滤+提取+统计，用一条 awk 就能完成（awk 内置条件过滤和数组聚合）。不要在 awk 的外面再套 grep 和 sort——awk 自己就能搞定。</p>
+<p>简单的过滤、提取与计数可以用一条 <code>awk</code> 完成；需要按数值大小排序时，常仍需接 <code>sort -n</code>，因为可移植 awk 不保证数组遍历顺序。对可读性和数据规模权衡，没必要强制把所有步骤压成一条命令。</p>
       </section>
     </div>
 
-    <div class="box box-info"><strong>性能金字塔</strong>简单过滤：grep &gt; sed &gt; awk（grep 速度最快）。简单替换：sed &gt; awk &gt; grep（sed 专用）。复杂统计分析：awk &gt; 一切（关联数组 + 内置函数无可替代）。跨文件批量：grep + xargs + sed 是最佳组合。记住：<strong>永远不要让 awk 做 grep 的事，也不要让 grep 做 awk 的事</strong>。</div>
+<div class="box box-info"><strong>如何选工具</strong>只需查找匹配行时先考虑 <code>grep</code>；流式替换适合 <code>sed</code>；字段计算与聚合适合 <code>awk</code>。组合时优先保证结果正确、文件名处理安全和命令易读，再根据实测决定是否优化性能。</div>
   </div>
 </div>
 
@@ -765,4 +766,6 @@ grep <span class="hljs-string">"Failed password"</span> /var/log/auth.log \
   <p>Linux 系统知识卡片系列 · 第 9 章 — 文本处理三剑客</p>
   <p style="margin-top:4px">grep 过滤 · sed 编辑 · awk 分析 · 管道协作 · 所向披靡</p>
 </footer>
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

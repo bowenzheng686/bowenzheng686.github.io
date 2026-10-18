@@ -223,7 +223,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · Shell脚本基础</span><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" title="上一章">← 上一章</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" aria-current="page" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 <header class="site-header">
@@ -275,7 +276,7 @@ mysqldump<span class="hljs-attr"> -u</span> root mydb | gzip &gt; <span class="h
 
     <div class="box box-info"><strong>Shell 脚本的三大核心优势</strong>
     <ul style="margin-top:4px">
-      <li><strong>零依赖</strong>：不需要安装 Python/Node/Ruby 运行时，Bash 从服务器出厂就躺在 /bin/bash 里。</li>
+<li><strong>依赖较少</strong>：多数通用 Linux 发行版预装 Bash，但精简容器和嵌入式系统可能只有 POSIX <code>sh</code>；执行前用 <code>command -v bash</code> 确认。</li>
       <li><strong>与系统深度集成</strong>：直接调用系统命令（ls、grep、awk、systemctl），不需要任何绑定库。</li>
       <li><strong>天然管道思维</strong>：Shell 的设计哲学就是"小工具组合成大系统"——一个命令的输出就是下一个的输入，数据在管道中流动。</li>
     </ul></div>
@@ -288,7 +289,7 @@ mysqldump<span class="hljs-attr"> -u</span> root mydb | gzip &gt; <span class="h
   <div class="card-header"><span class="badge badge-implement">实</span><h3>脚本的 DNA——第一行决定了脚本的命运</h3><span class="tag tag-required">基础</span></div>
   <div class="card-body">
     <h4>Shebang —— #! 不是注释</h4>
-    <p>脚本文件的第一行 <code>#!/bin/bash</code> 叫作 <strong>Shebang</strong>（或 hash-bang）。它告诉操作系统：用 <code>/bin/bash</code> 这个解释器来执行本文件。如果写的是 <code>#!/usr/bin/env python3</code>，系统就会在 PATH 里找 python3 来执行。忘了写 Shebang，系统会用当前用户的默认 shell 来解释脚本——如果当前用户用的是 zsh 而你写的是 Bash 语法，结果可能截然不同。<strong>任何生产脚本的第一行必须是 Shebang</strong>。</p>
+<p>脚本第一行的 <code>#!/bin/bash</code> 称为 <strong>Shebang</strong>，直接执行文件时内核据此选择解释器；<code>#!/usr/bin/env bash</code> 则通过当前 <code>PATH</code> 查找 Bash。若直接执行的脚本缺少 Shebang，行为取决于调用它的 shell 或程序，不能假定使用登录 shell；而 <code>bash script.sh</code> 会明确由 Bash 解释。要让脚本可移植、可预测，请写明与语法相符的解释器，并检查目标机器是否安装。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="3d55df205ef6dbbf05ec9d52947c87f81b1d30e6f0f224eddb88c6d1c548a8e6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-meta">#!/bin/bash</span>
 <span class="hljs-comment"># #!/usr/bin/env bash     ← 可移植写法（在 PATH 中找 bash）</span>
@@ -375,7 +376,7 @@ $ ./script.sh</span>
   </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter08/01-shebang-arguments-exit-code.png"><img src="assets/chapter08/01-shebang-arguments-exit-code.png" alt="展示内核读取 Shebang、参数映射、变量展开、顺序执行和退出码。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第三节 ═══════ -->
+<figure class="merged-illustration" data-image-id="chapter08/01-shebang-arguments-exit-code.png"><img src="assets/chapter08/01-shebang-arguments-exit-code.webp" alt="展示内核读取 Shebang、参数映射、变量展开、顺序执行和退出码。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ═══════ 第三节 ═══════ -->
 <h2 class="section-title" id="sec08-3"><span class="icon">3</span>if / for / while / case</h2>
 <div class="card">
   <div class="card-header"><span class="badge badge-operate">操</span><h3>四种控制结构——让脚本有"判断力"和"循环力"</h3><span class="tag tag-required">核心</span></div>
@@ -486,7 +487,7 @@ DISK_USAGE=$(<span class="hljs-built_in">df</span> / | awk <span class="hljs-str
 <span class="hljs-keyword">esac</span></code></pre>
 
     <div class="box box-warning"><strong>管道中的 while 陷阱</strong>管道符右端的命令在子 Shell 中运行。所以在 <code>echo "hello" | while read line; do name=$line; done; echo $name</code> 中，最后的 echo 输出是空——因为 name 是在子 Shell 里赋值的，外面拿不到。解决办法：用进程替换 <code>while read line; do name=$line; done &lt; &lt;(echo "hello"); echo $name</code>。</div>
-  <figure class="merged-illustration" data-image-id="chapter08/02-control-flow-and-subshell.png"><img src="assets/chapter08/02-control-flow-and-subshell.png" alt="对照 if / for / while / case，并解释管道子 Shell 的变量边界。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+  <figure class="merged-illustration" data-image-id="chapter08/02-control-flow-and-subshell.png"><img src="assets/chapter08/02-control-flow-and-subshell.webp" alt="对照 if / for / while / case，并解释管道子 Shell 的变量边界。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
 </div>
 
 <!-- ═══════ 第四节 ═══════ -->
@@ -622,19 +623,19 @@ some_noisy_command &amp;&gt;/dev/null</code></pre>
 
     <pre data-presentation-code="v1" data-presentation-highlight="43962c57952340ae023cab2c4b807556d4dd651ef0f468b3a5622315ff34dd9d"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 真实案例：统计 Nginx 日志里访问次数最多的 10 个 IP</span>
 <span class="hljs-built_in">cat</span> /var/log/nginx/access.log \
-    | awk <span class="hljs-string">'{print $1}'</span> \      <span class="hljs-comment"># 提取每行第1列（IP）</span>
-    | <span class="hljs-built_in">sort</span> \                   <span class="hljs-comment"># 排序</span>
-    | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> \                <span class="hljs-comment"># 去重统计</span>
-    | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> \               <span class="hljs-comment"># 按数字降序排列</span>
-    | <span class="hljs-built_in">head</span> -10                 <span class="hljs-comment"># 取前10名</span>
+    | awk <span class="hljs-string">'{print $1}'</span> \
+    | <span class="hljs-built_in">sort</span> \
+    | <span class="hljs-built_in">uniq</span><span class="hljs-attr"> -c</span> \
+    | <span class="hljs-built_in">sort</span><span class="hljs-attr"> -rn</span> \
+    | <span class="hljs-built_in">head</span> -n 10
 
 <span class="hljs-comment"># tee —— 管道上的"三通接口"</span>
 <span class="hljs-comment"># tee 把数据同时写到文件和屏幕，不中断管道</span>
 ./backup.sh | <span class="hljs-built_in">tee</span> backup.log
 <span class="hljs-comment"># 既能在屏幕看到输出，又能在 backup.log 中保存一份</span></code></pre>
 
-    <div class="box box-info"><strong>管道 vs 重定向的区别</strong>重定向连接的是命令和文件；管道连接的是命令和命令。重定向把数据写入磁盘；管道把数据暂存在内核缓冲区中，第二个命令直接从缓冲区读取——更快，不占用磁盘 I/O。</div>
-  <figure class="merged-illustration" data-image-id="chapter08/03-standard-streams-pipes-tee.png"><img src="assets/chapter08/03-standard-streams-pipes-tee.png" alt="展示 fd 0/1/2、直接重定向、管道缓冲、tee 和 2&gt;&amp;1。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
+    <div class="box box-info"><strong>管道与重定向的区别</strong>管道把前一命令的标准输出接到后一命令的标准输入；重定向则改变命令与文件或其他文件描述符的连接方向。管道通常经过内核缓冲区，但不能据此断言整条命令一定更快，也不能忽略前后命令自身的磁盘 I/O。</div>
+  <figure class="merged-illustration" data-image-id="chapter08/03-standard-streams-pipes-tee.png"><img src="assets/chapter08/03-standard-streams-pipes-tee.webp" alt="展示 fd 0/1/2、直接重定向、管道缓冲、tee 和 2&gt;&amp;1。" loading="lazy" decoding="async" width="1672" height="941"></figure></div>
 </div>
 
 <!-- ═══════ 第六节 ═══════ -->
@@ -650,7 +651,7 @@ some_noisy_command &amp;&gt;/dev/null</code></pre>
 <span class="hljs-built_in">set</span><span class="hljs-attr"> -euo</span> pipefail
 
 <span class="hljs-comment"># ═══ 配置 ═══</span>
-LOG_DIR=<span class="hljs-string">"<span class="hljs-variable">${1}</span>"</span>                <span class="hljs-comment"># 第一个参数：日志目录</span>
+LOG_DIR=<span class="hljs-string">"<span class="hljs-variable">${1:-}</span>"</span>             <span class="hljs-comment"># 第一个参数可缺省，由下方用法检查处理</span>
 DAYS=<span class="hljs-string">"<span class="hljs-variable">${2:-7}</span>"</span>                <span class="hljs-comment"># 第二个参数：保留天数，默认7天</span>
 LOG_PATTERN=<span class="hljs-string">"*.log"</span>           <span class="hljs-comment"># 要清理的文件模式</span>
 
@@ -661,14 +662,27 @@ LOG_PATTERN=<span class="hljs-string">"*.log"</span>           <span class="hljs
     <span class="hljs-built_in">exit</span> 1
 <span class="hljs-keyword">fi</span>
 
+<span class="hljs-comment"># 天数必须是正整数；避免误将根目录或日志根目录作为清理范围</span>
+<span class="hljs-keyword">if</span> [[ ! <span class="hljs-string">"<span class="hljs-variable">$DAYS</span>"</span> =~ ^[1-9][0-9]*$ ]]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"错误: 保留天数必须是正整数"</span> &gt;&amp;2
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+
 <span class="hljs-keyword">if</span> [[ !<span class="hljs-attr"> -d</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span> ]]; <span class="hljs-keyword">then</span>
     <span class="hljs-built_in">echo</span> <span class="hljs-string">"错误: 目录 <span class="hljs-variable">$LOG_DIR</span> 不存在"</span>
     <span class="hljs-built_in">exit</span> 1
 <span class="hljs-keyword">fi</span>
 
+LOG_DIR=$(realpath <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span>)
+<span class="hljs-keyword">if</span> [[ <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span> == / || <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span> == /var/log ]]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"错误: 请指定具体应用的日志目录"</span> &gt;&amp;2
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+AGE_MINUTES=$((DAYS * 1440))  <span class="hljs-comment"># 按实际经过的 24 小时计算</span>
+
 <span class="hljs-comment"># ═══ 清理前统计 ═══</span>
-BEFORE_COUNT=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mtime</span> +<span class="hljs-string">"<span class="hljs-variable">$DAYS</span>"</span> | <span class="hljs-built_in">wc</span><span class="hljs-attr"> -l</span>)
-BEFORE_SIZE=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mtime</span> +<span class="hljs-string">"<span class="hljs-variable">$DAYS</span>"</span><span class="hljs-attr"> -exec</span> <span class="hljs-built_in">du</span><span class="hljs-attr"> -ch</span> {} + 2&gt;/dev/null | <span class="hljs-built_in">tail</span> -1 | awk <span class="hljs-string">'{print $1}'</span>)
+BEFORE_COUNT=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -type f -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mmin</span> +<span class="hljs-string">"<span class="hljs-variable">$AGE_MINUTES</span>"</span> | <span class="hljs-built_in">wc</span><span class="hljs-attr"> -l</span>)
+BEFORE_SIZE=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -type f -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mmin</span> +<span class="hljs-string">"<span class="hljs-variable">$AGE_MINUTES</span>"</span><span class="hljs-attr"> -exec</span> <span class="hljs-built_in">du</span><span class="hljs-attr"> -ch</span> {} + 2&gt;/dev/null | <span class="hljs-built_in">tail</span> -1 | awk <span class="hljs-string">'{print $1}'</span>)
 
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"[<span class="hljs-subst">$(date)</span>] 开始清理 <span class="hljs-variable">$LOG_DIR</span> 中 <span class="hljs-variable">${DAYS}</span> 天前的 <span class="hljs-variable">$LOG_PATTERN</span> 文件..."</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"  待清理文件数: <span class="hljs-variable">$BEFORE_COUNT</span>"</span>
@@ -680,10 +694,10 @@ BEFORE_SIZE=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_D
 <span class="hljs-keyword">fi</span>
 
 <span class="hljs-comment"># ═══ 执行清理 ═══</span>
-find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mtime</span> +<span class="hljs-string">"<span class="hljs-variable">$DAYS</span>"</span><span class="hljs-attr"> -delete</span>
+find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -type f -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mmin</span> +<span class="hljs-string">"<span class="hljs-variable">$AGE_MINUTES</span>"</span><span class="hljs-attr"> -delete</span>
 
 <span class="hljs-comment"># ═══ 清理后验证 ═══</span>
-AFTER_COUNT=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mtime</span> +<span class="hljs-string">"<span class="hljs-variable">$DAYS</span>"</span> | <span class="hljs-built_in">wc</span><span class="hljs-attr"> -l</span>)
+AFTER_COUNT=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_DIR</span>"</span><span class="hljs-attr"> -type f -name</span> <span class="hljs-string">"<span class="hljs-variable">$LOG_PATTERN</span>"</span><span class="hljs-attr"> -mmin</span> +<span class="hljs-string">"<span class="hljs-variable">$AGE_MINUTES</span>"</span> | <span class="hljs-built_in">wc</span><span class="hljs-attr"> -l</span>)
 
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"  清理后剩余旧文件数: <span class="hljs-variable">$AFTER_COUNT</span>"</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"[<span class="hljs-subst">$(date)</span>] 清理完成：删除了 <span class="hljs-variable">$BEFORE_COUNT</span> 个文件，释放约 <span class="hljs-variable">${BEFORE_SIZE:-0}</span> 空间"</span></code></pre>
@@ -709,7 +723,7 @@ AFTER_COUNT=$(find <span class="hljs-string">"<span class="hljs-variable">$LOG_D
   <div class="card-header"><span class="badge badge-operate">运</span><h3>脚本出错了别靠猜——四招精准定位 bug</h3><span class="tag tag-suggested">排错</span></div>
   <div class="card-body">
     <h4>第一招：bash -x —— 让脚本"说出"它正在执行的每一行</h4>
-    <p><code>bash -x</code> 是调试 Shell 脚本的头号利器。它会逐行打印正在执行的命令（前面带 <code>+</code> 号），同时显示变量的实际值。<strong>90% 的脚本问题，开了 -x 一看就明白了。</strong></p>
+    <p><code>bash -x</code> 会打印执行过的命令和展开后的变量值，适合定位分支、引用和参数问题。输出可能包含密码或令牌，因此不要直接在共享日志中开启；遇到外部命令或环境问题时，还要结合退出码和相关服务日志判断。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="ffab5975bd6e72646a4eb5afb274343522aa48c89fca57eda987ab9dbfb66f63"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 执行脚本时加 -x 参数</span>
 bash<span class="hljs-attr"> -x</span> ./my_script.sh
@@ -728,7 +742,7 @@ NAME=<span class="hljs-string">"server01"</span>
 Hello, server01</code></pre>
 
     <h4>第二招：set -e / set -u / set -o pipefail —— 严格模式三件套</h4>
-    <p>每个生产脚本都应该在开头写这三行——它们能阻止 90% 的"脚本悄悄出错然后产生莫名其妙结果"的问题。</p>
+    <p><code>set -u</code> 能帮助发现未定义变量，<code>pipefail</code> 使管道前段失败不被最后一段的成功掩盖；<code>set -e</code> 可用于适合“遇错即停”的脚本，但在 <code>if</code>、<code>&amp;&amp;</code>、管道及函数调用等上下文有例外。选择前先明确预期失败应如何处理，并对关键步骤显式检查退出码，而不是把这三项当作普适的安全保证。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="4b821be8f8c08717f6500d7f92df047bc8f6a5f0f4df2621835b08ca1eb76008"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-meta">#!/bin/bash</span>
 <span class="hljs-built_in">set</span><span class="hljs-attr"> -euo</span> pipefail
@@ -786,10 +800,12 @@ debug <span class="hljs-string">"用户: <span class="hljs-subst">$(whoami)</spa
   </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter08/04-strict-mode-trap-cleanup.png"><img src="assets/chapter08/04-strict-mode-trap-cleanup.png" alt="把日志清理脚本的前置检查、执行、验证和退出清理连成生产流程。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- /container -->
+<figure class="merged-illustration" data-image-id="chapter08/04-strict-mode-trap-cleanup.png"><img src="assets/chapter08/04-strict-mode-trap-cleanup.webp" alt="把日志清理脚本的前置检查、执行、验证和退出清理连成生产流程。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- /container -->
 </div><footer class="site-footer">
   <p>Linux 系统知识卡片系列 · 第 8 章 — Shell 脚本基础</p>
   <p style="margin-top:4px">从手工敲命令到自动化生产力 · 一次编写，无限复用</p>
 </footer>
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body>
 </html>

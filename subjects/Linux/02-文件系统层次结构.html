@@ -353,7 +353,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 文件系统层次结构</span><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" title="上一章">← 上一章</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" aria-current="page" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 
@@ -391,10 +392,10 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 
     <h4>没有标准的混乱世界</h4>
     <p>想象一个没有 FHS 的世界：发行版 A 把用户安装的程序放在 <code>/Programs</code>，发行版 B 放在 <code>/opt/userapps</code>，发行版 C 放在 <code>/usr/local/share/bin</code>。你写了一段自动化脚本，里面有个硬编码的路径 <code>/usr/bin/nginx</code>——然后换了一台服务器就找不到 Nginx 了。</p>
-    <p>更糟的是：每个运维工程师换工作后都要重新学习"这个公司用的猜谜规则"，每个软件的安装脚本都要写死一坨 <code>if</code> 判断不同的目录布局，每次排查问题都要翻上千页文档才能定位日志和配置文件——而 FHS 让这一切变成历史。</p>
+    <p>统一约定能减少跨发行版学习和自动化脚本维护成本，但并不能消除所有路径差异：软件包、发行版策略和本地配置仍可能不同。写脚本时应优先使用可发现的配置与命令，而不是仅凭记忆硬编码路径。</p>
 
     <h4>FHS 解决了什么问题</h4>
-    <p><strong>FHS (Filesystem Hierarchy Standard)</strong> 是一份精准的规范文档，定义了 Linux 系统中每个目录应该放什么、不应该放什么。它不是 Linux 内核的一部分，但被所有主流发行版遵守。你可以不知道使用了什么发行版——但只要它遵循 FHS，你就知道：</p>
+    <p><strong>FHS (Filesystem Hierarchy Standard)</strong> 规定常见目录的用途，为跨发行版查找程序、配置和可变数据提供起点。它不是 Linux 内核的一部分；各发行版会参考它，但也会因 <code>usrmerge</code>、容器布局或自身策略而有差异。因此应把下表看作定位线索，再以目标系统的实际目录为准：</p>
     <ul>
       <li><strong>配置文件一定在 <code>/etc</code></strong>——想改 Nginx？直接 <code>vim /etc/nginx/nginx.conf</code></li>
       <li><strong>日志一定在 <code>/var/log</code></strong>——想查错误？直接 <code>tail -f /var/log/syslog</code></li>
@@ -417,7 +418,7 @@ man 7 file-hierarchy    <span class="hljs-comment"># systemd 系统的文件层�
 
 
 <!-- ═══════════ 第2节：根目录逐层详解 ═══════════ -->
-<figure class="merged-illustration" data-image-id="chapter02/01-fhs-root-directory-map.png"><img src="assets/chapter02/01-fhs-root-directory-map.png" alt="按启动、配置、内核接口、用户/动态数据四类建立 FHS 地图。" loading="lazy" decoding="async" width="1672" height="941"></figure><h2 class="section-title" id="sec02-2"><span class="icon">2</span>根目录逐层详解 —— 每个目录的"为什么"</h2>
+<figure class="merged-illustration" data-image-id="chapter02/01-fhs-root-directory-map.png"><img src="assets/chapter02/01-fhs-root-directory-map.webp" alt="按启动、配置、内核接口、用户/动态数据四类建立 FHS 地图。" loading="lazy" decoding="async" width="1672" height="941"></figure><h2 class="section-title" id="sec02-2"><span class="icon">2</span>根目录逐层详解 —— 每个目录的"为什么"</h2>
 
 <div class="card">
   <div class="card-header">
@@ -526,7 +527,7 @@ lsmod
   <div class="card-body">
 
     <h4>/proc —— 内核暴露的进程与系统信息</h4>
-    <p><strong>proc 是一个伪文件系统 (pseudo-filesystem)，不占用磁盘空间</strong>——所有内容都在内存中，由内核动态生成。每一次 <code>cat /proc/cpuinfo</code> 都是在向内核发出请求："给我当前 CPU 的完整信息"。<code>/proc/[PID]/</code> 子目录里是该进程的全部属性——文件描述符 (<code>fd/</code>)、内存映射 (<code>maps</code>)、环境变量 (<code>environ</code>)、命令行 (<code>cmdline</code>)。</p>
+    <p><strong>/proc 是伪文件系统</strong>：它不把这些条目作为普通文件写入磁盘，而由内核按需呈现信息。读取 <code>/proc/cpuinfo</code> 可以获得处理器信息；<code>/proc/[PID]/</code> 提供该进程的文件描述符 (<code>fd/</code>)、内存映射 (<code>maps</code>)、环境变量 (<code>environ</code>) 和命令行 (<code>cmdline</code>) 等接口。部分内容需要相应权限，且读取期间状态可能变化。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="113b50db0d81cd71aba37ac47e17430427ade968790669e16d6267aecd5f4b54"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">cat</span> /proc/cpuinfo       <span class="hljs-comment"># CPU 型号、核心数、缓存大小</span>
 <span class="hljs-built_in">cat</span> /proc/meminfo       <span class="hljs-comment"># 内存使用详情 (MemTotal/MemFree/MemAvailable)</span>
@@ -548,7 +549,7 @@ lsmod
 <span class="hljs-built_in">cat</span> /sys/class/thermal/thermal_zone0/temp  <span class="hljs-comment"># CPU 温度 (需除以1000)</span>
 <span class="hljs-built_in">ls</span> /sys/block/           <span class="hljs-comment"># 列出所有块设备</span></code></pre>
 
-    <figure class="merged-illustration" data-image-id="chapter02/02-proc-sys-kernel-windows.png"><img src="assets/chapter02/02-proc-sys-kernel-windows.png" alt="对比 /proc 的进程/运行信息与 /sys 的设备模型，并说明读写方向。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="box box-tip">
+    <figure class="merged-illustration" data-image-id="chapter02/02-proc-sys-kernel-windows.png"><img src="assets/chapter02/02-proc-sys-kernel-windows.webp" alt="对比 /proc 的进程/运行信息与 /sys 的设备模型，并说明读写方向。" loading="lazy" decoding="async" width="1672" height="941"></figure><div class="box box-tip">
       <strong>proc vs sys 的选择</strong><br>
       <strong>/proc</strong>：进程信息 + 运行时系统信息，适合 shell 日常查看<br>
       <strong>/sys</strong>：设备模型 + 驱动参数，适合程序读取和脚本自动化<br>
@@ -573,7 +574,7 @@ lsmod
     <p>root 用户的家目录不在 <code>/home/root</code> (那太不"特殊"了)。它直接放在 <code>/root</code>，且权限为 <code>drwx------</code>——只有 root 自己能访问。为什么这么设计？因为早期 UNIX 系统可能在单用户模式下 <code>/home</code> 尚未挂载，但 root 需要可用的家目录。</p>
 
     <h4>/usr —— 用户级程序与数据 (最大的目录)</h4>
-    <p><strong>usr = Unix System Resources</strong> (不是 user!)——这是系统中<strong>最大的目录</strong>，包含所有用户可用的程序和库：</p>
+    <p><code>/usr</code> 通常存放系统提供的程序、库和共享数据，是许多发行版中占用空间较大的目录。它的名称来源有不同历史解释，不必把某个缩写展开当作操作规则；更重要的是区分发行版管理的 <code>/usr</code> 与本地管理员安装软件常用的 <code>/usr/local</code>：</p>
     <div class="table-wrap"><table>
       <thead><tr><th>子目录</th><th>存放内容</th><th>示例</th></tr></thead>
       <tbody><tr><td><code>/usr/bin</code></td><td>绝大多数用户命令</td><td>python3、node、vim、git</td></tr>
@@ -624,7 +625,7 @@ lsmod
 
 
 <!-- ═══════════ 第3节：一切皆文件哲学 ═══════════ -->
-<figure class="merged-illustration" data-image-id="chapter02/03-everything-is-file-abstraction.png"><img src="assets/chapter02/03-everything-is-file-abstraction.png" alt="展示 VFS/fd 统一接口如何适配文件、设备、proc、Socket 和管道。" loading="lazy" decoding="async" width="1672" height="941"></figure><h2 class="section-title" id="sec02-3"><span class="icon">3</span>"一切皆文件"—— Linux 最深刻的哲学实践</h2>
+<figure class="merged-illustration" data-image-id="chapter02/03-everything-is-file-abstraction.png"><img src="assets/chapter02/03-everything-is-file-abstraction.webp" alt="展示 VFS/fd 统一接口如何适配文件、设备、proc、Socket 和管道。" loading="lazy" decoding="async" width="1672" height="941"></figure><h2 class="section-title" id="sec02-3"><span class="icon">3</span>"一切皆文件"—— Linux 最深刻的哲学实践</h2>
 
 <div class="card">
   <div class="card-header">
@@ -708,4 +709,6 @@ lsmod
   <p style="margin-top:4px">理解文件系统层次结构 = 理解 Linux 的"城市规划"</p>
 </footer>
 
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

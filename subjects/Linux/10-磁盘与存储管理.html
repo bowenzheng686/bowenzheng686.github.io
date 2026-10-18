@@ -225,7 +225,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 磁盘与存储管理</span><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" title="上一章">← 上一章</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" aria-current="page" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 <header class="site-header"><h1>磁盘与存储管理</h1><p class="subtitle">数据永存的根基 —— 从物理扇区到逻辑卷，掌握 Linux 存储全链路</p><div class="meta-row editorial-meta"><span>分区：MBR / GPT</span><span>文件系统：ext4 / XFS / btrfs</span><span>弹性存储：LVM</span></div></header>
@@ -243,7 +244,7 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 <div class="card"><div class="card-header"><span class="badge badge-concept">原</span><h3>分区表是磁盘的"目录"——没有它，操作系统不知道数据在哪里</h3><span class="tag tag-required">必知</span></div>
 <div class="card-body">
 <h4>问题驱动：为什么需要分区？</h4>
-<figure class="merged-illustration" data-image-id="chapter10/01-storage-abstraction-stack.png"><img src="assets/chapter10/01-storage-abstraction-stack.png" alt="给出物理盘、分区表、分区、文件系统、挂载点到目录树的完整层次。" loading="lazy" decoding="async" width="1672" height="941"></figure><p>一块物理磁盘在操作系统眼中就是一长串连续的扇区（每个扇区通常 512 字节或 4K）。如果直接把整个盘当作一个文件系统，管理和故障隔离将极其困难——根目录和用户数据的磁盘空间会互相挤压，一个区域损坏可能导致全部数据丢失。<strong>分区就是把一整块物理磁盘切分成若干独立的逻辑区域，每个区域可以有不同的文件系统、不同的用途、甚至可以安装不同的操作系统。</strong></p>
+<figure class="merged-illustration" data-image-id="chapter10/01-storage-abstraction-stack.png"><img src="assets/chapter10/01-storage-abstraction-stack.webp" alt="给出物理盘、分区表、分区、文件系统、挂载点到目录树的完整层次。" loading="lazy" decoding="async" width="1672" height="941"></figure><p>一块物理磁盘在操作系统眼中就是一长串连续的扇区（每个扇区通常 512 字节或 4K）。如果直接把整个盘当作一个文件系统，管理和故障隔离将极其困难——根目录和用户数据的磁盘空间会互相挤压，一个区域损坏可能导致全部数据丢失。<strong>分区就是把一整块物理磁盘切分成若干独立的逻辑区域，每个区域可以有不同的文件系统、不同的用途、甚至可以安装不同的操作系统。</strong></p>
 
 <h4>MBR — 老旧但经典的守护者</h4>
 <p>MBR（Master Boot Record，主引导记录）是 1983 年随 IBM PC DOS 2.0 诞生的分区方案。它把磁盘的第一个扇区（512 字节）分为三段：前 446 字节存放引导代码，接着 64 字节存放<strong>4 个主分区表项</strong>（每个 16 字节），最后 2 字节是魔数 <code>0x55AA</code>。因为 4 个主分区的硬限制，<strong>扩展分区</strong> 应运而生——把其中一个主分区改为扩展分区，然后在扩展分区内再划出若干逻辑分区。</p>
@@ -253,12 +254,12 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 <h4>GPT — 现代标准</h4>
 <p>GPT（GUID Partition Table）是 UEFI 规范的一部分，彻底消除了 MBR 的各项限制：</p>
 <ul>
-<li><strong>容量无限制</strong>：使用 64 位扇区地址，理论上支持 9.4ZB（即 2^64 × 512 字节）</li>
+<li><strong>容量上限显著提高</strong>：GPT 使用 64 位逻辑块地址；理论范围取决于逻辑扇区大小，实际还受操作系统和存储设备限制</li>
 <li><strong>128 个分区</strong>：Windows 默认支持 128 个分区，Linux 可扩展更多</li>
 <li><strong>冗余备份</strong>：GPT 在磁盘头部和尾部各保存一份完整的分区表，头部损坏可从尾部恢复</li>
 <li><strong>CRC32 校验</strong>：分区表自带校验和，能检测到分区表是否被意外篡改</li>
 <li><strong>每个分区有唯一 GUID</strong>：即使把磁盘插到另一台机器，分区的 GUID 不变</li>
-<li><strong>UEFI 启动必须用 GPT</strong>：UEFI 固件规范要求系统盘使用 GPT 分区表</li>
+<li><strong>UEFI 常与 GPT 配合</strong>：典型安装从 GPT 上的 EFI 系统分区启动，但 UEFI 固件也可能支持其他分区布局；是否可启动应以固件与安装方式为准</li>
 </ul>
 
 <div class="table-wrap">
@@ -294,7 +295,7 @@ lsblk<span class="hljs-attr"> -f</span>
 
 <span class="hljs-comment"># 显示设备信息（只读、可移动、所有者等）</span>
 lsblk<span class="hljs-attr"> -o</span> NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE,UUID,MODEL</code></pre>
-<figure class="merged-illustration" data-image-id="chapter10/02-mbr-vs-gpt-layout.png"><img src="assets/chapter10/02-mbr-vs-gpt-layout.png" alt="展示 MBR 512 B 结构与 GPT 头尾双份、CRC 和恢复路径。" loading="lazy" decoding="async" width="1672" height="941"></figure><p class="out-label">▶ lsblk -f 输出解读</p>
+<figure class="merged-illustration" data-image-id="chapter10/02-mbr-vs-gpt-layout.png"><img src="assets/chapter10/02-mbr-vs-gpt-layout.webp" alt="展示 MBR 512 B 结构与 GPT 头尾双份、CRC 和恢复路径。" loading="lazy" decoding="async" width="1672" height="941"></figure><p class="out-label">▶ lsblk -f 输出解读</p>
 <pre data-presentation-code="v1" data-presentation-highlight="6939987afb921d994b876e6d255a9f1e3b966ce07ebbdb90c8be357cc1378a25"><code data-static-highlight="11.9.0" class="editorial-code language-plaintext nohighlight" data-highlighted="yes">NAME   FSTYPE FSVER LABEL  UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
 sda
 ├─sda1 vfat   FAT32        1234-5678                              400M    22%   /boot/efi
@@ -399,8 +400,8 @@ find /var<span class="hljs-attr"> -type</span> f<span class="hljs-attr"> -exec</
 <h4>XFS — 大文件高并发的引擎</h4>
 <p>XFS 最初由 SGI 于 1994 年为 IRIX 操作系统开发，2001 年移植到 Linux。它是<strong>Red Hat Enterprise Linux 7+ 的默认文件系统</strong>。XFS 的设计从一开始就是针对大型服务器和大文件场景：</p>
 <ul>
-<li><strong>分配组（Allocation Groups）</strong>：将文件系统切分成多个独立的分配组，每个组可以并发执行元数据操作——多核 CPU 下 IO 性能线性扩展</li>
-<li><strong>B+ 树索引所有元数据</strong>：inode 是动态分配的（B+ 树查找），不像 ext4 那样在格式化时静态分配固定数量的 inode。这意味着你永远不会遇到"磁盘有空间但无法创建文件因为 inode 耗尽"的问题</li>
+<li><strong>分配组（Allocation Groups）</strong>：将文件系统划为多个分配组，以减少并发元数据操作的争用；实际吞吐仍受磁盘、队列和工作负载限制，不能保证线性扩展</li>
+<li><strong>动态分配 inode</strong>：与格式化时确定 inode 数量的 ext4 不同，XFS 可随需求分配 inode，降低“空间尚有余量却耗尽预设 inode”的风险；仍可能因空间、配额或元数据限制而无法创建文件</li>
 <li><strong>COW 文件系统快照</strong>：XFS 原生不支持快照，但配合 LVM 的快照功能可以做到</li>
 <li><strong>支持超大文件系统</strong>：最大 8EB 文件系统，单文件最大 8EB</li>
 <li><strong>预分配和延迟分配</strong>：减少碎片，提升顺序写入吞吐</li>
@@ -480,7 +481,7 @@ sudo mkfs.xfs<span class="hljs-attr"> -f</span> /dev/sdb1   <span class="hljs-co
 <div class="box box-danger"><strong>格式化前再三确认</strong><br><code>mkfs</code> 执行后该分区上的所有数据将不可恢复（除非使用专业数据恢复工具）。执行前务必用 <code>lsblk</code> 确认设备名，用 <code>df -h</code> 确认没有挂载重要数据，记住<strong>给 mkfs 加错设备名是运维中最不可逆的误操作之一</strong>。</div>
 </div></div>
 
-<figure class="merged-illustration" data-image-id="chapter10/03-filesystem-mechanisms.png"><img src="assets/chapter10/03-filesystem-mechanisms.png" alt="对照 ext4 日志、XFS 分配组并行和 btrfs COW 快照。" loading="lazy" decoding="async" width="1672" height="941"></figure><figure class="merged-illustration" data-image-id="chapter10/05-lvm-online-expansion.png"><img src="assets/chapter10/05-lvm-online-expansion.png" alt="展示 PV→VG→LV→文件系统→挂载点，以及 LV 与文件系统必须连续扩容。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 10-3 ======= -->
+<figure class="merged-illustration" data-image-id="chapter10/03-filesystem-mechanisms.png"><img src="assets/chapter10/03-filesystem-mechanisms.webp" alt="对照 ext4 日志、XFS 分配组并行和 btrfs COW 快照。" loading="lazy" decoding="async" width="1672" height="941"></figure><figure class="merged-illustration" data-image-id="chapter10/05-lvm-online-expansion.png"><img src="assets/chapter10/05-lvm-online-expansion.webp" alt="展示 PV→VG→LV→文件系统→挂载点，以及 LV 与文件系统必须连续扩容。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 10-3 ======= -->
 <h2 class="section-title" id="sec10-3"><span class="icon">3</span>挂载与 fstab — 将文件系统接入目录树</h2>
 <div class="card"><div class="card-header"><span class="badge badge-operate">操</span><h3>挂载就是把磁盘分区"嫁接"到已有目录树上——让文件系统对用户可见</h3><span class="tag tag-required">实操</span></div>
 <div class="card-body">
@@ -531,7 +532,7 @@ sudo umount<span class="hljs-attr"> -l</span> /mnt/data
 sudo umount<span class="hljs-attr"> -f</span> /mnt/data</code></pre>
 
 <h4>UUID — 磁盘的"身份证号"</h4>
-<p>设备名 <code>/dev/sda</code>、<code>/dev/sdb</code> 是内核按发现顺序分配的——你把 SATA 线换了个接口插，原来的 sdb 可能就变成 sdc 了。UUID（Universally Unique Identifier）是在创建文件系统时生成并写入文件系统超级块的 128 位标识符——永远不变。</p>
+<p>设备名 <code>/dev/sda</code>、<code>/dev/sdb</code> 会随设备发现顺序改变。文件系统 UUID 通常在格式化时生成，适合在 <code>fstab</code> 中稳定定位文件系统；但重新格式化、显式修改 UUID 或克隆磁盘后，它可能变化或重复。修改存储布局后请用 <code>lsblk -f</code> 重新确认。</p>
 <pre data-presentation-code="v1" data-presentation-highlight="3b2e5c638ded0121b668f16a215701f84044bbe52136e081f5c0b210b27cfe29"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看所有块设备的 UUID</span>
 sudo blkid
 
@@ -580,7 +581,7 @@ sudo mount<span class="hljs-attr"> -o</span> remount /</code></pre>
 <div class="box box-info"><strong>fstab 中的 defaults 包含哪些选项？</strong><br><code>defaults</code> = rw（读写）, suid（允许 SUID）, dev（解释设备文件）, exec（允许执行二进制）, auto（启动时自动挂载）, nouser（仅 root 可挂载）, async（异步写入——先回内存再异步落盘）。如果要添加额外选项而保留 defaults，写法为 <code>defaults,noatime,nodiratime</code>。</div>
 </div></div>
 
-<figure class="merged-illustration" data-image-id="chapter10/04-uuid-fstab-mount-flow.png"><img src="assets/chapter10/04-uuid-fstab-mount-flow.png" alt="说明设备名可变、UUID 稳定、生成 mount Unit 及安全卸载流程。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 10-4 ======= -->
+<figure class="merged-illustration" data-image-id="chapter10/04-uuid-fstab-mount-flow.png"><img src="assets/chapter10/04-uuid-fstab-mount-flow.webp" alt="说明设备名可变、UUID 稳定、生成 mount Unit 及安全卸载流程。" loading="lazy" decoding="async" width="1672" height="941"></figure><!-- ======= 10-4 ======= -->
 <h2 class="section-title" id="sec10-4"><span class="icon">4</span>LVM 弹性扩展 — 存储即水池</h2>
 <div class="card"><div class="card-header"><span class="badge badge-implement">实</span><h3>传统分区不可动态调整，LVM 把物理存储抽象成可按需伸缩的逻辑卷</h3><span class="tag tag-required">实操</span></div>
 <div class="card-body">
@@ -670,7 +671,7 @@ sudo lvextend<span class="hljs-attr"> -L</span> +50G /dev/my_vg/my_lv
 sudo resize2fs /dev/my_vg/my_lv</code></pre>
 
 <h4>LVM 快照</h4>
-<p>LVM 支持创建逻辑卷的写时复制快照。快照创建时几乎不占空间，原始卷上的数据被修改时，被覆盖的原始数据块才会复制到快照区域。常用于数据库备份（先打快照，再备份快照卷，不锁表）。</p>
+<p>LVM 快照保留某个时间点的块设备视图，可让后续文件备份基于稳定的卷状态；但它只保证块级时间点，不自动保证运行中数据库的事务一致性。数据库备份应先按数据库文档完成备份锁、检查点或专用备份流程，再创建快照；同时监控快照空间，避免写入增多导致快照失效。快照也不能替代独立副本与恢复演练。</p>
 <pre data-presentation-code="v1" data-presentation-highlight="fcd0ae9c9dfb7ae647ed06e5f8db7da4bfb6d2440ab3e97411bce0b9c64dc3f3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 创建快照（大小需要可容纳快照期间的变更量）</span>
 sudo lvcreate<span class="hljs-attr"> -L</span> 5G<span class="hljs-attr"> -s</span><span class="hljs-attr"> -n</span> my_lv_snap_20260730 /dev/my_vg/my_lv
 
@@ -791,4 +792,6 @@ sudo smartctl<span class="hljs-attr"> -a</span> /dev/sda
 <!-- /container -->
 <section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>IO</b> · Input/Output 输入／输出</p></div></div></section>
 </div><footer class="site-footer"><p>Linux 系统知识卡片系列 · 第10章 · 磁盘与存储管理</p><p style="margin-top:4px">数据永存的根基 —— 从物理扇区到逻辑卷</p></footer>
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

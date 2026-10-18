@@ -11,86 +11,38 @@ syntax_highlight: true
 {% raw %}
 
 # 34 Spring Cloud Gateway 介绍
-## 7 Spring Cloud Gateway（重点）
 
-### 7.1 Spring Cloud Gateway 介绍
+## API 网关位于哪里
 
-### 什么是 API 网关
+客户端若直接记住每个微服务实例的地址，扩缩容、迁移或接口拆分都会迫使客户端跟着修改。API 网关把对外接口放在一个受控入口，按请求的路径、主机名等条件把流量路由到后端服务。它**不是服务注册中心**：注册中心回答“某个服务当前有哪些实例”，网关则决定“这次外部请求应该进入哪个服务，并经过哪些入口策略”。
 
-近几年来移动应用与企业间互联需求的兴起。从以前单一的Web应用，扩展到多种使用场景，且每种使用场景对后台服务的要求都不尽相同。
+![客户端直连与统一入口对比](assets/img-5655f14913e9bfde.webp)
+![网关路由请求示意](assets/img-5c95781f89e0e232.webp)
 
-这不仅增加了后台服务的响应量，还增加了后台服务的复杂性。随着微服务架构概念的提出，API网关成为了微服务架构的一个标配组件。
+网关的核心是路由转发，常见的横切能力还包括身份验证、限流、跨域处理、请求和响应改写、指标与日志。哪些能力放在网关，应根据团队的安全边界和性能要求决定；业务授权与数据校验不能只靠网关，一旦内部请求绕过入口仍须有防护。
 
-API网关作用就是把各个微服务对外提供的API汇聚起来,让外界看起来是一个统一的入口
+![路由与过滤器示意](assets/img-b83eb279f8544afd.webp)
 
-同时还实现了微服务网关的额外功能, 包含：负载均衡、路由转发、身份认证、权限安全、请求限流、监控/指标等功能
+## Spring Cloud Gateway 是什么
 
-即API网关就是所有微服务项目的统一入口。相当于传统的代理服务功能,还具有一些更加高级的功能
+[Spring Cloud Gateway](https://spring.io/projects/spring-cloud-gateway) 是 Spring Cloud 的网关项目。应用通常定义**路由**，由断言判断是否匹配请求，再在过滤器中执行入口处理，并把请求转发到固定 URI 或通过服务发现得到的实例。具体配置键、过滤器和运行时架构随版本演进，示例应与项目的 Spring Boot / Spring Cloud 发布列车保持一致。
 
-![微服务技术第 209 页插图](assets/img-5655f14913e9bfde.jpeg)
+原资料把它固定描述为“Spring 5 + Boot 2 + WebFlux”，反映的是某个历史版本，并非所有新版本的要求；也不应简单断言“响应式一定比 Servlet 快”。WebFlux 版本适合非阻塞 I/O 场景，但阻塞调用、认证逻辑、线程配置和后端瓶颈仍会影响性能。选择网关应看团队技术栈、插件需求、运维方式和实测负载。
 
-### 为什么要使用 API 网关
+## 与其他网关的边界
 
-微服务的应用可能部署在不同机房，不同地区，不同域名下。此时客户端（浏览器/手机/软件工具）想要请求对应的服务，都需要知道应用所在主机的具体 IP 或者域名 URL，当微服务实例众多时，这是非常难以记忆的，对于客户端来说也太复杂难以维护。此时就有了网关，客户端相关的请求直接发送到网关，由网关根据请求标识解析判断出具体的微服务地址，再把请求转发到微服务实例。这其中的记忆功能就全部交由网关来操作了。
+![常见网关方案示意](assets/img-3d9d3a6e3ed1fd58.webp)
 
-![微服务技术第 209 页插图](assets/img-5c95781f89e0e232.png)
+- **Zuul**：早期常见于 Spring Cloud Netflix 方案，不同大版本的实现方式和维护状态不同；已有系统可按升级成本评估，不必仅因名称较旧就机械替换。
+- **Spring Cloud Gateway**：适合将入口与 Spring 生态的配置、服务发现和观测体系集成。
+- **Apache APISIX**：基于 OpenResty、etcd 等组件提供动态路由和插件能力，适合希望将网关作为独立基础设施治理的环境。它不是 Spring Cloud Gateway 的同一运行模式。
 
-### API 网关核心功能
-
-![微服务技术第 210 页插图](assets/img-b83eb279f8544afd.png)
-
-路由转发接收外界请求，通过网关的路由转发,转发到后端的服务上,和传统的反向代理功能类似此功能是API网关的最核心功能过滤器: 自行定制实现过滤器中默认提供了多种内置功能还支持额外的自定义功能。 比较常用的功能有网关的容错、限流以及请求及相应的额外处理。
-
-### API 网关解决方案
-
-![微服务技术第 210 页插图](assets/img-3d9d3a6e3ed1fd58.png)
-
-### Spring Cloud Netflix Zuul
-
-基于Spring Cloud的API网关
-
-属于Spring Cloud Netflix 的一个组件，具有灵活、简单的特点。
-
-基于Servlet的实现,属于阻塞式编程实现,性能较低
-
-其版本更新都依赖于Netflix Zuul
-
-在早期Spring Cloud中使用的比较多
-
-### Spring Cloud Gateway
-
-基于Spring 生态系统之上构建的API 网关，包括：Spring 5.x ，Spring Boot 2.x 和Project Reactor 。
-
-旨在提供一种简单而有效的方法来路由到API ，并为它们提供跨领域的关注点，例如：安全性，监视/指标，限流等。
-
-适合 JAVA 技术栈,目前也是 Spring Cloud 全家桶的一部分，Spring/Spring Cloud 社区生态好
-
-由Spring自己推出的网关产品，完全依赖Spring自家产品,符合Spring战略意义，其更新版本等都由Spring 自己把控
-
-SpringCloud Gateway 作为 Spring Cloud 生态系统中的网关，目标是替代 Zuul
-
-目前很多项目中都是使用Gateway替代Zuul
-
-基于Spring5中提供的WebFlux实现,基于响应式编程实现,具有更好的性能
-
-Spring Cloud Gateway 源于 Spring 框架和 Spring Boot 平台，本质上专注于已经熟悉 Spring 的开发人员。
-
-如果你熟悉Spring的开发模式，很容易就可以上手。
-
-### APISIX
-
-APISIX 是一个Apache基金会下的云原生、高性能、可扩展的微服务 API 开源网关，基于OpenResty(Nginx+Lua)和etcd来实现
-
-对比传统的API网关，具有动态路由和热插件加载的特点。
-
-Apache APISIX 更适合常规 Ops 配置文件，以他们熟悉的包装提供产品：Kubernetes 的 Docker 映像和 Helm 图表。
-
-Apache APISIX  基于原生云，与开发平台无关，无供应商锁定，APISIX可以从裸机运行到Kubernetes。
+无论选择哪一种网关，都需验证转发正确性、客户端地址与真实源 IP 的处理、身份与权限边界、超时重试以及网关自身的高可用性。下一篇用 Spring Cloud Gateway 的路由、断言和过滤器建立完整请求模型。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/33-integrating-seata-with-nacos.html' | relative_url }}">← Previous: Integrating Seata with Nacos</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/35-spring-cloud-gateway-core-concepts.html' | relative_url }}">Next: Spring Cloud Gateway Core Concepts →</a>
+  <a href="{{ '/subjects/Microservices/33-integrating-seata-with-nacos.html' | relative_url }}">← 上一篇：Seata 结合 Nacos</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回专题目录</a>
+  <a href="{{ '/subjects/Microservices/35-spring-cloud-gateway-core-concepts.html' | relative_url }}">下一篇：Spring Cloud Gateway 核心概念 →</a>
 </nav>

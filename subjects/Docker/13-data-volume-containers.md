@@ -1,248 +1,73 @@
 ---
 layout: default
-title: "Docker 容器技术 · 数据卷容器（了解）"
+title: "Docker 容器技术 · 数据卷容器与 --volumes-from"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
+[← 返回 Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 13 数据卷容器（了解）
-### 3.3 数据卷容器（了解）
+# 13 数据卷容器与 `--volumes-from`
 
-### 数据卷容器介绍
+前一篇介绍了 Docker 卷和绑定挂载。多个容器可以**直接挂载同一个命名卷**，无需额外创建“数据卷容器”。`--volumes-from` 是另一种历史用法：新容器复用指定容器的已有挂载。理解它有助于阅读旧部署脚本，但新项目通常直接声明共享卷，更容易看出数据归属。
 
-![Docker 容器技术第 267 页插图](assets/img-1f98288c5f027001.png)
+![容器通过挂载共享数据的示意](assets/img-1f98288c5f027001.webp)
 
-在Dockerfile中创建的是匿名数据卷,无法直接实现多个容器之间共享数据
+![旧式数据卷容器复用挂载的示意](assets/img-fba6e0f76fe59694.webp)
 
-数据卷容器主要的功能是可以让数据在多个docker容器之间共享
+## 1. 共享的是挂载，不是容器文件系统
 
-如下图所示: 即可以让B容器和C容器都可以访问A容器的内容，即可以实现A，B，C 三个容器之间的数据读写共享。
+`--volumes-from source` 复制的是 `source` 的卷和绑定挂载定义，**不会让目标容器读取 source 的可写层**。如果 source 把宿主机 `/srv/site` 挂到 `/data`，两个目标容器访问的是同一宿主机路径；如果 source 使用命名卷，目标容器访问的是同一个卷。
 
-![Docker 容器技术第 267 页插图](assets/img-fba6e0f76fe59694.png)
+原文称“Dockerfile 创建匿名卷无法共享”，表述过于绝对：匿名卷也可以通过 `--volumes-from` 复用，只是名称不利于长期管理。source 容器停止后，挂载的数据并不会停止；只要 source 容器对象还存在，仍能用它创建新目标容器。source 被删除后，旧目标容器已有的挂载通常继续有效，但不能再通过该名称引用 source。
 
-相当于先要创建一个后台运行的容器作为 Server，用于提供数据卷，这个卷可以为其他容器提供数据存储服务，其他使用此卷的容器作为client端 ，但此方法并不常使用
+## 2. 重现旧式用法
 
-缺点:  因为依赖一个 Server  的容器存在，所以此 Server 容器出了问题，其它 Client容器都会受影响
-
-注意：即使Server删除，无法创建新的Client容器，但是可以基于已有Client容器，再创建新的其它 Client容器
-
-### 使用数据卷容器
-
-启动容器时，指定使用数据卷容器
-
-docker run 命令的以下选项可以实现数据卷容器，格式如下:
-
-```text
---volumes-from <数据卷容器>     Mount volumes from the specified container(s)
-```
-
-### 实战案例: 数据卷容器
-
-### 创建一个数据卷容器 Server
-
-先创建一个挂载宿主机的数据目录的容器，且可以无需启动
-
-范例:  使用之前的镜像创建数据卷容器
+以下以命名卷模拟“卷容器”。`volume-source` 只提供挂载定义，不需要运行应用服务；使用同一卷的容器都能读写 `/data`。
 
 ```bash
-#数据卷容器一般无需映射端口
-[root@ubuntu1804 ~]#docker run -d --name volume-server -v
-/data/bin/catalina.sh:/apps/tomcat/bin/catalina.sh:ro -v
-/data/testapp:/data/tomcat/webapps/testapp   tomcat-web:app1
-109a34c5a83b23bc57b16fc8b1e19104d3d522a8c62e1e98d8e69577b01739b5
-[root@ubuntu1804 ~]#docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED
-STATUS              PORTS                NAMES
-109a34c5a83b        tomcat-web:app1     "/apps/tomcat/bin/ru…"   14 seconds ago
-Up 13 seconds       8009/tcp, 8080/tcp   volume-server
+docker volume create shared-data
+docker create --name volume-source \
+  --mount type=volume,source=shared-data,target=/data \
+  alpine:3.20 sleep 3600
+
+docker run --rm --volumes-from volume-source \
+  alpine:3.20 sh -c 'echo version-1 > /data/index.txt'
+docker run --rm --volumes-from volume-source \
+  alpine:3.20 cat /data/index.txt
 ```
 
-### 启动多个数据卷容器 Client
+接下来可以停止（若已启动）`volume-source` 再复用；被引用的是容器的挂载配置，跟它是否正在运行无关。要验证删除 source 的情况，先创建一个会保留的目标容器：
 
 ```bash
-[root@ubuntu1804 ~]#docker run -d --name client1 --volumes-from volume-server -p
-8081:8080  tomcat-web:app1
-fe6ce0548dfee924cd39a8d86d5ed0e8ce9ea65323742f1336fa3b002c1b4a8c
-[root@ubuntu1804 ~]#docker run -d --name client2 --volumes-from volume-server -p
-8082:8080  tomcat-web:app1
-10397838df9a489d7af2112850d4285bff5c2c262ea05cc9c5fb265af538f2c8
-[root@ubuntu1804 ~]#docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED
-STATUS              PORTS                              NAMES
-10397838df9a        tomcat-web:app1     "/apps/tomcat/bin/ru…"   30 seconds ago
-Up 27 seconds       8009/tcp, 0.0.0.0:8082->8080/tcp   client2
-fe6ce0548dfe        tomcat-web:app1     "/apps/tomcat/bin/ru…"   40 seconds ago
-Up 38 seconds       8009/tcp, 0.0.0.0:8081->8080/tcp   client1
-109a34c5a83b        tomcat-web:app1     "/apps/tomcat/bin/ru…"   2 minutes ago
-Up 2 minutes        8009/tcp, 8080/tcp                 volume-server
-[root@ubuntu1804 ~]#
+docker create --name volume-client --volumes-from volume-source \
+  alpine:3.20 sleep 3600
+docker rm volume-source
+docker start volume-client
+docker exec volume-client cat /data/index.txt
 ```
 
-### 验证访问
+`volume-client` 仍持有挂载。此时不能再执行 `--volumes-from volume-source`，因为该容器名称已不存在；可以引用仍存在的 `volume-client`，但这会形成不必要的容器依赖链。原教程删除 source 后显示的 `pull access denied` 是镜像不存在/不可拉取的错误，不能当作 `--volumes-from` 失败的证据。
+
+## 3. 现代写法更直接
+
+同样的共享需求直接为每个容器指定命名卷即可，不需要 source 容器：
 
 ```bash
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v3
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v3
+docker run --rm --mount type=volume,source=shared-data,target=/data \
+  alpine:3.20 cat /data/index.txt
+docker volume inspect shared-data
 ```
 
-### 进入容器测试读写
-
-读写权限依赖于源数据卷Server容器
-
-```bash
-#进入 Server 容器修改数据
-[root@ubuntu1804 ~]#docker exec -it volume-server bash
-[root@109a34c5a83b /]# cat /data/tomcat/webapps/testapp/index.html
-testapp v3
-[root@109a34c5a83b /]# echo testapp v4 > /data/tomcat/webapps/testapp/index.html
-[root@109a34c5a83b /]#
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v4
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v4
-#进入 Client 容器修改数据
-[root@ubuntu1804 ~]#docker exec -it client1 bash
-[root@fe6ce0548dfe /]# cat /data/tomcat/webapps/testapp/index.html
-testapp v4
-[root@fe6ce0548dfe /]# echo testapp v4 > /data/tomcat/webapps/testapp/index.html
-[root@fe6ce0548dfe /]# cat /data/tomcat/webapps/testapp/index.html
-testapp v5
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v5
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v5
-```
-
-### 在宿主机直接修改
-
-```bash
-[root@ubuntu1804 ~]#cat /data/testapp/index.html
-testapp v5
-[root@ubuntu1804 ~]#echo testapp v6 > /data/testapp/index.html
-[root@ubuntu1804 ~]#cat /data/testapp/index.html
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v6
-[root@ubuntu1804 ~]#
-[root@ubuntu1804 ~]#docker exec -it volume-server bash
-[root@109a34c5a83b /]# cat  /data/tomcat/webapps/testapp/index.html
-testapp v6
-[root@109a34c5a83b /]#
-```
-
-### 关闭卷容器Server测试能否启动新容器
-
-关闭卷容器Server，仍然可以创建新的client容器及访问旧的client容器
-
-```bash
-[root@ubuntu1804 ~]#docker stop volume-server
-volume-server
-[root@ubuntu1804 ~]#docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED
-STATUS              PORTS                              NAMES
-10397838df9a        tomcat-web:app1     "/apps/tomcat/bin/ru…"   9 minutes ago
-Up 9 minutes        8009/tcp, 0.0.0.0:8082->8080/tcp   client2
-fe6ce0548dfe        tomcat-web:app1     "/apps/tomcat/bin/ru…"   10 minutes ago
-Up 10 minutes       8009/tcp, 0.0.0.0:8081->8080/tcp   client1
-[root@ubuntu1804 ~]#docker run -d --name client3 --volumes-from volume-server -p
-8083:8080  tomcat-web:app1
-458df991688c3dbc69d824f889616e0a7534ce18543c8559162f3609fbb26b53
-[root@ubuntu1804 ~]#docker ps  -a
-CONTAINER ID        IMAGE               COMMAND                  CREATED
-STATUS                            PORTS                              NAMES
-458df991688c        tomcat-web:app1     "/apps/tomcat/bin/ru…"   About a minute
-ago   Up About a minute                 8009/tcp, 0.0.0.0:8083->8080/tcp
-client3
-10397838df9a        tomcat-web:app1     "/apps/tomcat/bin/ru…"   11 minutes ago
-Up 11 minutes                     8009/tcp, 0.0.0.0:8082->8080/tcp
-client2
-fe6ce0548dfe        tomcat-web:app1     "/apps/tomcat/bin/ru…"   11 minutes ago
-Up 11 minutes                     8009/tcp, 0.0.0.0:8081->8080/tcp
-client1
-109a34c5a83b        tomcat-web:app1     "/apps/tomcat/bin/ru…"   13 minutes ago
-Exited (137) About a minute ago
-volume-server
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8083/testapp/
-testapp v6
-```
-
-### 删除源卷容器Server，访问client和创建新的client容器
-
-删除数据卷容器后，旧的client 容器仍能访问，但无法再创建新的client容器
-
-删除数据卷容器后，旧的client 容器仍能访问，但无法再创建基于数据卷容器的新的client容器,但可以创建基于已创建的Client容器的Client容器
-
-```bash
-[root@ubuntu1804 ~]#docker rm -fv volume-server
-volume-server
-[root@ubuntu1804 ~]#docker ps -a
-CONTAINER ID        IMAGE               COMMAND                  CREATED
-STATUS              PORTS                              NAMES
-458df991688c        tomcat-web:app1     "/apps/tomcat/bin/ru…"   4 minutes ago
-Up 4 minutes        8009/tcp, 0.0.0.0:8083->8080/tcp   client3
-10397838df9a        tomcat-web:app1     "/apps/tomcat/bin/ru…"   14 minutes ago
-Up 14 minutes       8009/tcp, 0.0.0.0:8082->8080/tcp   client2
-fe6ce0548dfe        tomcat-web:app1     "/apps/tomcat/bin/ru…"   14 minutes ago
-Up 14 minutes       8009/tcp, 0.0.0.0:8081->8080/tcp   client1
-```
-
-```bash
-[root@ubuntu1804 ~]#docker run -d --name client4 --volumes-from volume-server -p
-8084:8080  tomcat-web:app1
-Unable to find image 'tomcat-web:app1' locally
-docker: Error response from daemon: pull access denied for tomcat-web,
-repository does not exist or may require 'docker login': denied: requested
-access to the resource is denied.
-See 'docker run --help'.
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8083/testapp/
-testapp v6
-```
-
-### 重新创建容器卷 Server
-
-重新创建容器卷容器后，还可继续创建新client 容器
-
-```bash
-[root@ubuntu1804 ~]#docker run -d --name volume-server -v
-/data/bin/catalina.sh:/apps/tomcat/bin/catalina.sh:ro -v
-/data/testapp:/data/tomcat/webapps/testapp   tomcat-web:app1
-ee0dacff6a4531dc8ecc1d416b449e087d8bf27dad2d6a6e515faf10455a1cc0
-[root@ubuntu1804 ~]#docker run -d --name client4 --volumes-from volume-server -p
-8084:8080  tomcat-web:app1
-dcd002fe87887a0c5d1f62b24cd7665e42ee864c975d1a2953c383af0cb65a70
-[root@ubuntu1804 ~]#curl 127.0.0.1:8084/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8081/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8082/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8083/testapp/
-testapp v6
-[root@ubuntu1804 ~]#curl 127.0.0.1:8084/testapp/
-testapp v6
-```
+使用 Docker Compose 时，也可在服务的 `volumes` 中统一声明命名卷。无论哪种方式，多个容器并发写同一个文件都需要应用层协调；共享卷只解决可见性，不自动解决写冲突。容器删除也不等于卷已备份，应为重要数据制定备份、恢复和权限策略。完成实验后，先检查卷中是否仍有需要保留的数据，再决定是否清理。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Docker/12-data-volumes.html' | relative_url }}">← Previous: Data Volumes</a>
-  <a href="{{ '/subjects/Docker/' | relative_url }}">Back to Docker Container Technology Index</a>
-  <a href="{{ '/subjects/Docker/14-default-docker-networking.html' | relative_url }}">Next: Default Docker Networking →</a>
+  <a href="{{ '/subjects/Docker/12-data-volumes.html' | relative_url }}">← 上一篇：数据卷</a>
+  <a href="{{ '/subjects/Docker/' | relative_url }}">返回 Docker 容器技术目录</a>
+  <a href="{{ '/subjects/Docker/14-default-docker-networking.html' | relative_url }}">下一篇：默认网络 →</a>
 </nav>

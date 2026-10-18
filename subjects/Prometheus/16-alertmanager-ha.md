@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Prometheus · Alertmanager 高可用与其他应用"
+title: "Prometheus · Alertmanager 高可用"
 subject_page: true
 prometheus_notes: true
 syntax_highlight: true
@@ -10,280 +10,136 @@ syntax_highlight: true
 
 {% raw %}
 
-# 16 Alertmanager 高可用与其他应用
+# 16 Alertmanager 高可用
 
-## 5.9 Alertmanager 高可用
+单个 Alertmanager 故障会影响告警通知。高可用的基本方案是运行多个 Alertmanager 实例，让 Prometheus 把同一告警发送到**每一个**实例，同时让这些实例组成集群。集群成员通过 gossip 交换静默、通知日志等状态，尽量避免重复通知；这属于最终一致的协调机制，不能承诺网络分区或故障切换期间“绝对只发送一次”。
 
-### 5.9.1 负载均衡
+## 为什么不是简单加一个负载均衡器
 
-![原 PDF 第 223 页插图](assets/img-b3d84feacf976e9e.png)
+只在两个 Alertmanager 前放负载均衡器，每次告警请求可能只到达其中一个节点。若该节点随后故障，另一节点未必已收到需要处理的告警。Prometheus 的 `alerting.alertmanagers` 可以列出全部 Alertmanager 目标，让告警分别发送到各节点；集群再负责状态协作。
 
-### 5.9.2 Gossip 谣言协议实现
-https://yunlzheng.gitbook.io/prometheus-book/part-ii-prometheus-jin-jie/readmd/alertmanager-high-availability
+![负载均衡方式示意](assets/img-b3d84feacf976e9e.webp)
 
-Alertmanager引入了Gossip机制。Gossip机制为多个Alertmanager之间提供了信息传递的机制。确保及时在多个Alertmanager分别接收到相同告警信息的情况下，也只有一个告警通知被发送给Receiver。
+![Alertmanager 集群 Gossip 示意](assets/img-637b1aa6cf2dbfcf.webp)
 
-![原 PDF 第 224 页插图](assets/img-637b1aa6cf2dbfcf.png)
+![Gossip 状态传播示意](assets/img-5438da7c39783fc5.webp)
 
-Gossip是分布式系统中被广泛使用的协议，用于实现分布式节点之间的信息交换和状态同步。Gossip协议同步状态类似于流言或者病毒的传播，如下所示：
+生产部署需关注三类地址：**9093** 是各实例的 Web/API 地址，供 Prometheus 发送告警；**9094** 通常用于集群通信，成员间要能互通相应 TCP/UDP 流量；`--cluster.peer` 指向已有成员的集群地址，而不是其 9093 Web 地址。具体监听端口可调整，但所有配置必须一致。
 
-![原 PDF 第 224 页插图](assets/img-5438da7c39783fc5.png)
+## 多主机部署的最小配置
 
-Gossip有两种实现方式分别为Push-based和Pull-based。
+假设 `am-a` 和 `am-b` 是两台可互通的主机，二者使用相同的 `alertmanager.yml`，但各有自己的数据目录。首先校验配置，再分别启动。下面命令用于说明参数关系；实际可由 systemd 或容器编排管理进程。
 
-在Push-based当集群中某一节点A完成一个工作后，随机的挑选其它节点B并向其发送相应的消息，节点B接收到消息后在重复完成相同的工作，直到传播到集群中的所有节点。
+```bash
+amtool check-config /etc/alertmanager/alertmanager.yml
 
-而Pull-based的实现中节点A会随机的向节点B发起询问是否有新的状态需要同步，如果有则返回。
+# 在 am-a 主机上
+alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/var/lib/alertmanager \
+  --web.listen-address=:9093 \
+  --cluster.listen-address=:9094
 
-搭建本地集群环境
-
-为了能够让Alertmanager节点之间进行通讯，需要在Alertmanager启动时设置相应的参数。其中主要的参数包括：
-```text
---web.listen-address string      #当前实例Web监听地址和端口,默认9093，可以使用默认值
---cluster.listen-address string  #当前实例集群服务监听地址,默认9094，可以使用默认值，集群必选
---cluster.peer value             #后续集群实例在初始化时需要关联集群中的已有实例的服务地址,集群
-的后续节点必选
+# 在 am-b 主机上
+alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/var/lib/alertmanager \
+  --web.listen-address=:9093 \
+  --cluster.listen-address=:9094 \
+  --cluster.peer=am-a:9094
 ```
 
-范例：在不同主机用Alertmanager实现
+集群状态共享不意味着可以共用同一个本地存储目录；每个实例都要独立的 `--storage.path`。原资料在三实例示例里让第二、第三个实例共用 `/data/alertmanager2/`，这会造成数据冲突。各节点也要保持配置文件、通知模板与网络可达性一致。
 
-第一台主机定义Alertmanager实例A，其中Alertmanager的服务运行在9093端口，集群服务地址运行在9094端口。
-```text
-alertmanager  --web.listen-address=":9093" --cluster.listen-address=":9094" --
-config.file=/etc/prometheus/alertmanager.yml  --storage.path=/data/alertmanager/
-```
+在 Prometheus 的现有配置中合并以下目标，然后运行 `promtool check config` 并重载。若有两个 Prometheus 副本，两个副本都应配置 Alertmanager 集群地址；Prometheus 的高可用和 Alertmanager 的高可用是两层不同问题。
 
-第二台主机定义Alertmanager实例B，其中Alertmanager的服务运行在9093端口，集群服务运行在9094端口。
-
-为了将A1，A2组成集群。 A2启动时需要定义--cluster.peer参数并且指向A1实例的集群服务地址:8001
 ```yaml
-alertmanager  --web.listen-address=":9093" --cluster.listen-address=":9094" --
-cluster.peer=A主机:9094 --config.file=/etc/prometheus/alertmanager.yml  --
-storage.path=/data/alertmanager/
-#创建Promthues集群配置文件/etc/prometheus/prometheus-ha.yml，完整内容如下：
-global:
-  scrape_interval: 15s
-  scrape_timeout: 10s
-  evaluation_interval: 15s
-rule_files:
-  - /etc/prometheus/rules/*.rules
 alerting:
   alertmanagers:
-  - static_configs:
-    - targets:
-      - A主机IP:9093
-      - B主机IP:9093
+    - static_configs:
+        - targets:
+            - am-a:9093
+            - am-b:9093
 ```
 
-范例：在同一个主机用Alertmanager多实例实现
+![多实例 Alertmanager 拓扑](assets/img-39e20c4c5c2206c3.webp)
 
-定义Alertmanager实例A1，其中Alertmanager的服务运行在9093端口，集群服务地址运行在8001端口。
-```text
-alertmanager  --web.listen-address=":9093" --cluster.listen-address="127.0.0.1:8001"
---config.file=/etc/prometheus/alertmanager.yml  --storage.path=/data/alertmanager/
-```
+## Compose 中的三实例示例
 
-定义Alertmanager实例A2，其中Alertmanager的服务运行在9094端口，集群服务运行在8002端口。
+在同一 Compose 网络中，三实例可互相解析服务名。先准备同一份 `alertmanager.yml` 并保证其中的接收器配置确实可用，再使用如下 `compose.yaml`。这里只展示集群层，**不会替你创建邮件、Webhook 或即时通讯的实际接收端**。
 
-为了将A1，A2组成集群。 A2启动时需要定义--cluster.peer参数并且指向A1实例的集群服务地址:8001
-```text
-alertmanager  --web.listen-address=":9094" --cluster.listen-address="127.0.0.1:8002"
---cluster.peer=127.0.0.1:8001 --config.file=/etc/prometheus/alertmanager.yml  --
-storage.path=/data/alertmanager2/
-```
-
-范例: 同一个主机上alertmanager三个实例实现Promthues与Alertmanager HA部署结构
-
-![原 PDF 第 225 页插图](assets/img-39e20c4c5c2206c3.png)
 ```yaml
-#创建Alertmanager配置文件/etc/prometheus/alertmanager-ha.yml, 为了验证Alertmanager的集群
-行为，这里在本地启动一个webhook服务用于打印Alertmanager发送的告警通知信息。
-route:
-  receiver: 'default-receiver'
-receivers:
-  - name: default-receiver
-    webhook_configs:
-    - url: 'http://127.0.0.1:5001/'
-# 获取alertmanager提供的webhook示例，如果该目录下定义了main函数，go get会自动将其编译成可执行文
-件
-go get github.com/prometheus/alertmanager/examples/webhook
-# 设置环境变量指向GOPATH的bin目录
-export PATH=$GOPATH/bin:$PATH
-# 启动服务
-webhook
-#a1:
-alertmanager  --web.listen-address=":9093" --cluster.listen-address="127.0.0.1:8001"
---config.file=/etc/prometheus/alertmanager-ha.yml  --storage.path=/data/alertmanager/
---log.level=debug
-#a2:
-alertmanager  --web.listen-address=":9094" --cluster.listen-address="127.0.0.1:8002"
---cluster.peer=127.0.0.1:8001 --config.file=/etc/prometheus/alertmanager-ha.yml  --
-storage.path=/data/alertmanager2/ --log.level=debug
-#a3:
-alertmanager  --web.listen-address=":9095" --cluster.listen-address="127.0.0.1:8003"
---cluster.peer=127.0.0.1:8001 --config.file=/etc/prometheus/alertmanager-ha.yml  --
-storage.path=/data/alertmanager2/ --log.level=debug
-#创建Promthues集群配置文件/etc/prometheus/prometheus-ha.yml，完整内容如下：
-global:
-  scrape_interval: 15s
-  scrape_timeout: 10s
-  evaluation_interval: 15s
-rule_files:
-  - /etc/prometheus/rules/*.rules
-alerting:
-  alertmanagers:
-  - static_configs:
-    - targets:
-      - 127.0.0.1:9093
-      - 127.0.0.1:9094
-      - 127.0.0.1:9095
-scrape_configs:
-- job_name: prometheus
-  static_configs:
-  - targets:
-    - localhost:9090
-- job_name: 'node'
-  static_configs:
-  - targets: ['localhost:9100']
-#同时定义告警规则文件/etc/prometheus/rules/hoststats-alert.rules，如下所示：
-groups:
-- name: hostStatsAlert
-  rules:
-  - alert: hostCpuUsageAlert
-    expr: sum(avg without (cpu)(irate(node_cpu{mode!='idle'}[5m]))) by (instance) *
-100 > 50
-    for: 1m
-    labels:
-      severity: page
-    annotations:
-      summary: "Instance {{ $labels.instance }} CPU usgae high"
-      description: "{{ $labels.instance }} CPU usage above 50% (current value: {{
-$value }})"
-  - alert: hostMemUsageAlert
-    expr: (node_memory_MemTotal - node_memory_MemAvailable)/node_memory_MemTotal *
-100 > 85
-    for: 1m
-    labels:
-      severity: page
-    annotations:
-      summary: "Instance {{ $labels.instance }} MEM usgae high"
-      description: "{{ $labels.instance }} MEM usage above 85% (current value: {{
-$value }})"
-#创建prometheus.procfile文件，创建两个Promthues节点，分别监听9090和9091端口:
-#p1:
-prometheus --config.file=/etc/prometheus/prometheus-ha.yml --
-storage.tsdb.path=/data/prometheus/ --web.listen-address="127.0.0.1:9090"
-#p2:
-prometheus --config.file=/etc/prometheus/prometheus-ha.yml --
-storage.tsdb.path=/data/prometheus2/ --web.listen-address="127.0.0.1:9091"
-#node_exporter
-node_exporter: node_exporter -web.listen-address="0.0.0.0:9100"
-```
-
-范例：docker compose 实现
-```text
-version: '3.6'
-networks:
-  monitoring:
-    driver: bridge
-    ipam:
-      config:
-         - subnet: 172.31.0.0/24
-volumes:
-  alertmanager01_data: {}
-  alertmanager02_data: {}
-  alertmanager03_data: {}
 services:
   alertmanager01:
-    image: prom/alertmanager:v0.24.0
-    volumes:
-      - ./alertmanager/:/etc/alertmanager/
-      - alertmanager01_data:/alertmanager
-    networks:
-      - monitoring
-    ports:
-      - 9093:9093
+    image: prom/alertmanager:v0.27.0
     command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
-      - '--cluster.listen-address=0.0.0.0:9094'
-      - '--cluster.peer-timeout=15s'
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --cluster.listen-address=0.0.0.0:9094
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - am01_data:/alertmanager
+    ports:
+      - "9093:9093"
+    networks: [monitoring]
+
   alertmanager02:
-    image: prom/alertmanager:v0.24.0
-    volumes:
-      - ./alertmanager/:/etc/alertmanager/
-      - alertmanager02_data:/alertmanager
-    networks:
-      - monitoring
-    ports:
-      - 19093:9093
+    image: prom/alertmanager:v0.27.0
     command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
-      - '--cluster.listen-address=0.0.0.0:9094'
-      - '--cluster.peer-timeout=15s'
-      - '--cluster.peer=alertmanager01:9094'
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --cluster.listen-address=0.0.0.0:9094
+      - --cluster.peer=alertmanager01:9094
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - am02_data:/alertmanager
+    ports:
+      - "19093:9093"
+    networks: [monitoring]
+
   alertmanager03:
-    image: prom/alertmanager:v0.24.0
-    volumes:
-      - ./alertmanager/:/etc/alertmanager/
-      - alertmanager03_data:/alertmanager
-    networks:
-      - monitoring
-    ports:
-      - 29093:9093
+    image: prom/alertmanager:v0.27.0
     command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
-      - '--cluster.listen-address=0.0.0.0:9094'
-      - '--cluster.peer-timeout=15s'
-      - '--cluster.peer=alertmanager01:9094'
-  prometheus-webhook-dingtalk:
-    image: timonwong/prometheus-webhook-dingtalk:v2.1.0
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --cluster.listen-address=0.0.0.0:9094
+      - --cluster.peer=alertmanager01:9094
     volumes:
-      - ./dingtalk/:/etc/prometheus-webhook-dingtalk/
-    #command:
-      #- --config.file=config.yml
-      #- --config.file=/etc/prometheus-webhook-dingtalk/config-with-template.yml
-    networks:
-      - monitoring
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - am03_data:/alertmanager
     ports:
-      - 8060:8060
-#prometheus.yml 添加配置
-......
-alerting:
-  alertmanagers:
-  - static_configs:
-    - targets:
-      - alert.bowen.org:9093
-      - alert.bowen.org:19093
-      - alert.bowen.org:29093
-......
+      - "29093:9093"
+    networks: [monitoring]
+
+volumes:
+  am01_data:
+  am02_data:
+  am03_data:
+
+networks:
+  monitoring:
 ```
 
-## 5.10 其它告警应用
-https://github.com/feiyu563/PrometheusAlert
+若 Prometheus 也加入 `monitoring` 网络，可配置 `alertmanager01:9093`、`alertmanager02:9093`、`alertmanager03:9093` 为目标；若在宿主机上运行，则使用宿主机地址及实际发布端口 9093、19093、29093。不能把容器内部 DNS 名称直接复制到网络外的 Prometheus 配置中。
 
-![原 PDF 第 229 页插图](assets/img-bc89f1be576d6827.png)
-
-范例: Docker 部署 prometheus alert
 ```bash
-docker run -d \
--p 8080:8080 \
--e PA_LOGIN_USER=prometheusalert \
--e PA_LOGIN_PASSWORD=PASSWORD \
--e PA_TITLE=PrometheusAlert \
--e PA_OPEN_FEISHU=1 \
--e PA_OPEN_DINGDING=1 \
--e PA_OPEN_WEIXIN=1 \
-feiyu563/prometheus-alert:latest
-#浏览器访问,用户名/密码默认是prometheusalert/prometheusalert
-http://prometheusalert.bowen.org:8080
+docker compose config
+docker compose up -d
+docker compose ps
+docker compose logs --tail 50 alertmanager01 alertmanager02 alertmanager03
 ```
 
-![原 PDF 第 230 页插图](assets/img-f9c9e4def182a536.png)
+## 验证故障切换与去重
 
-![原 PDF 第 230 页插图](assets/img-09ccda6060ab36dd.png)
+先在各节点的 Status 页面或 `alertmanager_cluster_members` 指标中确认成员已互相发现，再触发一条带固定标签的测试告警。检查三个实例都收到告警、接收端通常只收到预期通知，并对比静默是否在节点间同步。之后停止其中一个实例，观察其余实例继续通知；恢复后再检查成员数与状态。**瞬时重复通知仍可能发生**，需结合告警分组间隔、网络故障和集群日志分析，不能把“只收到一次”当成永久保证。
+
+原资料末尾的 PrometheusAlert 是独立的第三方告警聚合项目，不是 Alertmanager 集群的必需组件。若要接入它，应单独评估维护状态、版本、凭据保存和通知通道；不要把演示环境中的默认账号和口令用于实际部署。
+
+![第三方告警项目界面示意](assets/img-bc89f1be576d6827.webp)
+
+![第三方告警平台登录界面](assets/img-f9c9e4def182a536.webp)
+
+![第三方告警平台通知界面](assets/img-09ccda6060ab36dd.webp)
 
 {% endraw %}
 

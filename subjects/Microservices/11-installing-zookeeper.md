@@ -13,9 +13,9 @@ syntax_highlight: true
 # 11 ZooKeeper 安装
 ### 2.3 ZooKeeper 安装
 
-Zookeeper 支持多种安装方法
+本章保留了不同 Ubuntu 版本、发行版软件包、Apache 二进制包和容器的操作记录。这些记录不是一套可以从头到尾连续执行的命令：先选定一种安装途径和 ZooKeeper 版本，再核对该版本的 Java 要求、下载地址与配置路径。终端提示符和输出仅作示例，不应一起复制到 shell。
 
-包二进制容器
+常见途径包括发行版软件包、官方二进制包和容器镜像；下文分别说明。
 
 <https://hub.docker.com/_/zookeeper>
 
@@ -37,7 +37,7 @@ Zookeeper 支持多种安装方法
 
 <https://zookeeper.apache.org/doc/r3.6.2/zookeeperAdmin.html#sc_requiredSoftware>
 
-![微服务技术第 18 页插图](assets/img-00550f8015319ca8.png)
+![微服务技术第 18 页插图](assets/img-00550f8015319ca8.webp)
 
 范例: ubuntu2404安装 JDK-21
 
@@ -123,7 +123,7 @@ Mode: standalone
 
 <https://zookeeper.apache.org/>
 
-![微服务技术第 19 页插图](assets/img-9b2d0e7ea4cfd5ba.png)
+![微服务技术第 19 页插图](assets/img-9b2d0e7ea4cfd5ba.webp)
 
 历史版本下载
 
@@ -142,11 +142,9 @@ openjdk version "11.0.18" 2023-01-17
 OpenJDK Runtime Environment (build 11.0.18+10-post-Ubuntu-0ubuntu122.04)
 OpenJDK 64-Bit Server VM (build 11.0.18+10-post-Ubuntu-0ubuntu122.04, mixed mode, sharing)
 #官方下载
-[root@ubuntu1804 ~]#wget -P /usr/local/src  https://downloads.apache.org/zookeeper/stable/apache-zookeeper-
-3.6.3-bin.tar.gz
+[root@ubuntu1804 ~]#wget -P /usr/local/src https://archive.apache.org/dist/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz
 #国内镜像下载
-[root@ubuntu1804 ~]#wget -P /usr/local/src
-https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/stable/apache-zookeeper-3.6.3-bin.tar.gz
+[root@ubuntu1804 ~]#wget -P /usr/local/src https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz
 [root@ubuntu1804 ~]#tar xf /usr/local/src/apache-zookeeper-3.6.3-bin.tar.gz  -C /usr/local/
 [root@ubuntu1804 ~]#ln -s /usr/local/apache-zookeeper-3.6.3-bin /usr/local/zookeeper
 #注意：不支持软链接到/usr/local/bin 目录，此方法会导致配置文件无法找到，无法启动
@@ -309,11 +307,8 @@ server-ubuntu2204.bowen.org.log -XX:+HeapDumpOnOutOfMemoryErro>
 ZK_VERSION=3.8.0
 #ZK_VERSION=3.6.3
 #ZK_VERSION=3.7.1
-ZK_URL=https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/zookeeper-${ZK_VERSION}/apache-
-zookeeper-${ZK_VERSION}-bin.tar.gz
-#ZK_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/stable/apache-zookeeper-${ZK_VERSION}-
-bin.tar.gz"
-#ZK_URL="https://downloads.apache.org/zookeeper/stable/apache-zookeeper-${ZK_VERSION}-bin.tar.gz"
+ZK_URL="https://archive.apache.org/dist/zookeeper/zookeeper-${ZK_VERSION}/apache-zookeeper-${ZK_VERSION}-bin.tar.gz"
+# 示例固定旧版，生产环境先选定仍受支持的版本并核对官方发行页与校验和。
 INSTALL_DIR=/usr/local/zookeeper
 HOST=`hostname -I|awk '{print $1}'`
 .  /etc/os-release
@@ -351,9 +346,9 @@ fi
 java -version
 }
 install_zookeeper() {
-wget -P /usr/local/src/ --no-check-certificate $ZK_URL || { color  "下载失败!" 1 ;exit ; }
+wget -P /usr/local/src/ "$ZK_URL" || { color "下载失败!" 1; exit 1; }
 tar xf /usr/local/src/${ZK_URL##*/} -C /usr/local
-ln -s /usr/local/apache-zookeeper-*-bin/ ${INSTALL_DIR}
+ln -sfn "/usr/local/apache-zookeeper-${ZK_VERSION}-bin" "${INSTALL_DIR}"
 echo "PATH=${INSTALL_DIR}/bin:$PATH" >  /etc/profile.d/zookeeper.sh
 .  /etc/profile.d/zookeeper.sh
 mkdir -p ${INSTALL_DIR}/data
@@ -403,9 +398,9 @@ ZooKeeper集群用于解决单点和单机性能及数据高可用等问题。
 
 2.3.2.1.1 集群结构
 
-![微服务技术第 23 页插图](assets/img-3fd26e212d834855.png)
+![微服务技术第 23 页插图](assets/img-3fd26e212d834855.webp)
 
-![微服务技术第 23 页插图](assets/img-b5525eba2cf7e81e.png)
+![微服务技术第 23 页插图](assets/img-b5525eba2cf7e81e.webp)
 
 Zookeeper集群基于Master/Slave的模型
 
@@ -417,11 +412,9 @@ Zookeeper的读写机制
 
 写入本地日志，并尝试将其同步到集群中的其他Follower节点。一旦大多数在总数过半的节点成功应用了这个写操作，Leader就会认为这次写操作是成功的，并返回结果给客户端。
 
-2. 读操作：读操作可以由Leader或Follower节点处理。为了提高读取性能，Zookeeper通常会采用异步复制的方式，即Follower节点会异
+2. 读请求可由客户端连接的服务端直接处理，因此在刚发生写入或连接切换后，读取结果可能落后于最新已提交状态。ZooKeeper 通过 ZAB 对事务建立顺序并让副本同步，不能把它简化成“Follower 异步复制、牺牲一致性”。需要在跨客户端场景确认已看到之前的写入时，可结合 `sync` 和版本号设计读取流程。
 
-步地从Leader节点复制最新的数据。这样，即使Follower节点的数据不是最新的，它仍然可以处理读请求，并在后续从Leader节点获取更新的数据。生产中读取的方式在提高性能和容错性方面具有显著优势，同时也在一定程度上牺牲了数据的一致性。然而，对于大多数应用场景来说，这种折衷是合理的。
-
-对于n台server,每个server都知道彼此的存在。只要有>n/2台server节点可用，整个zookeeper系统保持可用。因此zookeeper集群通常由奇数台Server节点组成
+ZooKeeper 的写入需要可投票成员的多数派，因此 3 台投票服务器通常可容忍 1 台故障，4 台仍只能容忍 1 台。奇数个投票节点在相同容错级别下资源利用更合理；Observer 不投票，不能计入写入法定多数。失去多数派时不能继续提交写入，客户端也要处理会话与请求失败。
 
 官方链接: 下图表示读的比例越高,性能越好
 
@@ -429,11 +422,11 @@ Zookeeper的读写机制
 
 集群中节点数越多，写性能越差，读性能越好
 
-![微服务技术第 24 页插图](assets/img-e6dd502b043412e1.jpeg)
+![微服务技术第 24 页插图](assets/img-e6dd502b043412e1.webp)
 
 2.3.2.1.2 集群角色
 
-![微服务技术第 24 页插图](assets/img-2ee89e3e01dc2ff6.png)
+![微服务技术第 24 页插图](assets/img-2ee89e3e01dc2ff6.webp)
 
 序号角色职责描述
 
@@ -487,7 +480,7 @@ Gossip 最早由施乐公司Xerox(计算机许多关键技术的鼻祖，图形�
 
 如果有某一项信息需要在整个网络中所有节点中传播，那从信息源开始，选择一个固定的传播周期（譬如 1 秒），随机选择它相连接的 k 个节点（称为 Fan-Out）来传播消息。 每一个节点收到消息后，如果这个消息是它之前没有收到过的，将在下一个周期内，选择除了发送消息给它的那个节点外的其他相邻 k 个节点发送相同的消息，直到最终网络中所有节点都收到了消息，尽管这个过程需要一定时间，但是理论上最终网络的所有节点都会拥有相同的消息。
 
-![微服务技术第 26 页插图](assets/img-ad27e60d021805f0.png)
+![微服务技术第 26 页插图](assets/img-ad27e60d021805f0.webp)
 
 上图是 Gossip 传播过程的示意图，根据示意图和 Gossip 的过程描述，我们很容易发现 Gossip 对网络节点的连通性和稳定性几乎没有任何要求，它一开始就将网络某些节点只能与一部分节点[部分连通Partially Connected Network而不是以全连通网络Fully Connected Network）作为前提；能够容忍网络上节点的随意地增加或者减少，随意地宕机或者重启，新增加或者重启的节点的状态最终会与其他节点同步达成一致。Gossip 把网络上所有节点都视为平等而普通的一员，没有任何中心化节点或者主节点的概念，这些特点使得 Gossip 具有极强的鲁棒性Robust，而且非常适合在公众互联网中应用。
 
@@ -676,7 +669,7 @@ ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/10-how-zookeeper-works.html' | relative_url }}">← Previous: How ZooKeeper Works</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/12-accessing-zookeeper-clients.html' | relative_url }}">Next: Accessing ZooKeeper Clients →</a>
+  <a href="{{ '/subjects/Microservices/10-how-zookeeper-works.html' | relative_url }}">← 上一篇：ZooKeeper 工作原理</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/12-accessing-zookeeper-clients.html' | relative_url }}">下一篇：ZooKeeper 客户端访问 →</a>
 </nav>

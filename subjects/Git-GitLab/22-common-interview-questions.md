@@ -11,13 +11,40 @@ syntax_highlight: true
 {% raw %}
 
 # 22 常见面试题
-## 4 常见面试题
 
-简述下软件交付（发版）过程？ 简述什么是版本控制系统（VCS）？ SVN和GIT的区别简述什么是 DevOps？ 如何找回 GitLab 密码如何备份还原 GitLab 如何迁移和升级 Gitlab
+以下回答以本专题的知识链为线索，面试时可结合实际项目说明自己承担的步骤、验证方式和一次故障处理经验，而不是只背工具名称。
+
+### 1. 软件交付或发版经历哪些步骤？
+
+从需求与验收标准开始，开发者在分支提交代码，合并请求经过代码审查；CI 构建并运行自动化测试，生成可追溯制品；将同一制品部署到测试或预发布环境验证，再按蓝绿、灰度或滚动策略发布。上线后观察日志和业务指标，异常时按预案回滚，并把反馈带回下一轮需求。关键是每一步有明确责任人与可验证结果。
+
+### 2. 什么是版本控制系统（VCS）？
+
+VCS 记录文件的修改历史，支持比较、恢复、分支与多人合并。它解决“哪个改动引入了问题”和“如何并行开发”等问题，但远程仓库不能取代独立备份，也不能自动处理所有合并冲突。
+
+### 3. SVN 与 Git 的主要区别是什么？
+
+SVN 以中央仓库保存主要历史，提交通常需要连接服务器；Git 的完整克隆包含可用的本地历史，可离线提交、创建分支并在之后推送到协作仓库。两者都能进行权限管理，选型应考虑现有流程、数据规模、分支策略和团队经验。
+
+### 4. DevOps 与 CI/CD 是一回事吗？
+
+DevOps 强调开发、测试和运维围绕稳定交付共同协作，并通过反馈持续改进。CI/CD 是其中自动化构建、测试和发布的实践；有流水线但缺少协作与运行反馈，不等于完整的 DevOps。
+
+### 5. 忘记 GitLab 管理员密码如何处理？
+
+先确认是自管理实例、操作身份和目标版本，再按官方文档使用交互式密码重置任务。重置后验证管理员登录，并检查依赖旧凭据的自动化。不要在工单、终端历史或聊天记录中传播新密码。
+
+### 6. 如何备份与恢复 GitLab？
+
+应用数据备份与 `/etc/gitlab` 中的配置、secrets 必须分别保存。恢复前核对 GitLab 版本、目标实例和外部存储范围，在隔离环境演练；恢复后不仅查看服务状态，还要验证用户、仓库克隆与推送、附件等关键数据。
+
+### 7. 迁移和升级为何应分开规划？
+
+迁移主要改变运行位置，先在目标主机安装满足恢复要求的相同版本并验证数据；升级改变软件版本，要按官方“必经版本”路径逐站执行并等待后台迁移完成。把两者混在一次操作中会增加故障定位和回滚难度。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Git-GitLab/21-resetting-a-forgotten-gitlab-password.html' | relative_url }}">← Previous: Resetting a Forgotten GitLab Password</a>
-  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Back to Git and GitLab Version Control Index</a>
+  <a href="{{ '/subjects/Git-GitLab/21-resetting-a-forgotten-gitlab-password.html' | relative_url }}">← 上一篇：重置遗忘的 GitLab 管理员密码</a>
+  <a href="{{ '/subjects/Git-GitLab/' | relative_url }}">返回 Git 与 GitLab 版本控制目录</a>
 </nav>

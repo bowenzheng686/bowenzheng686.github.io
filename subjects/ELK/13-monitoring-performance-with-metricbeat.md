@@ -13,217 +13,83 @@ syntax_highlight: true
 # 13 利用 Metricbeat 监控性能相关指标
 ## 3 Beats 收集数据
 
-Beats 是一个免费且开放的平台，集合了多种单一用途数据采集器。它们从成百上千或成千上万台机器和系统向 Logstash 或 Elasticsearch 发送数据。
+Beats 是一组用途不同的轻量采集器：Filebeat 主要读取日志，Metricbeat 采集系统与服务指标，Heartbeat 定期探测服务可用性。它们可以向 Elasticsearch 或 Logstash 发送事件；是否需要 Logstash 取决于解析和路由需求。Beats 与 Logstash 的资源消耗依配置和负载而变化，不能用“固定 10 MB”或“至少 500 MB”作为容量估算。
 
-虽然利用 logstash 就可以收集日志，功能强大，但由于 Logstash 是基于Java实现，需要在采集日志的主机上安装JAVA环境
+![ELK 日志分析第 120 页插图](assets/img-97d90d8b2afeaec6.webp)
 
-logstash运行时最少也会需要额外的500M的以上的内存，会消耗比较多的内存和磁盘空间，
+| 工具 | 主要用途 |
+| --- | --- |
+| Filebeat | 读取并传输日志文件。 |
+| Metricbeat | 采集操作系统与服务指标。 |
+| Heartbeat | 通过 HTTP、TCP、ICMP 等方式探测可用性。 |
+| Auditbeat / Winlogbeat / Packetbeat | 分别面向审计、Windows 事件和网络流量等场景。 |
 
-可以采有基于Go开发的 Beat 工具代替 Logstash 收集日志，部署更为方便，而且只占用10M左右的内存空间及更小的磁盘空间。
+Beats 产品线会演进，旧资料中的 Functionbeat 等组件不一定适用于新版本。应以[官方 Beats 文档](https://www.elastic.co/beats/)和所用版本的功能说明为准。
 
-![ELK 日志分析第 120 页插图](assets/img-97d90d8b2afeaec6.png)
+![ELK 日志分析第 120 页插图](assets/img-357ae404c62e91ec.webp)
 
-官方链接
+### 3.1 Metricbeat 采集系统指标
 
-<https://www.elastic.co/cn/beats/>
+Metricbeat 可以采集 CPU、内存、文件系统和网络等指标，还可通过模块采集 Elasticsearch、MySQL 等服务指标。它不是告警系统本身；采集、存储、可视化与告警应分别规划。Metricbeat 与 Elasticsearch 的版本兼容性需按官方矩阵核对，最好保持同一主版本。
 
-Github 链接
+1. 从[官方 Metricbeat 下载页](https://www.elastic.co/downloads/beats/metricbeat)获取与宿主机和集群版本匹配的安装包；为每个主机设置唯一且稳定的名称。
+2. 安装后保留已有的模块加载配置，只修改输出目标及需要启用的模块。若 Elasticsearch 开启安全功能，使用 HTTPS、受限账号和 CA 证书。
+3. 启动前校验配置与连接，启动后通过日志、索引/数据流和 Kibana 验证数据确已写入。
 
-<https://github.com/elastic/beats>
+例如输出配置的关键结构如下，域名、凭据和证书路径都要按实际环境替换；不要将实际密码提交到仓库：
 
-下载链接
-
-<https://www.elastic.co/cn/downloads/beats>
-
-Beats 是一些工具集,包括以下,其中 filebeat 应用最为广泛
-
-![ELK 日志分析第 120 页插图](assets/img-357ae404c62e91ec.png)
-
-Beat Description
-
-Auditbeat Collect your Linux audit framework data and monitor the integrity of your
-
-files.
-
-Filebeat Tails and ships log files
-
-Functionbeat Read and ships events from serverless infrastructure.
-
-Heartbeat Ping remote services for availability
-
-Metricbeat Fetches sets of metrics from the operating system and services
-
-Packetbeat Monitors the network and applications by sniffing packets
-
-Winlogbeat Fetches and ships Windows Event logs
-
-Osquerybeat Runs Osquery and manages interraction with it.
-
-```text
-filebeat:收集日志文件数据。最常用的工具
-packetbeat:用于收集网络数据。一般用zabbix实现此功能
-metricbeat:从OS和服务收集指标数据，比如系统运行状态、CPU 内存利用率等。
-winlogbeat: 从Windows平台日志收集工具。
-heartbeat: 定时探测服务是否可用。支持ICMP、TCP 和 HTTP，也支持TLS、身份验证和代理
-auditbeat:收集审计日志
-Functionbeat:使用无服务器基础架构提供云数据。面向云端数据的无服务器采集器，处理云数据
-```
-
-注意:  Beats 版本要和 Elasticsearch 相同的版本，否则可能会出错
-
-### 3.1 利用 Metricbeat 监控性能相关指标
-
-Metricbeat 可以收集指标数据，比如系统运行状态、CPU、内存利用率等。
-
-生产中一般用 zabbix 等专门的监控系统实现此功能
-
-官方配置说明
-
-<https://www.elastic.co/guide/en/beats/metricbeat/current/configuring-howto-metricbeat.html>
-
-### 下载 metricbeat 并安装
-
-下载链接
-
-<https://www.elastic.co/cn/downloads/beats/metricbeat>
-
-<https://mirrors.tuna.tsinghua.edu.cn/elasticstack/8.x/apt/pool/main/m/metricbeat/>
-
-<https://mirrors.tuna.tsinghua.edu.cn/elasticstack/7.x/apt/pool/main/m/metricbeat/>
-
-注意：安装前建议先修改主机名，确保每个主机名称唯一
-
-```bash
-[root@ubuntu2404 ~]#hostnamectl set-hostname web01.bowen.org
-[root@ubuntu2404 ~]#exit
-```
-
-范例:
-
-```bash
-#新版下载
-[root@elk-web2 ~]#wget
-https://mirrors.tuna.tsinghua.edu.cn/elasticstack/8.x/apt/pool/main/m/metricbeat
-/metricbeat-8.6.1-amd64.deb
-#旧版下载
-[root@elk-web2 ~]#wget
-https://mirrors.tuna.tsinghua.edu.cn/elasticstack/7.x/apt/pool/main/m/metricbeat
-/metricbeat-7.6.2-amd64.deb
-[root@elk-web2 ~]#dpkg -i metricbeat-7.6.2-amd64.deb
-```
-
-### 修改配置
-
-```bash
-[root@elk-web2 ~]#vim /etc/metricbeat/metricbeat.yml
-#setup.kibana:
-#   host: "10.0.0.101:5601"  #指向kabana服务器地址和端口，非必须项，即使不设置Kibana也可
-以通过ES获取Metrics信息
-#-------------------------- Elasticsearch output ------------------------------
+```yaml
 output.elasticsearch:
-# Array of hosts to connect to.
-hosts: ["10.0.0.101:9200","10.0.0.102:9200","10.0.0.103:9200"]   #指向任意一个ELK集
-群节点即可
-[root@elk-web2 ~]#grep -Ev "#|^$" /etc/metricbeat/metricbeat.yml
-metricbeat.config.modules:
-path: ${path.config}/modules.d/*.yml
-reload.enabled: false
-setup.template.settings:
-index.number_of_shards: 1
-index.codec: best_compression
+  hosts: ["https://es.example.org:9200"]
+  username: "<Metricbeat 专用账号>"
+  password: "<账号密码>"
+  ssl.certificate_authorities: ["/etc/metricbeat/http_ca.crt"]
+
 setup.kibana:
-host: "10.0.0.101:5601"
-output.elasticsearch:
-hosts: ["10.0.0.101:9200","10.0.0.102:9200","10.0.0.103:9200"]
-processors:
-- add_host_metadata: ~
-- add_cloud_metadata: ~
-- add_docker_metadata: ~
-- add_kubernetes_metadata: ~
+  host: "https://kibana.example.org:5601"
 ```
 
-### 启动服务
+`setup.kibana` 用于加载 Kibana 资产，不是把指标发送给 Kibana；指标仍由 `output.elasticsearch` 写入。若未部署 Kibana，可以暂不配置 `setup.kibana`。完成配置后可运行：
 
 ```bash
-[root@elk-web2 ~]#systemctl enable --now  metricbeat.service
-Synchronizing state of metricbeat.service with SysV service script with
-/lib/systemd/systemd-sysv-install.
-Executing: /lib/systemd/systemd-sysv-install enable metricbeat
-[root@elk-web2 ~]#systemctl status metricbeat.service
+sudo metricbeat test config -e
+sudo metricbeat test output -e
+sudo systemctl enable --now metricbeat
+sudo journalctl -u metricbeat -n 50 --no-pager
 ```
 
-● metricbeat.service - Metricbeat is a lightweight shipper for metrics.
+测试命令只有在替换了上面示例占位值、证书和账号后才会成功。
 
-```text
-Loaded: loaded (/lib/systemd/system/metricbeat.service; enabled; vendor
-preset: enabled)
-Active: active (running) since Sun 2021-02-07 12:11:13 CST; 1s ago
-Docs: https://www.elastic.co/products/beats/metricbeat
-Main PID: 1741 (metricbeat)
-Tasks: 10 (limit: 2290)
-CGroup: /system.slice/metricbeat.service
-└─1741 /usr/share/metricbeat/bin/metricbeat -e -c
-/etc/metricbeat/metricbeat.yml -path.home /usr/share/metricbeat -path.config
-/etc/metricbeat -pa
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.440+0800
-INFO        pipeline/output.go:95        Connecting to backoff(elas
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.453+0800
-INFO        elasticsearch/client.go:757        Attempting to connec
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.503+0800
-INFO        [license]        licenser/es_callback.go:50        Elas
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.528+0800
-INFO        [index-management]        idxmgmt/std.go:258        Aut
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.621+0800
-INFO        [index-management]        idxmgmt/std.go:271        ILM
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.622+0800
-INFO        [index-management]        idxmgmt/std.go:410        Set
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.622+0800
-INFO        [index-management]        idxmgmt/std.go:415        Set
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.622+0800
-INFO        [index-management]        idxmgmt/std.go:449        Set
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.622+0800
-INFO        [index-management]        idxmgmt/std.go:453        Set
-Feb 07 12:11:14 elk-web2.bowen.org metricbeat[1741]: 2021-02-07T12:11:14.628+0800
-INFO        template/load.go:169        Existing template will be o
-lines 1-19/19 (END)
-```
+### 在 Elasticsearch 中核对采集结果
 
-### Head 插件查看索引
+较新的版本可能把 Metricbeat 数据写入数据流，其后备索引常以 `.ds-metricbeat-` 开头；应以当前部署的实际数据流和索引名称为准，不要依赖某个固定命名模式。可用 Kibana 数据视图或 Elasticsearch API 检查最近事件。
 
-新版
+![ELK 日志分析第 123 页插图](assets/img-9591387ae6eb294f.webp)
 
-.ds-metricbeat-<时间>-<版本>
+较早版本常见 `metricbeat-` 前缀的索引。下面的旧版截图仅用于辨认界面，不表示当前版本必须安装 Head 插件。
 
-![ELK 日志分析第 123 页插图](assets/img-9591387ae6eb294f.png)
+![ELK 日志分析第 124 页插图](assets/img-33bb02b0af45b05c.webp)
 
-旧版
+### 在 Kibana 中查看性能指标
 
-metricbeat-<时间>-<版本>
+在支持的 Kibana 版本中，可从“可观测性 / 基础设施”等入口查看主机指标；菜单名称会随版本变化。先确认时间范围覆盖最近采样，再按主机名和指标字段筛选。
 
-![ELK 日志分析第 124 页插图](assets/img-33bb02b0af45b05c.png)
+![ELK 日志分析第 124 页插图](assets/img-399c05cb2a4891d1.webp)
 
-### 通过 Kibana 查看收集的性能指标
+![ELK 日志分析第 125 页插图](assets/img-29aff7a928c5f81d.webp)
 
-8.X版本界面
+![ELK 日志分析第 125 页插图](assets/img-a935aee0ddbb117b.webp)
 
-Observability --- 基础设施- invertory 库存
+以下为 7.x 版本界面，供对照使用：
 
-![ELK 日志分析第 124 页插图](assets/img-399c05cb2a4891d1.png)
+![ELK 日志分析第 126 页插图](assets/img-573ef79886ce7c84.webp)
 
-![ELK 日志分析第 125 页插图](assets/img-29aff7a928c5f81d.png)
-
-![ELK 日志分析第 125 页插图](assets/img-a935aee0ddbb117b.png)
-
-7.X 界面
-
-![ELK 日志分析第 126 页插图](assets/img-573ef79886ce7c84.png)
-
-![ELK 日志分析第 126 页插图](assets/img-8a71589f49101be3.png)
+![ELK 日志分析第 126 页插图](assets/img-8a71589f49101be3.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/ELK/12-elasticsearch-hot-and-cold-data-tiers.html' | relative_url }}">← Previous: Elasticsearch Hot and Cold Data Tiers</a>
-  <a href="{{ '/subjects/ELK/' | relative_url }}">Back to ELK Log Analytics Index</a>
-  <a href="{{ '/subjects/ELK/14-monitoring-with-heartbeat.html' | relative_url }}">Next: Monitoring with Heartbeat →</a>
+  <a href="{{ '/subjects/ELK/12-elasticsearch-hot-and-cold-data-tiers.html' | relative_url }}">← 上一篇：Elasticsearch 数据冷热分离</a>
+  <a href="{{ '/subjects/ELK/' | relative_url }}">返回 ELK 日志分析目录</a>
+  <a href="{{ '/subjects/ELK/14-monitoring-with-heartbeat.html' | relative_url }}">下一篇：利用 Heartbeat 监控 →</a>
 </nav>

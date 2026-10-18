@@ -6,781 +6,171 @@ pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
 # 06 单机部署
-### 2.2 单机部署
 
-### 单机部署说明
+单机部署的共同点是所有数据路径均位于一台主机。它适合学习、开发和小规模验证；即使使用多块磁盘，**主机本身仍是单点故障**。本章按安装载体区分包、二进制、容器和 Compose，再说明单盘与多盘的差异。跨主机集群见下一章。
 
-<https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html>
+## 先确定数据布局
 
-<https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-multi-drive.html>
+| 布局 | 启动参数 | 故障边界 |
+| --- | --- | --- |
+| 单机单盘 | 一个持久化目录，例如 `/data/minio` | 不提供盘级冗余；磁盘损坏可能丢失对象。 |
+| 单机多盘 | 多个分别挂载的磁盘路径，例如 `/data/minio{1...4}` | 符合版本要求时启用纠删码，可容忍一定数量的磁盘故障，但不能容忍整机故障。 |
 
-<https://min.io/docs/minio/linux/index.html>
+多盘示例中的每个路径应对应**独立物理磁盘或独立故障域**。在同一块盘上创建四个目录，只能演示启动语法，不能获得盘级容错。纠删码所需路径数量、奇偶校验配置及可容忍故障数会随部署拓扑和版本变化，部署前应核对所用版本的[单节点单盘](https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html)与[单节点多盘](https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-multi-drive.html)文档。
 
-<https://www.minio.org.cn/docs/minio/linux/index.html>
+## Debian／Ubuntu 包安装
 
-minio server的standalone模式，即单机模式，所有管理的磁盘都在一个主机上。
+从[官方 Linux 下载页](https://min.io/open-source/download?platform=linux)选择与 CPU 架构匹配的社区版安装包；下载页展示的版本号可能变化，不要把旧截图中的文件名当成固定地址。
 
-该启动模式一般仅用于实验环境、测试环境、开发环境的验证和学习使用。
+![官方包下载页面](assets/img-8f6679fbc4bcd94a.webp)
 
-在standalone模式下，还可以分为non-erasure code mode和erasure code mode(纠删码)。
+![Debian 安装包示意](assets/img-d764a978ee272144.webp)
 
-non-erasure code mode
-
-当minio server 运行时只传入一个本地磁盘参数。即为 non-erasure code mode
-
-在此启动模式下，对于每一份对象数据， minio直接存储这份数据，不会建立副本，也不会启用纠删码机制。
-
-因此,这种模式无论是服务实例还是磁盘都是”单点"，无任何高可用保障，磁盘损坏就意味着数据丢失。
-
-erasure code mode
-
-此模式需要为minio server实例传入多个本地磁盘参数。
-
-一旦遇到多于一 个磁盘的参数， minio server会自动启用erasure code mode.
-
-erasure code对磁盘的个数是有要求的，至少4个磁盘, 如不满足要求，实例启动将失败。
-
-erasure code启用后，要求传给minio server的endpoint(standalone模式下，即本地磁盘上的目录)至少为4个。
-
-### 包安装
-
-### Debian/Ubuntu包安装
-
-<https://min.io/open-source/download?platform=linux>
-
-<https://min.io/download?license=enterprise&platform=linux&subscription=enterprise-plus>
-
-![MinIO 对象存储第 16 页插图](assets/img-8f6679fbc4bcd94a.png)
-
-![MinIO 对象存储第 16 页插图](assets/img-d764a978ee272144.png)
-
-```text
-wget https://dl.min.io/enterprise/minio/release/linux-
-amd64/minio_20240731080646.0.0_amd64.deb
-dpkg -i minio_20240731080646.0.0_amd64.deb
-MINIO_ROOT_USER=admin MINIO_ROOT_PASSWORD=password minio server /mnt/data --
-console-address ":9001"
-```
-
-范例:  Debian/Ubuntu包安装
+以下以已下载的 `minio.deb` 为例。包通常提供 `/usr/local/bin/minio` 和 systemd 单元；先检查实际单元中的 `User`、`EnvironmentFile`、`MINIO_VOLUMES` 等要求，再启动。
 
 ```bash
-[root@ubuntu2204 ~]#MINIO_VERION=20250723155402.0.0
-[root@ubuntu2204 ~]#MINIO_VERION=20241013133411.0.0
-[root@ubuntu2204 ~]#MINIO_VERION=20230829230735.0.0
-[root@ubuntu2204 ~]#wget https://dl.min.io/server/minio/release/linux-
-amd64/archive/minio_${MINIO_VERION}_amd64.deb -O minio.deb
-[root@ubuntu2204 ~]#dpkg -i minio.deb
-[root@ubuntu2204 ~]#dpkg -L minio
-/lib
-/lib/systemd
-/lib/systemd/system
-/lib/systemd/system/minio.service
-/usr
-/usr/local
-/usr/local/bin
-/usr/local/bin/minio
-[root@ubuntu2204 ~]#which minio
-/usr/local/bin/minio
-[root@ubuntu2204 ~]#minio -v
-minio version RELEASE.2023-08-29T23-07-35Z (commit-
-id=07b1281046c8934c47184d1b56c78995ef960f7d)
-Runtime: go1.19.12 linux/amd64
-License: GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
-Copyright: 2015-2023 MinIO, Inc.
-#新版service文件
-[root@ubuntu2404 ~]#grep -Ev "#|^$" /lib/systemd/system/minio.service
-[Unit]
-Description=MinIO
-Documentation=https://docs.min.io
-Wants=network-online.target
-After=network-online.target
-AssertFileIsExecutable=/usr/local/bin/minio
-[Service]
-Type=notify
-WorkingDirectory=/usr/local
-User=minio-user
-Group=minio-user
-ProtectProc=invisible
-EnvironmentFile=-/etc/default/minio
-ExecStart=/usr/local/bin/minio server $MINIO_OPTS $MINIO_VOLUMES
-Restart=always
-LimitNOFILE=1048576
-MemoryAccounting=no
-TasksMax=infinity
-TimeoutSec=infinity
-OOMScoreAdjust=-1000
-SendSIGKILL=no
-[Install]
-WantedBy=multi-user.target
-#缺失环境变量定义，导致无法启动
-[root@ubuntu2404 ~]#ls /etc/default/minio
-ls: cannot access '/etc/default/minio': No such file or directory
-[root@ubuntu2404 ~]#systemctl enable --now minio.service
-Created symlink /etc/systemd/system/multi-user.target.wants/minio.service →
-/usr/lib/systemd/system/minio.service.
-Job for minio.service failed because the control process exited with error code.
-See "systemctl status minio.service" and "journalctl -xeu minio.service" for
-details.
+sudo dpkg -i ./minio.deb
+systemctl cat minio.service
+sudo install -d -o minio-user -g minio-user /data/minio
 ```
 
-```bash
-#查看service文件
-[root@ubuntu2204 ~]#grep -Ev "#|^$" /lib/systemd/system/minio.service
-[Unit]
-Description=MinIO
-Documentation=https://docs.min.io
-Wants=network-online.target
-After=network-online.target
-AssertFileIsExecutable=/usr/local/bin/minio
-[Service]
-Type=notify
-WorkingDirectory=/usr/local
-User=minio-user
-Group=minio-user
-ProtectProc=invisible
-EnvironmentFile=-/etc/default/minio
-ExecStartPre=/bin/bash -c "if [ -z \"${MINIO_VOLUMES}\" ]; then echo \"Variable
-MINIO_VOLUMES not set in /etc/default/minio\"; exit 1; fi"
-ExecStart=/usr/local/bin/minio server $MINIO_OPTS $MINIO_VOLUMES
-Restart=always
-LimitNOFILE=1048576
-TasksMax=infinity
-TimeoutStopSec=infinity
-SendSIGKILL=no
-[Install]
-WantedBy=multi-user.target
-#需要手动创建用户
-[root@ubuntu2204 ~]#groupadd -r minio-user
-[root@ubuntu2204 ~]#useradd -M -r -s /sbin/nologin -g minio-user minio-user
-#准备多个数据目录,minio数据目录不允许和根文件系统在一起，注意：新版允许
-[root@ubuntu2204 ~]#mkdir -p /data
-[root@ubuntu2204 ~]#lvcreate -n minio -L 10G ubuntu-vg
-[root@ubuntu2204 ~]#mkfs.ext4 /dev/ubuntu-vg/minio
-[root@ubuntu2204 ~]#echo /dev/ubuntu-vg/minio /data  ext4 defaults 0 0 >>
-/etc/fstab
-[root@ubuntu2204 ~]#mount -a
-[root@ubuntu2204 ~]#mkdir -p /data/minio{1..4}
-[root@ubuntu2204 ~]#chown -R minio-user.minio-user /data/
-[root@ubuntu2204 ~]#ll  -d /data/minio{1..4}
-drwxr-xr-x 3 minio-user minio-user  4096 Oct 17 15:33 /data/minio1/
-drwxr-xr-x 3 minio-user minio-user  4096 Oct 17 15:33 /data/minio2/
-drwxr-xr-x 3 minio-user minio-user  4096 Oct 17 15:33 /data/minio3/
-drwxr-xr-x 3 minio-user minio-user  4096 Oct 17 15:33 /data/minio4/
-[root@ubuntu2204 ~]#cat > /etc/default/minio <<EOF
-MINIO_ROOT_USER=admin                #默认minioadmin
-MINIO_ROOT_PASSWORD=12345678         #默认minioadmin，密码不能低于8位
-MINIO_VOLUMES="/data/minio{1...4}"   #必选项
-MINIO_OPTS='--console-address :9001' #默认使用随机端口，可以访问9000进行跳转到此随机端口
-#MINIO_CONSOLE_ADDRESS=":9001" #功能同上
-EOF
-[root@ubuntu2204 ~]#systemctl enable --now minio.service
-Created symlink /etc/systemd/system/multi-user.target.wants/minio.service →
-/lib/systemd/system/minio.service.
-[root@ubuntu2204 ~]#systemctl status  minio.service
-```
+若系统尚无服务账户，先创建账户和组；若包已创建则不要重复创建。单盘测试环境的 `/etc/default/minio` 可写为：
 
-● minio.service - MinIO
-
-```text
-Loaded: loaded (/lib/systemd/system/minio.service; enabled; vendor preset:
-enabled)
-Active: active (running) since Tue 2023-10-17 15:42:50 CST; 5s ago
-Docs: https://docs.min.io
-Process: 1871 ExecStartPre=/bin/bash -c if [ -z "${MINIO_VOLUMES}" ]; then
-echo "Variable MINIO_VOLUMES not set i>
-Main PID: 1873 (minio)
-Tasks: 7
-Memory: 87.7M
-CPU: 362ms
-CGroup: /system.slice/minio.service
-└─1873 /usr/local/bin/minio server --console-address :9001
-/data/minio{1...4}
-Oct 17 15:42:49 ubuntu2204 systemd[1]: Starting MinIO...
-Oct 17 15:42:50 ubuntu2204 systemd[1]: Started MinIO.
-Oct 17 15:42:50 ubuntu2204 minio[1873]: MinIO Object Storage Server
-Oct 17 15:42:50 ubuntu2204 minio[1873]: Copyright: 2015-2023 MinIO, Inc.
-Oct 17 15:42:50 ubuntu2204 minio[1873]: License: GNU AGPLv3
-<https://www.gnu.org/licenses/agpl-3.0.html>
-Oct 17 15:42:50 ubuntu2204 minio[1873]: Version: RELEASE.2023-08-29T23-07-35Z
-(go1.19.12 linux/amd64)
-Oct 17 15:42:50 ubuntu2204 minio[1873]: Status:         4 Online, 0 Offline.
-Oct 17 15:42:50 ubuntu2204 minio[1873]: S3-API: http://10.0.0.100:9000
-http://127.0.0.1:9000
-Oct 17 15:42:50 ubuntu2204 minio[1873]: Console: http://10.0.0.100:9001
-http://127.0.0.1:9001
-Oct 17 15:42:50 ubuntu2204 minio[1873]: Documentation:
-https://min.io/docs/minio/linux/index.html
-[root@ubuntu2204 ~]#ss -ntlp|grep minio
-LISTEN 0      4096       127.0.0.1:9000      0.0.0.0:*    users:
-(("minio",pid=1873,fd=10))
-LISTEN 0      4096               *:9000            *:*    users:
-(("minio",pid=1873,fd=11))
-LISTEN 0      4096           [::1]:9000         [::]:*    users:
-(("minio",pid=1873,fd=12))
-LISTEN 0      4096               *:9001            *:*    users:
-(("minio",pid=1873,fd=7))
-#登录 http://10.0.0.100:9001/ 用户名密码:admin/12345678
-```
-
-![MinIO 对象存储第 20 页插图](assets/img-aa5f8664e6a8294b.png)
-
-![MinIO 对象存储第 20 页插图](assets/img-171bf9e0bd7a01cf.png)
-
-### 红帽系统包安装
-
-<https://min.io/download?license=enterprise&platform=linux&subscription=enterprise-plus>
-
-![MinIO 对象存储第 21 页插图](assets/img-52ee42df7737ab6d.png)
-
-```text
-dnf install https://dl.min.io/enterprise/minio/release/linux-amd64/minio-
-20240731080646.0.0-1.x86_64.rpm
-MINIO_ROOT_USER=admin MINIO_ROOT_PASSWORD=password minio server /mnt/data --
-console-address ":9001"
-```
-
-范例: 红帽系统包安装
-
-```text
-wget https://dl.min.io/server/minio/release/linux-amd64/archive/minio-
-20230829230735.0.0.x86_64.rpm -O minio.rpm
-sudo dnf install minio.rpm
-mkdir ~/minio
-minio server ~/minio --console-address :9090
-#默认用户和密码
-#RootUser: minioadmin
-#RootPass: minioadmin
-```
-
-### 二进制部署
-
-### 二进制部署单机单磁盘模式
-
-<https://dl.min.io/server/minio/release/>
-
-<https://min.io/download?license=enterprise&platform=linux&subscription=enterprise-plus>
-
-![MinIO 对象存储第 22 页插图](assets/img-8661b899ad629360.png)
-
-![MinIO 对象存储第 22 页插图](assets/img-2ddec9e89bcdb8ad.png)
-
-![MinIO 对象存储第 23 页插图](assets/img-83638311662febfa.png)
-
-```text
-wget https://dl.min.io/server/minio/release/linux-amd64/minio
-chmod +x minio
-MINIO_ROOT_USER=admin MINIO_ROOT_PASSWORD=password ./minio server /mnt/data --
-console-address ":9001"
-```
-
-范例: 二进制部署单机单磁盘
-
-```bash
-#如果启动报错：原因是下载了enterpise版本
-FATAL Unable to validate license, terminating process...: license: no license
-found
-#国内镜像下载推荐使用
-[root@ubuntu2204 ~]#wget https://dl.minio.org.cn/server/minio/release/linux-
-amd64/minio
-[root@ubuntu2204 ~]#install minio  /usr/local/bin/
-#准备数据目录,建议此目录为LVM
-[root@ubuntu2204 ~]#mkdir -p /data/minio
-#启动服务命令选项说明
-#示例: minio server /data/minio --console-address :9090
-server #表示start object storage server
---console-address #指定管理后面端口,管理后台登录用户和密码,默认为minioadmin/minioadmin.
-也可以通过还境变量MINIO_ROOT_USER（至少3个字符）和MINIO_ROOT_PASSWORD（至少8个字符）进行指
-定
-#手动执行启动
-[root@ubuntu2204 ~]#minio server /data/minio --console-address :9090
-#输出信息如下
-Formatting 1st pool, 1 set(s), 1 drives per set.
-WARNING: Host local has more than 0 drives of set. A host failure will result in
-data becoming unavailable.
-WARNING: Detected default credentials 'minioadmin:minioadmin', we recommend that
-you change these values with 'MINIO_ROOT_USER' and 'MINIO_ROOT_PASSWORD'
-environment variables
-MinIO Object Storage Server
-Copyright: 2015-2023 MinIO, Inc.
-License: GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
-Version: RELEASE.2023-08-29T23-07-35Z (go1.19.12 linux/amd64)
-Status:         1 Online, 0 Offline.
-S3-API: http://10.0.0.101:9000  http://10.10.53.81:9000  http://127.0.0.1:9000
-RootUser: minioadmin
-RootPass: minioadmin
-Console: http://10.0.0.101:9090 http://10.10.53.81:9090 http://127.0.0.1:9090
-RootUser: minioadmin
-RootPass: minioadmin
-Command-line: https://min.io/docs/minio/linux/reference/minio-mc.html#quickstart
-$ mc alias set myminio http://10.0.0.101:9000 minioadmin minioadmin
-Documentation: https://min.io/docs/minio/linux/index.html
-Warning: The standard parity is set to 0. This can lead to data loss.
-[root@ubuntu2404 ~]#useradd -r -s /sbin/nologin minio
-[root@ubuntu2404 ~]#chown minio: /data/minio/
-#创建service启动
-[root@ubuntu2404 ~]#cat  /lib/systemd/system/minio.service
-[Unit]
-Description=Minio
-After=systemd-networkd.service systemd-resolved.service
-Documentation=https://min.io
-[Service]
-Type=simple
-Environment=MINIO_ROOT_USER=admin MINIO_ROOT_PASSWORD=12345678
-ExecStart=/usr/local/bin/minio server /data/minio  --console-address ":9001"
-Restart=on-failure
-User=minio
-Group=minio
-LimitNOFILE=infinity
-LimitNPROC=infinity
-LimitCORE=infinity
-OOMScoreAdjust=-1000
-[Install]
-WantedBy=multi-user.target
-[root@ubuntu2404 ~]#systemctl daemon-reload
-[root@ubuntu2404 ~]#systemctl enable --now minio.service
-```
-
-### Shell 脚本实现单机单磁盘模式
-
-范例: 一键安装Shell 脚本实现单机单磁盘模式
-
-```bash
-[root@ubuntu2204 ~]#cat install_minio_single_node.sh
-#!/bin/bash
-#
-#FileName:          install_minio_single_node.sh
-#Description:       The test script
-#支持在线和离线安装
-#管理后台用户和密码,注意:用户名至少3个字符,密码至少8个字符,如果不指定下面环境变量，默认用户名/
-密码为minioadmin/minioadmin
+```ini
 MINIO_ROOT_USER=admin
-MINIO_ROOT_PASSWORD=12345678
-#管理后台监听端口
-MINIO_PORT=9999
-#数据目录
-MINIO_DATA=/data/minio
-#文件名和下载URL
-MINIO_FILE=minio
-MINIO_URL="https://dl.minio.org.cn/server/minio/release/linux-
-amd64/${MINIO_FILE}"
-#MINIO_URL="https://dl.min.io/server/minio/release/linux-amd64/${MINIO_FILE}"
+MINIO_ROOT_PASSWORD=请替换为独立的强密码
+MINIO_VOLUMES=/data/minio
+MINIO_OPTS="--console-address :9001"
 ```
 
-```text
-HOST_IP=`hostname -I|awk '{print $1}'`
-```
-
-```text
-COLOR_SUCCESS="echo -e \\033[1;32m"
-COLOR_FAILURE="echo -e \\033[1;31m"
-END="\033[m"
-```
-
-```text
-color () {
-RES_COL=60
-MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-SETCOLOR_SUCCESS="echo -en \\033[1;32m"
-SETCOLOR_FAILURE="echo -en \\033[1;31m"
-SETCOLOR_WARNING="echo -en \\033[1;33m"
-SETCOLOR_NORMAL="echo -en \E[0m"
-echo -n "$1" && $MOVE_TO_COL
-echo -n "["
-if [ $2 = "success" -o $2 = "0" ] ;then
-${SETCOLOR_SUCCESS}
-echo -n $"  OK  "
-elif [ $2 = "failure" -o $2 = "1"  ] ;then
-${SETCOLOR_FAILURE}
-echo -n $"FAILED"
-else
-${SETCOLOR_WARNING}
-echo -n $"WARNING"
-fi
-${SETCOLOR_NORMAL}
-echo -n "]"
-echo
-}
-```
-
-```text
-install_minio(){
-if  [ ! -e ${MINIO_FILE}  ] ;then
-wget ${MINIO_URL} || ${COLOR_FAILURE} "下载失败!" ${END}
-fi
-install ${MINIO_FILE} /usr/local/bin/minio
-useradd -s /sbin/nologin  -r minio
-mkdir -p ${MINIO_DATA}
-chown -R minio:minio  ${MINIO_DATA}
-cat > /lib/systemd/system/minio.service <<EOF
-[Unit]
-Description=Minio
-After=systemd-networkd.service systemd-resolved.service
-Documentation=https://min.io
-[Service]
-Type=simple
-Environment=MINIO_ROOT_USER=${MINIO_ROOT_USER}
-MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-ExecStart=/usr/local/bin/minio server ${MINIO_DATA} --console-address
-":${MINIO_PORT}"
-Restart=on-failure
-User=minio
-Group=minio
-LimitNOFILE=infinity
-LimitNPROC=infinity
-LimitCORE=infinity
-OOMScoreAdjust=-1000
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl daemon-reload
-systemctl enable --now  minio.service &>/dev/null
-systemctl is-active minio.service &>/dev/null
-if [ $?  -eq 0 ];then
-echo
-color "MinIO 安装完成!" 0
-echo "------------------------------------------------------------------
--"
-echo -e "请访问链接: \E[32;1mhttp://${HOST_IP}:${MINIO_PORT}/\E[0m"
-echo -e "用户和密码:
-\E[32;1m${MINIO_ROOT_USER}/${MINIO_ROOT_PASSWORD}\E[0m"
-else
-color "MinIO 安装失败!" 1
-exit
-fi
-}
-```
-
-```text
-install_minio
-```
-
-### 容器化部署
-
-<https://min.io/docs/minio/container/index.html>
-
-范例: 容器化部署单机单磁盘
-
-```text
-docker pull registry.cn-beijing.aliyuncs.com/bowenxiaochun/minio:RELEASE.2024-11-
-07T00-52-20Z
-docker pull minio/minio
-```
+将环境文件权限收紧，并确认数据目录属于服务账户，然后启动和检查：
 
 ```bash
-#可选
-mkdir -p /data/minio
-#docker部署
-docker run -d \
--p 9000:9000 \
--p 9090:9090 \
---name minio \
--v /data/minio:/data \
--e "MINIO_ROOT_USER=admin" \
--e "MINIO_ROOT_PASSWORD=12345678" \
-registry.cn-beijing.aliyuncs.com/bowenxiaochun/minio:RELEASE.2024-11-07T00-52-
-20Z server /data --console-address ":9090"
-#minio/minio server /data --console-address ":9090"
-#podman 部署
-podman run -p 9000:9000 -p 9001:9001 minio/minio server /data/minio --console-
-address ":9001"
+sudo chmod 600 /etc/default/minio
+sudo systemctl enable --now minio.service
+sudo systemctl status minio.service
+sudo journalctl -u minio.service -n 50 --no-pager
+curl -f http://127.0.0.1:9000/minio/health/live
 ```
 
-范例: Docker 部署单机多磁盘启用纠删除码功能
+API 默认在 `9000` 端口，以上示例将 Console 固定在 `9001`。若缺少 `MINIO_VOLUMES`、目录权限不对或端口已占用，`systemctl status` 与 `journalctl` 会给出失败原因。不要从某个旧版本的启动日志推断所有版本的目录、服务用户和选项完全相同。
+
+![systemd 启动结果示意](assets/img-aa5f8664e6a8294b.webp)
+
+![MinIO Console 登录页面](assets/img-171bf9e0bd7a01cf.webp)
+
+### 单机多盘的环境变量
+
+准备四块独立磁盘并分别挂载到 `/data/minio1` 至 `/data/minio4`，核对挂载和所有权后，将环境文件中的 `MINIO_VOLUMES` 设置为 `"/data/minio{1...4}"`。这里的 `{1...4}` 是 MinIO 识别的连续路径表达式，并非 shell 的 `{1..4}` 展开；不要让 systemd 的环境文件承担 shell 展开。首次初始化后不要随意增删路径或改变挂载顺序。
+
+## RHEL 系包安装
+
+RHEL 系发行版使用与架构匹配的 RPM 包，安装后的服务账户、环境文件与数据目录检查原则相同：
 
 ```bash
-[root@ubuntu2204 ~]#docker run -d \
--p 9000:9000 \
--p 9999:9999 \
---name minio \
--e "MINIO_ROOT_USER=admin" \
--e "MINIO_ROOT_PASSWORD=12345678" \
--v /minio/data1:/data1 \
--v /minio/data2:/data2 \
--v /minio/data3:/data3 \
--v /minio/data4:/data4 \
--v /minio/data5:/data5 \
--v /minio/data6:/data6 \
--v /minio/data7:/data7 \
--v /minio/data8:/data8 \
-registry.cn-beijing.aliyuncs.com/bowenxiaochun/minio:RELEASE.2024-11-07T00-52-
-20Z /data{1...8} --console-address ":9999"
-#minio/minio server /data{1...8} --console-address ":9999"
+sudo dnf install ./minio.rpm
+systemctl cat minio.service
+sudo systemctl enable --now minio.service
 ```
 
-```sql
-[root@ubuntu2204 ~]#docker logs minio
-Automatically configured API requests per node based on available memory on the
-system: 17
-Status:         8 Online, 0 Offline.
-API: http://172.17.0.2:9000  http://127.0.0.1:9000
-Console: http://172.17.0.2:9999 http://127.0.0.1:9999
-Documentation: https://docs.min.io
-You are running an older version of MinIO released 2 years ago
-Update:
-Run `mc admin update`
-[root@ubuntu2204 ~]#tree /minio/
-/minio/
-├── data1
-├── data2
-├── data3
-├── data4
-├── data5
-├── data6
-├── data7
-└── data8
-8 directories, 0 files
+启动前仍需按单元文件创建环境文件、数据目录并设置所有权；不能仅安装 RPM 就假设服务已经具备可用的凭据和存储路径。
+
+![RPM 下载页面示意](assets/img-52ee42df7737ab6d.webp)
+
+## 二进制部署
+
+不使用发行版包时，可从[社区版发布目录](https://dl.min.io/server/minio/release/)取得对应架构的二进制，并自行配置服务。若下载到的是要求许可证的发行版，启动会提示许可证错误；先核对来源，而不是修改数据目录或忽略错误。
+
+![二进制下载页面](assets/img-8661b899ad629360.webp)
+
+![下载选项示意](assets/img-2ddec9e89bcdb8ad.webp)
+
+![版本信息示意](assets/img-83638311662febfa.webp)
+
+单盘试运行可以先在前台启动，验证路径与端口；凭据在命令环境中仅作示意，实际使用时应由受限环境文件提供：
+
+```bash
+sudo install -m 755 ./minio /usr/local/bin/minio
+sudo install -d /data/minio
+MINIO_ROOT_USER=admin MINIO_ROOT_PASSWORD='请替换为独立的强密码' \
+  /usr/local/bin/minio server /data/minio --console-address ':9001'
 ```
 
-![MinIO 对象存储第 28 页插图](assets/img-8c3ba0da7834d7f8.png)
+在自建 systemd 单元中，`ExecStart` 应是**完整的一行**，不要把 `--console-address` 与端口拆成两个命令；服务用户必须对数据目录有写权限。凭据建议存放在仅 root 可读的环境文件中，而非直接写进单元文件。原一键安装脚本混合了失效下载链接、明文弱密码和断裂的 `Environment`／`ExecStart` 行，不适合原样执行；包安装提供的单元更利于维护。
 
-![MinIO 对象存储第 29 页插图](assets/img-5c5193a00b39e396.png)
+## 容器部署
 
-### 基于 Docker Compose 部署
+容器本身可重建，数据必须挂载到宿主机持久化目录。以下单盘示例使用官方镜像；`MINIO_ROOT_PASSWORD` 请替换，并固定经验证的镜像版本以避免升级时出现不兼容变化。
 
-<https://github.com/minio/minio/tree/master/docs/orchestration/docker-compose>
+```bash
+docker run -d --name minio \
+  -p 9000:9000 -p 9001:9001 \
+  -v /data/minio:/data \
+  -e MINIO_ROOT_USER=admin \
+  -e MINIO_ROOT_PASSWORD='请替换为独立的强密码' \
+  quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z \
+  server /data --console-address ':9001'
+docker logs minio
+```
 
-范例：基于 Docker Compose 部署单节点
+单机多盘容器需将各块盘分别挂载到容器内，例如 `/data1` 至 `/data4`，并执行 `server /data{1...4}`。不能把四个卷都绑定到同一宿主机磁盘后宣称获得了纠删码容错。路径数量和所选版本要求须先核对。
+
+![单机多盘容器状态示意](assets/img-8c3ba0da7834d7f8.webp)
+
+![多数据目录示意](assets/img-5c5193a00b39e396.webp)
+
+### Docker Compose 单实例
+
+下面 YAML 与终端命令分开，缩进可直接用于 Compose v2；先在当前目录创建 `data` 并确保容器运行用户可写。
 
 ```yaml
-[root@ubuntu2404 ~]#cat docker-compose.yaml
-version: '3.8'
 services:
-minio:
-#image: minio/minio:RELEASE.2024-11-07T00-52-20Z
-image: registry.cn-beijing.aliyuncs.com/bowenxiaochun/minio:RELEASE.2024-11-
-07T00-52-20Z
-container_name: minio
-restart: always
-environment:
-MINIO_ROOT_USER: 'admin'
-MINIO_ROOT_PASSWORD: '12345678'
-MINIO_ADDRESS: ':9000'
-MINIO_CONSOLE_ADDRESS: ':9001'
-ports:
-- "9000:9000"
-- "9001:9001"
-networks:
-- minio_net
-volumes:
-- ./data:/data
-healthcheck:
-test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-interval: 30s
-timeout: 20s
-retries: 3
-command: server /data
-#command: server --console-address ":9001" /data
-networks:
-minio_net:
-driver: bridge
-[root@ubuntu2404 ~]#apt update && apt -y install docker-compose python3-pip
-[root@ubuntu2404 ~]#docker-compose version
-docker-compose version 1.29.2, build unknown
-docker-py version: 5.0.3
-CPython version: 3.12.3
-OpenSSL version: OpenSSL 3.0.13 30 Jan 2024
-[root@ubuntu2404 ~]#docker-compose up -d
-[root@ubuntu2404 ~]#docker-compose up -d
-[root@ubuntu2404 ~]#docker-compose ps
-Name               Command                  State
-Ports
----------------------------------------------------------------------------------
----------------------------------------------------
-minio   /usr/bin/docker-entrypoint ...   Up (healthy)   0.0.0.0:9000-
->9000/tcp,:::9000->9000/tcp,
-0.0.0.0:9001-
->9001/tcp,:::9001->9001/tcp
-[root@ubuntu2404 ~]#docker network ls
-NETWORK ID     NAME             DRIVER    SCOPE
-dc0d93c3c604   bridge           bridge    local
-92408dddfe8e   host             host      local
-f26890b252b5   none             null      local
-6354afd6686a   root_minio_net   bridge    local
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
+    container_name: minio
+    restart: unless-stopped
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
 ```
 
-范例: 基于 Docker Compose 部署多服务节点多设备集群并利用 Nginx实现反向代理负载均衡
+在同目录的 `.env` 中设置独立强密码并限制文件权限，再验证与启动：
 
-```yaml
-#https://github.com/minio/minio/blob/master/docs/orchestration/docker-
-compose/docker-compose.yaml
-[root@ubuntu2204 minio]#ls
-docker-compose.yaml  nginx.conf
-[root@ubuntu2204 minio]#cat docker-compose.yaml
-version: '3.7'
-# Settings and configurations that are common for all containers
-x-minio-common: &minio-common
-image: quay.io/minio/minio:RELEASE.2023-08-31T15-31-16Z
-command: server --console-address ":9001" http://minio{1...4}/data{1...2}
-expose:
-- "9000"
-- "9001"
-environment:
-MINIO_ROOT_USER: admin
-MINIO_ROOT_PASSWORD: 12345678
-# environment:
-# MINIO_ROOT_USER: minioadmin
-# MINIO_ROOT_PASSWORD: minioadmin
-healthcheck:
-test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-interval: 30s
-timeout: 20s
-retries: 3
-# starts 4 docker containers running minio server instances.
-# using nginx reverse proxy, load balancing, you can access
-# it through port 9000.
-services:
-minio1:
-<<: *minio-common
-hostname: minio1
-volumes:
-- data1-1:/data1
-- data1-2:/data2
-minio2:
-<<: *minio-common
-hostname: minio2
-volumes:
-- data2-1:/data1
-- data2-2:/data2
-minio3:
-<<: *minio-common
-hostname: minio3
-volumes:
-- data3-1:/data1
-- data3-2:/data2
-minio4:
-<<: *minio-common
-hostname: minio4
-volumes:
-- data4-1:/data1
-- data4-2:/data2
-nginx:
-image: nginx:1.19.2-alpine
-hostname: nginx
-volumes:
-- ./nginx.conf:/etc/nginx/nginx.conf:ro
-ports:
-- "9000:9000"
-- "9001:9001"
-depends_on:
-- minio1
-- minio2
-- minio3
-- minio4
-## By default this config uses default local driver,
-## For custom volumes replace with volume driver configuration.
-volumes:
-data1-1:
-data1-2:
-data2-1:
-data2-2:
-data3-1:
-data3-2:
-data4-1:
-data4-2:
-#nginx.conf
-[root@ubuntu2204 minio]#cat nginx.conf
-user  nginx;
-worker_processes  auto;
-error_log  /var/log/nginx/error.log warn;
-pid        /var/run/nginx.pid;
-events {
-worker_connections  4096;
-}
-http {
-include       /etc/nginx/mime.types;
-default_type  application/octet-stream;
-log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-'$status $body_bytes_sent "$http_referer" '
-'"$http_user_agent" "$http_x_forwarded_for"';
-access_log  /var/log/nginx/access.log  main;
-sendfile        on;
-keepalive_timeout  65;
-# include /etc/nginx/conf.d/*.conf;
-upstream minio {
-server minio1:9000;
-server minio2:9000;
-server minio3:9000;
-server minio4:9000;
-}
-upstream console {
-ip_hash;
-server minio1:9001;
-server minio2:9001;
-server minio3:9001;
-server minio4:9001;
-}
-server {
-listen       9000;
-listen  [::]:9000;
-server_name  localhost;
-# To allow special characters in headers
-ignore_invalid_headers off;
-# Allow any size file to be uploaded.
-# Set to a value such as 1000m; to restrict file size to a specific
-value
-client_max_body_size 0;
-# To disable buffering
-proxy_buffering off;
-proxy_request_buffering off;
-location / {
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_connect_timeout 300;
-# Default is HTTP/1, keepalive is only enabled in HTTP/1.1
-proxy_http_version 1.1;
-proxy_set_header Connection "";
-chunked_transfer_encoding off;
-proxy_pass http://minio;
-}
-}
-server {
-listen       9001;
-listen  [::]:9001;
-server_name  localhost;
-# To allow special characters in headers
-ignore_invalid_headers off;
-# Allow any size file to be uploaded.
-# Set to a value such as 1000m; to restrict file size to a specific
-value
-client_max_body_size 0;
-# To disable buffering
-proxy_buffering off;
-proxy_request_buffering off;
-location / {
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_set_header X-NginX-Proxy true;
-# This is necessary to pass the correct IP to be hashed
-real_ip_header X-Real-IP;
-proxy_connect_timeout 300;
-# To support websocket
-proxy_http_version 1.1;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Connection "upgrade";
-chunked_transfer_encoding off;
-proxy_pass http://console;
-}
-}
-}
-#浏览器访问代理:http://minio.bowen.org:9001,用户名密码:minioadmin/minioadmin
+```bash
+docker compose config
+docker compose up -d
+docker compose ps
+curl -f http://127.0.0.1:9000/minio/health/live
 ```
 
-![MinIO 对象存储第 34 页插图](assets/img-039513d660e85d8b.png)
+原资料末尾还演示了四个 MinIO 容器加 Nginx 反向代理。它是**多服务节点配置**，应与下一章的分布式拓扑一起学习：若四个容器仍位于一台宿主机，Nginx 负载均衡也不能消除宿主机单点；若要跨主机运行，还必须处理独立磁盘、网络、统一配置和 Console 反向代理的 WebSocket 头。不要把该 Compose 配置误认为单机多盘示例。
+
+![多容器与反向代理拓扑示意](assets/img-039513d660e85d8b.webp)
+
+## 验证与后续
+
+先确认进程／容器健康和 `/minio/health/live`，再用浏览器访问 `http://主机:9001`，或使用下一节介绍的 `mc` 创建测试存储桶、上传并读取对象。健康检查只证明服务可响应，不能替代数据备份和故障恢复演练。部署完成后应安排凭据管理、TLS、监控与备份。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/05-deployment-modes-and-methods.html' | relative_url }}">← Previous: Deployment Modes and Methods</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/07-distributed-cluster-deployment.html' | relative_url }}">Next: Distributed Cluster Deployment →</a>
+  <a href="{{ '/subjects/MinIO/05-deployment-modes-and-methods.html' | relative_url }}">← 上一篇：部署模式与方式</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/07-distributed-cluster-deployment.html' | relative_url }}">下一篇：分布式集群部署 →</a>
 </nav>

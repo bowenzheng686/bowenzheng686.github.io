@@ -1,182 +1,97 @@
 ---
 layout: default
-title: "Redis 数据库 · Redis 配置文件说明"
+title: "Redis 数据库 · 配置文件说明"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
+[← 返回 Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 05 Redis 配置文件说明
-### 2.2 Redis 配置文件说明
+# 05 配置文件说明
 
-![Redis 数据库第 62 页插图](assets/img-6709bda6922f6f4c.png)
+Redis 的配置文件决定监听、持久化、内存上限、复制与集群行为。启动时可通过 `redis-server /path/to/redis.conf` 指定文件；包安装与容器镜像的默认路径不同，先用 `INFO server` 的 `config_file` 字段确认**当前进程实际读取的文件**。配置项会随版本改变，本章按作用归类，不把旧版 `redis.conf` 的全部注释当成现行默认值。
 
-```text
-bind 0.0.0.0    #指定监听地址，支持用空格隔开的多个监听IP
-protected-mode yes #redis3.2之后加入的新特性，在没有设置bind IP和密码的时候,redis只允许访
-问127.0.0.1:6379，可以远程连接，但当访问将提示警告信息并拒绝远程访问,redis-7版本后，只要没有
-密码就不能远程访问
-port 6379       #监听端口,默认6379/tcp
-tcp-backlog 511 #三次握手的时候server端收到client ack确认号之后的队列值，即全连接队列长度
-timeout 0       #客户端和Redis服务端的连接超时时间，默认是0，表示永不超时
-tcp-keepalive 300 #tcp 会话保持时间300s
-daemonize no #默认no,即直接运行redis-server程序时,不作为守护进程运行，而是以前台方式运行，
-如果想在后台运行需改成yes,当redis作为守护进程运行的时候，它会写一个 pid 到
-/var/run/redis.pid 文件
-supervised no #和OS相关参数，可设置通过upstart和systemd管理Redis守护进程，centos7后都使
-用systemd
-pidfile /var/run/redis_6379.pid #pid文件路径,可以修改
-为/apps/redis/run/redis_6379.pid
-loglevel notice #日志级别
-logfile "/path/redis.log" #日志路径,示例:logfile "/apps/redis/log/redis_6379.log"
-databases 16 #设置数据库数量，默认：0-15，共16个库
-always-show-logo yes #在启动redis 时是否显示或在日志中记录记录redis的logo
-save 900 1 #在900秒内有1个key内容发生更改,就执行快照机制
-save 300 10 #在300秒内有10个key内容发生更改,就执行快照机制
-save 60 10000  #60秒内如果有10000个key以上的变化，就自动快照备份
-stop-writes-on-bgsave-error yes #默认为yes时,可能会因空间满等原因快照无法保存出错时，会禁
-止redis写入操作，生产建议为no
-#此项只针对配置文件中的自动save有效
-rdbcompression yes #持久化到RDB文件时，是否压缩，"yes"为压缩，"no"则反之
-rdbchecksum yes #是否对备份文件开启RC64校验，默认是开启
-dbfilename dump.rdb #快照文件名
-dir ./ #快照文件保存路径，示例：dir "/apps/redis/data"
-#主从复制相关
-# replicaof <masterip> <masterport>  #指定复制的master主机地址和端口，5.0版之前的指令为
-slaveof
-# masterauth <master-password> #指定复制的master主机的密码
-replica-serve-stale-data yes #当从库同主库失去连接或者复制正在进行，从机库有两种运行方式：
-1、设置为yes(默认设置)，从库会继续响应客户端的读请求，此为建议值
-2、设置为no，除去特定命令外的任何请求都会返回一个错误"SYNC with master in progress"。
-replica-read-only yes #是否设置从库只读，建议值为yes,否则主库同步从库时可能会覆盖数据，造成
-数据丢失
-repl-diskless-sync no #是否使用socket方式复制数据(无盘同步)，新slave第一次连接master时需
-要做数据的全量同步，redis server就要从内存dump出新的RDB文件，然后从master传到slave，有两种
-方式把RDB文件传输给客户端：
-1、基于硬盘（disk-backed）：为no时，master创建一个新进程dump生成RDB磁盘文件，RDB完成之后由
-父进程（即主进程）将RDB文件发送给slaves，此为默认值
-2、基于socket（diskless）：master创建一个新进程直接dump RDB至slave的网络socket，不经过主
-进程和硬盘
-#推荐使用基于硬盘（为no），是因为RDB文件创建后，可以同时传输给更多的slave，但是基于socket(为
-yes)， 新slave连接到master之后得逐个同步数据。只有当磁盘I/O较慢且网络较快时，可用
-diskless(yes),否则一般建议使用磁盘(no)
-repl-diskless-sync-delay 5 #diskless时复制的服务器等待的延迟时间，设置0为关闭，在延迟时间
-内到达的客户端，会一起通过diskless方式同步数据，但是一旦复制开始，master节点不会再接收新slave
-的复制请求，直到下一次同步开始才再接收新请求。即无法为延迟时间后到达的新副本提供服务，新副本将排
-队等待下一次RDB传输，因此服务器会等待一段时间才能让更多副本到达。推荐值：30-60
-repl-ping-replica-period 10 #slave根据master指定的时间进行周期性的PING master,用于监测
-master状态,默认10s
-repl-timeout 60 #复制连接的超时时间，需要大于repl-ping-slave-period，否则会经常报超时
-repl-disable-tcp-nodelay no #是否在slave套接字发送SYNC之后禁用 TCP_NODELAY，如果选
-择"yes"，Redis将合并多个报文为一个大的报文，从而使用更少数量的包向slaves发送数据，但是将使数据
-传输到slave上有延迟，Linux内核的默认配置会达到40毫秒，如果 "no" ，数据传输到slave的延迟将会
-减少，但要使用更多的带宽
-repl-backlog-size 512mb #复制缓冲区内存大小，当slave断开连接一段时间后，该缓冲区会累积复制
-副本数据，因此当slave 重新连接时，通常不需要完全重新同步，只需传递在副本中的断开连接后没有同步的
-部分数据即可。只有在至少有一个slave连接之后才分配此内存空间,建议建立主从时此值要调大一些或在低峰
-期配置,否则会导致同步到slave失败
-repl-backlog-ttl 3600 #多长时间内master没有slave连接，就清空backlog缓冲区
-replica-priority 100 #当master不可用，哨兵Sentinel会根据slave的优先级选举一个master，此
-值最低的slave会优先当选master，而配置成0，永远不会被选举，一般多个slave都设为一样的值，让其自
-动选择
-#min-replicas-to-write 3  #至少有3个可连接的slave，mater才接受写操作
-#min-replicas-max-lag 10  #和上面至少3个slave的ping延迟不能超过10秒，否则master也将停止
-写操作
-requirepass foobared #设置redis连接密码，之后需要AUTH pass,如果有特殊符号，用" "引起来,生
-产建议设置
-rename-command #重命名一些高危命令，示例：rename-command FLUSHALL "" 禁用命令
-#示例: rename-command del bowen
-maxclients 10000 #Redis最大连接客户端,默认值10000
-maxmemory <bytes> #redis使用的最大内存，单位为bytes字节，0为不限制，建议设为物理内存一半，
-8G内存的计算方式8(G)*1024(MB)1024(KB)*1024(Kbyte)，需要注意的是缓冲区是不计算在maxmemory
-内,生产中如果不设置此项,可能会导致OOM
-maxmemory-policy
-# MAXMEMORY POLICY：当达到最大内存时，Redis 将如何选择要删除的内容。您可以从以下行为中选择一
-种：
-#
-# volatile-lru -> Evict 使用近似 LRU（最近最少使用算法），只有设置了过期时间的键
-# allkeys-lru -> 使用近似 LRU 驱逐任何键。
-# volatile-lfu -> 使用近似 LFU 驱逐，只有设置了过期时间的键。
-# allkeys-lfu -> 使用近似 LFU 驱逐任何键。
-# volatile-random -> 删除设置了过期时间的随机密钥。
-# allkeys-random -> 删除一个随机密钥，任何密钥。
-# volatile-ttl -> 删除过期时间最近的key（次TTL）
-# noeviction -> 不要驱逐任何东西，只是在写操作时返回一个错误。此为默认值
-#
-# LRU 表示最近最少使用
-# LFU 表示最不常用
-#
-# LRU、LFU 和 volatile-ttl 都是使用近似随机算法实现的。
-#
-# 注意：使用上述任何一种策略，当没有合适的键用于驱逐时，Redis 将在需要更多内存的写操作时返回错
-误。这些通常是创建新密钥、添加数据或修改现有密钥的命令。一些示例是：SET、INCR、HSET、LPUSH、
-SUNIONSTORE、SORT（由于 STORE 参数）和 EXEC（如果事务包括任何需要内存的命令）。
+![Redis 配置文件结构示意](assets/img-6709bda6922f6f4c.webp)
+
+## 网络与进程
+
+| 配置项 | 作用与注意点 |
+| --- | --- |
+| `bind`、`port` | 指定监听地址与端口。`bind 0.0.0.0` 会监听所有 IPv4 接口，不等于允许安全的远程访问。 |
+| `protected-mode` | 防止某些未妥善配置的实例被远程直接访问；不是认证、TLS 或防火墙的替代品。 |
+| `timeout`、`tcp-keepalive`、`tcp-backlog` | 分别涉及空闲客户端超时、TCP 保活和监听队列；调优时结合客户端连接特征和内核参数。 |
+| `daemonize`、`supervised` | 由 systemd 管理时通常前台运行，并让 `supervised` 与 service 单元类型匹配。 |
+| `loglevel`、`logfile`、`pidfile` | 决定日志与进程文件位置；目录权限要与服务用户一致。 |
+| `databases` | 单机逻辑数据库数量；Redis Cluster 仅使用 DB 0。 |
+
+本机测试可只监听环回地址：
+
+```conf
+bind 127.0.0.1
+protected-mode yes
+port 6379
+daemonize no
+supervised systemd
+dir /var/lib/redis
 ```
 
-```text
-appendonly no #是否开启AOF日志记录，默认redis使用的是rdb方式持久化，这种方式在许多应用中已经
-足够用了，但是redis如果中途宕机，会导致可能有几分钟的数据丢失(取决于dump数据的间隔时间)，根据
-save来策略进行持久化，Append Only File是另一种持久化方式，可以提供更好的持久化特性，Redis会
-把每次写入的数据在接收后都写入 appendonly.aof 文件，每次启动时Redis都会先把这个文件的数据读入
-内存里，先忽略RDB文件。默认不启用此功能
-appendfilename "appendonly.aof" #文本文件AOF的文件名，存放在dir指令指定的目录中
-appendfsync everysec #aof持久化策略的配置
-#no表示由操作系统保证数据同步到磁盘,Linux的默认fsync策略是30秒，最多会丢失30s的数据
-#always表示每次写入都执行fsync，以保证数据同步到磁盘,安全性高,性能较差
-#everysec表示每秒执行一次fsync，可能会导致丢失这1s数据,此为默认值,也生产建议值
-#同时在执行bgrewriteaof操作和主进程写aof文件的操作，两者都会操作磁盘，而bgrewriteaof往往会
-涉及大量磁盘操作，这样就会造成主进程在写aof文件的时候出现阻塞的情形,以下参数实现控制
-no-appendfsync-on-rewrite no #在aof rewrite期间,是否对aof新记录的append暂缓使用文件同步
-策略,主要考虑磁盘IO开支和请求阻塞时间。
-#默认为no,表示"不暂缓",新的aof记录仍然会被立即同步到磁盘，是最安全的方式，不会丢失数据，但是要
-忍受阻塞的问题
-#为yes,相当于将appendfsync设置为no，这说明并没有执行磁盘操作，只是写入了缓冲区，因此这样并不
-会造成阻塞（因为没有竞争磁盘），但是如果这个时候redis挂掉，就会丢失数据。丢失多少数据呢？Linux
-的默认fsync策略是30秒，最多会丢失30s的数据,但由于yes性能较好而且会避免出现阻塞因此比较推荐
-#rewrite 即对aof文件进行整理,将空闲空间回收,从而可以减少恢复数据时间
-auto-aof-rewrite-percentage 100 #当Aof log增长超过指定百分比例时，重写AOF文件，设置为0表
-示不自动重写Aof日志，重写是为了使aof体积保持最小，但是还可以确保保存最完整的数据
-auto-aof-rewrite-min-size 64mb #触发aof rewrite的最小文件大小
-aof-load-truncated yes #是否加载由于某些原因导致的末尾异常的AOF文件(主进程被kill/断电等)，
-建议yes
-aof-use-rdb-preamble no #redis4.0新增RDB-AOF混合持久化格式，在开启了这个功能之后，AOF重
-写产生的文件将同时包含RDB格式的内容和AOF格式的内容，其中RDB格式的内容用于记录已有的数据，而AOF
-格式的内容则用于记录最近发生了变化的数据，这样Redis就可以同时兼有RDB持久化和AOF持久化的优点（既
-能够快速地生成重写文件，也能够在出现问题时，快速地载入数据）,默认为no,即不启用此功能
-lua-time-limit 5000 #lua脚本的最大执行时间，单位为毫秒
-cluster-enabled yes #是否开启集群模式，默认不开启,即单机模式
-cluster-config-file nodes-6379.conf #由node节点自动生成的集群配置文件名称
-cluster-node-timeout 15000 #集群中node节点连接超时时间，单位ms,超过此时间，会踢出集群
-cluster-replica-validity-factor 10 #单位为次,在执行故障转移的时候可能有些节点和master断
-开一段时间导致数据比较旧，这些节点就不适用于选举为master，超过这个时间的就不会被进行故障转移,不
-能当选master，计算公式：(node-timeout * replica-validity-factor) + repl-ping-
-replica-period
-cluster-migration-barrier 1 #集群迁移屏障，一个主节点至少拥有1个正常工作的从节点，即如果主
-节点的slave节点故障后会将多余的从节点分配到当前主节点成为其新的从节点。
-cluster-require-full-coverage yes #集群请求槽位全部覆盖，如果一个主库宕机且没有备库就会出
-现集群槽位不全，那么yes时redis集群槽位验证不全,就不再对外提供服务(对key赋值时,会出现
-CLUSTERDOWN The cluster is down的提示,cluster_state:fail,但ping 仍PONG)，而no则可以
-继续使用,但是会出现查询数据查不到的情况(因为有数据丢失)。生产建议为no
-cluster-replica-no-failover no #如果为yes,此选项阻止在主服务器发生故障时尝试对其主服务器进
-行故障转移。 但是，主服务器仍然可以执行手动强制故障转移，一般为no
-#Slow log 是 Redis 用来记录超过指定执行时间的日志系统，执行时间不包括与客户端交谈，发送回复等
-I/O操作，而是实际执行命令所需的时间（在该阶段线程被阻塞并且不能同时为其它请求提供服务）,由于
-slow log 保存在内存里面，读写速度非常快，因此可放心地使用，不必担心因为开启 slow log 而影响
-Redis 的速度
-slowlog-log-slower-than 10000 #以微秒为单位的慢日志记录，为负数会禁用慢日志，为0会记录每个
-命令操作。默认值为10ms,一般一条命令执行都在微秒级,生产建议设为1ms-10ms之间
-slowlog-max-len 128 #最多记录多少条慢日志的保存队列长度，达到此长度后，记录新命令会将最旧的命
-令从命令队列中删除，以此滚动删除,即,先进先出,队列固定长度,默认128,值偏小,生产建议设为1000以上
+这不是可以直接覆盖发行版完整配置文件的“万能模板”。启用远程访问时还需配置 ACL、TLS、网络隔离和访问控制。Redis 6 起支持 ACL 用户，不能再把所有认证都简化为 `requirepass` 一个全局密码。隐藏或重命名危险命令并不能代替 ACL，且可能影响客户端与运维工具。
+
+## RDB 与 AOF 持久化
+
+`save <秒数> <写入次数>` 指定在时间窗口内达到写入次数时触发 RDB 快照。`dbfilename` 与 `dir` 决定快照文件名和目录；目录必须能由 Redis 用户写入。是否启用默认快照、触发条件是什么，应查询当前配置而不是套用旧资料中的 `save 900 1` 等示例。
+
+`stop-writes-on-bgsave-error yes` 会在 RDB 背景保存失败时阻止某些写入，以避免实例继续接受无法按预期持久化的数据。原资料一边提到磁盘满导致保存失败，一边建议生产环境统一改成 `no`，这会隐藏严重故障；是否改变应由业务的数据丢失容忍度决定。
+
+`appendonly yes` 启用 AOF；`appendfsync` 的常见值为 `always`、`everysec` 与 `no`。`everysec` 在正常情况下约每秒同步一次，但异常故障时不能承诺严格只丢一秒；`no` 交由操作系统安排写盘，也不能简单保证“最多丢 30 秒”。`auto-aof-rewrite-*` 控制重写触发条件；新版本 AOF 可能由多个文件组成，不应只寻找单个 `appendonly.aof`。第 08 篇会进一步解释恢复顺序与故障边界。
+
+## 内存与连接数
+
+`maxclients` 限制客户端连接数量，同时受文件描述符上限影响。`maxmemory` 限制 Redis 纳入驱逐计算的内存，但复制缓冲、AOF 缓冲、进程开销等也占主机 RAM；不能机械设成“物理内存的一半”。应按数据集、持久化 fork 的额外内存、操作系统和同机进程预留余量。
+
+达到 `maxmemory` 后，`maxmemory-policy` 决定如何处理新写入：
+
+| 策略族 | 适用情形 |
+| --- | --- |
+| `noeviction` | 不驱逐键；可能让需要更多内存的写命令返回错误，适合不能悄然丢键的场景。 |
+| `allkeys-lru`／`allkeys-lfu` | 允许在所有键中近似选取较少使用的键，常用于纯缓存。 |
+| `volatile-*` | 只从设置过过期时间的键中选取；没有合适键时写入仍可能失败。 |
+
+LRU、LFU 实现是近似策略；`volatile-ttl` 倾向选择较早过期的键。选择策略要先确定数据是缓存还是主数据，不能为了避免写入失败就无条件打开驱逐。
+
+## 复制与 Sentinel
+
+`replicaof` 指向主节点，旧版本曾用 `slaveof`；`masterauth`／ACL 凭据用于副本连接。`replica-read-only yes` 可防止普通客户端写副本，但不是数据完整性的唯一保证。
+
+`repl-backlog-size` 决定主节点保留多少复制历史，影响断线后的部分重同步机会；应根据写入速率和期望可容忍的断线时间估算，不是“越大越好”。`repl-diskless-sync` 控制全量同步的数据传输方式，不同版本默认值和效率取舍会变化；不能一概推荐磁盘方式或说 socket 方式只能逐个副本传输。
+
+`replica-serve-stale-data yes` 允许断开主节点的副本继续响应某些读请求，但可能返回旧数据；是否适合由应用的一致性要求决定。`replica-priority` 会影响 Sentinel 选主，值为 0 通常表示不参与自动提升。`min-replicas-to-write` 与 `min-replicas-max-lag` 可限制主节点在副本不足或滞后过大时接受写入，但**不提供同步复制或零数据丢失保证**。
+
+## Cluster 与慢日志
+
+Cluster 部署时，`cluster-enabled yes` 开启模式，`cluster-config-file` 是节点自动维护的状态文件，不应手工编辑；`cluster-node-timeout` 影响故障判断与转移时机。`cluster-require-full-coverage yes` 要求全部槽位可服务；设为 `no` 可以让健康槽位继续服务，但缺失槽位的键仍不可访问，应用必须处理部分失败。原资料直接推荐生产环境设为 `no`，忽略了业务对完整性的要求。
+
+`slowlog-log-slower-than` 的单位是**微秒**，只计命令执行阶段，不包括网络收发；`slowlog-max-len` 控制内存中保存的记录条数。慢日志是定位高耗时命令的线索，不是请求全链路的耗时测量。设置为 `0` 会记录所有命令，负载高时需谨慎；第 07 篇会介绍如何阅读。
+
+## 修改配置的基本流程
+
+先记录当前值与版本，备份原配置，修改对应文件，检查启动参数与目录权限，再按维护窗口重启并验证：
+
+```bash
+redis-cli CONFIG GET maxmemory
+redis-cli INFO server
+systemctl cat redis-server.service
 ```
+
+部分配置可通过 `CONFIG SET` 动态修改，但是否能持久化和是否允许在线改变取决于配置项及部署方式；第 06 篇专门讨论。不要在配置文件、运维文档或命令历史中放入真实密钥。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Redis/04-common-redis-commands.html' | relative_url }}">← Previous: Common Redis Commands</a>
-  <a href="{{ '/subjects/Redis/' | relative_url }}">Back to Redis Database Index</a>
-  <a href="{{ '/subjects/Redis/06-changing-configuration-dynamically-with-config.html' | relative_url }}">Next: Changing Configuration Dynamically with CONFIG →</a>
+  <a href="{{ '/subjects/Redis/04-common-redis-commands.html' | relative_url }}">← 上一篇：常用命令</a>
+  <a href="{{ '/subjects/Redis/' | relative_url }}">返回 Redis 数据库目录</a>
+  <a href="{{ '/subjects/Redis/06-changing-configuration-dynamically-with-config.html' | relative_url }}">下一篇：动态配置 →</a>
 </nav>

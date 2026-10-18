@@ -17,11 +17,11 @@ syntax_highlight: true
 
 #### 技术发展趋势
 
-![原文插图（第 8 页）]({{ '/subjects/KVM/assets/p008-img01.png' | relative_url }})
+![原文插图（第 8 页）]({{ '/subjects/KVM/assets/p008-img01.webp' | relative_url }})
 
 #### 传统基础设施
 
-![原文插图（第 8 页）]({{ '/subjects/KVM/assets/p008-img02.png' | relative_url }})
+![原文插图（第 8 页）]({{ '/subjects/KVM/assets/p008-img02.webp' | relative_url }})
 
 **常见工作内容**
 
@@ -35,11 +35,10 @@ syntax_highlight: true
 
 **面对问题**
 
-1. 服务器和网络设备资源利用率过低，并且无法共享,导致资源浪费据统计大部分数据中心中的服务器和网络设备的利用率仅在24%～30%之间，有的CPU利用率、硬盘利用率都在10%以下
-2. 资源分配后进行调整困难资源分配不合理也是传统网络架构存在的问题，因为资源不能动态调配，分配出去的资源是固定的，不能随意添加或删除。
-3. 难以实现自动化初始化成本高,服务器迁移和升级很繁琐，无法实现自动化
-
-4. 成本高昂集群环境需要大量的服务器主机,硬件投入和后期维护管理成本巨大
+1. **资源利用率不均。** 每套业务独占物理服务器时，低负载机器的空闲容量难以直接分配给其他业务。
+2. **扩缩容慢。** 已购置的硬件资源不易按短期负载变化调整，需要重新采购或迁移。
+3. **交付与迁移耗时。** 系统安装、网络配置及业务迁移如果主要依靠人工，标准化程度和速度都会受限。
+4. **成本较高。** 多套独立硬件增加采购、机房、电力和维护投入。虚拟化可改善其中一部分问题，但不能消除硬件和运维成本。
 
 #### 虚拟化技术
 
@@ -53,19 +52,9 @@ syntax_highlight: true
 
 **注意：** 该页面可能因为过期失效
 
-##### 我的理解
+##### 一个直观例子
 
-**虚拟化是什么**
-
-**虚拟化技术：**
-
-在现有物理主机基础上创造多个彼此独立的具有完整功能主机的技术。将底层的计算机资源，抽象为彼此互相隔离的多组计算平台，每个计算平台都包含计算机的五大部件：cpu(控制器+寄存器)、mem(存储)、IO(输入+输出)，
-
-**我的理解**
-
-**简单来说就是：**
-
-本来没有，但是通过某种特殊的手段，让你以为有，而且确信不已。这些手段就是虚拟化技术。
+一台物理主机可以向多台虚拟机分别呈现 vCPU、内存、磁盘和网卡。每台虚拟机拥有独立的操作系统视图，但底层资源仍由宿主机共享和调度。隔离使业务互不直接干扰；资源规划不足或宿主机故障仍可能同时影响多台虚拟机。
 
 ##### 虚拟化优势
 
@@ -75,14 +64,14 @@ syntax_highlight: true
 
 **其优势包括：**
 
-- 资源超分,如实际的物理内存只有128G,可以给虚拟机分配200G内存
+- 在监控和容量规划前提下进行一定程度的资源超配；配置内存总量高于物理内存并不代表可同时实际使用。
 - 降低资金成本和运维成本
 - 最大限度减少或消除停机
 - 提高 IT 部门的工作效率和响应能力
 - 加快应用和资源的调配速度
 - 提高业务连续性和灾难恢复能力
 - 简化数据中心管理
-- 减少资源,比如IP和端口的冲突
+- 借助独立网络命名空间和虚拟网络减少配置相互干扰；IP 与端口冲突仍需正确规划。
 - 支持较旧的硬件和操作系统及应用
 
 ##### 虚拟化目标
@@ -95,11 +84,11 @@ syntax_highlight: true
 
 **空间上：** 在一台物理主机上，虚拟出来多台主机，多台主机共同做一件事情。
 
-![原文插图（第 10 页）]({{ '/subjects/KVM/assets/p010-img01.png' | relative_url }})
+![原文插图（第 10 页）]({{ '/subjects/KVM/assets/p010-img01.webp' | relative_url }})
 
 ##### 虚拟化技术发展
 
-![原文插图（第 11 页）]({{ '/subjects/KVM/assets/p011-img01.png' | relative_url }})
+![原文插图（第 11 页）]({{ '/subjects/KVM/assets/p011-img01.webp' | relative_url }})
 
 **虚拟化发展**
 
@@ -135,15 +124,10 @@ syntax_highlight: true
 
 **其他方向**
 
-- 应用虚拟化
-- 将软件应用通过网络实现虚拟化，比如 office 365,钉钉,企业微信
-- 存储虚拟化
-- 将存储用软件虚拟化实现, 如 SAN/NAS(NFS/Samba)/GlusterFS/ceph等
-- 库虚拟化
-- 在Linux上使用 wine来运行Windows 程序，在Mac系统使用CrossOver来运行Windows程序
-- 容器虚技术
-- 当前比较火的虚拟化技术，典型代表: Docker、Containerd、Podman、Linux Container(LXC)、
-- Pouch
+- **应用虚拟化：** 将应用执行环境与底层系统抽象或隔离；在线办公服务不一定属于应用虚拟化。
+- **存储虚拟化：** 将多个物理存储资源组织为统一的逻辑存储池，Ceph 等可提供分布式存储能力；NFS/Samba 是网络文件共享协议或服务，不等同于存储虚拟化本身。
+- **兼容层：** Wine、CrossOver 通过兼容接口运行部分 Windows 程序，与虚拟整台机器不同。
+- **容器：** Docker、Podman、containerd、LXC 等利用操作系统内核的隔离能力运行工作负载；容器共享宿主机内核，不是完整的虚拟机。
 
 #### 应用技术分类
 
@@ -159,7 +143,7 @@ syntax_highlight: true
 
 **半虚拟化**
 
-半虚拟化是需要GuestOS协助的虚拟化。因为在半虚拟化VMM中运行的GuestOS，都需要将其内核源码进行都进过了特别的修改。也就是说，结合软件方式，虚拟出一个部分功能，底层平台与宿主机一致的主机，虚拟机知道自己是一个傀儡。常见的技术：xen(2003年发布)半虚拟化要求guest OS 的内核是知道自己运行在虚拟化环境当中的，因此guest OS的系统架构必须和宿主机的系统架构相同，并且要求对guest OS的内核做相应的修改，因此半虚拟化只支持开源内核的系统，不支持闭源的系统，比较常见的半虚拟化就是早期版本的XEN，但是Xen 从其3.0 版本开始，可以支持利用硬件辅助虚拟化技术
+半虚拟化表示来宾与虚拟化平台协作，例如加载 VirtIO 驱动以高效访问虚拟设备。它不等于“只虚拟出部分功能”，也不必然要求修改来宾内核源码；闭源系统安装相应驱动后同样可以使用半虚拟化 I/O。早期 Xen 的半虚拟化来宾与现代 KVM/VirtIO 应区分讨论。
 
 **硬件辅助虚拟化**
 
@@ -173,7 +157,7 @@ syntax_highlight: true
 
 **容器**
 
-通过技术手段，将软件应用的运行状态保留下拉，
+容器将应用与依赖封装在镜像中，并借助 namespaces、cgroups 等内核机制隔离进程及限制资源。镜像不自动保留应用运行时状态；持久数据需要另行配置卷或外部存储。
 
 ##### KVM属于哪里
 
@@ -213,7 +197,12 @@ KVM本身不直接模拟CPU，而是通过虚拟化技术使得虚拟机可以�
 
 虚拟机具有以下特征，这些特征可提供多项优势
 
-分区可在一台物理机上运行多个操作系统可在虚拟机之间分配系统资源。隔离可在硬件级别进行故障和安全隔离。可利用高级资源控制功能保持性能封装可将虚拟机的完整状态保存到文件中。移动和复制虚拟机就像移动和复制文件一样轻松独立于硬件可将任意虚拟机调配或迁移到任意物理服务器上安装系统不会受硬件兼容性的影响
+虚拟机的关键特征包括：
+
+- **分区：** 一台宿主机运行多台来宾，按需分配 CPU、内存和 I/O 资源。
+- **隔离：** 来宾之间有虚拟化边界，但共享宿主机仍可能形成共同故障点。
+- **封装：** 配置和磁盘可作为文件或卷管理；迁移还需考虑运行状态、网络及共享存储。
+- **可迁移性：** 在满足 CPU、设备、存储与软件版本兼容条件时，可在宿主机之间迁移，不是任意两台主机都能无条件互迁。
 
 ### 虚拟方式
 
@@ -233,7 +222,7 @@ Hypervisor 控制硬件并向来宾操作系统提供访问底层硬件的途径
 
 ##### 权限保护
 
-![原文插图（第 15 页）]({{ '/subjects/KVM/assets/p015-img01.png' | relative_url }})
+![原文插图（第 15 页）]({{ '/subjects/KVM/assets/p015-img01.webp' | relative_url }})
 
 CPU为了保证程序代码执行的安全性、多用户的独立性、保护OS的正常运行，提出了CPU执行状态的概念。
 
@@ -255,7 +244,7 @@ CPU为了保证程序代码执行的安全性、多用户的独立性、保护OS
 
 基于其软件架构和运行方式，主机的两种虚拟化实现方式主要有以下两种
 
-![原文插图（第 16 页）]({{ '/subjects/KVM/assets/p016-img01.png' | relative_url }})
+![原文插图（第 16 页）]({{ '/subjects/KVM/assets/p016-img01.webp' | relative_url }})
 
 ##### 架构差异
 
@@ -279,9 +268,7 @@ Type - I：适用于企业级的数据中心、云计算平台等需要大规模
 
 ##### kvm定位
 
-KVM（Kernel-Based Virtual Machine）属于Type-II虚拟化实现方式。
-
-在Type-II虚拟化中，虚拟机管理程序（如KVM）安装在现有的操作系统之上，这个操作系统被称为宿主操作系统（Host OS）。KVM作为一个Linux内核模块，它依赖于Linux操作系统来管理硬件资源，并为虚拟机提供虚拟化的硬件环境。由于KVM运行在宿主操作系统之上，因此它属于Type-II虚拟化。尽管KVM是Type-II虚拟化实现方式，但它仍然具有高性能和广泛的功能特性。KVM利用Linux内核的调度程序和其他功能来优化虚拟机的性能，并提供了丰富的管理工具和功能，使其成为当前主流的开源服务器虚拟化技术之一。需要注意的是，虽然KVM本身属于Type-II虚拟化，但在某些情况下，通过特定的配置和优化，KVM可以实现接近Type-I虚拟化的性能水平。此外，随着虚拟化技术的不断发展，Type-I和Type-II的界限也在逐渐模糊，一些新的虚拟化解决方案可能结合了两种类型的优点，提供了更加灵活和高效的虚拟化环境。
+KVM 是 Linux 内核中的虚拟化模块，和用户空间的 QEMU 一起工作。由于 Linux 内核本身直接管理硬件，有资料把 KVM 归为 Type-I；由于它运行在通用宿主操作系统中，也有资料将 QEMU/KVM 整体归为 Type-II。此二分法不足以准确描述其架构：学习时更重要的是区分 KVM 的 CPU/内存虚拟化职责、QEMU 的设备模型，以及 Linux 内核的调度与驱动作用。
 
 ## 1.2 kvm简介
 
@@ -291,7 +278,7 @@ KVM（Kernel-Based Virtual Machine）属于Type-II虚拟化实现方式。
 
 **官方介绍**
 
-![原文插图（第 18 页）]({{ '/subjects/KVM/assets/p018-img01.png' | relative_url }})
+![原文插图（第 18 页）]({{ '/subjects/KVM/assets/p018-img01.webp' | relative_url }})
 
 **关键点：**
 
@@ -303,7 +290,7 @@ https://www.linux-kvm.org/page/Main_Page
 
 **2025年官网介绍效果**
 
-![原文插图（第 18 页）]({{ '/subjects/KVM/assets/p018-img02.png' | relative_url }})
+![原文插图（第 18 页）]({{ '/subjects/KVM/assets/p018-img02.webp' | relative_url }})
 
 KVM（ Kernel-based Virtual Machine）是一个完整的虚拟化解决方案，适用于包含虚拟化扩展（Intel-VT或AMD-V）的x86硬件上的Linux。目前也支持ARM等其它硬件平台. 它由可加载的内核模块kvm.ko组成，它提供核心虚拟化基础架构和处理器特定模块，kvm-intel.ko或kvm-amd.ko，KVM的用户空间组件包含在QEMU1.3后续版本中,KVM目前已成为学术界的主流 VMM (virtual machine monitor，虚拟机监视器，也称为 hypervisor)之一。
 
@@ -375,9 +362,9 @@ KVM 是全虚拟化解决方案：从功能上，它支持未修改的 Guest OS 
 
 | 维度 | 全虚拟化 | 硬件辅助虚拟化 |
 | --- | --- | --- |
-| 描述对<br>象 | 虚拟化的功能特性（是否需修改 OS） | 虚拟化的实现方式（是否依赖硬件） |
-| 技术演<br>进 | 早期依赖软件模拟（性能差） | 现代虚拟化的必备技术（性能高） |
-| 典型产<br>品 | VMware ESXi（早期版本）、<br>VirtualBox | KVM、VMware ESXi（现代版本）、<br>Hyper-V |
+| 描述对象 | 虚拟化的功能特性：来宾 OS 是否需要修改 | 虚拟化的实现方式：是否使用 CPU 扩展 |
+| 两者关系 | 可借助软件翻译或硬件辅助实现 | 可支撑无需修改来宾 OS 的全虚拟化 |
+| 示例 | 未修改的 Windows 来宾运行于虚拟机 | KVM 使用 VT-x / AMD-V 等扩展 |
 
 硬件辅助是全虚拟化的技术优化，而非替代关系。
 
@@ -391,9 +378,9 @@ KVM 是全虚拟化解决方案：从功能上，它支持未修改的 Guest OS 
 
 KVM 本身不执行任何硬件模拟，需要使用一个客户空间的程序通过 /dev/kvm 接口设置一个客户机虚拟服务器的地址空间，向它提供模拟的 I/O，并将它的视频显示映射回宿主的显示屏。目前这个应用程序通常使用 QEMU。
 
-![原文插图（第 20 页）]({{ '/subjects/KVM/assets/p020-img01.png' | relative_url }})
+![原文插图（第 20 页）]({{ '/subjects/KVM/assets/p020-img01.webp' | relative_url }})
 
-kvm依赖于HVM技术，只能运行在支持硬件虚拟化的CPU上，也就是说CPU支持VT-x或AMD-v，并且只支持x86_64bits系统。只要基于硬件的操作系统内核一旦装载了kvm模块，那么kvm模块就和linux内核组合成了hypervisor，变成了type-I模型的虚拟机。kvm类似于寄生虫，linux内核一旦被寄宿，就没有自主权，跟着kvm一起变成hypervisor的一部分。原来的用户空间就变成了hypervisor的管理控制台运行位置，而kvm以字符设备/dev/kvm的形式作为kvm整个的调用管理接口。kvm创建的虚拟机就是一个进程，ps查看，kill杀死
+KVM 需要宿主机处理器及固件提供相应虚拟化扩展；它不仅支持 x86_64，也支持部分 ARM 等架构。加载 KVM 模块后，用户空间的 QEMU 通过 `/dev/kvm` 与内核交互，为每台虚拟机创建进程和 vCPU 线程。管理虚拟机应使用 `virsh` 等工具完成正常关机或受控强制停止，直接 `kill` 进程可能导致来宾数据丢失。
 
 #### 特点介绍
 
@@ -428,7 +415,7 @@ Cpu 支持硬件虚拟化 CPU 不建议超过当前核心数迁移时候，基�
 
 **运行模式**
 
-![原文插图（第 22 页）]({{ '/subjects/KVM/assets/p022-img01.png' | relative_url }})
+![原文插图（第 22 页）]({{ '/subjects/KVM/assets/p022-img01.webp' | relative_url }})
 
 内核模式：HostOS执行I/O类操作，或其它的特殊指令的操作；称作内核模式用户模式：GuestOS的I/O类操作来宾模式：GuestOS非I/O类操作，称作虚拟机的用户模式更贴切
 
@@ -438,7 +425,7 @@ KVM是运行在单机的系统，需要其它软件实现跨主机的统一的�
 
 参考资料：http://www.linux-kvm.org/page/Management_Tools
 
-![原文插图（第 22 页）]({{ '/subjects/KVM/assets/p022-img02.png' | relative_url }})
+![原文插图（第 22 页）]({{ '/subjects/KVM/assets/p022-img02.webp' | relative_url }})
 
 - oVirt
 - 功能强大，是Redhat虚拟化管理平台RHEV的开源版本
@@ -580,25 +567,25 @@ root@ubuntu-host:~# tree /lib/modules/6.11.0-19-generic/kernel/arch/x86/kvm/
    - 资源给的多一些
 2. 因为我们实验kvm，所以要指定虚拟化引擎，不然的话，无法做虚拟化实验，效果如下勾选虚拟化引擎
 
-![原文插图（第 25 页）]({{ '/subjects/KVM/assets/p025-img01.png' | relative_url }})
+![原文插图（第 25 页）]({{ '/subjects/KVM/assets/p025-img01.webp' | relative_url }})
 
 #### 异常处理
 
 但是点击 启动虚拟机【无论Rocky还是Ubuntu】之后，会发生如下提示
 
-![原文插图（第 26 页）]({{ '/subjects/KVM/assets/p026-img01.png' | relative_url }})
+![原文插图（第 26 页）]({{ '/subjects/KVM/assets/p026-img01.webp' | relative_url }})
 
-如果出现无法启动，可能是因为开启Hyper-V功能，可以以管理员方式执行下面命令
+若在 Windows 宿主机上的另一层虚拟机内安装 KVM，首先检查是否启用了**嵌套虚拟化**，以及内层来宾能否看到 `vmx` 或 `svm`。Hyper-V 与其他虚拟化产品的兼容性取决于具体版本；关闭 Hyper-V 会影响 WSL2 等功能，不应作为所有“无法启动”的通用修复。
 
-![原文插图（第 26 页）]({{ '/subjects/KVM/assets/p026-img02.png' | relative_url }})
+![原文插图（第 26 页）]({{ '/subjects/KVM/assets/p026-img02.webp' | relative_url }})
 
 **执行如下命令**
 
 **禁用Hyper-V Hypervisor**
 
-C:\Windows\System32>bcdedit /set hypervisorlaunchtype off 操作成功完成。
+旧实验记录中的 `bcdedit /set hypervisorlaunchtype off` 会改变 Windows 的启动配置。仅在确认冲突并记录原值后才考虑执行；问题排查优先检查产品的嵌套虚拟化设置、固件 VT-x/AMD-V 和虚拟机日志。
 
-![原文插图（第 26 页）]({{ '/subjects/KVM/assets/p026-img03.png' | relative_url }})
+![原文插图（第 26 页）]({{ '/subjects/KVM/assets/p026-img03.webp' | relative_url }})
 
 重启主机后，重新打开虚拟机即可
 
@@ -608,7 +595,7 @@ C:\Windows\System32>bcdedit /set hypervisorlaunchtype off 操作成功完成。
 
 **确保CPU支持HVM**
 
-**inter的CPU效果**
+**Intel CPU 示例**
 
 ````console
 [root@kvm-host ~]# egrep '(vmx|svm)' /proc/cpuinfo
@@ -643,7 +630,7 @@ decodeassists umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor fsrm
 
 **确认支持模块**
 
-**Inter的CPU效果**
+**Intel CPU 示例**
 
 ````console
 [root@kvm-host ~]# lsmod | egrep 'kvm|Module'
@@ -673,7 +660,7 @@ irqbypass 16384 1 kvm
 
 **确保CPU支持HVM**
 
-**Inter CPU效果**
+**Intel CPU 示例**
 
 ````console
 root@ubuntu-host:~# egrep '(vmx|svm)' /proc/cpuinfo
@@ -729,7 +716,7 @@ ccp 143360 1 kvm_amd
 kvm 1404928 1 kvm_amd
 irqbypass 12288 1 kvm
 注意：
-    如果有信息，就表明我们的虚拟机支持虚拟化。
+    模块已加载只说明内核侧组件可用；还应检查 `/dev/kvm` 存在且当前用户有访问权限，并运行 `virt-host-validate` 等检查。
 ````
 
 **查看设备文件**
@@ -779,7 +766,7 @@ cockpit:
 
 ##### 简介
 
-![原文插图（第 30 页）]({{ '/subjects/KVM/assets/p030-img01.png' | relative_url }})
+![原文插图（第 30 页）]({{ '/subjects/KVM/assets/p030-img01.webp' | relative_url }})
 
 libvirt 程序包是一个与虚拟机监控程序相独立的虚拟化应用程序接口，它可以与操作系统的一系列虚拟化性能进行交互。
 
@@ -793,13 +780,13 @@ libvirt 程序包是一个与虚拟机监控程序相独立的虚拟化应用程
 
 ##### 结构图
 
-![原文插图（第 30 页）]({{ '/subjects/KVM/assets/p030-img02.png' | relative_url }})
+![原文插图（第 30 页）]({{ '/subjects/KVM/assets/p030-img02.webp' | relative_url }})
 
 #### 镜像准备
 
 **准备课程需要的几个镜像**
 
-Centos7-minial https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso Rocky9-minial https://mirrors.aliyun.com/rockylinux/9/isos/x86_64/Rocky-9-latest-x86_64-minimal.iso Windows-server 2008 ed2k://|file|cn_windows_server_2008_r2_standard_enterprise_datacenter_and_web_wit h_sp1_vl_build_x64_dvd_617396.iso|3368962048|7C210CAC37A05F459758BCC1F4478F9E|/windows-server 2016 https://download.microsoft.com/download/B/5/F/B5F1A996-B590-45FD-BA99-DE7E745A0882/14393.0.161119-1705.RS1_REFRESH_SERVER_EVAL_X64FRE_ZH-CN.ISO windows-server 2022 https://software-static.download.prss.microsoft.com/pr/download/20348.1.210507-1500.fe_release_amd64fre_SERVER_LOF_PACKAGES_OEM.iso windows-server 2025 https://software-static.download.prss.microsoft.com/dbazure/888969d5-f34g-4e03-ac9d-1f9786c66749/26100.1.240331-1435.ge_release_amd64fre_SERVER_LOF_PACKAGES_OEM.iso
+可按实验目的准备 Linux 或 Windows 安装镜像。Linux 镜像从相应发行版官方镜像页选择仍受支持的版本；Windows Server 评估镜像从 [Microsoft 评估中心](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2025) 获取。原实验使用 CentOS 7 和 Windows Server 2016 等旧版本，学习命令可作参考，但新环境应核对系统支持周期、许可和镜像校验值。
 
 参考资料：https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2025
 
@@ -810,8 +797,7 @@ Centos7-minial https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-M
 **安装kvm**
 
 ````console
-root@ubuntu-host:~# apt install -y qemu-kvm libvirt-daemon-system libvirt-clients
-bridge-utils virtinst virt-manager virt-viewer cpu-checker
+root@ubuntu-host:~# apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager virt-viewer cpu-checker
 ````
 
 **验证**
@@ -846,15 +832,13 @@ KVM acceleration can be used
 root@ubuntu-host:~# apt -y install cockpit cockpit-machines
 ````
 
-默认情况下，该软件禁用了root用户登录
+以下截图沿用旧实验的 root 登录方式。实际使用 Cockpit 时，建议使用有明确授权的个人账户，通过系统权限委派管理虚拟机，而不是为方便访问移除 root 登录限制。
 
 ````console
-root@ubuntu-host:~# vim /etc/cockpit/disallowed-users
 root@ubuntu-host:~# cat /etc/cockpit/disallowed-users
 # List of users which are not allowed to login to Cockpit
-# root # 注释掉改行，允许root登录
-重启主机服务
-root@ubuntu-host:~# systemctl restart cockpit
+root
+root@ubuntu-host:~# systemctl enable --now cockpit.socket
 ````
 
 **检查服务**
@@ -897,19 +881,19 @@ tcp6 0 0 :::9090 :::* LISTEN
 
 浏览器访问 192.0.2.13:9090
 
-![原文插图（第 33 页）]({{ '/subjects/KVM/assets/p033-img01.png' | relative_url }})
+![原文插图（第 33 页）]({{ '/subjects/KVM/assets/p033-img01.webp' | relative_url }})
 
 **点击高级**
 
-![原文插图（第 33 页）]({{ '/subjects/KVM/assets/p033-img02.png' | relative_url }})
+![原文插图（第 33 页）]({{ '/subjects/KVM/assets/p033-img02.webp' | relative_url }})
 
 点击 继续访问 192.0.2.13(不安全)
 
-![原文插图（第 33 页）]({{ '/subjects/KVM/assets/p033-img03.png' | relative_url }})
+![原文插图（第 33 页）]({{ '/subjects/KVM/assets/p033-img03.webp' | relative_url }})
 
-输入系统用户root以及配套的密码 EXAMPLE_PASSWORD，如果提示禁止登录的话，需要开启root登录的配置，参考上一节
+使用获得管理权限的个人账户登录；若出现证书告警，应核对访问地址与证书来源，不要仅凭截图忽略告警。
 
-![原文插图（第 34 页）]({{ '/subjects/KVM/assets/p034-img01.png' | relative_url }})
+![原文插图（第 34 页）]({{ '/subjects/KVM/assets/p034-img01.webp' | relative_url }})
 
 #### virt-manager工具
 
@@ -923,7 +907,7 @@ root@ubuntu-host:~# virt-manager
 
 稍等一会，就会出现一个图形化管理工具
 
-![原文插图（第 34 页）]({{ '/subjects/KVM/assets/p034-img02.png' | relative_url }})
+![原文插图（第 34 页）]({{ '/subjects/KVM/assets/p034-img02.webp' | relative_url }})
 
 ### Rocky安装kvm
 
@@ -942,8 +926,7 @@ root@ubuntu-host:~# virt-manager
 ````console
 [root@kvm-host ~]# yum groupinstall "Virtualization Host"
 方法2：
-[root@kvm-host ~]# yum install qemu-kvm libvirt virt-manager virt-install virt-
-viewer bridge-utils
+[root@kvm-host ~]# yum install qemu-kvm libvirt virt-manager virt-install virt-viewer bridge-utils
 ````
 
 **启动服务**
@@ -989,13 +972,12 @@ ro --dhcp-script=/usr/lib/libvirt/libvirt_leaseshelper
 [root@kvm-host ~]# yum install cockpit cockpit-machines
 ````
 
-默认情况下，该软件禁用了root用户登录
+以下仍保留旧版界面记录；自建环境应优先使用具备管理权限的个人账户，保留 Cockpit 对 root 的默认限制。
 
 ````console
-[root@kvm-host ~]# vim /etc/cockpit/disallowed-users
 [root@kvm-host ~]# cat /etc/cockpit/disallowed-users
 # List of users which are not allowed to login to Cockpit
-# root # 注释掉改行，允许root登录
+root
 ````
 
 **重启主机服务**
@@ -1036,19 +1018,19 @@ tcp6 0 0 :::9090 :::* LISTEN 1/systemd
 
 浏览器访问 192.0.2.12:9090
 
-![原文插图（第 36 页）]({{ '/subjects/KVM/assets/p036-img01.png' | relative_url }})
+![原文插图（第 36 页）]({{ '/subjects/KVM/assets/p036-img01.webp' | relative_url }})
 
 **点击 高级**
 
-![原文插图（第 37 页）]({{ '/subjects/KVM/assets/p037-img01.png' | relative_url }})
+![原文插图（第 37 页）]({{ '/subjects/KVM/assets/p037-img01.webp' | relative_url }})
 
 点击 继续访问 192.0.2.12(不安全)
 
-![原文插图（第 37 页）]({{ '/subjects/KVM/assets/p037-img02.png' | relative_url }})
+![原文插图（第 37 页）]({{ '/subjects/KVM/assets/p037-img02.webp' | relative_url }})
 
-**输入服务器登录用户名 root以及配套的密码 EXAMPLE_PASSWORD**
+**输入受权管理账户及其密码**
 
-![原文插图（第 37 页）]({{ '/subjects/KVM/assets/p037-img03.png' | relative_url }})
+![原文插图（第 37 页）]({{ '/subjects/KVM/assets/p037-img03.webp' | relative_url }})
 
 #### 创建虚拟机
 
@@ -1063,21 +1045,21 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 **点击左边栏的 虚拟机**
 
-![原文插图（第 38 页）]({{ '/subjects/KVM/assets/p038-img01.png' | relative_url }})
+![原文插图（第 38 页）]({{ '/subjects/KVM/assets/p038-img01.webp' | relative_url }})
 
 点击创建虚拟机，相关配置如图所示
 
-![原文插图（第 38 页）]({{ '/subjects/KVM/assets/p038-img02.png' | relative_url }})
+![原文插图（第 38 页）]({{ '/subjects/KVM/assets/p038-img02.webp' | relative_url }})
 
 注意：关于镜像的选择，需要一层目录一层目录的选择，不会一下子输出出来
 
 **点击 创建并运行**
 
-![原文插图（第 38 页）]({{ '/subjects/KVM/assets/p038-img03.png' | relative_url }})
+![原文插图（第 38 页）]({{ '/subjects/KVM/assets/p038-img03.webp' | relative_url }})
 
 点击centos7.0 的虚拟机名字
 
-![原文插图（第 39 页）]({{ '/subjects/KVM/assets/p039-img01.png' | relative_url }})
+![原文插图（第 39 页）]({{ '/subjects/KVM/assets/p039-img01.webp' | relative_url }})
 
 **可以看到虚拟机已经开始创建了**
 
@@ -1085,19 +1067,19 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 点击工作界面 左上角的 虚拟机，回到虚拟机的列表界面
 
-![原文插图（第 39 页）]({{ '/subjects/KVM/assets/p039-img02.png' | relative_url }})
+![原文插图（第 39 页）]({{ '/subjects/KVM/assets/p039-img02.webp' | relative_url }})
 
 **点击关机左侧的三个小点点**
 
-![原文插图（第 39 页）]({{ '/subjects/KVM/assets/p039-img03.png' | relative_url }})
+![原文插图（第 39 页）]({{ '/subjects/KVM/assets/p039-img03.webp' | relative_url }})
 
-**点击 删除**
+**点击删除前先区分“移除虚拟机定义”和“删除关联磁盘”。** 若勾选磁盘，数据将随之删除；应先核对虚拟机名称、卷路径和备份，再按实际需要选择。
 
-![原文插图（第 40 页）]({{ '/subjects/KVM/assets/p040-img01.png' | relative_url }})
+![原文插图（第 40 页）]({{ '/subjects/KVM/assets/p040-img01.webp' | relative_url }})
 
 **确认要删除的关联信息**
 
-![原文插图（第 40 页）]({{ '/subjects/KVM/assets/p040-img02.png' | relative_url }})
+![原文插图（第 40 页）]({{ '/subjects/KVM/assets/p040-img02.webp' | relative_url }})
 
 #### virt-manager工具
 
@@ -1109,7 +1091,7 @@ CentOS-7-x86_64-Minimal-2009.iso
 
 稍等一会，就会出现一个图形化管理工具
 
-![原文插图（第 40 页）]({{ '/subjects/KVM/assets/p040-img03.png' | relative_url }})
+![原文插图（第 40 页）]({{ '/subjects/KVM/assets/p040-img03.webp' | relative_url }})
 
 注意： 如果rocky没有安装桌面环境的话，执行上面的命令会导致如下问题
 
@@ -1119,7 +1101,7 @@ CentOS-7-x86_64-Minimal-2009.iso
 (virt-manager:37183): Gtk-WARNING **: 11:36:38.431: cannot open display:
 ````
 
-**解决方法：**
+**解决方法：** `virt-manager` 需要可用的图形显示会话；无桌面服务器可从本地桌面客户端通过 libvirt 远程连接，或使用 Cockpit/`virsh`。不必仅为运行管理器就安装整个桌面环境并重启服务器。下列旧实验命令仅展示当时的做法。
 
 ````console
 [root@kvm-host ~]# yum groupinstall "带 GUI 的服务器"
@@ -1182,59 +1164,59 @@ virt-manager 是一个图形化虚拟机管理工具,方便管理和查看虚拟
 
 稍等一会，就会出现一个图形化管理工具
 
-![原文插图（第 42 页）]({{ '/subjects/KVM/assets/p042-img01.png' | relative_url }})
+![原文插图（第 42 页）]({{ '/subjects/KVM/assets/p042-img01.webp' | relative_url }})
 
 **点击新建虚拟机**
 
-![原文插图（第 42 页）]({{ '/subjects/KVM/assets/p042-img02.png' | relative_url }})
+![原文插图（第 42 页）]({{ '/subjects/KVM/assets/p042-img02.webp' | relative_url }})
 
 #### 选中镜像文件
 
 点击本地安装介质，然后点击浏览进入到 定位 ISO介质卷位置
 
-![原文插图（第 42 页）]({{ '/subjects/KVM/assets/p042-img03.png' | relative_url }})
+![原文插图（第 42 页）]({{ '/subjects/KVM/assets/p042-img03.webp' | relative_url }})
 
 选中我们之前说的目录 /data/images ,如果右侧没有CentOS的镜像，可以点击本地浏览的方式找到它
 
-![原文插图（第 43 页）]({{ '/subjects/KVM/assets/p043-img01.png' | relative_url }})
+![原文插图（第 43 页）]({{ '/subjects/KVM/assets/p043-img01.webp' | relative_url }})
 
 #### 定制vm资源配置
 
 选中CentOS镜像后，点击 Choose Volume，就可以看到镜像已经选择完毕了，然后点击 Forward
 
-![原文插图（第 43 页）]({{ '/subjects/KVM/assets/p043-img02.png' | relative_url }})
+![原文插图（第 43 页）]({{ '/subjects/KVM/assets/p043-img02.webp' | relative_url }})
 
 调整虚拟机的资源为2C2G，磁盘空间为20G，然后点击 Forward
 
-![原文插图（第 43 页）]({{ '/subjects/KVM/assets/p043-img03.png' | relative_url }})
+![原文插图（第 43 页）]({{ '/subjects/KVM/assets/p043-img03.webp' | relative_url }})
 
 #### 安装系统
 
 勾选，在安装前自定义配置后，点击完成，可以看到安装VM前的效果
 
-![原文插图（第 44 页）]({{ '/subjects/KVM/assets/p044-img01.png' | relative_url }})
+![原文插图（第 44 页）]({{ '/subjects/KVM/assets/p044-img01.webp' | relative_url }})
 
 其他的操作，和之前的Rocky安装的步骤一样，等所有的配置做完后，查看安装效果
 
-![原文插图（第 44 页）]({{ '/subjects/KVM/assets/p044-img02.png' | relative_url }})
+![原文插图（第 44 页）]({{ '/subjects/KVM/assets/p044-img02.webp' | relative_url }})
 
 **等待出现 重启主机**
 
-![原文插图（第 44 页）]({{ '/subjects/KVM/assets/p044-img03.png' | relative_url }})
+![原文插图（第 44 页）]({{ '/subjects/KVM/assets/p044-img03.webp' | relative_url }})
 
 然后点击重启主机后，确认效果
 
-![原文插图（第 45 页）]({{ '/subjects/KVM/assets/p045-img01.png' | relative_url }})
+![原文插图（第 45 页）]({{ '/subjects/KVM/assets/p045-img01.webp' | relative_url }})
 
 #### 查看监控效果
 
 点击virt-manager的管理界面，可以看到运行虚拟机的监控状态
 
-![原文插图（第 45 页）]({{ '/subjects/KVM/assets/p045-img02.png' | relative_url }})
+![原文插图（第 45 页）]({{ '/subjects/KVM/assets/p045-img02.webp' | relative_url }})
 
 如果看不到 cpu使用率的话，可以点击 查看
 
-![原文插图（第 45 页）]({{ '/subjects/KVM/assets/p045-img03.png' | relative_url }})
+![原文插图（第 45 页）]({{ '/subjects/KVM/assets/p045-img03.webp' | relative_url }})
 
 #### 确认效果
 

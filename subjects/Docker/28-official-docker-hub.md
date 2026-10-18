@@ -1,342 +1,106 @@
 ---
 layout: default
-title: "Docker 容器技术 · 官方 Docker 仓库"
+title: "Docker 容器技术 · 官方 Docker Hub 仓库"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
+[← 返回 Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 28 官方 Docker 仓库
-## 6 Docker 仓库管理
+# 28 官方 Docker Hub 仓库
 
-Docker仓库，类似于yum仓库，是用来保存镜像的仓库。
+镜像仓库解决的是**镜像的集中存放与分发**：构建者将镜像推送（push）到仓库，使用者从仓库拉取（pull）。仓库可以位于 Docker Hub、云厂商容器镜像服务，也可以由团队自行部署。本篇先以 Docker Hub 说明命名、登录、推送和拉取的完整链路；后两篇再介绍云厂商仓库与自建 Registry。
 
-为了方便的管理和使用docker镜像,可以将镜像集中保存至Docker仓库中，将制作好的镜像push到仓库集中保存，在需要镜像时，从仓库中pull镜像即可。
+## 先认清镜像名称
 
-Docker 仓库分为公有云仓库和私有云仓库
+完整镜像引用通常写成 `[仓库域名/]命名空间/仓库名:标签`。在 Docker Hub 上，域名 `docker.io` 通常可省略。例如 `docker.io/example-user/alpine:3.11-v1` 与 `example-user/alpine:3.11-v1` 指向同一仓库的同一标签。省略标签时默认使用 `latest`，它只是普通标签，不保证一定是最新版本；发布与部署最好显式指定版本或摘要。
 
-公有云仓库:  由互联网公司对外公开的仓库
+个人命名空间属于用户，组织命名空间用于多人协作。镜像是否公开、谁有推送权限，由仓库与组织设置决定，并非由标签决定。
 
-官方阿里云等第三方仓库
+## 注册账户并创建仓库
 
-私有云仓库:  组织内部搭建的仓库，一般只为组织内部使用，常使用下面软件搭建仓库
+在 [Docker Hub](https://hub.docker.com/) 注册、登录后，创建个人仓库。仓库名、可见性和命名空间需要与稍后 `docker tag` 使用的路径一致。下面保留了原教程的界面截图；页面布局可能已变化，以当前界面上的同名功能为准。
 
-docker registory docker harbor
+![Docker Hub 注册入口](assets/img-1fb2e3dfc8ed8e55.webp)
 
-### 6.1 官方 Docker 仓库
+![Docker Hub 账户界面](assets/img-21a7d5c488af8c7b.webp)
 
-将自制的镜像上传至docker仓库；https://hub.docker.com/
+![Docker Hub 创建仓库的入口](assets/img-1968a63e7af19044.webp)
 
-### 注册账户
+![Docker Hub 仓库设置界面](assets/img-78c3fe0c8e2123fd.webp)
 
-访问hub.docker.com注册账户，并登录
+![Docker Hub 仓库详情示例](assets/img-f023f5a7d5980167.webp)
 
-![Docker 容器技术第 384 页插图](assets/img-1fb2e3dfc8ed8e55.png)
+## 登录、打标签与推送
 
-![Docker 容器技术第 384 页插图](assets/img-21a7d5c488af8c7b.png)
-
-![Docker 容器技术第 384 页插图](assets/img-1968a63e7af19044.png)
-
-![Docker 容器技术第 385 页插图](assets/img-78c3fe0c8e2123fd.png)
-
-![Docker 容器技术第 385 页插图](assets/img-f023f5a7d5980167.png)
-
-### 使用用户仓库管理镜像
-
-每个注册用户都可以上传和管理自已的镜像
-
-### 用户登录
-
-上传镜像前需要执行docker login命令登录，登录后生成~/.docker/config.json文件保存验证信息
-
-格式
-
-```text
-docker login [OPTIONS] [SERVER]
-选项:
--p, --password string   Password
---password-stdin    Take the password from stdin
--u, --username string   Username
-```
-
-范例:
+先登录，再把本地镜像标记为目标仓库地址。交互式 `docker login` 会提示输入用户名和凭据；在脚本中应通过 `--password-stdin` 传入访问令牌，不要把密码写在命令行或提交到仓库。Docker 的登录信息默认保存在用户目录的 `~/.docker/config.json`，若未配置凭据助手，应特别保护这个文件。
 
 ```bash
-#登录docker官方仓库方法1
-[root@ubuntu1804 ~]#docker login  -u bowenxiaochun -pP@ssw0rd!  docker.io
-WARNING! Using --password via the CLI is insecure. Use --password-stdin.
-WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
-Configure a credential helper to remove this warning. See
-https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-Login Succeeded
-#登录docker官方仓库方法2
-[root@ubuntu1804 ~]#docker login
-Login with your Docker ID to push and pull images from Docker Hub. If you don't
-have a Docker ID, head over to https://hub.docker.com to create one.
-Username: bowenxiaochun
-Password:
-WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
-Configure a credential helper to remove this warning. See
-https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-Login Succeeded
-[root@ubuntu1804 ~]#
-#登录成功后,自动生成验证信息,下次会自动登录,而无需手动登录
-[root@ubuntu1804 ~]#cat .docker/config.json
-{
-"auths": {
-"https://index.docker.io/v1/": {
-"auth": "d2FuZ3hpYW9jaHVuOjEyMzQ1Ng=="
-}
-},
-"HttpHeaders": {
-"User-Agent": "Docker-Client/19.03.5 (linux)"
-}
-}[root@ubuntu1804 ~]#
+docker login docker.io
+docker image ls
+docker tag alpine:3.11 docker.io/example-user/alpine:3.11-v1
+docker push docker.io/example-user/alpine:3.11-v1
 ```
 
-### 给本地镜像打标签
+`docker tag` 只增加一条本地名称引用，不会复制镜像层。首次推送会上传目标仓库尚未拥有的层；后续推送若看到 `Layer already exists` 或 `Mounted from`，表示服务端复用了已有层。推送完成后，可在仓库页面核对标签及镜像摘要（digest）。
 
-上传本地镜像前必须先给上传的镜像用docker tag 命令打标签
+**注意：** `docker push example-user/alpine` 未指定标签时，并不是“一次推送所有版本”；它会使用默认的 `latest` 标签。要发布多个版本，应逐个推送，或使用支持的 `--all-tags` 选项。
 
-标签格式:   docker.io/用户帐号/镜像名:TAG
+![Docker Hub 中的推送结果](assets/img-eb55db9095e3c2cd.webp)
 
-范例:
+![Docker Hub 仓库标签列表](assets/img-db0a4f9106b43719.webp)
+
+![Docker Hub 镜像详情](assets/img-423dfdca21ff030b.webp)
+
+## 在另一台主机验证
+
+公开仓库的镜像一般无需登录即可拉取；私有仓库则需要相应的读取权限。用与推送时**完全一致的标签**拉取，再运行容器验证，这比只看本机 `docker images` 更能证明分发链路可用。
 
 ```bash
-[root@ubuntu1804 ~]#docker tag alpine:3.11 docker.io/bowenxiaochun/alpine:3.11-v1
-[root@ubuntu1804 ~]#docker images
-REPOSITORY              TAG                 IMAGE ID            CREATED
-SIZE
-haproxy-centos7         2.1.2               5eccdb29a058        4 hours ago
-428MB
-nginx-ubuntu1804        1.16.1              19efdd23ac87        18 hours ago
-378MB
-nginx-alpine            1.16.1              978a43bbb61d        19 hours ago
-211MB
-alpine-base             3.11                b162eecf4da9        20 hours ago
-182MB
-tomcat-web              app2                0e1760fe79a6        40 hours ago
-838MB
-tomcat-web              app1                76016219a0ca        40 hours ago
-838MB
-tomcat-base             v8.5.50             8d5395cb72c4        41 hours ago
-824MB
-centos7-jdk             8u212               e0fe770a7ccd        42 hours ago
-809MB
-centos7-base            v1                  34ab3afcd3b3        43 hours ago
-403MB
-alpine                  3.11                e7d92cdc71fe        12 days ago
-5.59MB
-alpine                  latest              e7d92cdc71fe        12 days ago
-5.59MB
-bowenxiaochun/alpine     3.11-v1             e7d92cdc71fe        12 days ago
-5.59MB
-ubuntu                  18.04               ccc6e87d482b        2 weeks ago
-64.2MB
-ubuntu                  bionic              ccc6e87d482b        2 weeks ago
-64.2MB
-centos                  centos7.7.1908      08d05d1d5859        2 months ago
-204MB
+docker pull docker.io/example-user/alpine:3.11-v1
+docker image inspect docker.io/example-user/alpine:3.11-v1 --format '{{.Id}}'
+docker run --rm docker.io/example-user/alpine:3.11-v1 cat /etc/alpine-release
 ```
 
-### 上传本地镜像至官网
+若推送后又覆盖了同名标签，可通过 `docker pull ...@sha256:<摘要>` 精确定位不可变内容；生产部署尤其适合记录摘要。
+
+## 组织仓库与权限
+
+多人维护镜像时，可创建组织，将成员加入团队，再按仓库授予读取、写入或管理权限。团队成员仍使用自己的账户登录，推送路径则变为 `docker.io/example-org/仓库名:标签`。操作顺序是：创建组织与仓库 → 配置团队权限 → 登录 → 打标签 → 推送 → 从另一台主机拉取验证。
+
+![Docker Hub 创建组织入口](assets/img-3897286c7b942fbe.webp)
+
+![Docker Hub 组织信息设置](assets/img-2aa9deacf269c95b.webp)
+
+![Docker Hub 组织仓库界面](assets/img-652d9e5a8b8dc80a.webp)
+
+![Docker Hub 团队设置入口](assets/img-95cc0bcb15d5d75d.webp)
+
+![Docker Hub 团队成员设置](assets/img-722c81d5fbae9b9f.webp)
+
+![Docker Hub 团队权限设置](assets/img-06ad25769c764403.webp)
 
 ```bash
-#如tag省略,将上传指定REPOSITORY的所有版本,如下示例
-#[root@ubuntu1804 ~]#docker push docker.io/bowenxiaochun/alpine
-[root@ubuntu1804 ~]#docker push docker.io/bowenxiaochun/alpine:3.11-v1
-The push refers to repository [docker.io/bowenxiaochun/alpine]
-5216338b40a7: Mounted from bowenlinux/alpine-base
-3.11-v1: digest:
-sha256:ddba4d27a7ffc3f86dd6c2f92041af252a1f23a8e742c90e6e1297bfa1bc0c45 size:
-528
+docker tag alpine:3.11 docker.io/example-org/alpine-base:3.11
+docker push docker.io/example-org/alpine-base:3.11
+docker pull docker.io/example-org/alpine-base:3.11
 ```
 
-### 在官网验证上传的镜像
+这里的推送成功取决于登录账户是否对 `example-org/alpine-base` 具有写入权限。遇到 `denied`，先检查命名空间、仓库可见性和团队授权，不要误认为本地镜像损坏。
 
-![Docker 容器技术第 387 页插图](assets/img-eb55db9095e3c2cd.png)
+![Docker Hub 组织镜像推送结果](assets/img-148c6e8aafb706e8.webp)
 
-![Docker 容器技术第 387 页插图](assets/img-db0a4f9106b43719.png)
+![Docker Hub 组织仓库标签](assets/img-a1d394de57e3d35c.webp)
 
-![Docker 容器技术第 388 页插图](assets/img-423dfdca21ff030b.png)
-
-### 下载上传的镜像并创建容器
-
-在另一台主机上下载镜像
-
-```bash
-[root@centos7 ~]#docker pull bowenxiaochun/alpine:3.11-v1
-3.11-v1: Pulling from bowenxiaochun/alpine
-c9b1b535fdd9: Already exists
-Digest: sha256:ddba4d27a7ffc3f86dd6c2f92041af252a1f23a8e742c90e6e1297bfa1bc0c45
-Status: Downloaded newer image for bowenxiaochun/alpine:3.11-v1
-docker.io/bowenxiaochun/alpine:3.11-v1
-[root@centos7 ~]#docker images
-REPOSITORY              TAG                 IMAGE ID            CREATED
-SIZE
-bowenxiaochun/alpine     3.11-v1             e7d92cdc71fe        12 days ago
-5.59MB
-[root@centos7 ~]#docker run -it --rm bowenxiaochun/alpine:3.11-v1 sh
-/ # cat /etc/issue
-Welcome to Alpine Linux 3.11
-Kernel \r on an \m (\l)
-/ # du -sh /
-5.6M    /
-/ # exit
-[root@centos7 ~]#
-```
-
-### 使用组织管理镜像
-
-组织类似于名称空间，每个组织的名称全网站唯一，一个组织可以有多个用户帐户使用，并且可以指定不同用户对组织内的仓库不同的权限
-
-三种不同权限
-
-Read-only:  Pull and view repository details and builds Read &Write:  Pull, push, and view a repository; view, cancel, retry or trigger builds Admin:  Pull, push, view, edit, and delete a repository; edit build settings; update the repository description
-
-### 创建组织
-
-![Docker 容器技术第 389 页插图](assets/img-3897286c7b942fbe.png)
-
-![Docker 容器技术第 389 页插图](assets/img-2aa9deacf269c95b.png)
-
-![Docker 容器技术第 389 页插图](assets/img-652d9e5a8b8dc80a.png)
-
-### 创建组织内的团队，并分配权限
-
-![Docker 容器技术第 390 页插图](assets/img-95cc0bcb15d5d75d.png)
-
-![Docker 容器技术第 390 页插图](assets/img-722c81d5fbae9b9f.png)
-
-![Docker 容器技术第 390 页插图](assets/img-06ad25769c764403.png)
-
-### 上传镜像前登录帐号
-
-```json
-[root@ubuntu1804 ~]#docker login docker.io
-Login with your Docker ID to push and pull images from Docker Hub. If you don't
-have a Docker ID, head over to https://hub.docker.com to create one.
-Username: bowenxiaochun
-Password:
-WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
-Configure a credential helper to remove this warning. See
-https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-Login Succeeded
-[root@ubuntu1804 ~]#cat .docker/config.json
-{
-"auths": {
-"https://index.docker.io/v1/": {
-"auth": "d2FuZ3hpYW9jaHVuOjEyMzQ1Ng=="
-}
-},
-"HttpHeaders": {
-"User-Agent": "Docker-Client/19.03.5 (linux)"
-}
-}[root@ubuntu1804 ~]#
-```
-
-### 给本地镜像打标签
-
-```bash
-[root@ubuntu1804 ~]#docker tag alpine-base:3.11 docker.io/bowenlinux/alpine-
-base:3.11
-[root@ubuntu1804 ~]#docker images
-REPOSITORY              TAG                 IMAGE ID            CREATED
-SIZE
-haproxy-centos7         2.1.2               5eccdb29a058        4 hours ago
-428MB
-nginx-ubuntu1804        1.16.1              19efdd23ac87        18 hours ago
-378MB
-nginx-alpine            1.16.1              978a43bbb61d        19 hours ago
-211MB
-alpine-base             3.11                b162eecf4da9        20 hours ago
-182MB
-bowenlinux/alpine-base   3.11                b162eecf4da9        20 hours ago
-182MB
-tomcat-web              app2                0e1760fe79a6        40 hours ago
-838MB
-tomcat-web              app1                76016219a0ca        40 hours ago
-838MB
-tomcat-base             v8.5.50             8d5395cb72c4        41 hours ago
-824MB
-centos7-jdk             8u212               e0fe770a7ccd        42 hours ago
-809MB
-centos7-base            v1                  34ab3afcd3b3        43 hours ago
-403MB
-alpine                  3.11                e7d92cdc71fe        12 days ago
-5.59MB
-alpine                  latest              e7d92cdc71fe        12 days ago
-5.59MB
-bowenxiaochun/alpine     3.11-v1             e7d92cdc71fe        12 days ago
-5.59MB
-ubuntu                  18.04               ccc6e87d482b        2 weeks ago
-64.2MB
-ubuntu                  bionic              ccc6e87d482b        2 weeks ago
-64.2MB
-centos                  centos7.7.1908      08d05d1d5859        2 months ago
-204MB
-```
-
-### 上传镜像到指定的组织
-
-```bash
-[root@ubuntu1804 ~]#docker push docker.io/bowenlinux/alpine-base:3.11
-The push refers to repository [docker.io/bowenlinux/alpine-base]
-1783f0912dfb: Pushed
-1e5e8d5ab333: Pushed
-5216338b40a7: Mounted from library/alpine
-3.11: digest:
-sha256:7931fed46d377698dacb194d46017c53bc24f2e9ee41e893e6900c07d1153536 size:
-947
-```
-
-### 在网站看查看上传的镜像
-
-![Docker 容器技术第 392 页插图](assets/img-148c6e8aafb706e8.png)
-
-![Docker 容器技术第 392 页插图](assets/img-a1d394de57e3d35c.png)
-
-![Docker 容器技术第 393 页插图](assets/img-441b826bed1b2607.png)
-
-### 下载上传的镜像并运行容器
-
-在另一台主机上下载镜像
-
-```bash
-[root@centos7 ~]#docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED
-SIZE
-[root@centos7 ~]#docker pull bowenlinux/alpine-base:3.11
-3.11: Pulling from bowenlinux/alpine-base
-c9b1b535fdd9: Pull complete
-327af1e87fd8: Pull complete
-d88818b49372: Pull complete
-Digest: sha256:7931fed46d377698dacb194d46017c53bc24f2e9ee41e893e6900c07d1153536
-Status: Downloaded newer image for bowenlinux/alpine-base:3.11
-docker.io/bowenlinux/alpine-base:3.11
-[root@centos7 ~]#docker images
-REPOSITORY              TAG                 IMAGE ID            CREATED
-SIZE
-bowenlinux/alpine-base   3.11                b162eecf4da9        20 hours ago
-182MB
-[root@centos7 ~]#docker run -it --rm bowenlinux/alpine-base:3.11 sh
-/ # cat /etc/issue
-Welcome to Alpine Linux 3.11
-Kernel \r on an \m (\l)
-/ # du -sh /
-190.1M  /
-/ # exit
-[root@centos7 ~]#
-```
+![Docker Hub 组织镜像详情](assets/img-441b826bed1b2607.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Docker/27-using-json-configuration-files.html' | relative_url }}">← Previous: Using JSON Configuration Files</a>
-  <a href="{{ '/subjects/Docker/' | relative_url }}">Back to Docker Container Technology Index</a>
-  <a href="{{ '/subjects/Docker/29-alibaba-cloud-docker-registry.html' | relative_url }}">Next: Alibaba Cloud Docker Registry →</a>
+  <a href="{{ '/subjects/Docker/27-using-json-configuration-files.html' | relative_url }}">← 上一篇：使用 JSON 配置文件</a>
+  <a href="{{ '/subjects/Docker/' | relative_url }}">返回 Docker 容器技术目录</a>
+  <a href="{{ '/subjects/Docker/29-alibaba-cloud-docker-registry.html' | relative_url }}">下一篇：阿里云 Docker 仓库 →</a>
 </nav>

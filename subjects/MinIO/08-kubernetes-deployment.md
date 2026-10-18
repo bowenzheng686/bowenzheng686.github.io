@@ -1,290 +1,189 @@
 ---
 layout: default
-title: "MinIO 对象存储 · 基于Kubernetes 部署"
+title: "MinIO 对象存储 · Kubernetes 部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回 MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 08 基于Kubernetes 部署
-### 2.4 基于Kubernetes 部署
+# 08 Kubernetes 部署
 
-<https://github.com/minio/minio/tree/master/docs/orchestration/kubernetes>
+Kubernetes 中可以直接编写 StatefulSet 清单，也可以使用 MinIO Operator 或 Helm Chart。选用哪一种方式，首先取决于存储：**每个数据 PVC 必须有稳定持久的后端和清晰的故障域**。四个 PVC 若都落在同一台 NFS 服务器或同一组底层磁盘上，Pod 数量增加并不会消除该存储单点。生产环境优先按当前官方[Operator 文档](https://github.com/minio/operator)规划多节点和多个独立数据卷。
 
-基于Kubernetes 部署 MinIO 有多种方法
+## 手写清单：四 Pod 教学示例
 
-Manifest YAML 清单文件 MinIO Operator Helm
+下面的例子帮助理解 StatefulSet、Headless Service 和 Pod DNS 的关系。每个 Pod 挂载一个独立 PVC；还需要让调度器把 Pod 分散到不同节点，并让 `sc-block-rwo` 实际提供独立的存储故障域。若集群没有该 StorageClass，先替换为真实名称。清单仅适于理解和测试，不是完整的生产配置。
 
-### YAML清单文件
+先创建命名空间与凭据。不要把真实密码或 base64 编码后的 Secret 提交到仓库；Kubernetes Secret 的 `data` 字段只是编码，不等于加密。
 
-环境要求: 依赖于一个支持PV动态置备的名称为sc-nfs的StorageClass
+```bash
+kubectl create namespace minio
+kubectl -n minio create secret generic minio-root \
+  --from-literal=MINIO_ROOT_USER=admin \
+  --from-literal=MINIO_ROOT_PASSWORD='请替换为独立的强密码'
+```
 
-service 资源
+以下保存为 `minio.yaml`。Headless Service 的稳定 DNS 为各 Pod 提供固定端点，`publishNotReadyAddresses` 允许新集群在 Pod 尚未就绪时发现其他节点；对外 Service 独立暴露 API 和 Console。
 
 ```yaml
-#minio-service.yaml
----
-kind: Service
-apiVersion: v1
-metadata:
-name: minio-headless
-labels:
-app: minio
-spec:
-clusterIP: None
-#publishNotReadyAddresses: true
-selector:
-app: minio
-ports:
-- name: http
-port: 9000
-targetPort: 9000
----
 apiVersion: v1
 kind: Service
 metadata:
-name: minio
+  name: minio-headless
+  namespace: minio
 spec:
-type: LoadBalancer
-selector:
-app: minio
-ports:
-- port: 9000
-targetPort: 9000
-name: http
-- port: 9001
-targetPort: 9001
-name: console
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: api
 ---
-```
-
-secret 资源
-
-```yaml
-#minio-secret.yaml
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
-name: minio-secret
-data:
-MINIO_ROOT_USER: YWRtaW4=
-# username: admin
-MINIO_ROOT_PASSWORD: MTIzNDU2Nzg=
-# root password: 12345678
-```
-
-statefulset 资源
-
-```yaml
-#minio-statefulset.yaml
+  name: minio
+  namespace: minio
+spec:
+  type: ClusterIP
+  selector:
+    app: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: api
+    - name: console
+      port: 9001
+      targetPort: console
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-name: minio
-labels:
-app: minio
+  name: minio
+  namespace: minio
 spec:
-serviceName: "minio-headless"
-replicas: 4
-podManagementPolicy: "Parallel" #并行启动pod，不配置的话模式是按顺序启动pod，minio、
-nacos都需要配置并行启动
-selector:
-matchLabels:
-app: minio
-template:
-metadata:
-labels:
-app: minio
-annotations:
-prometheus.io/scrape: "true"
-prometheus.io/port: "9000"
-prometheus.io/path: "/minio/v2/metrics/node"
-#prometheus.io/path: "/minio/v2/metrics/cluster"
-#prometheus.io/path: "/minio/v2/metrics/bucket"
-spec:
-containers:
-- name: minio
-#image: minio/minio:RELEASE.2023-12-02T10-51-33Z
-image: minio/minio:RELEASE.2024-08-03T04-33-23Z
-volumeMounts:
-- name: data
-mountPath: /data
-args:
-- server
-- http://minio-{0...3}.minio-
-headless.$(MINIO_POD_NAMESPACE).svc.cluster.local/data
-- "--address=:9000"
-- "--console-address=:9001"
-env:
-# MinIO access key and secret key
-- name: MINIO_ROOT_USER
-valueFrom:
-secretKeyRef:
-name: minio-secret
-key: MINIO_ROOT_USER
-- name: MINIO_ROOT_PASSWORD
-valueFrom:
-secretKeyRef:
-name: minio-secret
-key: MINIO_ROOT_PASSWORD
-- name: MINIO_POD_NAMESPACE
-valueFrom:
-fieldRef:
-fieldPath: metadata.namespace
-- name: MINIO_PROMETHEUS_AUTH_TYPE
-value: "public"
-livenessProbe:
-failureThreshold: 3
-httpGet:
-path: /minio/health/live
-port: http
-scheme: HTTP
-initialDelaySeconds: 120
-periodSeconds: 15
-successThreshold: 1
-timeoutSeconds: 10
-ports:
-- containerPort: 9000
-name: http
-protocol: TCP
-volumeClaimTemplates:
-- metadata:
-name: data
-spec:
-accessModes:
-- ReadWriteOnce
-resources:
-requests:
-storage: 10Gi
-storageClassName: "sc-nfs"
+  serviceName: minio-headless
+  replicas: 4
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: minio
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: minio
+          image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
+          args:
+            - server
+            - http://minio-{0...3}.minio-headless.minio.svc.cluster.local/data
+            - --console-address=:9001
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: minio-root
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: minio-root
+                  key: MINIO_ROOT_PASSWORD
+          ports:
+            - name: api
+              containerPort: 9000
+            - name: console
+              containerPort: 9001
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          startupProbe:
+            httpGet:
+              path: /minio/health/live
+              port: api
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: api
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: api
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: sc-block-rwo
+        resources:
+          requests:
+            storage: 10Gi
 ```
 
-ingress 资源
+由于采用必需的 Pod 反亲和性，集群少于四个可调度节点时，部分 Pod 会保持 Pending。这比四个 Pod 全挤在一台节点上却误以为高可用更容易排查。清单中的容量、资源请求和镜像版本仅是教学值，应按当前版本文档与业务负载调整。
 
-```yaml
-#minio-ingress.yaml
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-name: minio
-spec:
-ingressClassName: nginx
-rules:
-- host: minio.bowen.org
-http:
-paths:
-- path: /
-pathType: Prefix
-backend:
-service:
-name: minio
-port:
-number: 9001
+```bash
+kubectl apply --dry-run=client -f minio.yaml
+kubectl apply -f minio.yaml
+kubectl -n minio get pods,pvc,svc -o wide
+kubectl -n minio logs minio-0
+kubectl -n minio port-forward svc/minio 9001:9001
 ```
 
-### MinIO Operator
+最后一条命令只在本机打开 Console 访问通道，可访问 `http://127.0.0.1:9001`。API 同理可以转发 `9000`。测试时再用 `mc admin info`、跨 Pod 的对象读写和 PVC／节点故障演练确认预期容错，而不只看 Pod 为 Running。
 
-<https://github.com/minio/operator/blob/master/README.md>
+### Ingress 与监控
 
-![MinIO 对象存储第 49 页插图](assets/img-fd63e628ad2cbfa4.png)
+若需要给 API 或 Console 配置 Ingress，应分别设置域名、TLS 与对外 URL；不要把 API 和 Console 混在同一后端端口。原清单中的 Ingress 缩进损坏，且只指向 Console。不同控制器对大文件上传、超时及 WebSocket 的处理也不同，应用前应检查对应控制器配置。Prometheus 指标端点的认证方式应与采集器配置匹配，不要仅为抓取方便就将管理指标公开。
 
-### Helm 安装
+## Operator 与 Helm
 
-<https://github.com/minio/minio/tree/master/helm/minio>
+MinIO Operator 管理 Tenant 的创建与生命周期，适合需要多个独立 Tenant、滚动维护和 Kubernetes 原生管理的场景。先核对当前[Operator 安装说明](https://github.com/minio/operator/blob/master/README.md)与 Kubernetes 版本兼容性，再按存储与故障域规划 Tenant。
 
-Configure MinIO Helm repo
+![MinIO Operator 管理界面](assets/img-fd63e628ad2cbfa4.webp)
 
-```text
+Helm Chart 则通过版本化模板生成资源。原材料中的 `helm install --name` 是旧版 Helm 语法，在 Helm 3 中应把 release 名称作为位置参数；`--generate-name` 与固定 release 名二选一。先检查 Chart 版本和值文件，再安装：
+
+```bash
 helm repo add minio https://charts.min.io/
+helm repo update
+helm show values minio/minio > minio-values.yaml
+# 人工编辑 minio-values.yaml：模式、PVC、资源、镜像和凭据
+helm upgrade --install my-minio minio/minio \
+  --namespace minio --create-namespace -f minio-values.yaml
+helm -n minio status my-minio
 ```
 
-Installing the Chart
-
-Install this chart using:
-
-```text
-helm install --namespace minio --set rootUser=rootuser,rootPassword=rootpass123 -
--generate-name minio/minio
-```
-
-The command deploys MinIO on the Kubernetes cluster in the default configuration. The configuration section lists the parameters that can be configured during installation. Installing the Chart (toy-setup)
-
-Minimal toy setup for testing purposes can be deployed using:
-
-```text
-helm install --set resources.requests.memory=512Mi --set replicas=1 --set
-persistence.enabled=false --set mode=standalone --set
-rootUser=rootuser,rootPassword=rootpass123 --generate-name minio/minio
-```
-
-Upgrading the Chart
-
-You can use Helm to update MinIO version in a live release. Assuming your release is named as my-release , get the values using the command:
-
-```text
-helm get values my-release > old_values.yaml
-```
-
-Then change the field image.tag in old_values.yaml file with MinIO image tag you want to use. Now update the chart using
-
-```text
-helm upgrade -f old_values.yaml my-release minio/minio
-```
-
-Default upgrade strategies are specified in the values.yaml file. Update these fields if you'd like to use a different strategy.
-
-Configuration
-
-Refer the Values file for all the possible config fields.
-
-You can specify each parameter using the --set key=value[,key=value] argument to helm install . For example,
-
-```text
-helm install --name my-release --set persistence.size=1Ti minio/minio
-```
-
-The above command deploys MinIO server with a 1Ti backing persistent volume.
-
-Alternately, you can provide a YAML file that specifies parameter values while installing the chart. For example,
-
-```text
-helm install --name my-release -f values.yaml minio/minio
-```
-
-Persistence
-
-This chart provisions a PersistentVolumeClaim and mounts corresponding persistent volume to default location /export . You'll need physical storage available in the Kubernetes cluster for this to work. If you'd rather use emptyDir , disable PersistentVolumeClaim by:
-
-```text
-helm install --set persistence.enabled=false minio/minio
-```
-
-"An emptyDir volume is first created when a Pod is assigned to a Node, and exists as long as that Pod is running on that node. When a Pod is removed from a node for any reason, the data in the emptyDir is deleted forever."
-
-Existing PersistentVolumeClaim
-
-If a Persistent Volume Claim already exists, specify it during installation.
-
-1. Create the PersistentVolume
-
-2. Create the PersistentVolumeClaim
-
-3. Install the chart
-
-```text
-helm install --set persistence.existingClaim=PVC_NAME minio/minio
-```
+已有 PVC 的使用方式取决于所选 Chart 版本的 values 结构，不能不看模板就照搬旧参数 `persistence.existingClaim`。关闭持久化一般会使用临时卷，Pod 删除后数据可能丢失，只适合明确接受这一后果的短期实验。升级前备份当前 values、核对 Chart 与服务版本的兼容性，并在测试环境演练回滚。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/07-distributed-cluster-deployment.html' | relative_url }}">← Previous: Distributed Cluster Deployment</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/09-minio-console-management.html' | relative_url }}">Next: MinIO Console Management →</a>
+  <a href="{{ '/subjects/MinIO/07-distributed-cluster-deployment.html' | relative_url }}">← 上一篇：分布式集群部署</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储目录</a>
+  <a href="{{ '/subjects/MinIO/09-minio-console-management.html' | relative_url }}">下一篇：Console 管理 →</a>
 </nav>

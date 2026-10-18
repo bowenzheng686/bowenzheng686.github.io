@@ -17,11 +17,11 @@ syntax_highlight: true
 
 **工具体系**
 
-![原文插图（第 48 页）]({{ '/subjects/KVM/assets/p048-img01.png' | relative_url }})
+![原文插图（第 48 页）]({{ '/subjects/KVM/assets/p048-img01.webp' | relative_url }})
 
 **虚拟机的管理有两套管理工具：**
 
-qemu：linux内核支持的专用kvm管理工具 qemu-kvm 结合虚拟化软件qemv管理kvm虚拟机的集成工具集
+QEMU 提供设备模拟和虚拟机进程；启用 KVM 加速后，CPU 虚拟化由内核模块与硬件扩展协作完成。`qemu-img` 管理磁盘镜像。libvirt 则在上层提供统一管理接口，`virt-install`、`virsh` 和 `virt-manager` 都可借助它工作。
 
 ````text
     qemu-img 虚拟磁盘的管理工具
@@ -260,10 +260,10 @@ encryption). Ex:
 
 **查看子命令帮助：**
 
-**用此工具创建的磁盘文件显示和实际占用的空间都是很小的**
+`qemu-img create` 创建的 raw 文件可采用稀疏分配：`ls -lh` 显示逻辑容量，`du -h` 显示实际占用。写入数据后实际占用会增长，不能只看初始大小判断存储是否足够。
 
 ````bash
-qemu-img create -f 磁盘格式 容量
+qemu-img create -f <磁盘格式> <镜像路径> <虚拟容量>
 ````
 
 命令格式：qemu-img create -f 磁盘格式 磁盘名称 磁盘大小
@@ -286,10 +286,12 @@ Formatting '/opt/CentOS-7-x86_64.raw', fmt=raw size=10737418240
 使用virt-install命令，基于我们提供的系统镜像和虚拟磁盘来创建一个虚拟机，另外在创建虚拟机之前，提前打开vnc客户端，在创建虚拟机的时候，通过vnc来连接虚拟机，对其进行配置和查看进度。
 
 ````console
-[root@kvm-host ~]# virt-install --virt-type kvm --name CentOS-7-x86_64 --memory
-1024 --cdrom=/data/images/CentOS-7-x86_64-Minimal-2009.iso --disk=/opt/CentOS-7-
-x86_64.raw --network network=default --graphics vnc,listen=0.0.0.0 --
-noautoconsole
+[root@kvm-host ~]# virt-install --virt-type kvm --name CentOS-7-x86_64 \
+  --memory 1024 --vcpus 1 \
+  --cdrom /data/images/CentOS-7-x86_64-Minimal-2009.iso \
+  --disk path=/opt/CentOS-7-x86_64.raw,format=raw,bus=virtio \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=127.0.0.1 --noautoconsole
 参数解析：
     --virt-type kvm 指定创建的虚拟机基于的虚拟化技术
     --name CentOS-7-x86_64 指定创建虚拟机的名字，推荐"简洁"
@@ -297,7 +299,7 @@ noautoconsole
     --cdrom=XX.iso 指定创建虚拟机使用的系统镜像
     --disk path=XX.raw 指定创建虚拟机使用的虚拟磁盘
     --network network=default 指定创建虚拟机使用的网络类型
-    --graphics vnc,listen=0.0.0.0 指定访问虚拟机使用的客户端配置信息
+    --graphics vnc,listen=127.0.0.1 仅允许宿主机本地访问 VNC；远程访问应使用受控通道
     --noautoconsole 禁用配置的客户端自动连接虚拟机
 ````
 
@@ -305,17 +307,17 @@ noautoconsole
 
 **打开vnc-viewer软件**
 
-![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img01.png' | relative_url }})
+![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img01.webp' | relative_url }})
 
-只需要输入一个 192.0.2.12【kvm的主机地址】 即可
+先用 `virsh vncdisplay CentOS-7-x86_64` 查询显示编号；若沿用旧截图的远程 VNC 连接方式，必须确认服务监听地址和访问控制。上方新示例只监听 `127.0.0.1`，远程客户端需要通过 SSH 隧道或本地管理器连接，不能直接输入宿主机地址。
 
-![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img02.png' | relative_url }})
+![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img02.webp' | relative_url }})
 
 通过vnc客户端连接到安装界面,kvm虚拟机的默认端口从5900开始
 
 双击 192.0.2.12 连接
 
-![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img01.png' | relative_url }})
+![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img01.webp' | relative_url }})
 
 #### 系统安装
 
@@ -326,25 +328,25 @@ noautoconsole
 - 通过给内核传递参数，配置网卡
 - 按Tab键，编辑配置，在末尾追加 net.ifnames=0 biosdevname=0，编辑完毕后，直接按Enter
 
-![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img02.png' | relative_url }})
+![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img02.webp' | relative_url }})
 
 接下来跟安装普通系统的步骤一致，毕竟是测试，所以注意以下几项：
 
 **网卡打开：**
 
-![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img01.png' | relative_url }})
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img01.webp' | relative_url }})
 
 安装软件：最小化
 
-![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img02.png' | relative_url }})
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img02.webp' | relative_url }})
 
 检查安装源：(默认)
 
-![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img03.png' | relative_url }})
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img03.webp' | relative_url }})
 
 设置最简单密码：EXAMPLE_PASSWORD
 
-![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img04.png' | relative_url }})
+![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img04.webp' | relative_url }})
 
 等待系统安装完毕后，点击reboot，重启虚拟机
 
@@ -369,15 +371,15 @@ vnc中虚拟机是不会重启的，需要在宿主机系统中，使用命令�
 
 **vnc连接登录**
 
-![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img01.png' | relative_url }})
+![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img01.webp' | relative_url }})
 
 **查看ip地址**
 
-![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img02.png' | relative_url }})
+![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img02.webp' | relative_url }})
 
 **查看路由信息**
 
-![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img03.png' | relative_url }})
+![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img03.webp' | relative_url }})
 
 可以看到：操作方式是跟正常操作linux系统的方式是一致的。
 
@@ -828,7 +830,7 @@ vnc://localhost:0
 
 **vnc查看连接方式：**
 
-![原文插图（第 66 页）]({{ '/subjects/KVM/assets/p066-img01.png' | relative_url }})
+![原文插图（第 66 页）]({{ '/subjects/KVM/assets/p066-img01.webp' | relative_url }})
 
 ##### console登录
 
@@ -930,7 +932,7 @@ s0:c0.c1023
 
 查看vnc效果，vnc的画面没有任何动的痕迹了 -- vnc界面卡死了，但是虚拟机并没有关机
 
-![原文插图（第 68 页）]({{ '/subjects/KVM/assets/p068-img01.png' | relative_url }})
+![原文插图（第 68 页）]({{ '/subjects/KVM/assets/p068-img01.webp' | relative_url }})
 
 #### 恢复
 
@@ -958,7 +960,7 @@ s0:c0.c1023
 
 可以看到：vnc界面里面恢复了，而且可以进行操作
 
-![原文插图（第 69 页）]({{ '/subjects/KVM/assets/p069-img01.png' | relative_url }})
+![原文插图（第 69 页）]({{ '/subjects/KVM/assets/p069-img01.webp' | relative_url }})
 
 #### 关闭实践
 
@@ -1006,15 +1008,14 @@ virsh shutdown 虚拟机名称
  - CentOS-7-x86_64-2 关闭
 ````
 
-使用shutdown关闭的时候，一定要避免资源冲突，特别是基于同一个配置文件创建出来的虚拟机。如果出现这种情况的话，shutdown不管用，使用kill方式关闭或者强制删除方法，示例如下：
+如果关机长时间无响应，先检查来宾系统状态和 QEMU 日志；`virsh shutdown` 发送正常关机请求，来宾可能暂时无法处理。确需断电时可用 `virsh destroy <虚拟机>`，但会丢失未写入磁盘的数据。不要直接 `kill` QEMU 进程或以“资源冲突”推断关机失败原因。
 
 **关闭虚拟机**
 
 ````bash
-   ps aux | grep CentOS
-   kill 6589
-检查
-   virsh list --all
+virsh domstate CentOS-7-x86_64
+virsh destroy CentOS-7-x86_64  # 仅在正常关机失败且已接受数据丢失风险时执行
+virsh list --all
 ````
 
 #### 强制关闭
@@ -1061,9 +1062,7 @@ virsh shutdown 虚拟机名称
 
 #### 删除实践
 
-正常删除,不影响虚拟机的当前运行状态的删除
-
-删除其配置文件，virsh状态表中存在，关闭虚拟机后，状态表中亦删除命令格式：virsh undefine 虚拟机名称
+`virsh undefine` 取消虚拟机的持久定义，**默认不删除磁盘文件**。运行中的虚拟机可能继续运行到关机，但关机后不再作为持久虚拟机列出。执行前保存 XML（`virsh dumpxml <名称> > <备份文件>`），核对磁盘路径及快照；不要把“取消定义”与“删除所有数据”混为一谈。
 
 **删除虚拟机**
 
@@ -1090,7 +1089,7 @@ domain 'CentOS-7-x86_64-2' 已被解除定义
 autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
 ````
 
-注意：正则运行中的虚拟机会在关闭虚拟机的时候，彻底消失。
+注意：已取消持久定义的运行中虚拟机在关闭后不再列出；镜像文件仍需单独管理。若存在托管保存状态或快照，`undefine` 的具体选项和限制应先用 `virsh help undefine` 核对。
 
 ### 开机自启动
 
@@ -1312,11 +1311,11 @@ vnc://localhost:2988
 
 上面测试的信息是给 vnc 连接时候登录用的，不是给 virsh console 连接用的，因为virsh console 不走 vnc。
 
-![原文插图（第 76 页）]({{ '/subjects/KVM/assets/p076-img01.png' | relative_url }})
+![原文插图（第 76 页）]({{ '/subjects/KVM/assets/p076-img01.webp' | relative_url }})
 
 **点击输入密码后的效果**
 
-![原文插图（第 77 页）]({{ '/subjects/KVM/assets/p077-img01.png' | relative_url }})
+![原文插图（第 77 页）]({{ '/subjects/KVM/assets/p077-img01.webp' | relative_url }})
 
 ## 2.3 其他内容
 
@@ -1377,10 +1376,12 @@ centos7, centos7.0
 **创建虚拟机**
 
 ````console
-[root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name
-centos7 --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
-2009.iso --disk path=/opt/CentOS-7-x86_64.qcow2,size=10,format=qcow2,bus=virtio -
--network network=default --graphics vnc,listen=0.0.0.0 --noautoconsole
+[root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name centos7 \
+  --memory 1024 --vcpus 1 \
+  --cdrom /data/images/CentOS-7-x86_64-Minimal-2009.iso \
+  --disk path=/opt/centos7-new.qcow2,size=10,format=qcow2,bus=virtio \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=127.0.0.1 --noautoconsole
 ````
 
 **确认效果**
@@ -1398,11 +1399,14 @@ centos7 --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
 注意：使用桥接方式创建vm，需要提前保证是存在桥接网卡的，否则下面的命令无法执行
 
 ````console
-[root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name
-centos7-bridge --ram 1024 --vcpus 1 --cdrom=/data/images/CentOS-7-x86_64-Minimal-
-2009.iso --disk path=/opt/CentOS-7-x86_64.qcow2,size=10,format=qcow2,bus=virtio -
--network network=bridge:virbr1,model=virtio --graphics vnc,listen=0.0.0.0 --
-noautoconsole
+[root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name centos7-bridge \
+  --memory 1024 --vcpus 1 \
+  --cdrom /data/images/CentOS-7-x86_64-Minimal-2009.iso \
+  --disk path=/opt/centos7-bridge.qcow2,size=10,format=qcow2,bus=virtio \
+  --network bridge=br0,model=virtio \
+  --graphics vnc,listen=127.0.0.1 --noautoconsole
+
+这里使用第 04 章创建的宿主机外部桥 `br0`，而不是 libvirt NAT 网络默认使用的 `virbr*`。两台虚拟机也必须使用**不同的可写磁盘镜像**，不能同时指向同一镜像文件。
 ````
 
 ### 克隆VM
@@ -1415,17 +1419,19 @@ noautoconsole
 
 clone的方式，仅限于关闭的主机场景
 
-![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img01.png' | relative_url }})
+![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img01.webp' | relative_url }})
 
 **对第一个主机进行克隆操作**
 
-![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img02.png' | relative_url }})
+![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img02.webp' | relative_url }})
 
 查看克隆后效果，克隆后的主机，和之前的主机运行效果一样，而且使用的不是同一个磁盘
 
-![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img03.png' | relative_url }})
+![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img03.webp' | relative_url }})
 
-# 2 核心知识
+### 本章要点
+
+创建虚拟机前确认安装镜像、独立磁盘、网络和控制台访问方式；运行后用 `virsh dominfo`、`domblklist` 和 `domiflist` 分别核对资源、磁盘与网卡。关闭、强制断电、取消定义和删除磁盘是不同操作，先确认影响范围再执行。
 
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/KVM/01-virtualization-basics.html' | relative_url }}">← 上一章：虚拟化基础</a>

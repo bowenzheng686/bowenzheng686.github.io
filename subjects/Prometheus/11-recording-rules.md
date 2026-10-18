@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Prometheus · 记录规则"
+title: "Prometheus · 记录规则与预计算指标"
 subject_page: true
 prometheus_notes: true
 syntax_highlight: true
@@ -10,213 +10,103 @@ syntax_highlight: true
 
 {% raw %}
 
-# 11 记录规则
+# 11 记录规则与预计算指标
 
-# 5 记录和告警规则
+Prometheus 的规则分为**记录规则**和**告警规则**。前者定期执行 PromQL，把结果写回为新的时间序列，供仪表盘和告警重复使用；后者定期判断条件并产生告警。本篇只讨论记录规则，下一篇再进入告警。记录规则不是给查询“起别名”那么简单：它会新增样本、占用存储，并按规则评估周期刷新，因此应优先用于高频、昂贵或需要统一口径的表达式。
 
-![原 PDF 第 135 页插图](assets/img-240284a2c2f809e4.png)
+![记录规则与告警规则的关系](assets/img-240284a2c2f809e4.webp)
 
-## 5.1 记录规则
+## 从查询到记录规则
 
-### 5.1.1 规则简介
+假设应用暴露累计处理时长 `request_processing_seconds_sum` 和累计请求数 `request_processing_seconds_count`。两者直接相除得到的是**进程启动以来**的平均时长；若想看最近五分钟，应该先对两个单调递增计数器分别求 `rate(...[5m])`，再相除。这样既明确时间窗口，也能正确处理计数器重置。
 
-Prometheus 支持两种类型的规则：
-
-记录规则
-警报规则  
-
-它们可以进行配置，然后定期进行评估。要将规则包含在Prometheus中，需要先创建一个包含必要规则语句的文件，并让Prometheus通过Prometheus配置中的rule_fies字段加载该文件。默认情况下，prometheus的规则文件使用YAML格式
-
-规则的使用流程：
-
-首先创建一个满足规则标准的规则语句，然后发送SIGHUP给Prometheus进程
-prometheus在运行时重新加载规则文件，从而让规则在prometheus运行环境中生效  
-
-规则语法检查：
-```text
-#promtool check rules prometheus_rues_file.yml
-#说明：
-当该文件在语法上有效时，检查器将已解析规则的文本表示形式打印到标准输出，然后以0返回状态退出。
-如果有任何语法错误或无效的输入参数，它将打印一条错误消息为标准错误，并以1返回状态退出。
+```promql
+sum by (instance) (rate(request_processing_seconds_sum{job="my_metric"}[5m]))
+/
+sum by (instance) (rate(request_processing_seconds_count{job="my_metric"}[5m]))
 ```
 
-可以在prometheus.yaml配置文件中通过rule_fies属性进行导入即可，格式如下
+一个仪表盘的多个面板和告警规则反复计算这段表达式时，可以把它保存为记录规则。下面是独立的 `/usr/local/prometheus/rules/app.yml` 文件：
+
 ```yaml
-rule_files:
-  - "first_rules.yml"
-  - "second_rules.yml"
-  - "../rules/*.yml"
-#注意: 如果用相对路径是指相对于prometheus.yml配置文件的路径
-```
-
-### 5.1.2 记录规则说明
-https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/
-
-在Prometheus的表达式浏览器进行的查询会生成的新的数据序列，但其结果仅会临时保存于Prometheus Server上
-
-在样本数据量较大、工作较为繁忙的Prometheus Server上，对于那些查询频率较高且运算较为复杂的查询来说，实时查询可能会存在一定程度的响应延迟
-
-记录规则的作用其实将之前的监控命令采用配置文件的方式进行编写，从而大大减轻工作量
-
-记录规则(Recording rule）能够预先运行频繁用到或计算消耗较大的表达式，并将其结果保存为一组新的时间序列
-
-记录规则是定义在Prometheus配置文件中的查询语句，由Server加载后以类似批处理任务的方式在后台周期性(evaluation_interval)的执行并记录查询结果
-
-客户端只需要查询由记录规则生成的结果序列上的样本数据即可，速度远快于实时查询;常用于跨多个时间序列生成聚合数据，或者计算消耗较大的查询等场景中
-
-多见于同可视化工具结合使用的需求中，也可用于生成可产生告警信息的时间序列
-
-记录规则常用的场景：
-
-将预先计算经常需要或计算量大的复杂的PromQL语句指定为一个独立的metric监控项，这样在查询的
-时候就非常方便，而且查询预计算结果通常比每次需要原始表达式都要快得多，尤其是对于仪表板特别  
-有用，仪表板每次刷新时都需要重复查询相同的表达式。  
-此外在告警规则中也可以引用记录规则  
-记录规则效果与shell中的别名相似  
-```yaml
-#规则文件的语法为：
 groups:
-  [ - <rule_group> ]
-#简单的规则文件示例
-groups:
-  - name: example
-    interval: 10s
-    limit: <init> | default=0
+  - name: app-recording
+    interval: 30s
     rules:
-    - record: job:http_inprogress_requests:sum
-      expr: sum(http_inprogress_requests) by (job)
-      labels:
-        [ <labelname>: <labelvalue> ]
-   - name: example2
-   ......
+      - record: instance:request_processing_seconds:mean_rate5m
+        expr: >-
+          sum by (instance) (rate(request_processing_seconds_sum{job="my_metric"}[5m]))
+          /
+          sum by (instance) (rate(request_processing_seconds_count{job="my_metric"}[5m]))
+      - record: instance:request_count:rate5m
+        expr: >-
+          sum by (instance) (rate(request_count_total{job="my_metric"}[5m]))
 ```
 
-属性解析：
-name        #规则组名，必须是唯一的
-interval    #定制规则执行的间隔时间,默认值为prometheus.yml配置文件中的
-global.evaluation_interval
-limit:      #限制条件，对于记录规则用于限制其最多可生成序列数量，对于告警规则用于限制最多可生成的告
-警数量
-rules       #设定规则具体信息
-record      #定制指标的名称
-expr        #执行成功的PromQL
-labels      #为该规则设定标签
+`record` 是新指标名，`expr` 是待评估的 PromQL。`groups[].interval` 可覆盖全局 `evaluation_interval`；不写时使用全局值。组内规则顺序有意义：若后面的规则引用前面的记录结果，应确保依赖顺序清楚。规则评估会产生新序列，不应为每个高基数标签组合都随意建规则。
 
-### 5.1.3 记录规则案例
+原资料的 YAML 把 PromQL 折成了没有正确缩进的多行，且查询处把 `request_processing` 拼成 `request_prcess`。上面的 `>-` YAML 折叠块使表达式仍是一个字符串，并统一了可查询的新指标名。
 
-#### 5.1.3.1 案例说明
-```text
-#在Prometheus查询部分指标时需要通过将现有的规则组合成一个复杂的表达式，才能查询到对应的指标结果，比
-如在查询"自定义的指标请求处理时间"，参考如下
-request_processing_seconds_sum{instance="10.0.0.101:8000",job="my_metric"} /
-request_processing_seconds_count{instance="10.0.0.101:8000",job="my_metric"}
-#以上的查询语句写起来非常长，在我们graph绘图的时候，每次输入命令都是非常繁琐,很容易出现问题。
-```
+## 加载与验证
 
-### 5.1.3 2 记录规则实现
+在现有 `prometheus.yml` 中加入规则文件路径。下面使用绝对路径，避免不同启动工作目录下的相对路径歧义；其他 `scrape_configs` 与全局配置应原样保留。
 
-范例：
 ```yaml
-#创建规则记录文件
-]# mkdir /usr/local/prometheus/rules
-]# vim /usr/local/prometheus/rules/prometheus_record_rules.yml
-groups:
-- name: myrules
-  rules:
-  - record: "request_process_per_time"
-    expr: request_processing_seconds_sum{job="my_metric"} /
-request_processing_seconds_count{job="my_metric"}
-    labels:
-      app: "flask"
-      role: "web"
-  - record: "request_count_per_minute"
-    expr: increase(request_count_total{job="my_metric"}[1m])
-    labels:
-      app: "flask"
-      role: "web"
-#检查规则文件有效性
-]# promtool check config /usr/local/prometheus/conf/prometheus.yml
-Checking /usr/local/prometheus-2.50.1.linux-amd64/conf/prometheus.yml
-  SUCCESS: 1 rule files found
- SUCCESS: /usr/local/prometheus-2.50.1.linux-amd64/conf/prometheus.yml is valid
-prometheus config file syntax
-Checking /usr/local/prometheus-2.50.1.linux-amd64/rules/prometheus_record_rules.yml
-  SUCCESS: 2 rules found
-#只检查规则文件
-]# promtool check rules /usr/local/prometheus/rules/prometheus_record_rules.yml
-Checking /usr/local/prometheus/rules/prometheus_record_rules.yml
-  SUCCESS: 2 rules found
-#编辑prometheus配置文件
-]# vim /usr/local/prometheus/conf/prometheus.yml
-...
 rule_files:
-  - "../rules/*.yml"  #加此一行,如果是相对路径，是相对于prometheus.yml的路径
-  # - "first_rules.yml"
-...
-#重启服务，加载prometheus配置
-]#curl -X POST http://prometheus.bowen.org:9090/-/reload
-]#systemctl reload prometheus.service
-#访问测试
-[root@ubuntu2404 ~]#while true ;do curl 127.0.0.1:8001/metrics;sleep
-0.$[RANDOM%10];done
-#登录到prometheus的web界面，可以通过request_prcess_per_time指标查询我们想要的数据，效果如下：
+  - /usr/local/prometheus/rules/*.yml
 ```
 
-![原 PDF 第 138 页插图](assets/img-f2f97efa43dd7be2.png)
+先检查规则和主配置，再按本机服务的实际方式重载。HTTP `/-/reload` 端点只有在 Prometheus 启用相应生命周期参数时可用；否则可由服务管理器发送重载信号。**选择一种适用方式即可，不必把重启、systemd reload 和 HTTP reload 连续执行。**
 
-点击Status下面的Rules，查看效果
+```bash
+promtool check rules /usr/local/prometheus/rules/app.yml
+promtool check config /usr/local/prometheus/conf/prometheus.yml
+sudo systemctl reload prometheus
+```
 
-![原 PDF 第 138 页插图](assets/img-c51be10d4e0fa6f8.png)
+重载后在 Prometheus 的 **Status → Rules** 查看规则组状态，再在表达式页面查询 `instance:request_processing_seconds:mean_rate5m`。规则正常加载却没有结果时，应先确认原始指标存在，且最近五分钟有足够样本；`rate` 需要至少两个样本。下图对应原教程从规则状态到 Grafana 面板的验证过程。
 
-在 Grafana 图形使用记录规则
+![Prometheus 中查询记录规则结果](assets/img-f2f97efa43dd7be2.webp)
 
-![原 PDF 第 139 页插图](assets/img-caf192fb3f20766f.png)
+![Prometheus Rules 页面](assets/img-c51be10d4e0fa6f8.webp)
 
-![原 PDF 第 139 页插图](assets/img-1c9b1c7a4a3324e6.png)
+![Grafana 选择新指标](assets/img-caf192fb3f20766f.webp)
 
-范例：系统相关指标的记录规则
+![Grafana 展示预计算结果](assets/img-1c9b1c7a4a3324e6.webp)
+
+## 系统指标的记录规则
+
+Node Exporter 的 CPU 空闲时间是累计计数器，先求每秒速率，再转为使用率；内存“可用”更适合用 `MemAvailable` 而非只看 `MemFree`；根分区关注可供普通进程使用的 `avail_bytes`。下面三个记录指标都以 **0～1 比率**表示，仪表盘若要百分比再乘 100 或设置百分比单位，不要名称叫 percent 却保存 0～1 的值。
+
 ```yaml
-vim /usr/local/prometheus/rules/prometheus_record_rules.yml
 groups:
-- name: custom_rules
-  interval: 5s
-  rules:
-  - record: instance:node_cpu:avg_rate5m
-    expr: 100 - avg(irate(node_cpu_seconds_total{job="node_exporter", mode="idle"}
-[5m])) by (instance) * 100
-  - record: instace:node_memory_MemFree_percent
-    expr: 100 - (100 * node_memory_MemFree_bytes / node_memory_MemTotal_bytes)
-  - record: instance:root:node_filesystem_free_percent
-    expr: 100 * node_filesystem_free_bytes{mountpoint="/"} /
-node_filesystem_size_bytes{mountpoint="/"}
-vim /usr/local/prometheus/conf/prometheus.yml
-...
-rule_files:
-  - "../rules/*.yml"  #加此一行,如果是相对路径，是相对于prometheus.yml的路径
+  - name: node-recording
+    interval: 30s
+    rules:
+      - record: instance:node_cpu_usage:ratio5m
+        expr: >-
+          1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+      - record: instance:node_memory_usage:ratio
+        expr: >-
+          1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+      - record: instance:root_filesystem_available:ratio
+        expr: >-
+          node_filesystem_avail_bytes{mountpoint="/"}
+          /
+          node_filesystem_size_bytes{mountpoint="/"}
 ```
 
-![原 PDF 第 140 页插图](assets/img-5b6da91c007ece46.png)
+这些表达式依赖实际目标是否暴露相应指标及标签。若某台机器有多个根挂载序列，还需按 `device`、`fstype` 过滤后再聚合；先在 Prometheus 表达式页查看原始序列，再决定是否改写记录规则。
 
-![原 PDF 第 140 页插图](assets/img-ae3b01902b95eed1.png)
+![系统指标规则结果示例](assets/img-5b6da91c007ece46.webp)
 
-范例：MySQL 记录规则
-```yaml
-vim /usr/local/prometheus/rules/mysql_record_rules.yml
-groups:
-- name: mysqld_rules
-  rules:
-  # Record slave lag seconds for pre-computed timeseries that takes
-  # `mysql_slave_status_sql_delay` into account
-  - record: instance:mysql_slave_lag_seconds
-    expr: mysql_slave_status_seconds_behind_master - mysql_slave_status_sql_delay
-  # Record slave lag via heartbeat method
-  - record: instance:mysql_heartbeat_lag_seconds
-    expr: mysql_heartbeat_now_timestamp_seconds -
-mysql_heartbeat_stored_timestamp_seconds
-  - record: job:mysql_transactions:rate5m
-    expr: sum without (command) (rate(mysql_global_status_commands_total{command=~"
-(commit|rollback)"}[5m]))
-```
+![系统指标面板示例](assets/img-ae3b01902b95eed1.webp)
+
+## MySQL 指标为什么要先核对版本
+
+原资料用复制延迟、心跳延迟与事务速率演示 MySQL 记录规则。但 Exporter 版本、MySQL 主从术语以及指标名称会变化，例如旧资料的 `mysql_slave_status_seconds_behind_master` 在新环境未必存在。正确顺序是：先打开当前 mysqld_exporter 的 `/metrics` 或在 Prometheus 查询实际指标 → 确认标签及单位 → 再写对应记录规则。对于事务速率，也应核对当前暴露的是哪一类计数器，使用 `rate(...[5m])` 后按目标维度汇总。**记录规则不会把不存在的原始指标变出来。**
+
+记录规则应让后续查询更稳定、更易理解；若表达式只在一个面板偶尔使用、计算开销很低，就不必额外占用规则评估与存储资源。
 
 {% endraw %}
 

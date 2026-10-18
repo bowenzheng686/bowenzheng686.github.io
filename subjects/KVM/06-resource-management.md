@@ -19,11 +19,11 @@ syntax_highlight: true
 
 **简介**
 
-在虚拟机不关机的情况下，对CPU进行调整操作叫热调整。它是在Redhat7.0以后才出现的功能，所以要使用这功能，那必须要求KVM宿主机和虚拟机规格必须一致，而且在7.0+版本。目前cpu热调整命令，只能增加，不能减少，想要减少的话，可以进入虚拟机中，关闭某个使用的CPU即可。
+虚拟机运行时调整 vCPU 数量称为热调整。是否支持增加或减少，取决于 libvirt/QEMU、虚拟机 CPU 拓扑、最大 vCPU 配置和来宾操作系统的热插拔能力，不能仅按某个发行版版本判断。本文实验展示了增加和减少的结果；生产环境应先在相同配置中验证来宾是否正确识别。
 
 **公有云上的虚拟机为什么不支持cpu的热调整**
 
-1、因为客户创建的虚拟机类型不一致，不满足热添加和热删除的前提条件，所以为了管理的方便就统一不允许了 2、因为创建虚拟机会有个调度的问题，创建的虚拟机的命令，会将创建的虚拟机调度到某一台宿主机上，具体调度到哪台宿主机上，没有办法保证，由于受宿主机的配置影响，所以热添加和热删除的功能没有办法保证
+公有云是否支持热调整取决于云平台、实例规格与来宾系统。即使底层 KVM 支持，平台仍可能因资源预留、计费和调度策略而要求停机变更规格；不能断言所有公有云都不支持。
 
 #### 常见命令
 
@@ -32,7 +32,7 @@ syntax_highlight: true
 ````text
 virsh setvcpus <虚拟机名称> <cpu个数> --live
     注意：
-        默认后面会有 --live 属性，标识热调整，默认不会更改后端的配置
+        --live 修改运行中的实例；不要依赖省略参数时的默认作用范围
         如果需要更改后端的配置，需要使用 --config
 ````
 
@@ -87,7 +87,7 @@ CPU: 8
 1
 ````
 
-cpu0里面有可能没有online，这不影响，如果非要看的话，可以手工添加个
+`cpu0/online` 在部分系统中不存在是正常现象；不要手工创建内核 sysfs 节点。查看整体在线状态可用 `lscpu` 或 `/sys/devices/system/cpu/online`。
 
 ````console
 [root@kvm-host ~]# cat /sys/devices/system/cpu/cpu0/online
@@ -131,7 +131,7 @@ cache cpuidle crash_notes crash_notes_size driver firmware_node hotplug
     <vcpu placement='static' current='1'>4</vcpu>
 注意：
     意思就是，当前的cpu可以动态调整，当前的cpu个数为1，可调整的最大个数为4
-    经过测试，我的虚拟机可以支持255个，但是最大只能设置253个。
+    最大 vCPU 数受架构、虚拟机芯片组和宿主机资源限制；这里的 4 是本实验配置，不应照搬某台机器上的上限。
     如果操作异常，有可能导致以下异常情况
     error: operation failed: Failed to query numad for the advisory nodeset
 ````
@@ -188,7 +188,7 @@ CPU关系的值：
 **增加cpu后检查**
 
 ````console
-[root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 4
+[root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 4 --live
 ````
 
 确认效果,cpu已经添加为4个了
@@ -225,7 +225,7 @@ CPU关系: yyyyyyyy
 **删减cpu**
 
 ````console
-[root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 2
+[root@kvm-host ~]# virsh setvcpus CentOS-7-x86_64 2 --live
 ````
 
 删减cpu后检查，cpu的数量减少为2个
@@ -331,7 +331,7 @@ CPU关系: yyyyyyyy
 [root@kvm-host ~]# virsh vcpupin CentOS-7-x86_64 1 2
 ````
 
-**将kvm的3号cpu绑定在宿主机的0号cpu上**
+**将虚拟机的 2 号 vCPU 绑定在宿主机的 0 号 CPU 上**
 
 ````console
 [root@kvm-host ~]# virsh vcpupin CentOS-7-x86_64 2 0
@@ -383,24 +383,23 @@ virsh qemu-monitor-command <虚拟机名称> --hmp --cmd 命令
         查看内存 info balloon
         调整内存 balloon 定制容量
     特点：
-        只管调整，不管系统是否重启成功
+        HMP 命令可用于观察 QEMU 状态，但不应替代 libvirt 的常规资源管理与持久化配置。
 ````
 
 **重启后生效**
 
 ````text
-virsh setmem <虚拟机名称> 定制容量
+virsh setmem <虚拟机名称> <容量> --live  # 运行中生效；需来宾气球驱动支持
     注意：
-        该方法上课时候不推荐，因为不是及时生效
-        因为它涉及到虚拟机资源的重新加载(重启主机)，如果内存过小，导致系统无法启动。
-        再一个，频繁执行次数过多导致虚拟机卡死
+        使用 --config 修改持久配置；实际可调范围受最大内存和来宾驱动限制。
+        缩小内存前确认来宾工作集和剩余内存，避免触发换页或 OOM。
 ````
 
 #### 资源超配
 
 **超限使用**
 
-原则上，宿主机的资源是不允许超限使用的，比如，我要在 100G的电脑上，存储 200G的资源。这是不可能的。根据我们之前对虚拟磁盘的原理解析，我们知道，分配的资源和使用的资源是有区别的，实际使用的远远小于分配的资源。所以我们在分配内存的时候，可以对内存进行超配的使用
+存储稀疏分配与内存超配是不同机制。给多台虚拟机配置的内存总量可以超过宿主机物理内存，但若其同时实际使用过多，宿主机会交换、触发 OOM 或使来宾严重变慢。应监控宿主机与来宾的实际用量，保留容量余量，不把“配置量大于物理量”当作可无限使用。
 
 **查看配置文件**
 
@@ -425,23 +424,20 @@ virsh setmem <虚拟机名称> 定制容量
 **查看内存信息**
 
 ````console
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
-balloon
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'info balloon'
 balloon: actual=1024
 ````
 
 **调整内存信息**
 
 ````console
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
-balloon 512
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'balloon 512'
 ````
 
 **确认内存信息**
 
 ````console
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
-balloon
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'info balloon'
 balloon: actual=512
 [root@kvm-host ~]# virsh dumpxml CentOS-7-x86_64|grep -i memo
   <memory unit='KiB'>1048576</memory>
@@ -456,11 +452,9 @@ balloon: actual=512
 在存在最大内存的前提下，是无法调整到限制之外的
 
 ````console
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
-balloon 3000
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'balloon 3000'
 因为最大内存的限制，所以最大的值只能调整到1G
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
-balloon
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'info balloon'
 balloon: actual=1024
 ````
 
@@ -502,25 +496,21 @@ balloon: actual=1024
 **动态调大内存**
 
 ````console
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
-balloon 2048
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'balloon 2048'
 查看当前内存大小
 [root@kvm-host ~]# virsh dominfo CentOS-7-x86_64| grep -E "mem|内存"
 最大内存： 3170304 KiB
 使用的内存： 2097152 KiB
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
-balloon
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'info balloon'
 balloon: actual=2048
 ````
 
 **动态调大内存**
 
 ````console
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd
-balloon 3000
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'balloon 3000'
 查看当前内存大小
-[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd info
-balloon
+[root@kvm-host ~]# virsh qemu-monitor-command CentOS-7-x86_64 --hmp --cmd 'info balloon'
 balloon: actual=3000
 ````
 
@@ -556,7 +546,7 @@ Swap: 1023 0 1023
 **磁盘基本信息**
 
 ````bash
-virsh domblklist --details 虚拟磁盘名称
+virsh domblklist --details <虚拟机名称>
 ````
 
 **磁盘容量调整**
@@ -758,7 +748,7 @@ localhost login: root
 密码：
 Last login: Thu Mar 27 20:19:42 on ttyS0
 [root@localhost ~]# fdisk -l
-# 虽然标称14G，但是字节是和qemu-img info查看到的字节效果一样
+# 十进制显示约 14 GB，对应 13 GiB
 磁盘 /dev/vda：14.0 GB, 13958643712 字节，27262976 个扇区
 Units = 扇区 of 1 * 512 = 512 bytes
 扇区大小(逻辑/物理)：512 字节 / 512 字节
@@ -768,8 +758,7 @@ I/O 大小(最小/最佳)：512 字节 / 512 字节
    设备 Boot Start End Blocks Id System
 /dev/vda1 * 2048 2099199 1048576 83 Linux
 /dev/vda2 2099200 20971519 9436160 8e Linux LVM
-根据上面实验得知：
-    动态调整磁盘容量大小调整成功
+到这一步仅确认**虚拟磁盘的块设备容量**已增加；分区 `/dev/vda2` 和其上的 LVM/文件系统尚未扩容，来宾可用空间不会自动随之增加。下一步应依据分区与文件系统类型执行相应的扩容和备份验证。
 ````
 
 Gi 和 G
@@ -788,21 +777,20 @@ Gi 和 G
 **创建新磁盘**
 
 ````console
-[root@kvm-host ~]# qemu-img create -f raw /opt/storage.qcow2 2G
-Formatting '/opt/storage.qcow2', fmt=raw size=2147483648
+[root@kvm-host ~]# qemu-img create -f raw /opt/storage.raw 2G
+Formatting '/opt/storage.raw', fmt=raw size=2147483648
 ````
 
 **增加新磁盘到虚拟机**
 
 ````console
-[root@kvm-host ~]# virsh attach-disk CentOS-7-x86_64 --source /opt/storage.qcow2
---target vdb --persistent
+[root@kvm-host ~]# virsh attach-disk CentOS-7-x86_64 --source /opt/storage.raw --target vdb --persistent
 成功附加磁盘
 [root@kvm-host ~]# virsh domblklist --details CentOS-7-x86_64
  类型 Device 目标 源
 ----------------------------------------------------
  file disk vda /opt/CentOS-7-x86_64.qcow2
- file disk vdb /opt/storage.qcow2
+ file disk vdb /opt/storage.raw
  file cdrom sda -
 ````
 
@@ -903,11 +891,11 @@ Formatting '/opt/image.raw', fmt=raw size=2147483648
       <target dev='vda' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
     </disk>
-    # 增加如下磁盘内容
+    <!-- 增加如下磁盘内容 -->
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw'/>
       <source file='/opt/image.raw'/>
-      <target dev='vdc' bus='virtio'/> # dev的名字不能重复
+      <target dev='vdc' bus='virtio'/>
     </disk>
                 ...
 注意：
@@ -942,7 +930,7 @@ Formatting '/opt/image.raw', fmt=raw size=2147483648
 
 ##### 使用磁盘
 
-**格式化磁盘**
+**格式化新磁盘。** 先运行 `lsblk -f` 与 `virsh domblklist` 交叉确认目标磁盘，避免将已有数据盘误当作 `/dev/vdb` 格式化。
 
 ````console
 [root@localhost ~]# mkfs.ext4 /dev/vdb
@@ -970,8 +958,7 @@ Writing superblocks and filesystem accounting information: 完成
 ````console
 [root@localhost ~]# blkid /dev/vdb
 /dev/vdb: UUID="00000000-0000-4000-8000-00000000000c" TYPE="ext4"
-[root@localhost ~]# echo 'UUID=00000000-0000-4000-8000-00000000000c /data ext4
-defaults 0 0'>> /etc/fstab
+[root@localhost ~]# echo 'UUID=00000000-0000-4000-8000-00000000000c /data ext4 defaults 0 2' >> /etc/fstab
 [root@localhost ~]# mount -a
 [root@localhost ~]# mount | grep vdb
 /dev/vdb on /data type ext4 (rw,relatime,seclabel,data=ordered)
@@ -979,7 +966,7 @@ defaults 0 0'>> /etc/fstab
 /dev/vda1 1014M 150M 865M 15% /boot
 /dev/vdb 2.0G 6.0M 1.8G 1% /data
 可以看到：
-    新增磁盘的方法调整虚拟机的磁盘容量，在虚拟机中想要看到效果，必须重启虚拟机
+本例通过停机编辑 XML 关联新盘，因此启动虚拟机后才看到设备；前面的 `attach-disk` 热添加实验则可在运行中识别，是否需要重启取决于附加方式和来宾驱动。
 ````
 
 **向磁盘中增加数据**
@@ -999,7 +986,7 @@ drwx------. 2 root root 16K 3月 27 20:46 lost+found
 
 ##### 磁盘移除
 
-**从 CentOS-7-x86_64 中移除磁盘**
+**从 CentOS-7-x86_64 中分离磁盘。** 在来宾内先 `umount /data`，移除或注释 `/etc/fstab` 中对应 UUID 的自动挂载条目，确认没有写入者，再在宿主机执行分离；否则可能损坏文件系统或影响下次启动。
 
 ````console
 [root@kvm-host ~]# virsh detach-disk CentOS-7-x86_64 --target vdc --persistent
@@ -1033,8 +1020,7 @@ drwx------. 2 root root 16K 3月 27 20:46 lost+found
 **挂载新磁盘**
 
 ````console
-[root@kvm-host ~]# virsh attach-disk CentOS-7-clone --source /opt/image.raw --
-target vdx --persistent
+[root@kvm-host ~]# virsh attach-disk CentOS-7-clone --source /opt/image.raw --target vdb --persistent
 成功附加磁盘
 [root@kvm-host ~]# virsh domblklist --details CentOS-7-clone
  类型 Device 目标 源

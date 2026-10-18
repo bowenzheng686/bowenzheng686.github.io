@@ -368,7 +368,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 容器基础Docker</span><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" title="上一章">← 上一章</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" aria-current="page" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 
@@ -447,16 +448,16 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter17/01-containers-vs-vms.png"><img src="assets/chapter17/01-containers-vs-vms.png" alt="对照硬件虚拟化、共享内核、namespace 视图隔离和 cgroups 资源限制。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.2 Docker 三大件 ═══════════════ -->
+<figure class="merged-illustration" data-image-id="chapter17/01-containers-vs-vms.png"><img src="assets/chapter17/01-containers-vs-vms.webp" alt="对照硬件虚拟化、共享内核、namespace 视图隔离和 cgroups 资源限制。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.2 Docker 三大件 ═══════════════ -->
 <h2 class="section-title" id="sec17-2"><span class="icon">2</span>Docker 核心三概念</h2>
 
 <div class="card">
 <div class="card-header"><span class="badge badge-concept">模</span><h3>Image · Container · Registry —— 三个概念撑起整个容器生态</h3><span class="tag tag-core">基础</span></div>
 <div class="card-body">
 <h4>Image（镜像）—— 类比安装光盘</h4>
-<p>镜像是一个只读的文件系统和运行参数的集合。它由一层一层的只读层（layer）叠加而成，每一层对应 Dockerfile 中的一条指令。<strong>镜像不是"压缩包"——它是一个分层文件系统的快照快照。</strong></p>
+<p>镜像包含分层的文件系统内容以及启动配置等元数据。Dockerfile 的部分指令会形成文件系统层，部分只改变镜像配置，因此不能机械地理解成“一条指令必定一层文件”。镜像在仓库中可作为压缩层传输，运行时由存储驱动组合为容器可见的文件系统。</p>
 <p>比如一个 Nginx 镜像的底层结构：</p>
-<div class="editorial-diagram-block" data-diagram-replacement="n070"><figure class="editorial-generated-diagram" data-diagram-source="1b3d5a4e9a051dd1538d44c8cb8e120c984ec51cb562fe32ea505e8523606b1e" data-diagram-asset-mode="built-in image_gen"><a href="assets/generated-diagrams/n070-v2.png" target="_blank" rel="noopener" title="查看原尺寸图片"><img src="assets/generated-diagrams/n070-v2.png" alt="Image（镜像）—— 类比安装光盘" loading="lazy" decoding="async" width="1536" height="1024"></a></figure><details class="editorial-diagram-source" data-diagram-original="n070"><summary>查看原始图示文字</summary><pre><code class="language-plaintext">Layer 5 (最上层): CMD ["nginx", "-g", "daemon off;"]    ← 启动命令
+<div class="editorial-diagram-block" data-diagram-replacement="n070"><figure class="editorial-generated-diagram" data-diagram-source="1b3d5a4e9a051dd1538d44c8cb8e120c984ec51cb562fe32ea505e8523606b1e" data-diagram-asset-mode="built-in image_gen"><a href="assets/generated-diagrams/n070-v2.png" target="_blank" rel="noopener" title="查看原尺寸图片"><img src="assets/generated-diagrams/n070-v2.webp" alt="Image（镜像）—— 类比安装光盘" loading="lazy" decoding="async" width="1536" height="1024"></a></figure><details class="editorial-diagram-source" data-diagram-original="n070"><summary>查看原始图示文字</summary><pre><code class="language-plaintext">Layer 5 (最上层): CMD ["nginx", "-g", "daemon off;"]    ← 启动命令
 Layer 4: COPY nginx.conf /etc/nginx/nginx.conf           ← 自定义配置
 Layer 3: RUN apt update &amp;&amp; apt install -y nginx           ← 安装 Nginx
 Layer 2: RUN apt update &amp;&amp; apt install -y curl ca-certificates  ← 安装依赖
@@ -483,7 +484,7 @@ Layer 1 (最底层): FROM ubuntu:22.04                       ← 基础 OS 层</
 </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter17/02-image-container-registry.png"><img src="assets/chapter17/02-image-container-registry.png" alt="展示 Registry 分发、只读层共享、Copy-on-Write、生命周期与 Volume。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.3 基础命令大全 ═══════════════ -->
+<figure class="merged-illustration" data-image-id="chapter17/02-image-container-registry.png"><img src="assets/chapter17/02-image-container-registry.webp" alt="展示 Registry 分发、只读层共享、Copy-on-Write、生命周期与 Volume。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.3 基础命令大全 ═══════════════ -->
 <h2 class="section-title" id="sec17-3"><span class="icon">3</span>Docker 基础命令大全</h2>
 
 <div class="card">
@@ -633,7 +634,7 @@ Layer 1 (最底层): FROM ubuntu:22.04                       ← 基础 OS 层</
 </div>
 
 <h4>COPY vs ADD —— 什么时候用哪个</h4>
-<p><strong>99% 的情况用 COPY。</strong>ADD 的自动解压功能只在需要从远程 URL 下载并解压 tar 包时使用。除此之外一律用 COPY——语义更清晰、行为更可预测。</p>
+<p>普通文件复制优先使用 <code>COPY</code>，语义直观。<code>ADD</code> 能自动解压构建上下文中的本地 tar 归档，也支持获取远程 URL；远程归档不会因来自 URL 就自动解压。需要远程下载时还应考虑校验、缓存和版本固定，不能把“远程下载并解压”当作 <code>ADD</code> 的单步默认行为。</p>
 
 <h4>CMD vs ENTRYPOINT —— 执行模型的两层设计</h4>
 <pre data-presentation-code="v1" data-presentation-highlight="3b5324eec8937798e158dee7bfeac8c19977ca0f640b4e10be0f46768af3c689"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 只有 CMD（默认执行，可被覆盖）</span>
@@ -699,14 +700,14 @@ CMD [<span class="hljs-string">"-g"</span>, <span class="hljs-string">"daemon of
 </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter17/03-dockerfile-multistage-cache.png"><img src="assets/chapter17/03-dockerfile-multistage-cache.png" alt="解释依赖层前置、builder/runtime 分离、非 root 和敏感信息边界。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.5 docker-compose ═══════════════ -->
+<figure class="merged-illustration" data-image-id="chapter17/03-dockerfile-multistage-cache.png"><img src="assets/chapter17/03-dockerfile-multistage-cache.webp" alt="解释依赖层前置、builder/runtime 分离、非 root 和敏感信息边界。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.5 docker-compose ═══════════════ -->
 <h2 class="section-title" id="sec17-5"><span class="icon">5</span>docker-compose —— 编排多个容器</h2>
 
 <div class="card">
 <div class="card-header"><span class="badge badge-operate">操</span><h3>场景：一个应用需要 Web 服务器 + 应用 + 数据库 + 缓存，怎么一键启动？</h3><span class="tag tag-practice">进阶</span></div>
 <div class="card-body">
 <h4>docker-compose 解决什么问题</h4>
-<p>单个 <code>docker run</code> 只能启动一个容器。真实的应用通常由多个服务组成（如 Nginx + Django + PostgreSQL + Redis + Celery）。每个服务有各自的端口映射、卷挂载、环境变量、网络拓扑。<code>docker-compose</code> 用<strong>一个 YAML 文件描述所有服务</strong>，一条命令启动整个栈。</p>
+<p>一个 <code>docker run</code> 调用创建并启动一个容器；多服务应用若逐个调用，需要自行维护网络、卷和启动顺序。Docker Compose 用 YAML 文件声明这些服务及其依赖，通过当前常见的 <code>docker compose</code> 命令统一管理；旧版独立工具的命令写作 <code>docker-compose</code>。下面的示例按本机安装版本选择命令。</p>
 
 <h4>完整 compose 文件示例：LAMP 栈</h4>
 <pre data-presentation-code="v1" data-presentation-highlight="9666999880e7f9e71b24f24491526b5ddc010f1cb2a9f699638b1a718c4d06b8"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes"><span class="hljs-attr">version:</span> <span class="hljs-string">"3.8"</span>
@@ -786,7 +787,7 @@ CMD [<span class="hljs-string">"-g"</span>, <span class="hljs-string">"daemon of
   <span class="hljs-attr">lamp-net:</span>
     <span class="hljs-attr">driver:</span> <span class="hljs-string">bridge</span></code></pre>
 
-<figure class="merged-illustration" data-image-id="chapter17/04-compose-service-topology.png"><img src="assets/chapter17/04-compose-service-topology.png" alt="展示公网入口、私有服务网络、命名卷、并行依赖健康检查与 down 行为。" loading="lazy" decoding="async" width="1536" height="1024"></figure><h4>docker-compose 常用命令</h4>
+<figure class="merged-illustration" data-image-id="chapter17/04-compose-service-topology.png"><img src="assets/chapter17/04-compose-service-topology.webp" alt="展示公网入口、私有服务网络、命名卷、并行依赖健康检查与 down 行为。" loading="lazy" decoding="async" width="1536" height="1024"></figure><h4>docker-compose 常用命令</h4>
 <pre data-presentation-code="v1" data-presentation-highlight="c821b884600621621a766f197241c1b6c674f37fd3b0a1914804405c5c27ce4a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 启动所有服务（后台）</span>
 <span class="hljs-built_in">docker</span>-compose up<span class="hljs-attr"> -d</span>
 
@@ -901,12 +902,14 @@ psql<span class="hljs-attr"> -h</span> localhost<span class="hljs-attr"> -U</spa
 </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter17/05-container-delivery-rollback.png"><img src="assets/chapter17/05-container-delivery-rollback.png" alt="连接构建、测试、不可变 tag、Registry、版本发布、健康切流与回滚。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
+<figure class="merged-illustration" data-image-id="chapter17/05-container-delivery-rollback.png"><img src="assets/chapter17/05-container-delivery-rollback.webp" alt="连接构建、测试、不可变 tag、Registry、版本发布、健康切流与回滚。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
 
 </div><footer class="site-footer">
   <p>Linux 系统知识卡片系列 · 第17章</p>
   <p style="margin-top:4px">问题驱动 · 追本溯源 —— 容器不是魔法，它是内核特性的优雅封装</p>
 </footer>
 
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body>
 </html>

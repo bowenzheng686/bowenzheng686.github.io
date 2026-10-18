@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "JumpServer 堡垒机 · 官方脚本一键安装"
+title: "JumpServer 堡垒机 · 官方脚本安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
@@ -10,461 +10,54 @@ syntax_highlight: true
 
 {% raw %}
 
-# 10 官方脚本一键安装
-### 2.5 官方脚本一键安装
+# 10 官方脚本安装
 
-官方脚本实现基于docker安装jumpserver
+官方安装脚本会准备配置、镜像和容器，再提供管理命令。它减少手工输入，但并不免除版本选择、脚本审查、数据备份与验收。原资料先后写下 v4.10.7、v4.10.2，却展示 v4.8.1 的安装目录和镜像，又混入 v3 的终端输出；这些记录不能当作同一次安装。本篇保留其中有用的流程，示例版本统一以 **v4.8.1** 说明，实际操作应改为当前明确支持的版本并阅读对应[官方安装文档](https://docs.jumpserver.org/)。
 
-<https://docs.jumpserver.org/zh/v3/installation/setup_linux_standalone/online_install/>
+## 安装前确认
 
-范例：基于jumpserver-v4.10.7
+检查主机的 CPU、内存、磁盘与 Docker／Compose 版本是否满足所选 JumpServer 版本的要求，确认 80、2222 等计划使用的端口没有冲突。决定数据库与审计数据将保存在哪里，并先安排备份目录。若主机已有旧版 JumpServer，先备份并阅读升级说明，不能把全新安装脚本直接当作无损升级器。
 
-```bash
-[root@ubuntu2404 ~]#VERSION=4.10.7
-[root@ubuntu2404 ~]#VERSION=4.10.2
-[root@ubuntu2404 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/download/v${VERSIO
-N}/quick_start.sh|bash
->>> The Installation is Complete
-1. You can use the following command to start, and then visit
+## 获取并核对脚本
+
+从所选版本的发行页获取 quick_start.sh，保存为文件后先阅读。不要把随时间变化的 latest 链接与固定版本号混用，也不要在看不到脚本内容时直接把网络响应送入 Shell：
+
+~~~bash
+VERSION=4.8.1
+curl -fL -o quick_start.sh \
+  "https://github.com/jumpserver/jumpserver/releases/download/v$VERSION/quick_start.sh"
+less quick_start.sh
+~~~
+
+如果发行页提供校验和，应核对下载文件；如果链接、依赖或配置项与该版本文档不符，应先查清原因。确认脚本来源与内容后，按官方步骤运行，并保存安装器输出的实际目录与配置路径。运行脚本会修改主机和容器环境，因此应使用符合组织权限要求的账号操作。
+
+## 启动与管理
+
+原 v4.8.1 示例的安装器输出指向 /opt/jumpserver-installer-v4.8.1，并提供 jmsctl.sh。**目录由实际安装输出决定**，不要因为复制旧日志而进入错误的版本目录：
+
+~~~bash
 cd /opt/jumpserver-installer-v4.8.1
+./jmsctl.sh --help
 ./jmsctl.sh start
-2. Other management commands
-./jmsctl.sh stop
-./jmsctl.sh restart
-./jmsctl.sh backup
-./jmsctl.sh upgrade
-For more commands, you can enter ./jmsctl.sh --help to understand
-3. Web access
-http://10.0.0.100:80
-Default username: admin  Default password: ChangeMe
-More information
-Official Website: https://www.jumpserver.org/
-Documentation: https://docs.jumpserver.org/
-```
+docker ps
+~~~
 
-```text
-[+] Running 8/8
-```
+可以通过 jmsctl.sh 的帮助查看当前版本支持的停止、重启、备份与升级操作。执行备份后应检查备份文件及恢复方法；仅看到“备份完成”字样不足以证明可恢复。原资料列出的若干 docker ps 输出反映了不同版本的组件拆分，因此不要求今天的容器名和数量完全一致。
 
-✔ Container jms_web         Started
+## 验收与常见误判
 
-```text
-12.7s
-```
+先观察安装器和容器日志，确认核心服务、数据库、Redis 与连接组件都已就绪；再在浏览器打开实际绑定的 Web 地址，完成管理员初始化、登录、资产授权和一次测试会话。最后确认会话录像或命令审计能够检索。一个容器显示 Started、或 Web 页可以打开，都不是全链路完成的证据。
 
-✔ Container jms_koko        Started
+原资料同时出现 admin/admin、admin/ChangeMe 等默认凭据，属于不同版本或实验环境。实际初始凭据以当前安装器输出为准，首次登录后立即设置独立密码和多因素认证，并限制管理入口的访问范围。
 
-```text
-12.4s
-```
+![JumpServer 官方脚本安装后的历史界面示例](assets/img-fa2bde84089cfc01.webp)
 
-✔ Container jms_redis       Running
-
-```text
-0.0s
-```
-
-✔ Container jms_lion        Started
-
-```text
-12.4s
-```
-
-✔ Container jms_core        Started
-
-```text
-12.2s
-```
-
-✔ Container jms_postgresql  Running
-
-```text
-0.0s
-```
-
-✔ Container jms_chen        Started
-
-```text
-12.0s
-```
-
-✔ Container jms_celery      Started
-
-```bash
-12.2s
-[root@ubuntu2404 ~]#docker ps
-CONTAINER ID   IMAGE                       COMMAND                  CREATED
-STATUS                            PORTS
-NAMES
-a4ee60d1a3c2   jumpserver/lion:v4.8.1-ce   "./entrypoint.sh sup…"   16 seconds
-ago   Up 3 seconds (health: starting)   8081/tcp
-jms_lion
-dce76b8f0aad   jumpserver/core:v4.8.1-ce   "./entrypoint.sh sta…"   16 seconds
-ago   Up 4 seconds (health: starting)   8080/tcp
-jms_core
-9b554c4ea5e3   jumpserver/web:v4.8.1-ce    "/docker-entrypoint.…"   16 seconds
-ago   Up 3 seconds (health: starting)   0.0.0.0:80->80/tcp, :::80->80/tcp
-jms_web
-80d65f53aaa2   jumpserver/core:v4.8.1-ce   "./entrypoint.sh sta…"   16 seconds
-ago   Up 4 seconds (health: starting)   8080/tcp
-jms_celery
-980db242e72b   jumpserver/chen:v4.8.1-ce   "./entrypoint.sh wisp"   16 seconds
-ago   Up 5 seconds (health: starting)   8082/tcp
-jms_chen
-5b3b54ae024d   jumpserver/koko:v4.8.1-ce   "./entrypoint.sh ./k…"   16 seconds
-ago   Up 3 seconds (health: starting)   0.0.0.0:2222->2222/tcp, :::2222-
->2222/tcp   jms_koko
-99e2e2439829   postgres:16.3-bullseye      "docker-entrypoint.s…"   54 seconds
-ago   Up 53 seconds (healthy)           5432/tcp
-jms_postgresql
-ed61ede68580   redis:7.0-bullseye          "docker-entrypoint.s…"   54 seconds
-ago   Up 53 seconds (healthy)           6379/tcp
-jms_redi
-```
-
-```bash
-[root@ubuntu2404 ~]#docker images
-REPOSITORY        TAG             IMAGE ID       CREATED         SIZE
-jumpserver/koko   v4.8.1-ce       4cd2b589f520   2 weeks ago     590MB
-jumpserver/chen   v4.8.1-ce       b72a46887166   2 weeks ago     461MB
-jumpserver/core   v4.8.1-ce       ef8512b7d83a   2 weeks ago     861MB
-jumpserver/lion   v4.8.1-ce       85b6988752e7   2 weeks ago     209MB
-jumpserver/web    v4.8.1-ce       5f7cfa4c7af7   2 weeks ago     237MB
-postgres          16.3-bullseye   019e55863fd0   11 months ago   400MB
-redis             7.0-bullseye    9316221abf0d   22 months ago   117MB
-#安装完成后，直接访问即可，默认用户名和密码是admin/admin，首次登录需要修改密码，但不能使用原密
-码
-http://jumpserver_ip/
-```
-
-范例：基于jumpserver-v4.3.1
-
-```bash
-[root@ubuntu2404 ~]#VERSION=4.8.1
-[root@ubuntu2204 ~]#VERSION=4.3.1
-#国内
-[root@ubuntu2204 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/download/v${VERSIO
-N}/quick_start.sh|bash
-[root@ubuntu2204 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/latest/download/qu
-ick_start.sh | bash
-#海外
-[root@ubuntu2204 ~]#curl -sSL
-https://github.com/jumpserver/jumpserver/releases/download/v${VERSION}/quick_sta
-rt.sh | bash
-```
-
-```bash
-[root@ubuntu2204 ~]#docker ps
-CONTAINER ID   IMAGE                       COMMAND                  CREATED
-STATUS                    PORTS                                       NAMES
-1cd86066015d   jumpserver/chen:v4.3.1-ce   "./entrypoint.sh wisp"   49 minutes
-ago   Up 49 minutes (healthy)   8082/tcp
-jms_chen
-f876fe3f9801   jumpserver/koko:v4.3.1-ce   "./entrypoint.sh ./k…"   49 minutes
-ago   Up 49 minutes (healthy)   0.0.0.0:2222->2222/tcp, :::2222->2222/tcp
-jms_koko
-567529f9882d   jumpserver/core:v4.3.1-ce   "./entrypoint.sh sta…"   49 minutes
-ago   Up 49 minutes (healthy)   8080/tcp
-jms_core
-677ea20e1989   jumpserver/lion:v4.3.1-ce   "./entrypoint.sh sup…"   49 minutes
-ago   Up 49 minutes (healthy)   4822/tcp, 8081/tcp
-jms_lion
-2688e31bf923   jumpserver/web:v4.3.1-ce    "/docker-entrypoint.…"   49 minutes
-ago   Up 49 minutes (healthy)   0.0.0.0:80->80/tcp, :::80->80/tcp
-jms_web
-fd2adda18a98   jumpserver/core:v4.3.1-ce   "./entrypoint.sh sta…"   49 minutes
-ago   Up 49 minutes (healthy)   8080/tcp
-jms_celery
-cb3f8f9d6718   redis:7.0-bullseye          "docker-entrypoint.s…"   50 minutes
-ago   Up 50 minutes (healthy)   6379/tcp
-jms_redis
-e3f062040814   postgres:16.3-bullseye      "docker-entrypoint.s…"   50 minutes
-ago   Up 50 minutes (healthy)   5432/tcp
-jms_postgresql
-```
-
-范例：基于jumpserver-v4.0.2
-
-```bash
-#最新安装基于jumpserver-v4.0.2
-[root@ubuntu2204 ~]#VERSION=4.0.2
-#国内
-[root@ubuntu2204 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/download/v${VERSIO
-N}/quick_start.sh|bash
-[root@ubuntu2204 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/latest/download/qu
-ick_start.sh | bash
-#海外
-[root@ubuntu2204 ~]#curl -sSL
-https://github.com/jumpserver/jumpserver/releases/download/v${VERSION}/quick_sta
-rt.sh | bash
-```
-
-范例：基于jumpserver-v3.10.7
-
-```bash
-#最新安装基于jumpserver-v3.10.7
-[root@ubuntu2204 ~]#VERSION=3.10.7
-#国内
-[root@ubuntu2204 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/latest/download/qu
-ick_start.sh | bash
-#海外
-[root@ubuntu2204 ~]#curl -sSL
-https://github.com/jumpserver/jumpserver/releases/download/v${VERSION}/quick_sta
-rt.sh | bash
-```
-
-范例：
-
-```bash
-#最新安装基于jumpserver-v3.6.2
-[root@ubuntu2204 ~]#curl -sSL
-https://resource.fit2cloud.com/jumpserver/jumpserver/releases/latest/download/qu
-ick_start.sh | bash
-......
->>> 安装完成了
-1. 可以使用如下命令启动, 然后访问
-cd /opt/jumpserver-installer-v3.0.4
-./jmsctl.sh start
-2. 其它一些管理命令
-./jmsctl.sh stop
-./jmsctl.sh restart
-./jmsctl.sh backup
-./jmsctl.sh upgrade
-更多还有一些命令, 你可以 ./jmsctl.sh --help 来了解
-3. Web 访问
-http://192.168.250.1:80
-默认用户: admin  默认密码: admin
-4. SSH/SFTP 访问
-ssh -p2222 admin@192.168.250.1
-sftp -P2222 admin@192.168.250.1
-5. 更多信息
-我们的官网: https://www.jumpserver.org/
-我们的文档: https://docs.jumpserver.org/
-```
-
-```text
-[+] Running 10/10
-```
-
-✔ Container jms_kael    Started
-
-```text
-0.1s
-```
-
-✔ Container jms_celery  Started
-
-```text
-0.1s
-```
-
-✔ Container jms_koko    Started
-
-```text
-0.1s
-```
-
-✔ Container jms_lion    Started
-
-```text
-0.1s
-```
-
-✔ Container jms_chen    Started
-
-```text
-0.1s
-```
-
-✔ Container jms_magnus  Started
-
-```text
-0.1s
-```
-
-✔ Container jms_web     Started
-
-```text
-0.1s
-```
-
-✔ Container jms_core    Started
-
-```text
-0.4s
-```
-
-✔ Container jms_mysql   Running
-
-```text
-0.0s
-```
-
-✔ Container jms_redis   Running
-
-```bash
-[root@ubuntu2204 ~]#docker images
-REPOSITORY           TAG       IMAGE ID       CREATED       SIZE
-jumpserver/web       v3.10.3   0ee78cf967db   4 days ago    1.52GB
-jumpserver/core-ce   v3.10.3   63c4dd51406b   4 days ago    1.56GB
-jumpserver/koko      v3.10.3   076f77b0aa4b   4 days ago    1.06GB
-jumpserver/lion      v3.10.3   c82cbcccb148   4 days ago    255MB
-jumpserver/kael      v3.10.3   ff371a084eae   4 days ago    269MB
-jumpserver/chen      v3.10.3   a8990c6cf53e   4 days ago    572MB
-jumpserver/magnus    v3.10.3   ff5c80e9d2b2   4 days ago    147MB
-jumpserver/mariadb   10.6      9ee9424356c4   2 weeks ago   392MB
-jumpserver/redis     6.2       c6b27afb23d5   2 weeks ago   113MB
-[root@ubuntu2204 ~]#docker ps
-CONTAINER ID   IMAGE                        COMMAND                   CREATED
-STATUS                   PORTS
-NAMES
-e226cdf1f1a4   jumpserver/kael:v3.10.3      "./entrypoint.sh"         2 minutes
-ago   Up 2 minutes (healthy)   8083/tcp
-jms_kael
-d98a8be74dda   jumpserver/lion:v3.10.3      "./entrypoint.sh"         2 minutes
-ago   Up 2 minutes (healthy)   4822/tcp, 8081/tcp
-jms_lion
-9bf5b81684f4   jumpserver/magnus:v3.10.3    "./entrypoint.sh"         2 minutes
-ago   Up 2 minutes (healthy)   0.0.0.0:33061-33062->33061-33062/tcp, :::33061-
-33062->33061-33062/tcp, 0.0.0.0:63790->63790/tcp, :::63790->63790/tcp
-jms_magnus
-d8d82a29fd57   jumpserver/web:v3.10.3       "/docker-entrypoint.…"   2 minutes
-ago   Up 2 minutes (healthy)   0.0.0.0:80->80/tcp, :::80->80/tcp
-jms_web
-773b23b7778d   jumpserver/core-ce:v3.10.3   "./entrypoint.sh sta…"   2 minutes
-ago   Up 2 minutes (healthy)   8080/tcp
-jms_celery
-80649a6477a9   jumpserver/koko:v3.10.3      "./entrypoint.sh"         2 minutes
-ago   Up 2 minutes (healthy)   0.0.0.0:2222->2222/tcp, :::2222->2222/tcp,
-5000/tcp                                                          jms_koko
-4acad62d7966   jumpserver/core-ce:v3.10.3   "./entrypoint.sh sta…"   2 minutes
-ago   Up 2 minutes (healthy)   8080/tcp
-jms_core
-c290fa8eb00a   jumpserver/chen:v3.10.3      "./entrypoint.sh"         2 minutes
-ago   Up 2 minutes (healthy)   8082/tcp
-jms_chen
-825f9d423e19   jumpserver/mariadb:10.6      "docker-entrypoint.s…"   4 minutes
-ago   Up 4 minutes (healthy)   3306/tcp
-jms_mysql
-3c8ecac560a0   jumpserver/redis:6.2         "docker-entrypoint.s…"   4 minutes
-ago   Up 4 minutes (healthy)   6379/tcp
-jms_redis
-[root@ubuntu2204 ~]#ls /opt
-containerd  jumpserver  jumpserver-installer-v3.10.3
-```
-
-```bash
-[root@ubuntu2204 ~]#tree /opt/jumpserver
-/opt/jumpserver
-└── config
-├── certs
-├── config.txt
-├── mariadb
-│   └── mariadb.cnf
-├── mysql
-│   └── my.cnf
-├── nginx
-│   ├── cert
-│   │   ├── server.crt
-│   │   └── server.key
-│   └── lb_http_server.conf
-└── redis
-└── redis.conf
-7 directories, 7 files
-[root@ubuntu2204 ~]#tree /opt/jumpserver-installer-v3.10.3/
-/opt/jumpserver-installer-v3.10.3/
-├── cn-quick_start.sh
-├── compose
-│   ├── docker-compose-celery-xpack.yml
-│   ├── docker-compose-celery.yml
-│   ├── docker-compose-chen.yml
-│   ├── docker-compose-core-xpack.yml
-│   ├── docker-compose-core.yml
-│   ├── docker-compose-es.yml
-│   ├── docker-compose-init-db-xpack.yml
-│   ├── docker-compose-init-db.yml
-│   ├── docker-compose-kael.yml
-│   ├── docker-compose-koko.yml
-│   ├── docker-compose-lb.yml
-│   ├── docker-compose-lion.yml
-│   ├── docker-compose-magnus-xpack.yml
-│   ├── docker-compose-magnus.yml
-│   ├── docker-compose-mariadb.yml
-│   ├── docker-compose-minio.yml
-│   ├── docker-compose-mysql.yml
-│   ├── docker-compose-network_v6.yml
-│   ├── docker-compose-network.yml
-│   ├── docker-compose-panda.yml
-│   ├── docker-compose-razor.yml
-│   ├── docker-compose-redis.yml
-│   ├── docker-compose-video-worker.yml
-│   ├── docker-compose-video.yml
-│   ├── docker-compose-web.yml
-│   └── docker-compose-xrdp.yml
-├── config-example.txt
-├── config_init
-│   ├── mariadb
-│   │   └── mariadb.cnf
-│   ├── mysql
-│   │   └── my.cnf
-│   ├── nginx
-│   │   ├── cert
-│   │   │   ├── server.crt
-│   │   │   └── server.key
-│   │   └── lb_http_server.conf
-│   ├── README.md
-│   └── redis
-│       └── redis.conf
-├── jmsctl.sh
-├── LICENSE
-├── locale
-│   ├── en
-│   │   └── LC_MESSAGES
-│   │       ├── jumpserver-installer.mo
-│   │       └── jumpserver-installer.po
-│   └── zh_CN
-│       └── LC_MESSAGES
-│           ├── jumpserver-installer.mo
-│           └── jumpserver-installer.po
-├── quick_start.sh
-├── README.md
-├── scripts
-│   ├── 0_prepare.sh
-│   ├── 1_config_jumpserver.sh
-│   ├── 2_install_docker.sh
-│   ├── 3_load_images.sh
-│   ├── 4_install_jumpserver.sh
-│   ├── 5_db_backup.sh
-│   ├── 6_db_restore.sh
-│   ├── 7_upgrade.sh
-│   ├── 8_uninstall.sh
-│   ├── const.sh
-│   ├── docker
-│   │   └── docker-compose
-│   ├── docker.service
-│   └── utils.sh
-├── static.env
-└── utils
-├── build.sh
-└── messages.sh
-15 directories, 59 files
-#安装完成后，直接访问即可，默认用户名和密码是admin/admin，首次登录需要修改密码，但不能使用原密
-码
-http://jumpserver_ip/
-```
-
-![JumpServer 堡垒机第 45 页插图](assets/img-fa2bde84089cfc01.png)
+如果安装失败，按顺序检查脚本版本、主机资源、镜像下载、数据服务健康状态和具体组件日志。不要把 v3 的 10 个容器清单与 v4 的 8 个容器清单拼接成故障判断标准。正式使用前，还应把安装配置、数据库与审计存储纳入周期备份，并进行一次恢复演练。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/JumpServer/09-docker-compose-deployment.html' | relative_url }}">← Previous: Docker Compose Deployment</a>
-  <a href="{{ '/subjects/JumpServer/' | relative_url }}">Back to JumpServer Bastion Host Index</a>
-  <a href="{{ '/subjects/JumpServer/11-initial-login-and-configuration.html' | relative_url }}">Next: Initial Login and Configuration →</a>
+  <a href="{{ '/subjects/JumpServer/09-docker-compose-deployment.html' | relative_url }}">← 上一篇：Docker Compose 部署</a>
+  <a href="{{ '/subjects/JumpServer/' | relative_url }}">返回 JumpServer 专题目录</a>
+  <a href="{{ '/subjects/JumpServer/11-initial-login-and-configuration.html' | relative_url }}">下一篇：首次登录与配置 →</a>
 </nav>

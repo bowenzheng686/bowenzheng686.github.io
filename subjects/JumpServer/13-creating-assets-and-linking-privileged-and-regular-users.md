@@ -11,114 +11,73 @@ syntax_highlight: true
 {% raw %}
 
 # 13 创建资产并关联特权用户和普通用户
-### 3.3 创建资产并关联特权用户和普通用户
 
-JumpServer 可以管理各种类型的资产
+上一章创建的是登录 JumpServer 的人员。本章要登记**被访问的资产**，并配置 JumpServer 连接这些资产时使用的账号。把三类身份分清，才能理解后续的授权规则。
 
-![JumpServer 堡垒机第 61 页插图](assets/img-ce51a6eaf84b9cdb.jpeg)
+JumpServer 可以纳管主机、网络设备和数据库等资产；不同类型的连接协议和账号字段不同。先确认目标资产网络可达、协议开放，再按类型登记。
 
-JumpServer中的三种用户类型
+![JumpServer 堡垒机第 61 页插图](assets/img-ce51a6eaf84b9cdb.webp)
 
-JumpServer的登录用户:
+| 身份 | 所在位置 | 用途 |
+| --- | --- | --- |
+| 平台登录用户 | JumpServer | 识别运维人员，决定其能看到哪些资产 |
+| 资产特权账号 | 目标主机或设备 | 在已授权情况下执行账号推送、资产探测等管理任务；旧资料称“管理用户” |
+| 资产普通账号 | 目标主机或设备 | 供人员在会话中以较低权限操作；旧资料常称“系统用户” |
 
-分配给用户用于登录JumpServer时使用
-
-在Jumpserver上面创建
-
-系统用户中的特权用户(旧名：管理用户):
-
-对后端服务器具有管理权限的系统帐号 root或administrator 及sudo ALL权限的用户,用于管理后端服务器
-
-新版中已取消此名称,改名为系统用户中特权用户
-
-在后端服务器上创建的具有系统管理特权的系统用户新版建议在账号管理--账号模版创建，后续无需针对每个后端服务单独创建
-
-系统用户中的普通用户(旧名：系统用户):
-
-给登录用户使用ssh连接后端服务器时对应的系统用户 ,一般是后端服务器的普通的系统用户帐号
-
-新版中改名为系统用户中普通用户
-
-在后端服务器上创建的具有一般权限的系统用户
-
-新版建议在账号管理---账号模版创建，后续无需针对每个后端服务单独创建，只需要授权后会自动创建
+“账号模板”用于批量描述目标资产账号及其凭据策略，不等于账号已经在每台主机上存在。是否自动创建或推送，要看资产类型、特权账号权限、任务设置和执行结果。
 
 ### 通过帐号模版创建系统用户中特权用户(管理用户)
 
-管理用户是jumpServer用来管理后端服务器或其它资产的管理员用户,此用户必须对后端服务器有管理权限
+如果需要由平台创建普通资产账号或采集主机信息，先准备具备相应权限的特权账号，并在账号管理中建立模板。不要默认使用 root 或给予 sudo ALL；只授予所需操作权限，并保护其凭据。模板建立后，先在一台测试资产上验证连接与推送，再扩大范围。
 
-管理用户特点:
+![JumpServer 堡垒机第 62 页插图](assets/img-6c7421c4f6a21d2a.webp)
 
-通常是后端服务器的root或者是具备root权限的超级用户用于推送或者是创建系统用户用于获取被管理的硬件资产信息
-
-新版: 新建帐号模板
-
-通过帐号模版实现，方便后续重复使用
-
-在帐号管理---帐号模板 创建
-
-![JumpServer 堡垒机第 62 页插图](assets/img-6c7421c4f6a21d2a.png)
-
-![JumpServer 堡垒机第 63 页插图](assets/img-fa9f72973c7f059e.png)
+![JumpServer 堡垒机第 63 页插图](assets/img-fa9f72973c7f059e.webp)
 
 ### 通过帐号模版创建系统普通用户(系统用户中普通用户)
 
-系统用户是分配给JumpServer用户,用来让JumpServer用户在连接后端服务器和其它资产,一般不会给管理权限
+普通资产账号用于实际会话，应按岗位设置权限。可以由现有配置管理流程预先创建，也可以在当前版本支持的条件下由 JumpServer 推送；两条路径应择一明确，避免重复创建或覆盖账号。下列截图来自 v4.3.1 左右的账号模板界面，字段名称可能变化。若选择随机生成凭据，应确认它如何保存、轮换和恢复，而不是仅看“创建成功”。
 
-生产环境中,一般都会利用自动化运维工具提前在后端服务器创建好系统用户,在所有后端服务器统一用户 ID信息,而非在jumpserver中创建
+![JumpServer 堡垒机第 64 页插图](assets/img-45d8e0262f311689.webp)
 
-新版界面
+![JumpServer 堡垒机第 64 页插图](assets/img-b57b5870688a6115.webp)
 
-通过帐号模版实现，方便后续重复使用
-
-4.3.1 版本对应界面
-
-密文策略：选择“随机生成”，如果是指定，用户将无法自动创建
-
-![JumpServer 堡垒机第 64 页插图](assets/img-45d8e0262f311689.png)
-
-![JumpServer 堡垒机第 64 页插图](assets/img-b57b5870688a6115.png)
-
-![JumpServer 堡垒机第 65 页插图](assets/img-21f0be1ff65933cb.png)
+![JumpServer 堡垒机第 65 页插图](assets/img-21f0be1ff65933cb.webp)
 
 ### 创建资产并关联特权用户和普通用户
 
-创建可以被jumpServer用户访问的后端服务器和其它资产,比如:路由器,交换机等
+登记资产时填写名称、地址、资产类型与连接协议，并关联可用的资产账号。资产存在于列表中，仍不代表普通用户已有访问权；下一篇还要创建授权规则。
 
 ### 创建资产并关联系统帐号的特权用户和普通用户
 
-4.X以上版本界面
+下图展示 4.x 界面的主机登记过程。只有确实需要文件传输时才配置 SFTP，并确认目标主机支持相应协议；账号是否被自动创建，应查看推送任务结果，而不是凭资产页面的选项推断。
 
-添加特权用户和普通用户（会自动创建）
+![JumpServer 堡垒机第 65 页插图](assets/img-1c99a8240b1573b9.webp)
 
-注意：添加ssh和sftp协议
+添加多台资产后，逐台核对地址、连接端口和账号状态，避免把同一模板错误地应用到生产与测试环境。
 
-![JumpServer 堡垒机第 65 页插图](assets/img-1c99a8240b1573b9.png)
+![JumpServer 堡垒机第 66 页插图](assets/img-8d55ba3662a0a601.webp)
 
-创建多个资产
+![JumpServer 堡垒机第 66 页插图](assets/img-760de973742e15d2.webp)
 
-![JumpServer 堡垒机第 66 页插图](assets/img-8d55ba3662a0a601.png)
-
-![JumpServer 堡垒机第 66 页插图](assets/img-760de973742e15d2.png)
-
-![JumpServer 堡垒机第 67 页插图](assets/img-49144e44d8aa3d4f.png)
+![JumpServer 堡垒机第 67 页插图](assets/img-49144e44d8aa3d4f.webp)
 
 ### 创建节点实现资产分类
 
-创建节点将资产分类
+节点可按环境、业务或地域分类资产，便于批量查找和授权。节点授权可能被子节点或后来加入的资产继承，因此先设计节点边界，再批量导入资产。
 
-![JumpServer 堡垒机第 67 页插图](assets/img-f6bf213ffa901c23.png)
+![JumpServer 堡垒机第 67 页插图](assets/img-f6bf213ffa901c23.webp)
 
-![JumpServer 堡垒机第 68 页插图](assets/img-c59f553e4ee31832.png)
+![JumpServer 堡垒机第 68 页插图](assets/img-c59f553e4ee31832.webp)
 
-![JumpServer 堡垒机第 68 页插图](assets/img-e364fb5d7ba4d75c.png)
+![JumpServer 堡垒机第 68 页插图](assets/img-e364fb5d7ba4d75c.webp)
 
-![JumpServer 堡垒机第 69 页插图](assets/img-d9629e18034aa8ab.png)
+![JumpServer 堡垒机第 69 页插图](assets/img-d9629e18034aa8ab.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/JumpServer/12-creating-jumpserver-users-and-groups.html' | relative_url }}">← Previous: Creating JumpServer Users and Groups</a>
-  <a href="{{ '/subjects/JumpServer/' | relative_url }}">Back to JumpServer Bastion Host Index</a>
-  <a href="{{ '/subjects/JumpServer/14-granting-users-access-to-assets.html' | relative_url }}">Next: Granting Users Access to Assets →</a>
+  <a href="{{ '/subjects/JumpServer/12-creating-jumpserver-users-and-groups.html' | relative_url }}">← 上一篇：创建用户和组</a>
+  <a href="{{ '/subjects/JumpServer/' | relative_url }}">返回 JumpServer 专题目录</a>
+  <a href="{{ '/subjects/JumpServer/14-granting-users-access-to-assets.html' | relative_url }}">下一篇：授权用户访问资产 →</a>
 </nav>

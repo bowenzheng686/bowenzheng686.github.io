@@ -13,378 +13,177 @@ syntax_highlight: true
 # 28 通过坐标地图统计网站访问用户的 IP 所在城市
 ### 6.3 通过坐标地图统计网站访问用户的 IP 所在城市
 
-注意: 7.X 前地图功能要求必须使用 logstash 开头的索引名称,8.X无此要求
+本例在上一章 Filebeat → Kafka → Logstash → Elasticsearch 链路的访问日志上增加 GeoIP 富化，然后在 Kibana Maps 中按大致城市位置展示访问来源。**IP 地理位置只是数据库估计**，并非用户真实位置；NAT、代理、移动网络与 VPN 都可能造成偏差。地图能否使用，关键是 Elasticsearch 中位置字段映射为 `geo_point`，而不是索引名称是否以 `logstash` 开头。
 
-### 下载并解压地址数据文件（可选）
+### 6.3.1 选择 IP 数据库
 
-先获取IP数据库两种方式
+Logstash 的 GeoIP 插件可使用其支持的数据库管理方式；是否自带数据库、更新策略和许可证要求会随版本变化，应查看[插件文档](https://www.elastic.co/guide/en/logstash/current/plugins-filters-geoip.html)。若自行下载 MaxMind GeoLite2，需遵守其账号、许可和更新要求，并把数据库文件放在 Logstash 服务用户可读取的位置。旧资料中的带令牌下载 URL 不应复制或继续使用，令牌可能泄露账号权限。
 
-官方网站 elasticsearch和logstash包内置
+![ELK 日志分析第 410 页插图](assets/img-0814861dc8acf164.webp)
 
-官方网站链接
+![ELK 日志分析第 410 页插图](assets/img-8fdfb44e3930ff77.webp)
 
-<https://www.maxmind.com/>
+![ELK 日志分析第 411 页插图](assets/img-b86f4d4bfb7a56fc.webp)
 
-早期直接下载,现在必须注册登录后,在用户帐户页面下载
+### 6.3.2 确认日志中有客户端 IP
 
-![ELK 日志分析第 410 页插图](assets/img-0814861dc8acf164.png)
+先检查 Nginx JSON 日志是否包含有效的客户端 IP 字段，例如 `clientip`。如果 Nginx 在反向代理之后，应先建立可信代理链，避免把代理 IP 当成用户 IP；不要盲目信任客户端自行传入的 `X-Forwarded-For`。Filebeat/Kafka 输入与上一章一致，这里只展示新增的 Logstash 过滤步骤。
 
-<https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en>
+### 6.3.3 在 Logstash 中富化位置
 
-![ELK 日志分析第 410 页插图](assets/img-8fdfb44e3930ff77.png)
+将下面过滤段加入现有 Logstash 管道；示例假定事件标签为 `nginx-access`，`clientip` 是一个可解析的 IP 字符串：
 
-![ELK 日志分析第 411 页插图](assets/img-b86f4d4bfb7a56fc.png)
-
-```bash
-[root@es-node1 ~]#wget
-'https://download.maxmind.com/app/geoip_download_by_token?edition_id=GeoLite2-
-City&date=20210202&suffix=tar.gz&token=v2.local.BgAHbu3hNj12U4MC0BNR1IEHJmykzhP3
-eNMAtADgDcjcwc4AI4uShA3KLgabS1tian8XFMNpsULdUSlkyiJcJvl0rKQ3zvrAuDBLRIUGwml6_ewl
-R24scqvtUK79oQ1HG0YmhSPHiPJsJsi93K-_8Jz4b5HFkCFSbnfvlTfes6j7MlLW01tks4SGviCb1u-
-6r-8_8A' -O GeoLite2-City_`date +%Y%M%d`.tar.gz
-[root@logstash1 ~]#ll -h GeoLite2-City_20210202.tar.gz
--rw-r--r-- 1 root root 29M Feb  9 23:03 GeoLite2-City_20210202.tar.gz
-[root@logstash1 ~]#tar xf GeoLite2-City_20210202.tar.gz  -C /etc/logstash/
-[root@logstash1 ~]#ln -s /etc/logstash/GeoLite2-City_20210202/
-/etc/logstash/GeoLite2-City
-[root@logstash1 ~]#ll -h /etc/logstash/GeoLite2-City/GeoLite2-City.mmdb
--rw-r--r-- 1 root root 59M Feb  3 00:01 /etc/logstash/GeoLite2-City/GeoLite2-
-City.mmdb
-```
-
-范例：elasticsearch和logstash 包内置数据库
-
-```bash
-#8.X elasticsearch 不在内置数据库
-[root@ubuntu2204 ~]#dpkg -L elasticsearch |grep -i GeoLite2
-#8.X logstash 包仍内置数据库
-[root@ubuntu2204 ~]#dpkg -L logstash |grep GeoLite2-City.mmdb|xargs ls -lh
--rw-r--r-- 1 root root 60M  1月 24 18:42
-/usr/share/logstash/vendor/bundle/jruby/2.6.0/gems/logstash-filter-geoip-7.2.12-
-java/vendor/GeoLite2-City.mmdb
-```
-
-```bash
-[root@ubuntu1804 ~]#dpkg -L elasticsearch |grep GeoLite2-City.mmdb|xargs ls -lh
--rw-r--r-- 1 root root 60M Mar 26  2020 /usr/share/elasticsearch/modules/ingest-
-geoip/GeoLite2-City.mmdb
-[root@ubuntu1804 ~]#dpkg -L logstash |grep GeoLite2-City.mmdb|xargs ls -lh
--rw-r--r-- 1 logstash logstash 59M Mar 26  2020
-/usr/share/logstash/vendor/bundle/jruby/2.5.0/gems/logstash-filter-geoip-6.0.3-
-java/vendor/GeoLite2-City.mmdb
-```
-
-### 配置 Filebeat 配置文件
-
-```bash
-[root@centos8 ~]#cat /etc/filebeat/filebeat.yml
-filebeat.inputs:
-- type: log
-enabled: true
-paths:
-- /var/log/nginx/access_json.log
-json.keys_under_root: true
-json.overwrite_keys: true
-tags: ["nginx-access"]
-- type: log
-enabled: true
-paths:
-- /var/log/nginx/error.log
-tags: ["nginx-error"]
-- type: log
-enabled: true
-paths:
-- /var/log/syslog
-tags: ["syslog"]
-output.kafka:
-hosts: ["10.0.0.201:9092", "10.0.0.202:9092", "10.0.0.203:9092"]
-topic: filebeat-log
-partition.round_robin:
-reachable_only: true
-required_acks: 1
-compression: gzip
-max_message_bytes: 1000000
-```
-
-### 配置 Logstash 使用地址库
-
-地理位置字段geoip.coordinates的数据类型早期为浮点数，从8.X开始变为geo_point类型的字段。
-
-<https://www.elastic.co/guide/en/elasticsearch/reference/master/geo-point.html>
-
-范例：
-
-```bash
-#使用Logstash内置的地图库
-#8.X,此步可选
-[root@ubuntu2204 ~]#cp
-/usr/share/logstash/vendor/bundle/jruby/2.6.0/gems/logstash-filter-geoip-7.2.12-
-java/vendor/GeoLite2-City.mmdb /etc/logstash/conf.d/
-[root@ubuntu2204 ~]#ll -h /etc/logstash/conf.d/GeoLite2-City.mmdb
--rw-r--r-- 1 root root 60M  2月 19 10:58 /etc/logstash/conf.d/GeoLite2-City.mmdb
-#7.X
-[root@ubuntu1804 ~]#cp
-/usr/share/logstash/vendor/bundle/jruby/2.5.0/gems/logstash-filter-geoip-6.0.3-
-java/vendor/GeoLite2-City.mmdb /etc/logstash/conf.d/
-[root@ubuntu1804 ~]#ls -lh /etc/logstash/conf.d/
-total 59M
--rw-r--r-- 1 root root  59M Aug 27 08:50 GeoLite2-City.mmdb
--rw-r--r-- 1 root root 1.2K Aug 27 10:59 kafka-to-es.conf
-#修改logstash配置
-[root@logstash ~]#vim /etc/logstash/conf.d/kafka-to-es.conf
-input {
-kafka {
-bootstrap_servers => "10.0.0.201:9092,10.0.0.202:9092,10.0.0.203:9092"
-topics => "filebeat-log"
-codec => "json"
-}
-}
+```text
 filter {
-if "nginx-access" in [tags] {
-geoip {
-source => "clientip"      #日志必须是json格式,且有一个clientip的key
-target => "geoip"
-database => "/usr/share/logstash/vendor/bundle/jruby/3.1.0/gems/logstash-
-filter-geoip-7.3.0-java/vendor/GeoLite2-City.mmdb" #8.15.0 必选项
-#database => "/etc/logstash/conf.d/GeoLite2-City.mmdb"    #指定数据库文件,可选
-add_field => ["[geoip][coordinates]","%{[geoip][geo][location][lon]}"]
-#8.X添加经纬度字段包括经度
-add_field => ["[geoip][coordinates]","%{[geoip][geo][location][lat]}"]
-#8.X添加经纬度字段包括纬度
-#add_field => ["[geoip][coordinates]", "%{[geoip][longitude]}"] #7,X添加经纬
-度字段包括经度
-#add_field => ["[geoip][coordinates]", "%{[geoip][latitude]}"]  #7,X添加经纬
-度字段包括纬度
+  if "nginx-access" in [tags] and [clientip] {
+    geoip {
+      source => "clientip"
+      target => "[client]"
+      ecs_compatibility => "v8"
+    }
+  }
 }
-#转换经纬度为浮点数，注意：8X必须做，7.X 可不做此步
-mutate {
-convert => [ "[geoip][coordinates]", "float"]
-}
-}
-}
-output {
-#stdout {}   #调试使用
-if "nginx-access" in [tags] {
-elasticsearch {
-hosts => ["10.0.0.101:9200","10.0.0.102:9200","10.0.0.103:9200"]
-index => "logstash-kafka-nginx-accesslog-%{+YYYY.MM.dd}"
-#注意: 7.X之前版本地图功能要求必须使用 logstash 开头的索引名称
-}
-}
-if "nginx-error" in [tags] {
-elasticsearch {
-hosts => ["10.0.0.101:9200","10.0.0.102:9200","10.0.0.103:9200"]
-index => "logstash-kafka-nginx-errorlog-%{+YYYY.MM.dd}"
-}
-}
-if "syslog" in [tags] {
-elasticsearch {
-hosts => ["10.0.0.101:9200","10.0.0.102:9200","10.0.0.103:9200"]
-index => "logstash-kafka-syslog-%{+YYYY.MM.dd}"
-}
-}
-}
-[root@logstash ~]#/usr/share/logstash/bin/logstash -f
-/etc/logstash/conf.d/redis-to-es.conf  -t
-[root@logstash ~]#systemctl restart logstash.service
 ```
 
-### 写入 Nginx 的访问日志数据
+在 ECS 模式下，GeoIP 可生成 `[client][geo][location]` 等字段。若使用自定义 MMDB 文件，再按当前插件文档增加 `database` 路径；不要复制旧示例里带 JRuby gem 版本号的安装目录。也不必把经纬度手工拼成 float 数组，再期望 Kibana 自动识别为地理点。
 
-```bash
-[root@elk-web1 ~]#tail -n 1000 json.log  >>
-/data/nginx/logs/nginx.access_json.log
-```
+### 6.3.4 先定义映射，再写入新数据
 
-### Head 插件确认索引成功
+为匹配 `logs-nginx-access-*` 的新索引定义位置字段类型。在 Kibana Dev Tools 执行：
 
-![ELK 日志分析第 414 页插图](assets/img-0eaffd9486e28382.png)
-
-![ELK 日志分析第 414 页插图](assets/img-eee7d856c2bb5118.png)
-
-### Kibana 创建索引模式(数据视图)
-
-8.X
-
-![ELK 日志分析第 415 页插图](assets/img-142edcfb2fd5594e.png)
-
-![ELK 日志分析第 415 页插图](assets/img-4a271f5b4e5fe3bd.png)
-
-7.X
-
-![ELK 日志分析第 416 页插图](assets/img-49d4f55811ee8c5f.png)
-
-![ELK 日志分析第 416 页插图](assets/img-99eac9efed087def.png)
-
-确认出现geoip 相关字段
-
-![ELK 日志分析第 416 页插图](assets/img-030d8d7334513f3c.png)
-
-![ELK 日志分析第 417 页插图](assets/img-6dc3819562eac53c.png)
-
-![ELK 日志分析第 417 页插图](assets/img-c7f7ca396b674530.png)
-
-### Kibana 创建地图数据
-
-对于区域地图、坐标地图、Coordinate Map之类的图形展示，新版的Kibana已经将其整合到了一个统一的功能模块 Map. 通过左侧边栏的 analytics的Maps中来创建图形
-
-### 查看 Kibana 样例地图
-
-![ELK 日志分析第 418 页插图](assets/img-b629d9d9f5bf1871.png)
-
-![ELK 日志分析第 418 页插图](assets/img-f02db73677737b8c.png)
-
-查看内置的数据视图
-
-![ELK 日志分析第 419 页插图](assets/img-f7e23359ee9c6501.png)
-
-![ELK 日志分析第 419 页插图](assets/img-b76850ced8376441.png)
-
-![ELK 日志分析第 420 页插图](assets/img-83b0832596c5e4d3.png)
-
-![ELK 日志分析第 420 页插图](assets/img-453775ffda43b886.png)
-
-![ELK 日志分析第 421 页插图](assets/img-0b8a62716d41d693.png)
-
-![ELK 日志分析第 421 页插图](assets/img-bfc17f6bda438b91.png)
-
-![ELK 日志分析第 422 页插图](assets/img-5b4cbbe0ce081e50.png)
-
-换一种风格显示
-
-![ELK 日志分析第 422 页插图](assets/img-e22760f0d3eaa9a2.png)
-
-### 创建地图
-
-```text
-7.x支持 float格式，8.x支持geo_point类型。
-```
-
-6.3.7.2.1 8.X 实现
-
-![ELK 日志分析第 423 页插图](assets/img-deed0f11582200bc.png)
-
-![ELK 日志分析第 423 页插图](assets/img-7aaf6eee66d3ab2a.png)
-
-默认的地理位置字段的类型导致出现下面的错误
-
-![ELK 日志分析第 424 页插图](assets/img-93996a6243d11f59.png)
-
-说明
-
-ES8 要求地图数据类型geo_point类型，在logstash的地址信息的格式使用mutate（支持的数据类型： integer，integer_eu，float，float_eu，string，boolean）可以转换成 float类型而不支持geo_point类型，所以需要转换一下logstash在传递信息到es时候的模板信息，将地址信息转换成geo_point类型即可
-
-解决方案：
-
-获取模板修改模板使用模板
-
-在开发工具执行下面指令，获取模版设置，复制mappings块中的所有内容
-
-```text
-# 查看生成的索引信息
-GET /nginxaccess-2021.04.19
-GET /logstash-kafka-nginx-accesslog-2022.03.02
-#复制mappings开始的行到settings行之前结束,并最后再加一个 }
-```
-
-![ELK 日志分析第 425 页插图](assets/img-7006c753b4871a16.png)
-
-执行下面操作生成索引模板，将上面的mappings部分内容复制到下面，只修改"coordinates": {  "type": "geo_point" } 部分
-
-```json
-PUT /_template/template_nginx_accesslog   #模板名称可以自定义
+```http
+PUT /_index_template/nginx-access-geo
 {
-"index_patterns" : [
-"nginxaccess-*"                      #8.X数据视图对应的索引模式，匹配索引名称的模
-式
-#"logstash-kafka-nginx-accesslog-*"  #8.X数据视图对应的索引模式，匹配索引名称的模
-式
-],
-"order" : 0,
-"aliases" : { },
-"mappings": {                 #复制mappings开始的行到settings行之前结束,并最后再加一
-个 }
-"properties": {
-.......
-"geoip": {
-"properties": {
-"coordinates": {
-"type": "geo_point",      #只修改此行,原值为float改为geo_point
-.......
+  "index_patterns": ["logs-nginx-access-*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "client": {
+          "properties": {
+            "geo": {
+              "properties": {
+                "location": { "type": "geo_point" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
-#必须要先删除旧的索引数据,上面修改才能生效
 ```
 
-![ELK 日志分析第 426 页插图](assets/img-be0b46e82c260fcf.png)
+模板只作用于之后创建的匹配索引，**不会修改已有索引字段类型**。如历史索引映射错误，应规划新索引与 reindex，并验证数据后再切换数据视图；不应为了“让地图显示”直接删除原索引。写入新文档后检查 `client.geo.location` 的映射和值，确认 GeoIP 解析失败记录没有被误用。
 
-查看生成的索引模板
+### 6.3.5 验证索引与数据视图
 
-![ELK 日志分析第 426 页插图](assets/img-9506605a81247dc7.png)
+先在 Elasticsearch 查看新索引的映射和几条实际文档，确认 `client.geo.location` 是 `geo_point` 且有可用坐标。原截图使用 Head 插件展示索引；当前版本也可用 Kibana Dev Tools 或 API 完成检查。
 
-必须先删除旧有索引重新生成数据才能生效
-
-```bash
-#数据量不足可以多执行几次
-[root@ubuntu2204 ~]#cat   access_json.log-20220304 >>
-/var/log/nginx/access_json.log
+```http
+GET /logs-nginx-access-*/_mapping/field/client.geo.location
+GET /logs-nginx-access-*/_search?size=3
 ```
 
-确认类型是否修改
+![ELK 日志分析第 414 页插图](assets/img-0eaffd9486e28382.webp)
 
-![ELK 日志分析第 427 页插图](assets/img-36a06e8b42559149.png)
+![ELK 日志分析第 414 页插图](assets/img-eee7d856c2bb5118.webp)
 
-![ELK 日志分析第 427 页插图](assets/img-0e942d4cb79d1645.png)
+在 Kibana 创建匹配 `logs-nginx-access-*` 的数据视图，并选择真实日志时间字段（通常是 `@timestamp`）。查看字段列表时，不只确认出现了字段名，还应检查 `client.geo.location` 的类型与最近文档的坐标值。以下截图同时包含旧版“索引模式”和新版“数据视图”界面，菜单名称可能变化。
 
-![ELK 日志分析第 427 页插图](assets/img-6e74d91e1ce803b9.png)
+![ELK 日志分析第 415 页插图](assets/img-142edcfb2fd5594e.webp)
 
-重新创建图形
+![ELK 日志分析第 415 页插图](assets/img-4a271f5b4e5fe3bd.webp)
 
-![ELK 日志分析第 428 页插图](assets/img-e7be2096a02a16fc.png)
+![ELK 日志分析第 416 页插图](assets/img-49d4f55811ee8c5f.webp)
 
-![ELK 日志分析第 428 页插图](assets/img-935cea5de5f8300e.png)
+![ELK 日志分析第 416 页插图](assets/img-99eac9efed087def.webp)
 
-![ELK 日志分析第 429 页插图](assets/img-3dc418d5ccb1fc5a.png)
+![ELK 日志分析第 416 页插图](assets/img-030d8d7334513f3c.webp)
 
-![ELK 日志分析第 429 页插图](assets/img-431e07971aa8ae55.png)
+![ELK 日志分析第 417 页插图](assets/img-6dc3819562eac53c.webp)
 
-生成热图
+![ELK 日志分析第 417 页插图](assets/img-c7f7ca396b674530.webp)
 
-![ELK 日志分析第 430 页插图](assets/img-a893ddd74c330b79.png)
+### 6.3.6 在 Maps 中选择图层
 
-![ELK 日志分析第 430 页插图](assets/img-6f21ac8e377df428.png)
+Kibana Maps 可用地理点图层展示访问来源，也可按网格聚合生成热度图。先从 Kibana 自带示例地图熟悉底图、图层和时间筛选，再换成自己的访问日志数据视图；示例数据中的位置不代表真实访问者。
 
-![ELK 日志分析第 431 页插图](assets/img-0585d21b47588474.png)
+![ELK 日志分析第 418 页插图](assets/img-b629d9d9f5bf1871.webp)
 
-![ELK 日志分析第 431 页插图](assets/img-b9465ec235fe4d20.png)
+![ELK 日志分析第 418 页插图](assets/img-f02db73677737b8c.webp)
 
-6.3.7.2.2 7.X 实现
+![ELK 日志分析第 419 页插图](assets/img-f7e23359ee9c6501.webp)
 
-![ELK 日志分析第 432 页插图](assets/img-137c3d3fd9ee937b.png)
+![ELK 日志分析第 419 页插图](assets/img-b76850ced8376441.webp)
 
-![ELK 日志分析第 432 页插图](assets/img-9eee030c16fc9e03.png)
+![ELK 日志分析第 420 页插图](assets/img-83b0832596c5e4d3.webp)
 
-![ELK 日志分析第 433 页插图](assets/img-a361a1bfd67e6414.png)
+![ELK 日志分析第 420 页插图](assets/img-453775ffda43b886.webp)
 
-![ELK 日志分析第 433 页插图](assets/img-8ce6117e52f601c1.png)
+![ELK 日志分析第 421 页插图](assets/img-0b8a62716d41d693.webp)
 
-![ELK 日志分析第 434 页插图](assets/img-ad21227f04684a5b.png)
+![ELK 日志分析第 421 页插图](assets/img-bfc17f6bda438b91.webp)
 
-将默认地图更换成成中文地图
+![ELK 日志分析第 422 页插图](assets/img-5b4cbbe0ce081e50.webp)
 
-```text
-7.X 默认是英文的地图，如果希望是是中文地图的话，可以通过配置文件修改地图的引用地址即可
-#将地图更换成高德地图，在kibana的配置文件中，添加如下配置
-grep map /etc/kibana/kibana.yml
-map.tilemap.url: 'http://webrd02.is.autonavi.com/appmaptile?
-lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}'
-#重启服务
-systemctl restart kibana.service
-```
+![ELK 日志分析第 422 页插图](assets/img-e22760f0d3eaa9a2.webp)
+
+### 6.3.7 用访问日志创建地图
+
+选择访问日志数据视图、`client.geo.location` 作为位置字段，再按访问次数设置点大小或热度。地图为空时按顺序检查：时间范围是否覆盖新日志、字段是否为 `geo_point`、GeoIP 解析是否成功、所选数据视图是否匹配新索引。下方 8.x 截图里出现的映射错误，是旧资料先写入 float 坐标、后修改模板造成的历史问题；前文先建模板再写数据即可避免它。不要为了修正映射直接删除原索引。
+
+![ELK 日志分析第 423 页插图](assets/img-deed0f11582200bc.webp)
+
+![ELK 日志分析第 423 页插图](assets/img-7aaf6eee66d3ab2a.webp)
+
+![ELK 日志分析第 424 页插图](assets/img-93996a6243d11f59.webp)
+
+![ELK 日志分析第 425 页插图](assets/img-7006c753b4871a16.webp)
+
+![ELK 日志分析第 426 页插图](assets/img-be0b46e82c260fcf.webp)
+
+![ELK 日志分析第 426 页插图](assets/img-9506605a81247dc7.webp)
+
+![ELK 日志分析第 427 页插图](assets/img-36a06e8b42559149.webp)
+
+![ELK 日志分析第 427 页插图](assets/img-0e942d4cb79d1645.webp)
+
+![ELK 日志分析第 427 页插图](assets/img-6e74d91e1ce803b9.webp)
+
+![ELK 日志分析第 428 页插图](assets/img-e7be2096a02a16fc.webp)
+
+![ELK 日志分析第 428 页插图](assets/img-935cea5de5f8300e.webp)
+
+![ELK 日志分析第 429 页插图](assets/img-3dc418d5ccb1fc5a.webp)
+
+![ELK 日志分析第 429 页插图](assets/img-431e07971aa8ae55.webp)
+
+![ELK 日志分析第 430 页插图](assets/img-a893ddd74c330b79.webp)
+
+![ELK 日志分析第 430 页插图](assets/img-6f21ac8e377df428.webp)
+
+![ELK 日志分析第 431 页插图](assets/img-0585d21b47588474.webp)
+
+![ELK 日志分析第 431 页插图](assets/img-b9465ec235fe4d20.webp)
+
+下面的 7.x 截图用于对照旧界面。无论界面版本，地图图层仍需要 Elasticsearch 可识别的地理字段；“7.x 只支持 float、8.x 才支持 geo_point”并不准确。
+
+![ELK 日志分析第 432 页插图](assets/img-137c3d3fd9ee937b.webp)
+
+![ELK 日志分析第 432 页插图](assets/img-9eee030c16fc9e03.webp)
+
+![ELK 日志分析第 433 页插图](assets/img-a361a1bfd67e6414.webp)
+
+![ELK 日志分析第 433 页插图](assets/img-8ce6117e52f601c1.webp)
+
+![ELK 日志分析第 434 页插图](assets/img-ad21227f04684a5b.webp)
+
+地图底图使用的瓦片服务与 IP 定位数据库是两回事。若要更换底图语言或供应商，应核对当前 Kibana Maps 的配置文档、服务条款、网络可达性和 HTTPS 支持，不要直接复制旧版 HTTP 瓦片 URL。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/ELK/27-collecting-nginx-logs-with-filebeat-and-kafka-buffering.html' | relative_url }}">← Previous: Collecting Nginx Logs with Filebeat and Kafka Buffering</a>
-  <a href="{{ '/subjects/ELK/' | relative_url }}">Back to ELK Log Analytics Index</a>
-  <a href="{{ '/subjects/ELK/29-writing-collected-logs-to-mysql-with-logstash.html' | relative_url }}">Next: Writing Collected Logs to MySQL with Logstash →</a>
+  <a href="{{ '/subjects/ELK/27-collecting-nginx-logs-with-filebeat-and-kafka-buffering.html' | relative_url }}">← 上一篇：Filebeat 收集Nginx日志并写入 Kafka 缓存发送至 Elasticsearch</a>
+  <a href="{{ '/subjects/ELK/' | relative_url }}">返回 ELK 日志分析目录</a>
+  <a href="{{ '/subjects/ELK/29-writing-collected-logs-to-mysql-with-logstash.html' | relative_url }}">下一篇：Logstash收集日志写入 MySQL 数据库 →</a>
 </nav>

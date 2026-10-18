@@ -13,13 +13,13 @@ syntax_highlight: true
 # 21 Kafka 工具
 ### 3.9 Kafka 工具
 
+本篇保留了不同年代的桌面和 Web 管理工具截图。选型前先确认目标 Kafka 是 ZooKeeper 还是 KRaft 模式、工具是否支持相应版本及认证机制，并区分只读观察与可删除 Topic、修改位点的管理权限。旧版命令和页面截图不能当作当前版本的默认配置。
+
 ### 图形工具 Offset Explorer (Kafka Tool)
 
-![微服务技术第 66 页插图](assets/img-e27fb997b0b4f933.png)
+![微服务技术第 66 页插图](assets/img-e27fb997b0b4f933.webp)
 
-Offset Explorer ，旧称Kafka Tool，工具是一个 GUI 应用程序，用于管理和使用 Apache Kafka 群集。它提供了一个直观的 UI，允许人们快速查看 Kafka 群集中的对象以及存储在群集主题中的消息。它包含面向开发人员和管理员的功能。一些关键功能包括
-
-快速查看您的所有 Kafka 集群，包括其经纪人、主题和消费者查看分区中邮件的内容并添加新邮件查看消费者的偏移量，包括阿帕奇风暴卡夫卡喷口消费者以漂亮的打印格式显示 JSON和 XML 消息添加和删除主题以及其他管理功能将单个邮件从分区保存到本地硬盘驱动器编写自己的插件，允许您查看自定义数据格式 Kafka 工具在Windows、Linux 和 Mac 操作系统上运行
+Offset Explorer（旧称 Kafka Tool）是桌面 GUI，可查看 Broker、Topic、分区和消费者组位点，也能在授权后浏览记录与执行部分管理操作。先建立只读连接检查集群地址及 TLS/SASL 配置，再决定是否开放生产、删除或位点修改权限；浏览消息时注意其中可能包含业务敏感数据。
 
 官网:
 
@@ -29,27 +29,27 @@ Offset Explorer ，旧称Kafka Tool，工具是一个 GUI 应用程序，用于�
 
 <https://www.kafkatool.com/download.html>
 
-![微服务技术第 66 页插图](assets/img-dded469c08d8e757.png)
+![微服务技术第 66 页插图](assets/img-dded469c08d8e757.webp)
 
-![微服务技术第 67 页插图](assets/img-52eef93e38afa9dd.png)
+![微服务技术第 67 页插图](assets/img-52eef93e38afa9dd.webp)
 
-![微服务技术第 67 页插图](assets/img-a50a68fd668a48cc.png)
+![微服务技术第 67 页插图](assets/img-a50a68fd668a48cc.webp)
 
-![微服务技术第 67 页插图](assets/img-6d20b7260c8db071.png)
+![微服务技术第 67 页插图](assets/img-6d20b7260c8db071.webp)
 
-修改类型
+下面的截图展示连接配置与消息数据视图；不同版本菜单名称可能不同。
 
-![微服务技术第 68 页插图](assets/img-2ff29e2a7f536fa5.png)
+![微服务技术第 68 页插图](assets/img-2ff29e2a7f536fa5.webp)
 
-查看数据
+查看数据时先限制 Topic、分区和读取数量，不要在大型生产 Topic 上无边界加载历史记录。
 
-![微服务技术第 68 页插图](assets/img-1c59cb64342d6dbd.png)
+![微服务技术第 68 页插图](assets/img-1c59cb64342d6dbd.webp)
 
 ### 基于Web的Kafka集群监控系统 kafka-eagle
 
 ### 介绍
 
-Kafka eagle（kafka鹰） 是一款由国内公司开源的Kafka集群监控系统，可以用来监视kafka集群的broker状态、Topic信息、IO、内存、 consumer线程、偏移量等信息，并进行可视化图表展示。独特的KQL还可以通过SQL在线查询kafka中的数据。
+EFAK（原 Kafka Eagle）提供 Broker、Topic、消费者位点等可视化信息，部分版本还提供查询与管理操作。下方安装记录针对旧版本及其 ZooKeeper 配置；在 KRaft 集群部署前，应核对目标版本的兼容性和认证支持。可视化工具只是排查入口，不能替代 Kafka 自身指标、日志与告警体系。
 
 官方地址
 
@@ -59,9 +59,9 @@ Kafka eagle（kafka鹰） 是一款由国内公司开源的Kafka集群监控系�
 
 <https://www.cnblogs.com/smartloli/>
 
-![微服务技术第 68 页插图](assets/img-b643bf96ebce9ee1.png)
+![微服务技术第 68 页插图](assets/img-b643bf96ebce9ee1.webp)
 
-![微服务技术第 69 页插图](assets/img-50cd35415f348ddd.png)
+![微服务技术第 69 页插图](assets/img-50cd35415f348ddd.webp)
 
 ### 安装
 
@@ -71,11 +71,11 @@ Kafka eagle（kafka鹰） 是一款由国内公司开源的Kafka集群监控系�
 
 <https://www.cnblogs.com/smartloli/p/16728995.html>
 
-注意：当前最新版kafka-eagle-bin-3.0.2有bug，无法正常显示数据，可以选用kafka-eagle-bin-3.0.1版本
+以下 3.0.1/3.0.2 的差异是当时的环境记录，不代表当前最新版或所有部署都存在同一问题。部署前请查阅发行说明和目标 Kafka 版本兼容矩阵。
 
 3.9.2.2.1 安装 JAVA
 
-注意: 不支持JDK-11
+以下 Java 8 安装命令只对应这份 3.0.1 历史记录；新版工具的 Java 要求应查当前发布说明，不要把“不支持 JDK 11”当作所有版本的结论。
 
 ```text
 apt update && apt -y install openjdk-8-jdk
@@ -155,22 +155,21 @@ efak.sql.topic.preview.records.max=10
 ######################################
 # delete kafka topic token
 ######################################
-efak.topic.token=keadmin
+efak.topic.token=REPLACE_WITH_PRIVATE_TOKEN
 ######################################
 # kafka sqlite 数据库地址（需要修改存储路径）
 ######################################修改此处,取消下面四行注释
 efak.driver=org.sqlite.JDBC
-efak.url=jdbc:sqlite:/usr/local/kafka-eagle-web/db/ke.db  #此文件会自动生成
+efak.url=jdbc:sqlite:/usr/local/kafka-eagle-web/db/ke.db
 efak.username=root
-efak.password=www.kafka-eagle.org
+efak.password=REPLACE_WITH_PRIVATE_PASSWORD
 ######################################
 # kafka mysql 数据库地址（需要提前创建ke库）
 ######################################修改此处添加注释下面四行
 #efak.driver=com.mysql.cj.jdbc.Driver
-#efak.url=jdbc:mysql://127.0.0.1:3306/ke?useUnicode=true&characterEncoding=UTF-
-8&zeroDateTimeBehavior=convertToNull
+#efak.url=jdbc:mysql://127.0.0.1:3306/ke?useUnicode=true&characterEncoding=UTF-8
 #efak.username=ke
-#efak.password=123456
+#efak.password=REPLACE_WITH_PRIVATE_PASSWORD
 ```
 
 3.9.2.2.6 启动
@@ -211,13 +210,13 @@ Standalone mode start thread on one node.
 
 3.9.2.2.7 登录
 
-<http://localhost:8048默认账号：admin默认密码：123456>
+本地访问地址示例：<http://localhost:8048/>。若安装版本仍采用默认凭据，应在首次登录后立即修改密码，并限制管理页面的网络访问范围；不要把示例凭据当作固定值。
 
-![微服务技术第 71 页插图](assets/img-c2bd99f4c9ce5ffc.png)
+![微服务技术第 71 页插图](assets/img-c2bd99f4c9ce5ffc.webp)
 
 默认 kafka 没有开启JMX，无法监控到Kafka的相关数据
 
-![微服务技术第 71 页插图](assets/img-224f3c68b2289a84.png)
+![微服务技术第 71 页插图](assets/img-224f3c68b2289a84.webp)
 
 3.9.2.2.8 修改和监控 Kafka
 
@@ -243,27 +242,27 @@ fi
 list 10.0.0.101:9092 --topic bowentopic ;done
 ```
 
-注意：kafka-eagle-bin-3.0.2有bug，选择kafka-eagle-bin-3.0.1版本才能看到数据展示
+若图表没有数据，先核对采集配置、JMX 连接、Kafka 模式与应用日志，再判断是否属于具体版本缺陷，而不是直接降级。
 
-![微服务技术第 72 页插图](assets/img-9bc76b9e5e2d55d0.png)
+![微服务技术第 72 页插图](assets/img-9bc76b9e5e2d55d0.webp)
 
-![微服务技术第 72 页插图](assets/img-7fb5747024a8fce9.png)
+![微服务技术第 72 页插图](assets/img-7fb5747024a8fce9.webp)
 
 创建topic
 
-![微服务技术第 73 页插图](assets/img-2b0b0a4048019bb6.png)
+![微服务技术第 73 页插图](assets/img-2b0b0a4048019bb6.webp)
 
-![微服务技术第 73 页插图](assets/img-a5a84e2c0ef513b8.png)
+![微服务技术第 73 页插图](assets/img-a5a84e2c0ef513b8.webp)
 
-![微服务技术第 73 页插图](assets/img-a2351eea49db35c0.png)
+![微服务技术第 73 页插图](assets/img-a2351eea49db35c0.webp)
 
-![微服务技术第 74 页插图](assets/img-408dad0847b9a953.png)
+![微服务技术第 74 页插图](assets/img-408dad0847b9a953.webp)
 
-![微服务技术第 74 页插图](assets/img-c6009d23011e4a44.png)
+![微服务技术第 74 页插图](assets/img-c6009d23011e4a44.webp)
 
 多次访问后可以看到如下
 
-![微服务技术第 74 页插图](assets/img-14376aec2d6b223d.png)
+![微服务技术第 74 页插图](assets/img-14376aec2d6b223d.webp)
 
 ### kafka-UI
 
@@ -273,79 +272,44 @@ list 10.0.0.101:9092 --topic bowentopic ;done
 
 <https://hub.docker.com/r/provectuslabs/kafka-ui/>
 
-Apache Kafka 的 UI 是一种多功能、快速且轻量级的 Web UI，用于管理 Apache Kafka® 集群。由开发人员构建，为开发人员服务。
-
-该应用程序是一个免费的开源 Web UI，用于监控和管理 Apache Kafka 集群。
-
-适用于 Apache Kafka 的 UI 是一个简单的工具，可让您的数据流可观察，有助于更快地发现和排查问题，并提供最佳性能。其轻量级控制面板可以轻松跟踪 Kafka 集群的关键指标: Brokers, Topics, Partitions、生产和消费。
+Kafka UI 可浏览 Broker、Topic、分区与消费者组，部分版本支持生产消息和修改配置。它能帮助定位问题，但不会自动保证集群“最佳性能”；在生产环境接入前，应设置 Kafka 侧最小权限、Web 访问控制与审计，并确认容器能解析并访问 Broker 广告地址。
 
 范例:容器化部署
 
 ```bash
-[root@ubuntu2404 ~]#docker run --name kafka-ui -it -p 8080:8080 -e DYNAMIC_CONFIG_ENABLED=true
-provectuslabs/kafka-ui
-[root@ubuntu2404 ~]#docker run --name kafka-ui -it -p 8080:8080 -e DYNAMIC_CONFIG_ENABLED=true registry.cn-
-beijing.aliyuncs.com/bowenxiaochun/kafka-ui:v0.7.2
+docker run --rm --name kafka-ui -p 127.0.0.1:8080:8080 \
+  -e KAFKA_CLUSTERS_0_NAME=demo \
+  -e KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka01:9092 \
+  provectuslabs/kafka-ui:v0.7.2
 ```
 
-![微服务技术第 75 页插图](assets/img-fe6861908be929a1.png)
+![微服务技术第 75 页插图](assets/img-fe6861908be929a1.webp)
 
-![微服务技术第 75 页插图](assets/img-ecd9a49255535c88.png)
+![微服务技术第 75 页插图](assets/img-ecd9a49255535c88.webp)
 
 范例: docker-compose部署
 
 ```yaml
-#https://docs.kafka-ui.provectus.io/configuration/configuration-file
 services:
-kafka-ui:
-container_name: kafka-ui
-#image: provectuslabs/kafka-ui:latest
-image: registry.cn-beijing.aliyuncs.com/bowenxiaochun/kafka-ui:v0.7.2
-ports:
-- 8080:8080
-depends_on:
-- kafka0
-environment:
-DYNAMIC_CONFIG_ENABLED: 'true'
-KAFKA_CLUSTERS_0_NAME: wizard_test
-KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka0:29092
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: demo
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka01:9092
 ```
+
+示例中的 `kafka01` 必须能从 **Kafka UI 容器内部**解析和访问，且 Broker 的 `advertised.listeners` 要返回同样可达的地址。若 Kafka 只监听宿主机的 `localhost`，容器内的 `localhost` 指向容器自己，不能照抄该地址。示例只把页面绑定到本机回环接口；需要远程访问时先配置认证和反向代理。
 
 ### Kafka Manager
 
 <https://github.com/yahoo/CMAK>
 
-CMAK 原名 kafka manager 是一个yahoo 公司开源的 kafka 管理工具
+CMAK（Cluster Manager for Apache Kafka，旧称 Kafka Manager）是较早的 Kafka 集群管理工具，常见于 ZooKeeper 模式的历史部署。它可查看 Broker、Topic 与分区分布，部分版本提供 Topic 管理和副本重分配。文中的旧截图与功能清单不保证适用于 KRaft 或较新的 Kafka 版本，接入前请检查项目维护状态和兼容矩阵。
 
-因 Apache 版权，后来从“kafka manager”改名为“CMAK”，意为“Cluster Manager for Apache Kafka”。
-
-Kafka Manager是用于管理Apache Kafka 集群的工具。为了简化开发者和服务工程师维护Kafka集群的工作，yahoo构建了一个叫做Kafka 管理器的基于Web工具，叫做 Kafka Manager。
-
-这个管理工具可以很容易地发现分布在集群中的哪些topic分布不均匀，或者是分区在整个集群分布不均匀的的情况。它支持管理多个集群、 选择副本、副本重新分配以及创建Topic。同时，这个管理工具也是一个非常好的可以快速浏览这个集群的工具，有如下功能：
-
-1.管理多个kafka集群
-
-2.便捷的检查kafka集群状态(topics,brokers,备份分布情况,分区分布情况)
-
-3.选择你要运行的副本
-
-4.基于当前分区状况进行
-
-5.可以选择topic配置并创建topic(0.8.1.1和0.8.2的配置不同)
-
-6.删除topic(只支持0.8.2以上的版本并且要在broker配置中设置delete.topic.enable=true)
-
-7.Topic list会指明哪些topic被删除（在0.8.2以上版本适用）
-
-8.为已存在的topic增加分区
-
-9.为已存在的topic更新配置
-
-10.在多个topic上批量重分区
-
-11.在多个topic上批量重分区(可选partition broker位置)
-
-![微服务技术第 76 页插图](assets/img-0f6d2ed049c9f1b2.png)
+这些工具都能执行高影响操作：删除 Topic、修改配置和重新分配副本可能引起不可逆的数据损失或性能波动。生产环境宜先使用 Kafka 自带 CLI 与指标系统核对状态，再按最小权限为 GUI 开放必要功能，而不是让管理页面直接暴露在公网。
+![微服务技术第 76 页插图](assets/img-0f6d2ed049c9f1b2.webp)
 
 下载
 
@@ -356,7 +320,7 @@ Kafka Manager是用于管理Apache Kafka 集群的工具。为了简化开发者
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/20-kafka-data-structures-in-zookeeper.html' | relative_url }}">← Previous: Kafka Data Structures in ZooKeeper</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/22-kafka-monitoring.html' | relative_url }}">Next: Kafka Monitoring →</a>
+  <a href="{{ '/subjects/Microservices/20-kafka-data-structures-in-zookeeper.html' | relative_url }}">← 上一篇：Kafka 在 ZooKeeper 里面的存储结构</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/22-kafka-monitoring.html' | relative_url }}">下一篇：Kafka 监控 →</a>
 </nav>

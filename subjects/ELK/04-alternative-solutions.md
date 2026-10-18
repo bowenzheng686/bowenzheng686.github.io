@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "ELK 日志分析 · 其它方案"
+title: "ELK 日志分析 · Fluentd、Fluent Bit 与 Loki"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
@@ -10,92 +10,42 @@ syntax_highlight: true
 
 {% raw %}
 
-# 04 其它方案
-### 1.4 其它方案
+# 04 日志方案：Fluentd、Fluent Bit 与 Loki
+
+ELK 不是日志平台的唯一组合。选择方案时，应分别考虑**采集与处理**、**存储与索引**、**查询与展示**三个环节，不能只根据工具名称判断能否互相替换。
 
 ### Fluentd 和 Fluent Bit
 
-fluentd和fluent-bit都是有Treasure Data公司赞助开发的开源项目，这两个项目有很多相似之处
-
-EFK：Elasticsearch，Fluentd，Fluent Bit，Kibana
-
-ELK:  Elasticsearch，Logstash，filebeat，Kibana
+Fluentd 与 Fluent Bit 都能采集并转发日志，但定位不同：前者侧重灵活的解析、路由与聚合；后者更适合贴近日志源进行轻量采集。常说的 **EFK** 是 Elasticsearch、Fluentd、Kibana 的组合，也可以在节点端增加 Fluent Bit。**ELK** 原指 Elasticsearch、Logstash、Kibana；使用 Filebeat 采集时常写作 Elastic Stack，而不是把 Filebeat 算进字母“ELK”。
 
 ### Fluentd
 
 <https://www.fluentd.org/>
 
-![ELK 日志分析第 12 页插图](assets/img-2c3d939e33bc4aed.png)
+![ELK 日志分析第 12 页插图](assets/img-2c3d939e33bc4aed.webp)
 
-Fluentd 是开源社区中流行的日志收集工具，td-agent是其商业化版本，由Treasure Data公司维护，是本文选用的评测版本。
+Fluentd 是可扩展的日志收集与处理器。它通过输入、解析、过滤、缓冲和输出插件，把不同来源的日志送往 Elasticsearch、对象存储或其他后端。它可以承担 Logstash 的一部分工作，但迁移前要逐项核对插件、过滤规则、缓冲与失败重试行为，而不是直接替换进程。
 
-Fluentd 基于CRuby实现，并对性能表现关键的一些组件用C语言重新实现，整体性能不错。
+![ELK 日志分析第 13 页插图](assets/img-6e9467b33e59da04.webp)
 
-Fluentd 作为一个很好的 Logstash 替代品，Fluentd 是 DevOps 的最爱，特别是对于 Kubernetes 部署，因为它具有丰富的插件库。
-
-Fluentd 与 Logstash 一样，它可以将数据结构化为 JSON，并涉及日志数据处理的所有方面：收集、解析、缓冲和输出跨各种来源和目的地的数据。
-
-![ELK 日志分析第 13 页插图](assets/img-6e9467b33e59da04.png)
-
-优势
-
-支持许多日志源和目的地。 灵活、可扩展的解析选项，支持多种输入格式。 拥有庞大的生态系统，包括成百上千个插件,以及用Ruby自行编写插件的功能。 支持Apache 许可证，版本2.0 供应商中立（CNCF项目） 如果企业需要中立的供应商，Fluentd是不错的选择。它还经常与Kubernetes和容器化环境一起使用。
-
-缺点
-
-解析前没有缓冲，可能会导致日志管道出现背压。 较于logstash，其插件支持相对少一些。
+其优势是插件和路由能力丰富，适合多来源、多目标的日志管道。相应地，插件组合、缓冲区容量及重试策略也会增加配置和运维成本；若输入速度长期高于输出速度，仍可能积压甚至丢日志。需要结合峰值流量与后端故障时长规划缓冲，而不是假定某个工具天然不会出现背压。
 
 ### Fluent Bit
 
-Fluent Bit 基于Fluentd体系结构和设计经验实现
+Fluent Bit 通常部署在容器节点、虚拟机或边缘设备上，负责读取本地日志、添加元数据、做轻量过滤并转发。它可以直接发送到存储后端，也可以先发给 Fluentd 做进一步处理。实际内存使用量取决于输入量、缓冲、过滤器和输出阻塞情况，原资料中的固定“不到 1 MB”不能作为容量规划依据。
 
-Fluent Bit 不仅是一款日志收集工具，作数据流处理工具，并充当将日志数据转发到Fluentd的运送工具。
+| 选择维度 | Fluentd | Fluent Bit |
+| --- | --- | --- |
+| 典型位置 | 日志处理与路由层，也可直接采集 | 靠近日志源的采集层，也可直接输出 |
+| 实现与扩展 | 以 Ruby 生态和丰富插件见长 | 以 C 实现的轻量运行时，支持输入、过滤、输出插件 |
+| 适合的处理 | 复杂解析、路由、聚合及多目标输出 | 采集、标签补充、基础过滤及可靠转发 |
+| 规划重点 | 插件兼容性、CPU／内存、缓冲和重试 | 本地缓冲、背压、丢失策略和节点资源限制 |
 
-Fluent Bit 很适合在 Kubernetes集群等容器化环境中运行
-
-Fluent Bit 很节省资源，因为它占用的空间很小。
-
-虽然Fluent Bit 经常用在Kubernetes 环境中,但也支持部署在裸机服务器、虚拟机和嵌入式设备上。
-
-主要优势:
-
-轻量级设计，内存占用量极小（通常不到1MB） 易于扩展的架构。 可插入式架构，有许多输入、过滤器和输出插件。 支持基于指标和基于日志的有效负载。 支持通过安全的连接将日志发送到存储后端。使用SQL，支持数据流处理。 支持Apache 许可证，版本2.0。供应商中立（CNCF项目）。 Fluent Bit从众多日志源收集日志和指标,并将它们发送到不同的目的地。 Fluent Bit真正大放异彩的地方在于嵌入式、边缘及其他资源受限的环境，因为精简的运行时环境结合众多的输入/输出选项至关重要
-
-fluentd 和 fluent-bit 对比
-
-fluentd fluent-bit
-
-范围容器/服务器容器/服务器
-
-语言 C和Ruby C
-
-大小约40MB 约450KB
-
-性能高性能高性能
-
-作为Ruby Gem构建，主要依赖
-
-除了一些安装编译插件（GCC、CMAKE）其它零
-
-依赖关
-
-gems
-
-系
-
-依赖。
-
-插件支持超过650个可用插件大约35个可用插件
-
-许可证 Apache许可证2.0版 Apache许可证2.0版
-
-Fluentd是日志收集器，处理器和聚合器。 fluent-bit是一个日志收集器和处理器，因为它没有Fluentd等强大的聚合功能
-
-两个项目相互补充，从而提供了完整的可靠轻量级日志解决方案，当然fluent-bit也可以独立完成日志收集。
+二者可以组合，但不必强制串联。决定管道结构前，先画出日志从应用到最终存储的路径，以及每个环节故障时数据暂存在哪里。
 
 ### Loki
 
-![ELK 日志分析第 14 页插图](assets/img-ba56173e545f5ec7.png)
+![ELK 日志分析第 14 页插图](assets/img-ba56173e545f5ec7.webp)
 
 ```text
 #Loki文档网址：
@@ -104,28 +54,20 @@ https://grafana.com/docs/loki/latest/
 https://github.com/grafana/loki/releases
 ```
 
-Loki 是由Grafana Labs团队开源的水平可扩展，高度可用的多租户日志聚合系统。基于 Go 语言开发 Loki 的设计具有很高的成本效益，并且易于操作。
+Loki 是以**标签索引日志流**为主要设计思路的日志存储与查询系统。它不像 Elasticsearch 那样为日志正文建立同样的全文索引；查询通常先用低基数标签缩小范围，再扫描匹配的日志内容。因此，合理设计标签很重要：服务名、环境等稳定字段适合作标签，而请求 ID 这类高基数值通常更适合留在日志正文。
 
-Loki 受到 Prometheus启发,也使用标签来作为索引，而不是对全文进行检索，通过这些标签既可以查询日志的内容也可以查询到监控的数据签，极大地降低了日志索引的存储。
+一个常见路径是：采集器读取应用或节点日志，附加标签并推送给 Loki；Grafana 将 Loki 配为数据源，供读者查询、制作面板和告警。采集器可选 Grafana Alloy、Fluent Bit 等支持 Loki 的组件；旧资料提及的 Promtail 应结合当前维护状态再决定是否新部署。`logcli` 和 Loki API 也可用于命令行查询。
 
-典型的基于 Loki 的日志堆栈由 3 个组件组成：
+![ELK 日志分析第 15 页插图](assets/img-8b5c521479f2cfc2.webp)
 
-Loki ：主服务器，负责摄取和存储日志以及处理查询,功能和ES类似 Agent：使用 Loki 一起分发的 Promtail 或者 Grafana 代理。通过代理抓取日志，通过添加标签将日志转换为流，并通过 HTTP API 将流推送到 Loki，和filebeat功能相似 Grafana：用于 UI 展示，用于查询和显示日志数据。 您还可以使用 LogCLI 或直接使用 Loki API 从命令行查询日志，和Kibana功能相似
+### 如何在 Elasticsearch 与 Loki 之间选择
 
-工作流程
-
-在应用程序服务器上安装promtail来收集日志然后发送给Loki存储可以在Grafana UI界面通过添加Loki为数据源进行日志查询（如果Loki服务器性能不够，可以部署多个Loki进行存储及查询）。 作为一个日志系统不光只有查询分析日志的能力，还能对日志进行监控和报警。
-
-![ELK 日志分析第 15 页插图](assets/img-8b5c521479f2cfc2.png)
-
-与 ELK 比 较优势
-
-ELK虽然功能丰富，但规模复杂，资源占用高，很多功能往往用不上 loki 不对日志进行全文索引。通过存储压缩非结构化日志和索引元数据，Loki 操作起来会更简单， 更省成本。 通过使用与 Prometheus 相同的标签记录流对日志进行索引和分组，这使得日志的扩展和操作效率更高。 安装部署简单快速，且受 Grafana 原生支持。 适用于中小型规模的环境中
+如果业务需要对大量日志字段做灵活全文检索和复杂分析，Elasticsearch 的索引能力更合适，但索引与集群维护也有成本。若查询大多能先按服务、环境和时间范围收窄，Loki 的标签索引方式可能减少索引开销，并与 Grafana 监控面板自然结合。两者都需要规划保留周期、权限、备份与扩容；“Loki 一定更省钱”或“只适合中小规模”都过于绝对，应以真实日志量和查询模式测试。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/ELK/03-elk-architecture.html' | relative_url }}">← Previous: ELK Architecture</a>
-  <a href="{{ '/subjects/ELK/' | relative_url }}">Back to ELK Log Analytics Index</a>
-  <a href="{{ '/subjects/ELK/05-elasticsearch-installation-overview.html' | relative_url }}">Next: Elasticsearch Installation Overview →</a>
+  <a href="{{ '/subjects/ELK/03-elk-architecture.html' | relative_url }}">← 上一篇：ELK 架构</a>
+  <a href="{{ '/subjects/ELK/' | relative_url }}">返回 ELK 日志分析专题目录</a>
+  <a href="{{ '/subjects/ELK/05-elasticsearch-installation-overview.html' | relative_url }}">下一篇：Elasticsearch 安装概览 →</a>
 </nav>

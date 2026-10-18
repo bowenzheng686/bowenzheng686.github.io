@@ -57,57 +57,16 @@
     });
   }
 
-  function setupImages(article) {
-    var dialog = doc.createElement("dialog");
-    dialog.className = "k8-lightbox";
-    dialog.setAttribute("aria-label", "放大图片");
-    var close = doc.createElement("button");
-    close.type = "button";
-    close.className = "k8-lightbox-close";
-    close.setAttribute("aria-label", "关闭图片");
-    close.textContent = "×";
-    var fullImage = doc.createElement("img");
-    dialog.append(close, fullImage);
-    doc.body.appendChild(dialog);
-    close.addEventListener("click", function () { dialog.close(); });
-    dialog.addEventListener("click", function (event) {
-      if (event.target === dialog) dialog.close();
-    });
-    dialog.addEventListener("close", function () { fullImage.removeAttribute("src"); });
-
+  function sizeImages(article) {
     article.querySelectorAll("img").forEach(function (img) {
       function setSize() {
-        if (img.classList.contains("k8-image-wide") || img.classList.contains("k8-image-tall") ||
-            img.classList.contains("k8-image-small")) return;
+        if (img.classList.contains("k8-image-wide") || img.classList.contains("k8-image-small")) return;
         var ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
         if (ratio > 2.15) img.classList.add("k8-image-wide");
-        else if (ratio < 0.72) img.classList.add("k8-image-tall");
         else if (img.naturalWidth < 520) img.classList.add("k8-image-small");
       }
       if (img.complete) setSize();
       else img.addEventListener("load", setSize, { once: true });
-
-      var existing = img.closest("a[href]");
-      if (existing && existing.getAttribute("href") !== img.getAttribute("src")) return;
-      var anchor = existing || doc.createElement("a");
-      if (!existing) {
-        anchor.href = img.getAttribute("src") || img.src;
-        img.parentNode.insertBefore(anchor, img);
-        anchor.appendChild(img);
-      }
-      anchor.classList.add("k8-image-link");
-      anchor.target = "_blank";
-      anchor.rel = "noopener noreferrer";
-      anchor.setAttribute("aria-label", "点击放大图片：" + (img.alt || "插图"));
-      anchor.addEventListener("click", function (event) {
-        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-        if (typeof dialog.showModal !== "function") return;
-        event.preventDefault();
-        fullImage.src = img.currentSrc || img.src;
-        fullImage.alt = img.alt || "放大图片";
-        dialog.showModal();
-        close.focus();
-      });
     });
   }
 
@@ -118,7 +77,7 @@
     window.requestAnimationFrame(function () { compactCopyButtons(article); });
     window.addEventListener("load", function () { compactCopyButtons(article); }, { once: true });
     linkifyBareUrls(article);
-    setupImages(article);
+    sizeImages(article);
   }
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", initialize, { once: true });
   else initialize();

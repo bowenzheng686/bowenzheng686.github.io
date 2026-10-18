@@ -1,0 +1,82 @@
+/* A consistent frame and a full-resolution reader for technical illustrations. */
+.prose img,
+.container .merged-illustration img {
+  background: #fff;
+  border: 1px solid #d9dedc !important;
+  border-radius: 6px !important;
+  box-shadow: 0 5px 22px rgba(25, 33, 33, .08) !important;
+}
+.prose .image-reader-link,
+.container .image-reader-link {
+  display: table;
+  max-width: 100%;
+  margin: 24px auto;
+  border-bottom: 0;
+  cursor: zoom-in;
+}
+.prose .image-reader-link img,
+.container .image-reader-link img { display: block; margin: 0 auto; }
+/* The regenerated diagrams are deliberately shown near body-text scale. */
+.prose img[src$="-redrawn.webp"] { max-width: min(100%, 620px); }
+.image-viewer {
+  position: fixed;
+  width: min(96vw, 1800px);
+  max-width: none;
+  height: min(94vh, 1100px);
+  max-height: none;
+  padding: 0;
+  border: 1px solid #cdd3d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #202623;
+  box-shadow: 0 24px 84px rgba(0, 0, 0, .38);
+}
+.image-viewer::backdrop { background: rgba(0, 0, 0, .82); }
+.image-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #d9dedc;
+  background: #f7f8f6;
+}
+.image-viewer-label { margin-right: auto; font-size: 13px; font-weight: 600; }
+.image-viewer-toolbar button {
+  padding: 5px 9px;
+  border: 1px solid #b9c2bc;
+  border-radius: 4px;
+  background: #fff;
+  color: #202623;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.image-viewer-toolbar button[aria-pressed="true"] { border-color: #3155ba; color: #3155ba; }
+.image-viewer-toolbar button:focus-visible { outline: 2px solid #3155ba; outline-offset: 2px; }
+.image-viewer-viewport {
+  width: 100%;
+  height: calc(100% - 48px);
+  overflow: auto;
+  text-align: center;
+  background: #fff;
+}
+.image-viewer-viewport img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #fff;
+}
+.image-viewer-viewport img.image-viewer-original { max-width: none; max-height: none; }
+@media (max-width: 640px) {
+  .image-viewer { width: 100vw; height: 100vh; border-radius: 0; }
+  .image-viewer-label { display: none; }
+  .image-viewer-toolbar { justify-content: center; }
+}
+@media print { .image-viewer { display: none !important; } }

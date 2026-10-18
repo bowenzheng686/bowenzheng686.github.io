@@ -13,12 +13,26 @@ syntax_highlight: true
 # 02 单体(巨石)架构
 ### 1.2 单体(巨石)架构
 
-传统架构（单机系统），一个项目一个工程：比如:商品、订单、支付、库存、登录、注册等等，统一部署，一个进程 all in one的架构方式，把所有的功能单元放在一个应用里。然后把整个应用部署到一台服务器上。如果负载能力不行，将整个应用进行水平复制，进行扩展，然后通过负载均衡实现访问。 Java实现：JSP、Servlet，打包成一个jar、war部署易于开发和测试:也十分方便部署;当需要扩展时，只需要将war复制多份，然后放到多个服务器 上，再做个负载均衡就可以了。 复杂性高，在业务规模和团队规模发展的一定阶段，多个模块耦合在一起，代码结构混乱，使得团队成员无人理解整个代码逻辑。 导致代码质量低，复杂性进一步增加。进一步导致重复代码越积越多。代码难以被修改和重构可靠性差，如果某个功能模块出问题，有可能引起整个应用的崩溃。修改Bug后，某模块功能修改或升级后，需要停掉整个服务，重新整体重新打包、部署这个应用war包，功能模块相互之间耦合度高,相互影响,不适合当今互联网业务功能的快速迭代。 交付效率低，构建和部署耗时长，编译耗时变长，开发调试将大部分时间花在重新编译上，难以定位问题，开发效率低。 伸缩性(scalable)差,单体只能按整体横向扩展，无法分模块垂直扩展。 总结: 架构简单,部署方便,打包编译部署升级效率低下,各功能耦合度高,扩展困难,扩缩容不灵活,适合小型简单项目
+单体应用把商品、订单、支付等业务模块作为**一个可部署单元**交付。它不等于“只能运行在一台机器上”：只要应用状态和依赖允许，同一版本可以部署多个实例，由负载均衡器分流。Java 项目可打包为 JAR 或 WAR，其他语言也有各自的交付形式。
+
+### 单体的优势
+
+- **调用路径短**：模块间主要是进程内调用；同一数据库中的事务通常较容易管理。
+- **开发与排错相对直接**：代码、测试和部署入口集中，适合需求尚在探索的团队。
+- **运维组件较少**：不必为了通信先部署服务发现、跨服务追踪和复杂的发布协调。
+
+### 何时会遇到压力
+
+如果模块相互读写内部数据、缺乏清晰接口，代码增长后改动范围就难以控制。统一构建与发布也意味着一个模块的变更需要验证整个应用。横向扩容往往复制整个部署单元，难以只给热点功能增加实例；但可先尝试模块化、缓存、异步任务和数据分区，不必立刻拆为微服务。
+
+### 实用判断
+
+先按业务能力划分模块，限制跨模块访问，建立契约测试，并记录构建、发布和故障恢复时间。若独立交付或独立扩容的收益持续超过分布式系统的额外成本，再考虑拆分。维护良好的模块化单体并非“小项目专用”的过渡品。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/01-evolution-of-software-architecture.html' | relative_url }}">← Previous: Evolution of Software Architecture</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/03-model-view-controller-mvc.html' | relative_url }}">Next: Model-View-Controller (MVC) →</a>
+  <a href="{{ '/subjects/Microservices/01-evolution-of-software-architecture.html' | relative_url }}">← 上一篇：软件架构演变</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/03-model-view-controller-mvc.html' | relative_url }}">下一篇：MVC 模型—视图—控制器 →</a>
 </nav>

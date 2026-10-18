@@ -141,20 +141,20 @@ docs  examples  host-manager  manager  ROOT
 http://tomcat.bowen.org/
 ```
 
-![Docker 容器技术第 374 页插图](assets/img-42ee028bfca99004.png)
+![Docker 容器技术第 374 页插图](assets/img-42ee028bfca99004.webp)
 
-![Docker 容器技术第 374 页插图](assets/img-ca2608c34e063dbd.png)
+![Docker 容器技术第 374 页插图](assets/img-ca2608c34e063dbd.webp)
 
-![Docker 容器技术第 375 页插图](assets/img-60b12ae2d7c5141b.png)
+![Docker 容器技术第 375 页插图](assets/img-60b12ae2d7c5141b.webp)
 
-![Docker 容器技术第 375 页插图](assets/img-54dbacbf0340e734.png)
+![Docker 容器技术第 375 页插图](assets/img-54dbacbf0340e734.webp)
 
-![Docker 容器技术第 376 页插图](assets/img-1dd8094c9168ae5a.png)
+![Docker 容器技术第 376 页插图](assets/img-1dd8094c9168ae5a.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Docker/23-deploying-the-spug-operations-platform.html' | relative_url }}">← Previous: Practical Examples: 搭建运维平台 Spug</a>
-  <a href="{{ '/subjects/Docker/' | relative_url }}">Back to Docker Container Technology Index</a>
-  <a href="{{ '/subjects/Docker/25-deploying-the-ruoyi-microservices-project.html' | relative_url }}">Next: Practical Examples：RuoYI 微服务项目 →</a>
+  <a href="{{ '/subjects/Docker/23-deploying-the-spug-operations-platform.html' | relative_url }}">← 上一篇：实战案例: 搭建运维平台 Spug</a>
+  <a href="{{ '/subjects/Docker/' | relative_url }}">返回 Docker 容器技术目录</a>
+  <a href="{{ '/subjects/Docker/25-deploying-the-ruoyi-microservices-project.html' | relative_url }}">下一篇：实战案例：RuoYI 微服务项目 →</a>
 </nav>

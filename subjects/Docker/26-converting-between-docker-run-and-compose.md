@@ -17,13 +17,13 @@ syntax_highlight: true
 
 <https://www.composerize.com/>
 
-![Docker 容器技术第 379 页插图](assets/img-3aed800f249a8551.png)
+![Docker 容器技术第 379 页插图](assets/img-3aed800f249a8551.webp)
 
 利用网站 Docker Compose 文件转换为 docker run  命令
 
 <https://www.decomposerize.com/>
 
-![Docker 容器技术第 379 页插图](assets/img-92a0a6829e60d9d2.png)
+![Docker 容器技术第 379 页插图](assets/img-92a0a6829e60d9d2.webp)
 
 范例：
 
@@ -180,7 +180,7 @@ myweb:
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Docker/25-deploying-the-ruoyi-microservices-project.html' | relative_url }}">← Previous: Practical Examples：RuoYI 微服务项目</a>
-  <a href="{{ '/subjects/Docker/' | relative_url }}">Back to Docker Container Technology Index</a>
-  <a href="{{ '/subjects/Docker/27-using-json-configuration-files.html' | relative_url }}">Next: Using JSON Configuration Files →</a>
+  <a href="{{ '/subjects/Docker/25-deploying-the-ruoyi-microservices-project.html' | relative_url }}">← 上一篇：实战案例：RuoYI 微服务项目</a>
+  <a href="{{ '/subjects/Docker/' | relative_url }}">返回 Docker 容器技术目录</a>
+  <a href="{{ '/subjects/Docker/27-using-json-configuration-files.html' | relative_url }}">下一篇：使用 Json 格式文件 →</a>
 </nav>

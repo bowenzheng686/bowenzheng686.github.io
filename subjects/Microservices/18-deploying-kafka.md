@@ -17,7 +17,7 @@ syntax_highlight: true
 
 kafka 版本选择
 
-kafka 基于scala语言实现,所以使用kafka需要指定scala的相应的版本.kafka 为多个版本的Scala构建。这仅在使用 Scala 时才重要，并且希望为使用的相同 Scala 版本构建一个版本。否则，任何版本都可以
+Kafka 发布包名称包含 Scala 二进制版本与 Kafka 版本，例如 `kafka_2.13-3.9.0.tgz`。运行服务器时应先核对 Kafka 版本与 Java 要求；只有编写 Scala 客户端或插件时，Scala 二进制兼容性才需要额外关注。下文同时保留旧 ZooKeeper 模式记录与 KRaft 示例，请先选一种模式，不能把两个模式的配置和数据目录混用。
 
 kafka下载链接
 
@@ -32,7 +32,7 @@ kafka_2.13-2.7.0.tgz
 kafka_2.12-3.9.0.tgz
 ```
 
-![微服务技术第 46 页插图](assets/img-403de8490911109b.png)
+![微服务技术第 46 页插图](assets/img-403de8490911109b.webp)
 
 scala 语言官网: https://www.scala-lang.org/
 
@@ -44,7 +44,7 @@ Kafka 支持单机和集群部署，生产通常为集群模式
 
 <http://kafka.apache.org/quickstart>
 
-![微服务技术第 46 页插图](assets/img-d48243fee2894d72.png)
+![微服务技术第 46 页插图](assets/img-d48243fee2894d72.webp)
 
 ### 单机部署
 
@@ -68,7 +68,7 @@ Kafka with ZooKeeper
 
 Kafka-v4.0开始即将不再支持Zookeeper
 
-![微服务技术第 47 页插图](assets/img-43dc445f5002b661.png)
+![微服务技术第 47 页插图](assets/img-43dc445f5002b661.webp)
 
 Run the following commands in order to start all services in the correct order:
 
@@ -186,202 +186,33 @@ LISTEN          0               128                               [::]:22       
 users:(("sshd",pid=839,fd=4))
 ```
 
-范例：一键安装 Kafka 单机版脚本
+#### 关于旧版“一键安装”记录
 
-```bash
-#!/bin/bash
-#
-#FileName:          install_kafka_single_node.sh
-#Description:       The test script
-#支持在线和离线安装安装
-KAFKA_VERSION=3.6.0
-#KAFKA_VERSION=3.5.1
-#KAFKA_VERSION=3.5.0
-#KAFKA_VERSION=3.4.0
-#KAFKA_VERSION=3.3.2
-#KAFKA_VERSION=3.2.0
-#KAFKA_VERSION=-3.0.0
-SCALA_VERSION=2.13
-KAFKA_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_V
-ERSION}.tgz"
-#KAFKA_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.8.1/kafka_2.13-2.8.1.tgz"
-#KAFKA_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.7.1/kafka_2.13-2.7.1.tgz"
-KAFKA_INSTALL_DIR=/usr/local/kafka
-HOST=`hostname -I|awk '{print $1}'`
-```
+原脚本把下载 URL 拆成两行、关闭 TLS 证书校验，并混用了 Java 与 Kafka 版本；复制执行会失败或绕过下载校验。实际安装应先确定 Kafka 版本及对应 Java 要求，再按上面的手动步骤逐项验证下载、解压、配置和端口。新部署优先参考后面的 KRaft 示例；只有维护既有 ZooKeeper 集群时才继续使用旧模式，并应先做配置与数据备份。
 
-```text
-.  /etc/os-release
-color () {
-RES_COL=60
-MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-SETCOLOR_SUCCESS="echo -en \\033[1;32m"
-SETCOLOR_FAILURE="echo -en \\033[1;31m"
-SETCOLOR_WARNING="echo -en \\033[1;33m"
-SETCOLOR_NORMAL="echo -en \E[0m"
-echo -n "$1" && $MOVE_TO_COL
-echo -n "["
-if [ $2 = "success" -o $2 = "0" ] ;then
-${SETCOLOR_SUCCESS}
-echo -n $"  OK  "
-elif [ $2 = "failure" -o $2 = "1"  ] ;then
-${SETCOLOR_FAILURE}
-echo -n $"FAILED"
-else
-${SETCOLOR_WARNING}
-echo -n $"WARNING"
-fi
-${SETCOLOR_NORMAL}
-echo -n "]"
-echo
-}
-env () {
-echo $HOST `hostname` >> /etc/hosts
-}
-install_jdk() {
-java -version &>/dev/null && { color "JDK 已安装!" 1 ; return;  }
-if command -v yum &>/dev/null ; then
-yum -y install java-1.8.0-openjdk-devel || { color "安装JDK失败!" 1; exit 1; }
-elif command -v apt &>/dev/null ; then
-apt update
-#apt install openjdk-11-jdk -y || { color "安装JDK失败!" 1; exit 1; }
-apt install openjdk-8-jdk -y || { color "安装JDK失败!" 1; exit 1; }
-else
-color "不支持当前操作系统!" 1
-exit 1
-fi
-java -version && { color "安装 JDK 完成!" 0 ; } || { color "安装JDK失败!" 1; exit 1; }
-}
-install_zookeeper() {
-cat > ${KAFKA_INSTALL_DIR}/bin/zookeeper-startup.sh <<EOF
-#!/bin/bash
-nohup ${KAFKA_INSTALL_DIR}/bin/zookeeper-server-start.sh ${KAFKA_INSTALL_DIR}/config/zookeeper.properties   &
-EOF
-chmod +x ${KAFKA_INSTALL_DIR}/bin/zookeeper-startup.sh
-cat > /lib/systemd/system/zookeeper.service <<EOF
-[Unit]
-Description=zookeeper.service
-After=network.target
-[Service]
-Type=forking
-ExecStart=${KAFKA_INSTALL_DIR}/bin/zookeeper-startup.sh
-ExecStop=${KAFKA_INSTALL_DIR}/bin/zookeeper-server-stop.sh
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl daemon-reload
-systemctl enable --now  zookeeper.service
-systemctl is-active zookeeper.service
-if [ $? -eq 0 ] ;then
-color "zookeeper 安装成功!" 0
-else
-color "zookeeper 安装失败!" 1
-exit 1
-fi
-}
-install_kafka(){
-if [ ! -f kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz ];then
-wget -P /usr/local/src/  --no-check-certificate $KAFKA_URL  || { color  "下载失败!" 1 ;exit ; }
-fi
-tar xf /usr/local/src/${KAFKA_URL##*/}  -C /usr/local/
-ln -s /usr/local/kafka_${SCALA_VERSION}-${KAFKA_VERSION}  ${KAFKA_INSTALL_DIR}
-install_zookeeper
-echo PATH=${KAFKA_INSTALL_DIR}/bin:'$PATH' >> /etc/profile
-cat > ${KAFKA_INSTALL_DIR}/bin/kafka-startup.sh <<EOF
-#!/bin/bash
-nohup ${KAFKA_INSTALL_DIR}/bin/kafka-server-start.sh  ${KAFKA_INSTALL_DIR}/config/server.properties &
-EOF
-chmod +x ${KAFKA_INSTALL_DIR}/bin/kafka-startup.sh
-cat > /lib/systemd/system/kafka.service <<EOF
-[Unit]
-Description=Apache kafka
-After=network.target
-[Service]
-Type=forking
-ExecStart=${KAFKA_INSTALL_DIR}/bin/kafka-startup.sh
-ExecStop=/bin/kill  -TERM \${MAINPID}
-Restart=always
-RestartSec=20
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl daemon-reload
-systemctl enable --now kafka.service
-#kafka-server-start.sh -daemon ${KAFKA_INSTALL_DIR}/config/server.properties
-systemctl is-active kafka.service
-if [ $? -eq 0 ] ;then
-color "kafka 安装成功!" 0
-else
-color "kafka 安装失败!" 1
-exit 1
-fi
-}
-env
-install_jdk
-install_kafka
-```
+![微服务技术第 51 页插图](assets/img-7cd765af0e2af88c.webp)
 
-![微服务技术第 51 页插图](assets/img-7cd765af0e2af88c.png)
+### KRaft 单机试验：固定版本与路径
 
-### 基于KRaft 部署 kafka单机
+新集群可采用 KRaft 管理元数据；本例沿用下一节的 Kafka 3.9.0 和 config/kraft/server.properties。单机只有一个 Broker/Controller，适合学习，不具备节点故障容忍。旧版 ZooKeeper 数据目录不能直接用于 KRaft 格式化；迁移现有集群须按目标版本的官方流程另行规划。
 
-注意：Kafka-4.0.0 版本不再支持Zookeeper，使用Kraft
+~~~bash
+# 在测试机安装目标版本要求的 Java 后执行
+VERSION=3.9.0
+curl -fLO "https://archive.apache.org/dist/kafka/$VERSION/kafka_2.13-$VERSION.tgz"
+tar -xf "kafka_2.13-$VERSION.tgz"
+cd "kafka_2.13-$VERSION"
+# 核对 config/kraft/server.properties 中的 node.id、监听地址和 log.dirs
+CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
+bin/kafka-storage.sh format -t "$CLUSTER_ID" -c config/kraft/server.properties
+bin/kafka-server-start.sh config/kraft/server.properties
+~~~
 
-范例：基于KRaft 部署 kafka单机
-
-```bash
-#https://kafka.apache.org/quickstart
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-21-jdk
-[root@ubuntu2404 ~]#wget https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/4.1.0/kafka_2.13-4.1.0.tgz
-[root@ubuntu2404 ~]#wget https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/4.0.0/kafka_2.13-4.0.0.tgz
-[root@ubuntu2404 ~]#tar xf kafka_2.13-4.0.0.tgz  -C /usr/local/
-[root@ubuntu2404 ~]#cd /usr/local/
-[root@ubuntu2404 local]#ls
-bin  etc  games  include  kafka_2.13-4.0.0  lib  man  sbin  share  src
-[root@ubuntu2404 local]#ln -s kafka_2.13-4.0.0/ kafka
-[root@ubuntu2404 local]#cd kafka
-[root@ubuntu2404 kafka]#pwd
-/usr/local/kafka
-#生成集群唯一ID,Generate a Cluster UUID,集群内的多个节点需使用同一集群ID
-[root@ubuntu2404 kafka]#KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
-Format Log Directories
-#建议修改数据日录
-#4.0.0版本路径
-[root@ubuntu2404 kafka]#vim config/server.properties
-#旧版路径
-[root@ubuntu2404 kafka]#vim config/kraft/server.properties
-#log.dirs=/tmp/kraft-combined-logs
-log.dirs=/data/kraft-combined-logs
-#格式化初始数据
-#4.0.0版本以后路径
-[root@ubuntu2404 kafka]#bin/kafka-storage.sh format --standalone -t $KAFKA_CLUSTER_ID -c
-config/server.properties
-#3.X以前旧版路径
-[root@ubuntu2404 kafka]#bin/kafka-storage.sh format --standalone -t $KAFKA_CLUSTER_ID -c
-config/kraft/server.properties
-Start the Kafka Serve
-#自动创建目录
-[root@ubuntu2404 kafka]#ls /data/kraft-combined-logs
-bootstrap.checkpoint  meta.properties
-#启动
-#4.0.0版本路径
-[root@ubuntu2404 kafka]#bin/kafka-server-start.sh config/server.properties
-#旧版路径
-[root@ubuntu2404 kafka]#bin/kafka-server-start.sh config/kraft/server.properties
-[root@ubuntu2404 kafka]#ss -ntlp|grep java
-LISTEN 0      50                 *:9093             *:*    users:(("java",pid=35179,fd=146))
-LISTEN 0      50                 *:9092             *:*    users:(("java",pid=35179,fd=174))
-LISTEN 0      50                 *:35565            *:*    users:(("java",pid=32799,fd=126))
-LISTEN 0      50                 *:33431            *:*    users:(("java",pid=26718,fd=126))
-LISTEN 0      50                 *:35079            *:*    users:(("java",pid=27146,fd=126))
-LISTEN 0      50                 *:46365            *:*    users:(("java",pid=26325,fd=126))
-LISTEN 0      50                 *:43399            *:*    users:(("java",pid=35179,fd=127))
-LISTEN 0      50                 *:37933            *:*    users:(("java",pid=27604,fd=126))
-```
+格式化只对新的空数据目录执行一次。另开终端用 bin/kafka-topics.sh --bootstrap-server localhost:9092 --list 验证服务。要对外提供访问，还需设置客户端可解析的 advertised.listeners，并做好认证和网络隔离。
 
 ### 集群部署
 
-### 基于 zookeeper 模式的集群（重点）
+### 基于 ZooKeeper 模式的集群（旧环境维护）
 
 3.6.3.1.1 环境准备
 
@@ -651,7 +482,7 @@ use broker 1 (kafka.server.BrokerToControllerRequestThread)
 #打开zooinspector可以看到三个id
 ```
 
-![微服务技术第 56 页插图](assets/img-434f253678ed468b.png)
+![微服务技术第 56 页插图](assets/img-434f253678ed468b.webp)
 
 Broker 依赖于 Zookeeper，每个Broker 的id 和 Topic、Partition这些元数据信息都会写入Zookeeper 的 ZNode 节点中 consumer 依赖于Zookeeper，Consumer 在消费消息时，每消费完一条消息，会将产生的offset 保存到 Zookeeper 中，下次消费在当前offset往后继续消费.kafka0.9 之前Consumer 的offset 存储在 Zookeeper 中，kafka0.9 以后offset存储在本地。 Partition 依赖于 Zookeeper，Partition 完成Replication 备份后，选举出一个Leader，这个是依托于 Zookeeper 的选举机制实现的
 
@@ -676,320 +507,69 @@ wantedBy=multi-user.target
 [root@node1 ~]#systemctl restart kafka.service
 ```
 
-3.6.3.1.3 Kafka 集群部署脚本
+#### 旧版 ZooKeeper 集群操作回顾
 
-```bash
-#!/bin/bash
-#
-#FileName:          install_kafka.sh
-#Description:       The test script
-#支持在线和离线安装安装
-NODE1=10.0.0.101
-NODE2=10.0.0.102
-NODE3=10.0.0.103
-KAFKA_VERSION=3.5.1
-#KAFKA_VERSION=3.5.0
-#KAFKA_VERSION=3.4.0
-#KAFKA_VERSION=3.3.2
-#KAFKA_VERSION=3.2.0
-#KAFKA_VERSION=-3.0.0
-SCALA_VERSION=2.13
-KAFKA_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_V
-ERSION}.tgz"
-#KAFKA_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.8.1/kafka_2.13-2.8.1.tgz"
-#KAFKA_URL="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.7.1/kafka_2.13-2.7.1.tgz"
-KAFKA_INSTALL_DIR=/usr/local/kafka
-HOST=`hostname -I|awk '{print $1}'`
-.  /etc/os-release
-color () {
-RES_COL=60
-MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-SETCOLOR_SUCCESS="echo -en \\033[1;32m"
-SETCOLOR_FAILURE="echo -en \\033[1;31m"
-SETCOLOR_WARNING="echo -en \\033[1;33m"
-SETCOLOR_NORMAL="echo -en \E[0m"
-echo -n "$1" && $MOVE_TO_COL
-echo -n "["
-if [ $2 = "success" -o $2 = "0" ] ;then
-${SETCOLOR_SUCCESS}
-echo -n $"  OK  "
-elif [ $2 = "failure" -o $2 = "1"  ] ;then
-${SETCOLOR_FAILURE}
-echo -n $"FAILED"
-else
-${SETCOLOR_WARNING}
-echo -n $"WARNING"
-fi
-${SETCOLOR_NORMAL}
-echo -n "]"
-echo
-}
-env () {
-if hostname -I |grep -q $NODE1;then
-ID=1
-hostnamectl set-hostname node1
-elif hostname -I |grep -q $NODE2;then
-ID=2
-hostnamectl set-hostname node2
-elif hostname -I |grep -q $NODE3;then
-ID=3
-hostnamectl set-hostname node3
-else
-color 'IP地址错误' 1
-exit
-fi
-cat >> /etc/hosts <<EOF
-$NODE1   node1
-$NODE2   node2
-$NODE3   node3
-EOF
-}
-install_jdk() {
-java -version &>/dev/null && { color "JDK 已安装!" 1 ; return;  }
-if command -v yum &>/dev/null ; then
-yum -y install java-1.8.0-openjdk-devel || { color "安装JDK失败!" 1; exit 1; }
-elif command -v apt &>/dev/null ; then
-apt update
-#apt install openjdk-11-jdk -y || { color "安装JDK失败!" 1; exit 1; }
-apt install openjdk-8-jdk -y || { color "安装JDK失败!" 1; exit 1; }
-else
-color "不支持当前操作系统!" 1
-exit 1
-fi
-java -version && { color "安装 JDK 完成!" 0 ; } || { color "安装JDK失败!" 1; exit 1; }
-}
-install_zookeeper() {
-mv ${KAFKA_INSTALL_DIR}/config/zookeeper.properties{,.bak}
-cat > ${KAFKA_INSTALL_DIR}/config/zookeeper.properties <<EOF
-tickTime=2000
-initLimit=10
-syncLimit=5
-dataDir=${KAFKA_INSTALL_DIR}/data
-clientPort=2181
-maxClientCnxns=128
-autopurge.snapRetainCount=3
-autopurge.purgeInterval=24
-server.1=${NODE1}:2888:3888
-server.2=${NODE2}:2888:3888
-server.3=${NODE3}:2888:3888
-EOF
-mkdir -p ${KAFKA_INSTALL_DIR}/data
-echo $ID > ${KAFKA_INSTALL_DIR}/data/myid
-cat > ${KAFKA_INSTALL_DIR}/bin/zookeeper-startup.sh <<EOF
-#!/bin/bash
-nohup ${KAFKA_INSTALL_DIR}/bin/zookeeper-server-start.sh ${KAFKA_INSTALL_DIR}/config/zookeeper.properties   &
-EOF
-chmod +x ${KAFKA_INSTALL_DIR}/bin/zookeeper-startup.sh
-cat > /lib/systemd/system/zookeeper.service <<EOF
-[Unit]
-Description=zookeeper.service
-After=network.target
-[Service]
-Type=forking
-ExecStart=${KAFKA_INSTALL_DIR}/bin/zookeeper-startup.sh
-ExecStop=${KAFKA_INSTALL_DIR}/bin/zookeeper-server-stop.sh
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl daemon-reload
-systemctl enable --now  zookeeper.service
-systemctl is-active zookeeper.service
-if [ $? -eq 0 ] ;then
-color "zookeeper 安装成功!" 0
-else
-color "zookeeper 安装失败!" 1
-exit 1
-fi
-}
-install_kafka(){
-if [ ! -f kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz ];then
-wget -P /usr/local/src/  --no-check-certificate $KAFKA_URL  || { color  "下载失败!" 1 ;exit ; }
-fi
-tar xf /usr/local/src/${KAFKA_URL##*/}  -C /usr/local/
-ln -s /usr/local/kafka_${SCALA_VERSION}-${KAFKA_VERSION}  ${KAFKA_INSTALL_DIR}
-install_zookeeper
-echo PATH=${KAFKA_INSTALL_DIR}/bin:'$PATH' >> /etc/profile
-mv ${KAFKA_INSTALL_DIR}/config/server.properties{,.bak}
-cat > ${KAFKA_INSTALL_DIR}/config/server.properties <<EOF
-broker.id=$ID
-listeners=PLAINTEXT://${HOST}:9092
-log.dirs=${KAFKA_INSTALL_DIR}/data
-num.partitions=1
-log.retention.hours=168
-zookeeper.connect=${NODE1}:2181,${NODE2}:2181,${NODE3}:2181
-zookeeper.connection.timeout.ms=6000
-delete.topic.enable=true
-EOF
-cat > ${KAFKA_INSTALL_DIR}/bin/kafka-startup.sh <<EOF
-#!/bin/bash
-nohup ${KAFKA_INSTALL_DIR}/bin/kafka-server-start.sh  ${KAFKA_INSTALL_DIR}/config/server.properties &
-EOF
-chmod +x ${KAFKA_INSTALL_DIR}/bin/kafka-startup.sh
-cat > /lib/systemd/system/kafka.service <<EOF
-[Unit]
-Description=Apache kafka
-After=network.target
-[Service]
-Type=forking
-ExecStart=${KAFKA_INSTALL_DIR}/bin/kafka-startup.sh
-ExecStop=/bin/kill  -TERM \${MAINPID}
-Restart=always
-RestartSec=20
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl daemon-reload
-systemctl enable --now kafka.service
-#kafka-server-start.sh -daemon ${KAFKA_INSTALL_DIR}/config/server.properties
-systemctl is-active kafka.service
-if [ $? -eq 0 ] ;then
-color "kafka 安装成功!" 0
-else
-color "kafka 安装失败!" 1
-exit 1
-fi
-}
-env
-install_jdk
-install_kafka
-```
+前面的集群记录适用于维护已有 ZooKeeper 模式部署。为避免覆盖各节点的 broker.id、zookeeper.connect 或已有 log.dirs，不应把同一份“自动安装脚本”在三台机器上直接运行。核对每台节点的唯一 Broker ID、广告地址、数据目录和 ZooKeeper 连接串，确认副本布局与磁盘空间后，再分节点变更并观察 ISR。下节给出独立的 KRaft 三节点示例；两种元数据模式不能共用一份数据目录。
+### KRaft 三节点集群：选定一个版本再执行
 
-### 基于Kraft模式的集群（了解）
+本节以 Kafka 3.9.0、三个节点同时承担 Broker 和 Controller 角色为例。前面的 ZooKeeper 模式是旧环境维护记录，不要把两种模式的配置文件或格式化命令混在同一数据目录。生产部署需另行设计节点故障域、认证加密、磁盘容量与备份策略。
 
-3.6.3.2.1 基础环境准备
+| 节点 | 主机名 | node.id | Broker 地址 | Controller 地址 |
+| --- | --- | ---: | --- | --- |
+| 1 | kafka01 | 1 | kafka01:9092 | kafka01:9093 |
+| 2 | kafka02 | 2 | kafka02:9092 | kafka02:9093 |
+| 3 | kafka03 | 3 | kafka03:9092 | kafka03:9093 |
 
-1. 节点规划
+三台机器先确认主机名相互可解析、9092/9093 端口互通，并安装目标版本要求的 Java。下载版本与配置路径必须保持一致；此处只展示一次固定版本，不交替执行 3.9 和 4.0 的命令。
 
-准备3个节点（例如kafka01、kafka02、kafka03），每个节点同时作为Broker和Controller运行确保节点间网络互通，并配置主机名解析（修改/etc/hosts 或DNS）
+~~~bash
+# 在每台机器执行；下载后按 Apache 官方校验文件核对完整性
+VERSION=3.9.0
+curl -fLO "https://archive.apache.org/dist/kafka/$VERSION/kafka_2.13-$VERSION.tgz"
+tar -xf "kafka_2.13-$VERSION.tgz" -C /usr/local/
+ln -sfn "/usr/local/kafka_2.13-$VERSION" /usr/local/kafka
+cd /usr/local/kafka
+mkdir -p /data/kafka-logs
+~~~
 
-2. 软件安装
+以下是 **kafka01** 的核心配置，写入 config/kraft/server.properties；kafka02、kafka03 使用同一 voters 列表，但分别设置 node.id=2/3 和自己的 advertised.listeners。正式环境不要直接开放 PLAINTEXT 到不可信网络。
 
-安装 JAVA 下载Kafka安装包（推荐3.0+版本），解压至统一目录（如/opt/kafka ） 所有节点安装相同版本的Kafka
-
-案例: 基于Kraft模式的Kafka 集群基础环境准备
-
-```bash
-[root@ubuntu2404 ~]#cat >> /etc/hosts <<EOF
-10.0.0.201 kafka01
-10.0.0.202 kafka02
-10.0.0.203 kafka03
-EOF
-[root@ubuntu2404 ~]#apt update && apt -y install openjdk-21-jre
-[root@ubuntu2404 ~]#VERSION=4.0.0
-[root@ubuntu2404 ~]#VERSION=3.9.0
-[root@ubuntu2404 ~]#wget
-https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/${VERSION}/kafka_2.13-${VERSION}.tgz
-[root@ubuntu2404 ~]#tar xf kafka_2.13-${VERSION}.tgz -C /usr/local/
-[root@ubuntu2404 ~]#cd /usr/local/
-[root@ubuntu2404 local]#ln -s kafka_2.13-${VERSION}/ kafka
-[root@ubuntu2404 local]#cd kafka
-[root@ubuntu2404 kafka]#pwd
-/usr/local/kafka
-[root@ubuntu2404 kafka]#ls
-bin  config  libs  LICENSE  licenses  NOTICE  site-docs
-[root@ubuntu2404 kafka]#tree -d
-.
-├── bin
-│   └── windows
-├── config
-│   └── kraft
-├── libs
-├── licenses
-└── site-docs
-8 directories
-```
-
-3.6.3.2.2 集群配置
-
-1. 修改server.properties 文件
-
-关键参数配置,所有节点均需修改，以下以节点kafka01为例
-
-```bash
-#4.0.0版本路径
-[root@ubuntu2404 kafka]#vim config/server.properties
-#旧版路径
-[root@ubuntu2404 kafka]#vim config/kraft/server.properties
-# 角色定义（同时作为Broker和Controller）
+~~~properties
 process.roles=broker,controller
-# 节点唯一ID（不同节点需不同）
 node.id=1
-# 控制器节点列表（格式：node.id@host:port）
-controller.quorum.voters=1@kafka01:9093,2@kafka02:9093,3@kafka03:9093
-# 监听地址（Broker通信端口和Controller端口）
-listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-# 对外暴露的地址（根据实际IP或域名配置）注意:不支持0.0.0.0
-advertised.listeners=PLAINTEXT://kafka01:9092,CONTROLLER://kafka01:9093
-# 日志存储目录
-log.dirs=/data/kafka-logs
-[root@ubuntu2404 kafka]#grep -Ev "#|^$" config/server.properties
-process.roles=broker,controller
-node.id=1 #每个节点不同
 controller.quorum.voters=1@kafka01:9093,2@kafka02:9093,3@kafka03:9093
 listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+advertised.listeners=PLAINTEXT://kafka01:9092
+listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
 inter.broker.listener.name=PLAINTEXT
-advertised.listeners=PLAINTEXT://kafka01:9092,CONTROLLER://kafka01:9093 #每个节点不同
+controller.listener.names=CONTROLLER
 log.dirs=/data/kafka-logs
-.....
-```
+offsets.topic.replication.factor=3
+transaction.state.log.replication.factor=3
+transaction.state.log.min.isr=2
+~~~
 
-2. 生成集群唯一ID
+advertised.listeners 只公布客户端/Broker 可访问的 Broker 端点，不应把 CONTROLLER 监听器放进去。所有节点共用**同一个** Cluster ID，但 node.id 必须唯一。仅对尚未格式化的空数据目录执行一次 format；重复格式化会破坏原有集群元数据。
 
-```bash
-# 生成UUID
-[root@ubuntu2404 kafka]#./bin/kafka-storage.sh random-uuid
-# 示例输出：iT0tvD1wSPGusA1SWlRNOQ
-```
+~~~bash
+# 在 kafka01 生成一次，并把输出值安全地传给另外两台
+bin/kafka-storage.sh random-uuid
+# 在每台节点用同一个 Cluster ID 替换下方占位符
+bin/kafka-storage.sh format -t CLUSTER_ID -c config/kraft/server.properties
+bin/kafka-server-start.sh -daemon config/kraft/server.properties
+~~~
 
-所有节点需使用同一集群ID 。
+待三台节点启动并完成选举后，在任一可访问 Broker 的机器上验证元数据与读写。创建 Topic 之前确认集群有 3 台健康 Broker，否则副本因子 3 会失败。
 
-3. 初始化元数据存储
+~~~bash
+bin/kafka-topics.sh --bootstrap-server kafka01:9092 --create --topic demo-events --partitions 3 --replication-factor 3
+bin/kafka-topics.sh --bootstrap-server kafka01:9092 --describe --topic demo-events
+bin/kafka-console-producer.sh --bootstrap-server kafka01:9092 --topic demo-events
+# 在另一终端执行消费者，再在生产者终端输入一行测试消息
+bin/kafka-console-consumer.sh --bootstrap-server kafka01:9092 --topic demo-events --from-beginning --group demo-check
+~~~
 
-每个节点均需执行此操作
-
-```bash
-# 使用生成的UUID初始化存储目录
-#4.0.0版本路径
-[root@ubuntu2404 kafka]#./bin/kafka-storage.sh format -t <生成的UUID> -c config/server.properties
-#旧版
-[root@ubuntu2404 kafka]#./bin/kafka-storage.sh format -t <生成的UUID> -c ./config/kraft/server.properties
-```
-
-3.6.3.2.3 集群启动
-
-```bash
-# 后台启动服务
-#4.0.0版本路径
-[root@ubuntu2404 kafka]#./bin/kafka-server-start.sh -daemon config/server.properties
-#旧版
-[root@ubuntu2404 kafka]#./bin/kafka-server-start.sh -daemon ./config/kraft/server.properties
-```
-
-按顺序启动所有节点
-
-3.6.3.2.4 集群验证
-
-通过生产/消费消息验证集群可用性
-
-创建Topic测试 ：
-
-```bash
-[root@ubuntu2404 kafka]#./bin/kafka-topics.sh --create --topic foo --partitions 3 --replication-factor 3 --
-bootstrap-server kafka01:9092
-[root@ubuntu2404 kafka]#./bin/kafka-topics.sh --list --bootstrap-server kafka01:9092
-test
-#生产消费信息：
-[root@ubuntu2404 kafka]#./bin/kafka-console-producer.sh --broker-list kafka01:9092 --topic foo
-[root@ubuntu2404 kafka]#./bin/kafka-console-consumer.sh --bootstrap-server kafka01:9092 --from-beginning --
-topic  foo  --group foo_group
-```
-
-检查节点状态：
-
-```bash
-[root@ubuntu2404 kafka]#./bin/kafka-metadata-shell.sh --snapshot /data/kafka-logs/__cluster_metadata-
-0/00000000000000000000.log
-```
+若创建失败，先检查 Broker 日志、主机名解析、Controller 法定多数派和 advertised.listeners；不要直接清空 log.dirs 重新格式化。
 
 ### Kubernetes 部署 Kafka
 
@@ -999,7 +579,7 @@ topic  foo  --group foo_group
 
 <https://operatorhub.io/operator/strimzi-kafka-operator>
 
-![微服务技术第 61 页插图](assets/img-bf2c2a708fd424ce.png)
+![微服务技术第 61 页插图](assets/img-bf2c2a708fd424ce.webp)
 
 ```yaml
 apiVersion: kafka.strimzi.io/v1beta2
@@ -1040,7 +620,7 @@ userOperator: {}
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/17-kafka-roles-and-workflow.html' | relative_url }}">← Previous: Kafka Roles and Workflow</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/19-reading-and-writing-kafka-data.html' | relative_url }}">Next: Reading and Writing Kafka Data →</a>
+  <a href="{{ '/subjects/Microservices/17-kafka-roles-and-workflow.html' | relative_url }}">← 上一篇：Kafka 角色和流程</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/19-reading-and-writing-kafka-data.html' | relative_url }}">下一篇：Kafka 读写数据 →</a>
 </nav>

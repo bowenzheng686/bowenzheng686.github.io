@@ -13,22 +13,18 @@ syntax_highlight: true
 # 14 Kafka 介绍
 ### 3.2 Kafka 介绍
 
-![微服务技术第 40 页插图](assets/img-21dc56f8886243dc.png)
+![微服务技术第 40 页插图](assets/img-21dc56f8886243dc.webp)
 
-阿里云消息队列
+Apache Kafka 是分布式事件流平台。生产者将记录写入主题（Topic）的分区；Broker 按配置保存数据并通过副本提供故障容忍；消费者组跟踪消费位点，既可处理新事件，也可在保留期内按位点重放。与“取走就从队列删除”的模型不同，消息是否仍可读取由保留策略决定。
 
-<https://www.aliyun.com/product/ons?spm=5176.234368.h2v3icoap.427.2620db25lcHi1Q&amp;aly_as=Tz_Lue_o>
+典型用途包括业务事件分发、日志与变更数据采集，以及接入流处理应用。Kafka 的吞吐和延迟取决于分区数、消息大小、批量、压缩、磁盘和网络条件，不能只用“快”来描述。下一篇比较不同产品时，应先明确是否需要重放、复杂路由、严格顺序范围与运维成本。
 
-Kafka 被称为下一代分布式消息系统，由 Scala 和 Java编写，是非营利性组织ASF(Apache Software Foundation)基金会中的一个开源项目，比如:HTTP Server、Tomcat、Hadoop、ActiveMQ等开源软件都属于 Apache基金会的开源软件，类似的消息系统还有RabbitMQ、 ActiveMQ、ZeroMQ。
-
-Kafka用于构建实时数据管道和流应用程序。 它具有水平可伸缩性，容错性，快速性，可在数千家组织中同时投入生产协同工作。
-
-官网:  http://kafka.apache.org/
+官方文档：<https://kafka.apache.org/documentation/>。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/13-introduction-to-message-queues.html' | relative_url }}">← Previous: Introduction to Message Queues</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/15-comparing-message-queues.html' | relative_url }}">Next: Comparing Message Queues →</a>
+  <a href="{{ '/subjects/Microservices/13-introduction-to-message-queues.html' | relative_url }}">← 上一篇：消息队列简介</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/15-comparing-message-queues.html' | relative_url }}">下一篇：常用消息队列对比 →</a>
 </nav>

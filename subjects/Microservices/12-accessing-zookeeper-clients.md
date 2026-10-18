@@ -13,6 +13,8 @@ syntax_highlight: true
 # 12 ZooKeeper 客户端访问
 ### 2.4 ZooKeeper 客户端访问
 
+本篇分别演示 CLI、四字命令、图形工具和语言客户端。下方终端记录中的主机名、IP、提示符与运行输出只是示例；选择一种客户端后，先确认服务端版本、连接地址与 ACL，再执行对应命令。四字命令属于运维接口，若服务端白名单未开启，不能仅凭连接成功就推断命令可用。
+
 ### 命令行客户端访问 ZooKeeper
 
 ```bash
@@ -159,7 +161,7 @@ $chmod +x target/zooinspector-pkg/bin/zooinspector.sh
 $target/zooinspector-pkg/bin/zooinspector.sh
 ```
 
-![微服务技术第 31 页插图](assets/img-287f1efaaa39b035.png)
+![微服务技术第 31 页插图](assets/img-287f1efaaa39b035.webp)
 
 范例： Ubuntu24.04 编译 zooinspector
 
@@ -272,9 +274,9 @@ pom.xml  README.md  src  target
 [root@zookeeper-node1 zooinspector]#mvn clean package -Dmaven.test.skip=true
 ```
 
-![微服务技术第 33 页插图](assets/img-0febbb8c0dd84700.png)
+![微服务技术第 33 页插图](assets/img-0febbb8c0dd84700.webp)
 
-![微服务技术第 33 页插图](assets/img-b279be736f63b438.png)
+![微服务技术第 33 页插图](assets/img-b279be736f63b438.webp)
 
 2.4.3.1.2 客户端使用
 
@@ -302,9 +304,9 @@ drwxr-xr-x 5 root root 4.0K May 11 18:08 zooinspector-pkg/
 #自动打开下面图形界面
 ```
 
-![微服务技术第 34 页插图](assets/img-2bdc34c390a8d905.png)
+![微服务技术第 34 页插图](assets/img-2bdc34c390a8d905.webp)
 
-![微服务技术第 34 页插图](assets/img-8a0d2664941409a6.png)
+![微服务技术第 34 页插图](assets/img-8a0d2664941409a6.webp)
 
 ### Windows 客户端使用
 
@@ -327,19 +329,19 @@ pkg\bin\zooinspector.bat文件
 #直接使用Linux上面编译生成的文件zookinspector-1.0-SNAPSHOT-pkg.tar在Windows中解压缩,直接运行里的zooinspector.bat
 ```
 
-![微服务技术第 35 页插图](assets/img-136b953464e4b391.png)
+![微服务技术第 35 页插图](assets/img-136b953464e4b391.webp)
 
-![微服务技术第 35 页插图](assets/img-caf7ed6cb3afd1e7.png)
+![微服务技术第 35 页插图](assets/img-caf7ed6cb3afd1e7.webp)
 
-![微服务技术第 36 页插图](assets/img-259990812e2e6b90.png)
+![微服务技术第 36 页插图](assets/img-259990812e2e6b90.webp)
 
-![微服务技术第 36 页插图](assets/img-acc160a270882f26.png)
+![微服务技术第 36 页插图](assets/img-acc160a270882f26.webp)
 
-![微服务技术第 37 页插图](assets/img-952b7d065f5ccb9a.png)
+![微服务技术第 37 页插图](assets/img-952b7d065f5ccb9a.webp)
 
 删除
 
-![微服务技术第 37 页插图](assets/img-8894f435d6cdcdd8.png)
+![微服务技术第 37 页插图](assets/img-8894f435d6cdcdd8.webp)
 
 ### Python 访问 ZooKeeper
 
@@ -362,7 +364,7 @@ zk.stop()
 
 ### Golang 访问 ZooKeeper
 
-```python
+```go
 package main
 import (
 "fmt"
@@ -409,18 +411,14 @@ panic(err)
 }
 fmt.Printf("Delete node %s successfully\n", path)
 }
-#上述代码中，我们使用 zk.Connect 方法连接到Zookeeper，然后使用 zk.Create 方法创建节点， zk.Get 方法获取节点数据， zk.Set
-方法设置节点数据， zk.Delete 方法删除节点。
-在使用 Create 方法创建节点时，我们需要传入节点的路径、数据、标志和ACL。其中，标志指定节点的类型，ACL 指定权限列表。在此示例中，我
-们使用全局可读写的权限列表。
-在使用 Set 方法设置节点数据时，我们需要传入新的数据和版本号。这里我们使用 -1 表示忽略版本号。
-在操作完成后，需要调用 Close 方法关闭Zookeeper连接。
 ```
+
+这段 Go 代码依次连接、创建、读取、更新和删除一个 znode。`WorldACL(zk.PermAll)` 会赋予所有客户端读写权限，仅适合隔离的演示环境；实际部署应按服务身份配置 ACL。示例里的 `Set(..., -1)` 和 `Delete(..., -1)` 跳过版本检查，多客户端同时修改时可能覆盖他人的更新；需要并发控制时先读取 `Stat.Version` 并将其传入写操作。重复运行会遇到节点已存在，使用前应清理测试节点或显式处理 `ErrNodeExists`。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/11-installing-zookeeper.html' | relative_url }}">← Previous: Installing ZooKeeper</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/13-introduction-to-message-queues.html' | relative_url }}">Next: Introduction to Message Queues →</a>
+  <a href="{{ '/subjects/Microservices/11-installing-zookeeper.html' | relative_url }}">← 上一篇：ZooKeeper 安装</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/13-introduction-to-message-queues.html' | relative_url }}">下一篇：消息队列简介 →</a>
 </nav>

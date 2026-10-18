@@ -16,21 +16,21 @@ syntax_highlight: true
 
 ## 1.1 软件架构的演进
 
-![原 PDF 第 2 页插图](assets/Kubernetes架构和部署/img-40e81b6ce713cee6.png)
+![原 PDF 第 2 页插图](assets/Kubernetes架构和部署/img-40e81b6ce713cee6.webp)
 
-![原 PDF 第 2 页插图](assets/Kubernetes架构和部署/img-2a27636612b7a388.png)
+![原 PDF 第 2 页插图](assets/Kubernetes架构和部署/img-2a27636612b7a388.webp)
 
 ### 从单体架构到微服务
 
 **单体架构（All in One）**：传统架构，都部署在单机系统，一个项目一个工程：比如商品、订单、支付、库存、登录、注册等等，统一部署，一个进程。
 
-**MVC**：JAVA开发中MVC是一种软件设计规范。是将业务逻辑、数据、显示分离的方法来组织代码。MVC主要作用是降低了视图与业务逻辑间的双向偶合。即模型(Model)、视图(View)、控制器(Controller)的简写。Python开发中MTV为Model-Template-View(模型-模板-视图）模式。只是从开发者角度实现了模块化的独立开发，但运维角度还是单体。
+**MVC**：Model（模型）、View（视图）和 Controller（控制器）用于分离数据、界面与控制逻辑，便于在单个应用内部协作开发。但代码分层不等于服务拆分：如果整套应用仍以一个进程部署，运维上仍是单体架构。
 
 **RPC（Remote Procedure Call）**：将各个功能拆分为独立的服务和应用，以独立项目分别开发和部署。各个服务和应用相关通过RPC方式调用。远程过程调用解决远程调用服务的一种技术，使得调用者像调用本地服务一样方便透明。
 
 **SOA（Service Oriented Architecture）**：各个服务之间通过ESB(Enterprise Service Bus)进行通信。ESB是一个由大量规则和原则集成的软件架构，可以将一系列不同的应用程序集成到单个基础架构中。此外ESB属于重量级产品，部署规划异常笨重；ESB的单点依赖和商业ESB的费用问题反而成为了所有服务的瓶颈。
 
-**微服务（microservices）**：微服务架构风格是一种将单个应用程序拆分为多个极至微型的服务的方法。每个服务都在自己的进程中运行并与轻量级机制（通常是 HTTP 资源 API）进行通信。这些服务围绕业务功能构建，并可通过全自动部署机制独立部署。对这些服务进行最低限度的集中管理，这些服务可能用不同的编程语言编写并使用不同的数据存储技术。
+**微服务（microservices）**：按业务能力拆分应用，每个服务可独立开发、部署和扩缩容，并通过 HTTP API、RPC 或消息机制协作。服务边界应由业务内聚性决定，并非拆得越小越好；不同服务可选用不同语言和数据存储，但也必须处理跨服务通信与数据一致性。
 
 开发者需要使用各种开发框架，比如调用 JAVA 的 spring cloud的 SDK 实现功能性和非功能性代码。非业务性的基础功能仍然需要依赖开发者的能力实现。
 
@@ -38,26 +38,26 @@ syntax_highlight: true
 
 | 能力 | Kubernetes | Spring Cloud |
 | --- | --- | --- |
-| 弹性伸缩 | Autoscaling | N/A |
+| 弹性伸缩 | HPA、VPA 等对工作负载扩缩容 | Spring Cloud 本身不负责基础设施扩缩容 |
 | 服务发现 | KubeDNS / CoreDNS | Spring Cloud Eureka,Nacos |
 | 配置中心 | ConfigMap / Secret | Spring Cloud Config |
-| 服务网关 | Ingress Controller | Spring Cloud Zuul |
-| 负载均衡 | Load Balancer | Spring Cloud Ribbon |
-| 服务安全 | RBAC API | Spring Cloud Security |
-| 跟踪监控 | Metrics API / Dashboard | Spring Cloud Turbine |
-| 降级熔断 | N/A | Spring Cloud Hystrix |
+| 服务网关 | Ingress Controller / Gateway API 实现 | Spring Cloud Gateway、Zuul 等 |
+| 负载均衡 | Service 和外部负载均衡器 | Spring Cloud LoadBalancer 等客户端组件 |
+| 身份与访问控制 | RBAC 控制 Kubernetes API 访问；应用鉴权仍需另行实现 | Spring Security 等处理应用鉴权 |
+| 可观测性 | Metrics API、Prometheus 等生态组件 | Actuator、Micrometer 等生态组件 |
+| 降级熔断 | Kubernetes 本身不直接提供应用级熔断 | Resilience4j 等实现应用级容错 |
 
-Kubernetes 成为容器战争胜利者标志着后微服务时代的开端，但 Kubernetes 仍然没有能够完美解决全部的分布式问题。“不完美”是指，仅从功能上看，单纯的 Kubernetes 反而不如之前的 Spring Cloud 方案。这是因为有一些问题处于应用系统与基础设施的边缘，使得完全在基础设施层面中确实很难精细化地处理。
+这两者解决的问题不在同一层：Kubernetes 管理容器化工作负载与集群资源，Spring 生态更接近应用内部的开发与治理。Kubernetes 不能直接替代应用级鉴权、熔断、业务重试等机制，实际系统可以组合使用。
 
 ### 服务网格 service Mesh
 
-将功能性和非功能代码彻底分离。把原本程序员需要关注的安全策略、负载均衡、流量控制、路由选择等基础能力下沉到了底层组件“边车代理模式”（Sidecar Proxy）中，并提供了自动恢复的能力，让开发人员只需关注业务本身即可。
+服务网格尝试把服务间通信的部分横切能力，例如流量路由、传输安全和可观测性，从业务代码移到基础设施层。常见实现使用边车代理（Sidecar Proxy），但并非所有服务网格都依赖边车；引入网格也不意味着业务代码从此无需处理超时、幂等和故障。
 
 ## 1.2 云计算
 
 ### 虚拟化技术与标准的变迁
 
-![原 PDF 第 4 页插图](assets/Kubernetes架构和部署/img-b09f5ebb7b7c203b.png)
+![原 PDF 第 4 页插图](assets/Kubernetes架构和部署/img-b09f5ebb7b7c203b.webp)
 
 
 2006年：在2006年12月19由Avi Kivity宣告了KVM的诞生，而在2007年2月，KVM发布到内核2.6.20中
@@ -87,7 +87,7 @@ Kubernetes 成为容器战争胜利者标志着后微服务时代的开端，但
 - <https://blog.csdn.net/liumiaocn/article/details/100749302>
 
 
-![原 PDF 第 4 页插图](assets/Kubernetes架构和部署/img-386e26a44cfd66ef.png)
+![原 PDF 第 4 页插图](assets/Kubernetes架构和部署/img-386e26a44cfd66ef.webp)
 
 
 2000年：应用程序的运行还是在物理机上运行的时代，以sun的非虚拟化的硬件为代表，当我们需要启动一个新的应用时，往往需要购买一台或者多台新的物理服务器来解决所需要的资源问题，物理机器是构建应用的最小单元。
@@ -104,7 +104,7 @@ Kubernetes 成为容器战争胜利者标志着后微服务时代的开端，但
 
 2013年：Docker将LXC、Union File System和cgroups结合起来形成了容器标准，得到了全世界数百万开发者的极大认可，几乎是一夜之间红遍大江南北，使得隔离、重用性以及一致性得到了保证，构建应用的最小单位变成了容器。
 
-2015年：CNCF成立，云原生计算通过使用一系列的开源软件实现了三个主要的目的将应用拆分为微服务方式将每一部分打包形成各自的容器提供动态编排机制从而对容器的资源利用率进行优化
+2015 年：CNCF 成立。云原生实践逐渐将应用架构、容器化交付和自动化编排联系起来：按业务需要拆分服务，使用镜像交付，再由编排平台调度和管理工作负载。微服务不是使用 Kubernetes 的前提，单体应用也可以容器化。
 
 
 **美国国家标准与技术研究院（NIST）定义**：云计算是一种按使用量付费的模式，这种模式提供可用的、便捷的、按需的网络访问， 进入可配置的计算资源共享池（资源包括网络，服务器，存储，应用软件，服务），这些资源能够被快速提供，只需投入很少的管理工作，或与服务供应商进行很少的交互。
@@ -115,17 +115,13 @@ Kubernetes 成为容器战争胜利者标志着后微服务时代的开端，但
 
 ### 1.3.1 CNCF
 
-![原 PDF 第 5 页插图](assets/Kubernetes架构和部署/img-d388c896055192d7.png)
+![原 PDF 第 5 页插图](assets/Kubernetes架构和部署/img-d388c896055192d7.webp)
 
 Cloud Native Computing Foundation，云原生计算基金会（以下简称CNCF） 成立于2015年7月，是Linux 基金会旗下的一个开源软件基金会，它致力于云原生（Cloud Native）技术的普及和可持续发展,其口号是坚持和整合开源技术来让编排容器作为微服务架构的一部分。
 
 官方网站: https://www.cncf.io/
 
-关于CNCF的使命主要包括以下三点：
-
-容器化包装通过中心编排系统的动态资源管理
-
-面向微服务
+早期对 CNCF 关注方向的概括包括容器化封装、动态编排和面向微服务。如今 CNCF 的项目范围已扩展到观测、安全、存储等更多领域，不能把这三项当作现行项目准入条件。
 
 CNCF 这个组织的作用是推广技术，形成社区，开源项目管理与推进生态系统健康发展。很多公司都参与 CNCF 组织成为其成员。
 
@@ -137,9 +133,9 @@ CNCF 这个组织的作用是推广技术，形成社区，开源项目管理与
 
 CNCF 组织由以下部分组成：
 
-会员 ：白金Platinum、金牌Glod、银牌silver、最终用户、学术和非赢利成员，不同级别的会员在治理委员会中的投票权不同。理事会 ：负责事务管理TOC（技术监督委员会）：技术管理最终用户社区 ：推动CNCF技术的采纳并选举最终用户技术咨询委员会最终用户技术咨询委员会 ：为最终用户会议或向理事会提供咨询营销委员会 ：市场推广。
+从读者理解生态治理的角度，可以区分几类角色：不同等级的会员支持基金会运作；理事会负责组织治理；技术监督委员会（TOC）负责技术方向和项目流程；最终用户社区反馈生产实践；市场相关组织负责推广。具体会员等级与治理规则以 CNCF 官方页面为准。
 
-![原 PDF 第 6 页插图](assets/Kubernetes架构和部署/img-c87be49870f9b52a.png)
+![原 PDF 第 6 页插图](assets/Kubernetes架构和部署/img-c87be49870f9b52a.webp)
 
 ### 1.3.2 云原生
 
@@ -153,7 +149,7 @@ CNCF 组织由以下部分组成：
 - <https://www.mattstine.com/>
 
 
-![原 PDF 第 7 页插图](assets/Kubernetes架构和部署/img-8933658e995098d8.jpeg)
+![原 PDF 第 7 页插图](assets/Kubernetes架构和部署/img-8933658e995098d8.webp)
 
 2015年：Matt Stine《迁移到云原生架构》云原生包括：12因素、微服务、自敏捷架构、基于API协作、扛脆弱性
 
@@ -172,7 +168,7 @@ CNCF 组织由以下部分组成：
 
 云原生计算基金会（CNCF）致力于培育和维护一个厂商中立的开源生态系统，来推广云原生技术。我们通过将最前沿的模式民主化，让这些创新为大众所用。
 
-![原 PDF 第 7 页插图](assets/Kubernetes架构和部署/img-a360ad315cc82851.png)
+![原 PDF 第 7 页插图](assets/Kubernetes架构和部署/img-a360ad315cc82851.webp)
 
 当前CNCF的云原生定义v1.0如下：
 
@@ -196,7 +192,12 @@ CNCF 组织由以下部分组成：
 
 **云原生的发展带来的价值**
 
-避免Vendor Lock-in：完整和逐步完善的开源软件技术栈使得在任何公有云、私有云以及混合云上的部署的能力得到了落实，避免了供应商依赖 Vendor Lock-in。无限的横向扩展性：可以获得从几台节点横向扩展至数千台具有自愈能力的多租户节点，以Google为例，仅仅根据2014年的统计数据信息，Google每周启动20亿个容器，这意味每秒钟的数量是3300个左右，已经有企业在这个方面做出了强大的示例，以这个统计数据为例，基本上对绝大多数的企业来说，这份能力就是无限的横向扩展性。速度和可维护性的同时提高：通过将应用进行分割为微服务化，从而使得速度和可维护性都能有所提高。获得弹性的能力：无论是容器、机器甚至是数据中心级别的故障，弹性的能力都能够有相应的机制和方式得到保障，很多企业已经在这方面作出了很多实践。提高效率和资源利用率：通过对编排机制，能够对微服务进行动态的管理和调度，从而更好地提高了效率与资源的利用率。
+云原生的收益不是“无限扩展”的保证，而是提供一套更容易扩展和恢复的工程方法：
+
+- **可移植性**：标准接口与开源生态降低对单一供应商的依赖，但云厂商专有服务仍可能形成锁定。
+- **弹性与故障恢复**：可按需求调整副本，并在进程或节点故障后重建工作负载；跨可用区容灾还需额外设计。
+- **交付速度与可维护性**：独立部署、自动化测试和发布流程能够缩短反馈周期，前提是服务边界与运维能力合理。
+- **资源利用率**：调度器依据请求量、限制和约束放置工作负载，帮助共享集群资源。
 
 ### 1.3.3 CNCF 项目
 
@@ -225,9 +226,10 @@ https://landscape.cncf.io/
 - <https://landscape.cncf.io/images/landscape.png>
 
 
-![原 PDF 第 9 页插图](assets/Kubernetes架构和部署/img-5d222506546b7ef8.png)
+![原 PDF 第 9 页插图](assets/Kubernetes架构和部署/img-5d222506546b7ef8.webp)
 
-**CNCF 项目分类**
+**CNCF 全景图分类示例**。全景图既收录 CNCF 托管项目，也收录其他生态产品；以下是阅读图时可参考的分类，而不是 CNCF 项目清单。
+
 **应用开发和管理解决方案集合**
 - Database
 - streaming & message
@@ -271,17 +273,21 @@ https://landscape.cncf.io/
 
 CNCF 当前包含著名的项目有 Containerd、Kubernetes、Prometheus 、Etcd、Harbor、CoreDNS、Envoy、Helm 等。每个CNCF项目都需要有个成熟度等级，申请成为CNCF项目的时候需要确定项目的成熟度级别。
 
-![原 PDF 第 10 页插图](assets/Kubernetes架构和部署/img-799e971fcb10e07c.png)
+![原 PDF 第 10 页插图](assets/Kubernetes架构和部署/img-799e971fcb10e07c.webp)
 
 成熟度级别（ Maturity Level）包括以下三种：
 
-sandbox 沙箱incubating 孵化graduated 毕业
+| 阶段 | 含义 |
+| --- | --- |
+| Sandbox（沙箱） | 探索早期想法，验证社区与技术方向。 |
+| Incubating（孵化） | 社区、治理和采用度进一步成熟。 |
+| Graduated（毕业） | 达到更高的项目成熟度和可持续性要求。 |
 
-是否可以成为CNCF项目需要通过Technical Oversight Committee (技术监督委员会）简称 TOC ，投票采取回退策略fallback策略，先从最高级别（graduated）开始，如果2/3多数投票通过的话则确认为该级别，如果没通过的话，则进行下一低级别的投票，如果一直到沙箱级别都没得到2/3多数投票通过的话，则拒绝其进入CNCF项目。成熟度是 CNCF 的一个信号，表明什么样的企业应该采用不同的项目。
+项目进入 CNCF 及晋级需要经过相应申请与评审流程，技术监督委员会（TOC）参与技术治理。成熟度可作为评估项目治理和生产采用度的线索，但不是“毕业项目一定适合所有企业”的保证；还应结合维护情况、功能和自身场景判断。
 
 CNCF各个项目成熟度查询链接: https://www.cncf.io/projects/
 
-![原 PDF 第 11 页插图](assets/Kubernetes架构和部署/img-3a1f52567716b71f.png)
+![原 PDF 第 11 页插图](assets/Kubernetes架构和部署/img-3a1f52567716b71f.webp)
 
 ### 1.3.4 CNCF 路线图 Trail Map
 
@@ -295,25 +301,25 @@ CNCF各个项目成熟度查询链接: https://www.cncf.io/projects/
 步骤1: 容器化
 
 
-方式：虽然容器化可以选择多种方式，一般仍以Docker为主要方式进行容器化。类型：各种类型应用和依赖（甚至模拟器上运行的代码）都可以进行容器化，容器化的类型得到广泛的支持演进：对于新的功能，可以进行应用的分割并将其进行微服务化
+先确定应用及依赖能否作为镜像稳定构建、运行，再把配置与持久化数据从镜像中分离。Docker 是构建镜像的一种常见工具；容器化和微服务拆分是两个独立决策，不必同时进行。
 
 
 步骤2: CI/CD
 
 
-容器化：创建持续集成CI与持续部署CD环境，从而使得代码的修改可以自动从源码进行容器化的构建和测试，并可以部署至准生产或者生产环境。自动化：创建可以用于自动部署、自动回滚和自动测试的方式
+建立从代码提交到镜像构建、测试、发布的流水线。部署前应有质量门禁，并设计失败后的回滚或修复流程，而不是把“自动发布”理解为跳过验证。
 
 
 步骤3: 应用定义与编排
 
 
-应用编排：Kubernetes作为容器化的应用编排的解决方案，在目前的市场上处于领先地位。管理应用：Helm Charts能帮助使用者对复杂的Kubernetes应用进行定义、安装和升级。CNCF项目：Kubernetes（已毕业）、HELM（孵化中,当前已毕业）
+用 Kubernetes 声明应用所需的副本、资源和访问方式，由控制器持续协调实际状态。Helm Chart 可把一组相关资源组织成可安装、升级的应用包；使用前仍需审查模板和默认值。
 
 
 步骤4: 监控&分析
 
 
-范围：解决方案应该包含监控、日志和追踪工具：推荐的工具可以选择使用Prometheus进行监控和告警，Fluentd用于日志，而Jaeger则用于调用链的跟踪兼容性：调用链跟踪建议选择诸如Jaeger那样对OpenTracing有兼容性的方案或者工具 CNCF项目：Prometheus（已毕业）、fluentd（孵化中，已毕业）、OPENTRACING（孵化中）、JAEGER（孵化中）
+可观测性至少要回答“服务是否健康、故障发生在哪里、请求经历了什么”。指标可用 Prometheus，日志可用 Fluent Bit/Fluentd 等组件收集，追踪可借助 OpenTelemetry 与 Jaeger 等系统；具体组合取决于现有平台。
 
 
 注意：步骤4开始为可选内容。
@@ -321,37 +327,37 @@ CNCF各个项目成熟度查询链接: https://www.cncf.io/projects/
 步骤5: 服务代理、服务发现和服务网格。
 
 
-服务发现：可以使用CoreDNS进行服务发现，兼具快速和灵活的特点。服务网格：Envoy和Linkerd都能够提供服务网格的相关能力。管理功能：提供健康检查、请求陆游以及负载均衡等常用功能。CNCF项目：envoy（已毕业）、CoreDNS（已毕业）、LINKERD（孵化中）
+集群内的 Service 和 CoreDNS 提供基本服务发现；如果需要更细的服务间流量治理，可评估 Envoy、Linkerd 等方案。服务网格会增加控制平面、数据平面的运维成本，不应只因“云原生路线图”就引入。
 
 
 步骤6: 网络&策略
 
 
-网络兼容：为了能够更加灵活地对应网络需求，使用CNI兼容的网络解决方案诸如Calico、Flannel或者 Weave Net等。策略：OPA（Open Policy Agent）秉承着“策略即代码”的原则，完成了一个通用的策略引擎的基本功能，可以帮助使用者控制策略和权限以保证合规性。CNCF项目：CNI（孵化中）、Open Policy Agent（孵化中）
+选择与集群兼容的 CNI 网络实现，例如 Calico、Flannel 等，并验证是否支持所需的 NetworkPolicy。OPA 等策略引擎可在准入等环节表达组织规则；网络策略与准入策略解决的是不同问题。
 
 
 步骤7: 分布式数据库与存储
 
 
-横向扩展性：当需要获取更多的弹性和横向扩展性时，相较于从单一数据库来获取信息，通过sharding的方式保证MySQL的横向扩展性，Vitess是一个不错的选择。存储编排：通过集成多种Kubernetes的存储解决方案，可以使用提供了存储的编排方式的Rook进行管理。数据存储：作为Kubernetes的“大脑”，etcd提供了在集群中以可靠的方式存储数据的能力。KV存储：当需要key-value存储方案时，可以考虑使用TiKV，TiKV使用Rust编写的高性能的分布式事务级 key-value解决方案。CNCF项目：Vitess（孵化中）、ROOK（孵化中）、etcd（孵化中）、TiKV（孵化中）
+数据库和存储应按数据模型、性能、可用性和恢复目标选择。Vitess 用于 MySQL 水平扩展，Rook 用于管理部分分布式存储，TiKV 是分布式键值数据库；etcd 则主要保存 Kubernetes 集群状态，不能把它当作普通业务数据库。无论哪种方案，备份与恢复都必须单独验证。
 
 
 步骤8: 流与消息处理
 
 
-性能需求：当需要比JSON-RESt更高的性能时，gRPC或者NATS能够助你一臂之力。通用框架：gRPC时一个通用的RPC框架。而NATS是一个包含了请求/大幅、发布/订阅和负载均衡队列的多模型消息系统。CNCF项目：gRPC（孵化中）、NATS（孵化中）
+同步服务调用可评估 gRPC；异步事件与消息分发可评估 NATS。二者解决的通信模型不同，不宜仅凭“比 JSON REST 更快”来选择；还应考虑可靠性、顺序、重试和客户端兼容性。
 
 
 步骤9: 镜像私库&运行环境
 
 
-镜像私库：可以使用Harbor作为镜像私库进行存储以及对镜像的内容进行扫描。运行环境：容器并非仅仅Docker一种，容器的运行环境更是如此，可以选择不同的容器运行环境，但需要注意选择具有OCI兼容性的的方案，比如containerd或者cri-o CNCF项目：containerd（已孵化）、HABOR（孵化中）、cri-o（孵化中）
+Harbor 可作为私有镜像仓库并提供扫描等能力。节点上的容器运行时可选 containerd 或 CRI-O 等实现；Kubernetes 与运行时通信要求 CRI 兼容，镜像和底层执行格式则与 OCI 规范相关，两种接口不能混为一谈。
 
 
 步骤10: 软件分发
 
 
-安全性：TLS能够保护通信的安全，但是当服务器出现问题后，自然就会出现问题。而使用Notary可以解决这一问题，是的软件的分发和更新更加安全。TUF项目则是Notary所基于的项目，也是针对软件分发和更新的安全性的解决方案。CNCF项目：Notary（孵化中）、TUF（孵化中）
+TLS 保护传输链路，但无法单独证明下载到的镜像或软件包来自预期发布者。制品签名和验证（如 Notary 相关方案）可以补充来源与完整性校验；TUF 关注安全更新元数据。部署前还要确定谁负责签名密钥与信任策略。
 
 
 ## 1.4 容器编排工具
@@ -362,19 +368,19 @@ Docker-Compose 是一个单机版的容器编排工具,用来管理一个主机�
 
 ### 1.4.2 Docker Swarm
 
-![原 PDF 第 13 页插图](assets/Kubernetes架构和部署/img-3d19037fffc0538d.png)
+![原 PDF 第 13 页插图](assets/Kubernetes架构和部署/img-3d19037fffc0538d.webp)
 
 Docker Swarm则是由Docker 公司自行研发的一款用来管理多主机上的Docker容器的工具。可以负责帮用户启动容器，监控容器状态，如果容器的状态不正常它自动重新启动一个新的容器，来提供服务，同时也提供服务之间的负载均衡，而这些功能是Docker-Compose 是无法实现的。Swarm 现在与Docker Engine完全集成，并使用标准API和网络。Swarm模式内置于Docker CLI中，无需额外安装，并且易于获取新的Swarm命令。
 
 ### 1.4.3 Marathon
 
-![原 PDF 第 13 页插图](assets/Kubernetes架构和部署/img-572b79e7c3ed518a.png)
+![原 PDF 第 13 页插图](assets/Kubernetes架构和部署/img-572b79e7c3ed518a.webp)
 
 编排框架 Marathon 基于 Apache Mesos 项目。Apache Mesos 通过 API提供了跨数据中心的资源管理和调度抽象，而这些数据中心可能是物理上分散的。Mesos 上的系统可以使用底层的计算、网络和存储资源，就像虚拟机通过虚拟机管理程序使用底层资源一样。Marathon 使用了Mesos 并在它上面运行，针对长期运行的应用程序提供了容器编排功能。它既支持Mesos 容器运行时，也支持Docker 容器运行时。
 
 ### 1.4.4 Kubernetes
 
-![原 PDF 第 14 页插图](assets/Kubernetes架构和部署/img-842ee3a20829661a.png)
+![原 PDF 第 14 页插图](assets/Kubernetes架构和部署/img-842ee3a20829661a.webp)
 
 Kubernetes就由Google的内部项目Borg发展而来，用go语言实现，后捐献给CNCF成为开源项目。它本身的角色定位是和 Docker Swarm 是一样的，也是一个跨主机的容器管理平台。Kubernetes当前已成为容器编排领域的领导者,甚至是行业标准。
 
@@ -396,9 +402,9 @@ Kubernetes一个核心的特点就是能够自主的管理容器来保证云平�
 
 github：https://github.com/kubernetes/kubernetes
 
-![原 PDF 第 15 页插图](assets/Kubernetes架构和部署/img-6e3477f61f1703d4.png)
+![原 PDF 第 15 页插图](assets/Kubernetes架构和部署/img-6e3477f61f1703d4.webp)
 
-![原 PDF 第 15 页插图](assets/Kubernetes架构和部署/img-ba873a4fe412b8fb.png)
+![原 PDF 第 15 页插图](assets/Kubernetes架构和部署/img-ba873a4fe412b8fb.webp)
 
 **Kubernetes 特性**
 ```text
@@ -452,7 +458,7 @@ Kubernetes 会分步骤地将针对应用或其配置的更改上线，同时监
 - <https://www.kubernetes.org.cn/kubernetes%E8%AE%BE%E8%AE%A1%E6%9E%B6%E6%9E%84>
 
 
-![原 PDF 第 17 页插图](assets/Kubernetes架构和部署/img-750d25e45de2e085.png)
+![原 PDF 第 17 页插图](assets/Kubernetes架构和部署/img-750d25e45de2e085.webp)
 
 **集群架构图示**
 
@@ -470,9 +476,9 @@ Kubernetes 是一个由许多主机节点组成、各节点分工不同的分布
 
 **Kubernetes的节点运行逻辑**
 
-Kubernetes将所有worker工作节点的资源集结在一起形成一台逻辑的更加强大的“服务器”计算和存储接口通过Master之上的API Server暴露客户端通过API提交应用程序的运行请求，而后由Master通过调度算法将其自动指派至某特定的工作节点以Pod对象的形式运行Master会自动处理因工作节点的添加、故障或移除等变动对Pod的影响。
+Kubernetes 把多个工作节点组成一个可统一管理的集群。用户向 API Server 提交工作负载期望状态，调度器为待运行的 Pod 选择节点，控制器持续比较期望状态与实际状态；节点加入、故障或移除后，控制器会按工作负载策略尝试重建或重新调度 Pod。它不是把所有机器直接合并成一台具有共享内存的服务器。
 
-![原 PDF 第 18 页插图](assets/Kubernetes架构和部署/img-4f997bfd910f0b48.png)
+![原 PDF 第 18 页插图](assets/Kubernetes架构和部署/img-4f997bfd910f0b48.webp)
 
 ## 2.3 Kubernetes 组件
 
@@ -480,15 +486,15 @@ Kubernetes将所有worker工作节点的资源集结在一起形成一台逻辑�
 - <https://kubernetes.io/zh/docs/concepts/overview/components/>
 
 
-![原 PDF 第 18 页插图](assets/Kubernetes架构和部署/img-62c63cfa608b0c3a.png)
+![原 PDF 第 18 页插图](assets/Kubernetes架构和部署/img-62c63cfa608b0c3a.webp)
 
 **Kubernetes 组件分层**：包括 Control Plane Components（控制平面组件）、Node Components（节点组件）和 Addons（附件／插件）三类。
 
-![原 PDF 第 19 页插图](assets/Kubernetes架构和部署/img-ae2bfd12e8cd2816.png)
+![原 PDF 第 19 页插图](assets/Kubernetes架构和部署/img-ae2bfd12e8cd2816.webp)
 
 工作节点托管Pods 是应用程序工作负载的组成部分。该控制平面管理集群中的工作节点和Pod。在生产环境中，控制平面通常在多台计算机上运行，而群集通常在多个节点上运行，从而提供了容错能力和高可用性。
 
-![原 PDF 第 19 页插图](assets/Kubernetes架构和部署/img-213eeb42e9e4c636.png)
+![原 PDF 第 19 页插图](assets/Kubernetes架构和部署/img-213eeb42e9e4c636.webp)
 
 **Kubernetes Architecture（架构图说明）**
 
@@ -519,9 +525,9 @@ https://github.com/kubernets/kube-apiserver
 https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kube-apiserver/
 ```
 
-![原 PDF 第 21 页插图](assets/Kubernetes架构和部署/img-b1b9caf344f6b2dc.png)
+![原 PDF 第 21 页插图](assets/Kubernetes架构和部署/img-b1b9caf344f6b2dc.webp)
 
-![原 PDF 第 21 页插图](assets/Kubernetes架构和部署/img-083fce9d52b9a681.png)
+![原 PDF 第 21 页插图](assets/Kubernetes架构和部署/img-083fce9d52b9a681.webp)
 
 Kubernetes API Server 是整个集群的访问入口，负责验证和配置 Pod、Service、ReplicationController 等 API 对象的数据。它提供 REST 操作，也是访问集群共享状态的前端；其他组件通过它交互。
 
@@ -551,19 +557,19 @@ kube-scheduler 调度器负责根据当前集群状态，为 Pod 选择最合适
 
 调度程序会查看每个 Pod，并尝试为其找到最佳节点。例如：
 
-![原 PDF 第 22 页插图](assets/Kubernetes架构和部署/img-5b220b433c473e08.png)
+![原 PDF 第 22 页插图](assets/Kubernetes架构和部署/img-5b220b433c473e08.webp)
 
 在上图中，Pod 具有 CPU 和内存要求。调度程序将经历 2 个阶段来确定 Pod 的最佳节点。在第一阶段，调度程序尝试筛选出不符合此 Pod 要求的节点。例如，没有 Pod 请求的足够 CPU 和内存资源的节点。因此，前 2 个小节点被过滤掉。
 
-![原 PDF 第 23 页插图](assets/Kubernetes架构和部署/img-79d6a7c850e262f0.png)
+![原 PDF 第 23 页插图](assets/Kubernetes架构和部署/img-79d6a7c850e262f0.webp)
 
 因此，我们现在只剩下 2 个节点，可以放置 pod。现在，调度程序如何从 2 个节点中选择一个节点。在第二阶段，调度程序进一步选出最符合此 Pod 要求的节点。Kube 调度程序对节点进行排名，以确定最适合 Pod 的节点。它使用优先级函数将分数分配给节点，范围为 0 到 10。例如，调度程序计算放置 Pod 后节点上可用的资源数。
 
-![原 PDF 第 23 页插图](assets/Kubernetes架构和部署/img-e4bcab1cdc9759b5.png)
+![原 PDF 第 23 页插图](assets/Kubernetes架构和部署/img-e4bcab1cdc9759b5.webp)
 
 在这种情况下，第 3 个节点将有 2 个 CPU，第 4 个节点有 6 个可用 CPU。因此，与第3个节点相比，第4个节点的排名更好。现在 Kube 调度程序会将 pod 放在第 4 个节点中。
 
-![原 PDF 第 23 页插图](assets/Kubernetes架构和部署/img-eac6d208f55cda10.png)
+![原 PDF 第 23 页插图](assets/Kubernetes架构和部署/img-eac6d208f55cda10.webp)
 
 我们可以自定义 Kube 调度程序。您也可以编写自己的计划程序。
 
@@ -583,7 +589,7 @@ etcd 对应的程序为 etcd
 - <https://etcd.io/docs/v3.5/op-guide/hardware/>
 
 
-![原 PDF 第 25 页插图](assets/Kubernetes架构和部署/img-00569bc0c391d26a.png)
+![原 PDF 第 25 页插图](assets/Kubernetes架构和部署/img-00569bc0c391d26a.webp)
 
 #### 2.3.1.5 cloud-controller-manager (可选)
 
@@ -601,7 +607,7 @@ cloud-controller-manager运行与基础云提供商交互的控制器。cloud-co
 
 ### 2.3.2 节点组件(工作平面组件)
 
-![原 PDF 第 26 页插图](assets/Kubernetes架构和部署/img-9c0b2f78dce2c878.png)
+![原 PDF 第 26 页插图](assets/Kubernetes架构和部署/img-9c0b2f78dce2c878.webp)
 
 节点组件在每个worker节点上运行，维护运行中的Pod，并提供Kubernetes运行时环境。
 
@@ -612,7 +618,7 @@ cloud-controller-manager运行与基础云提供商交互的控制器。cloud-co
 - <https://kubernetes.io/zh-cn/docs/reference/command-line-tools-reference/kubelet/>
 
 
-![原 PDF 第 26 页插图](assets/Kubernetes架构和部署/img-82759389b0784a4f.png)
+![原 PDF 第 26 页插图](assets/Kubernetes架构和部署/img-82759389b0784a4f.webp)
 
 **kubelet** 是运行在每个 Worker 节点上的集群代理，对应程序为 kubelet。它与 Master 节点通信，接收指令，监视并管理分配到本节点的 Pod，向 Master 上报节点与 Pod 的状态。它还负责在 Pod 中创建容器、检查容器健康状态、返回 Pod 运行状态，以及准备 Pod 所需的数据卷。
 
@@ -637,7 +643,7 @@ iptables
 
 #### 2.3.2.3 Container Runtime
 
-容器运行时是负责运行容器的软件。Kubernetes 支持 Docker、containerd、专为 Kubernetes 设计的轻量级运行时 CRI-O，以及其他遵循 Kubernetes CRI（容器运行时接口）的实现。
+容器运行时负责拉取镜像、创建和运行容器。kubelet 通过 CRI 与运行时通信，常见实现为 containerd 和 CRI-O。Docker Engine 本身不实现 CRI；若要在较新版本的 Kubernetes 中使用它，需要额外的 cri-dockerd 适配器。
 
 ### 2.3.3 附件 Addons
 
@@ -665,72 +671,42 @@ Dashboard仪表板是Kubernetes集群的通用基于Web的UI。它允许用户�
 
 常用的监控系统: Prometheus
 
-#### 2.3.3.5 Cluster-level Logging 集群级日志
+#### 2.3.3.6 Cluster-level Logging 集群级日志
 
 一个集群级别的日志记录机制是负责保存容器日志到提供有搜索和浏览接口的中央日志存储，如：Fluentd-elasticsearch,PLG等。
 
-#### 2.3.3.6 负载均衡器
+#### 2.3.3.7 负载均衡器
 
 OpenELB 是适用于非云端部署的Kubernetes环境的负载均衡器，可利用BGP和ECMP协议达到性能最优和高可用性。
 
 ## 2.4 Kubernetes 组件间安全通信
 
-![原 PDF 第 28 页插图](assets/Kubernetes架构和部署/img-3ebfad6c528fff81.png)
+![原 PDF 第 28 页插图](assets/Kubernetes架构和部署/img-3ebfad6c528fff81.webp)
 
-**Kubernetes集群中有三套CA机制**：etcd-ca   ETCD集群内部的 TLS 通信kubernetes-ca  kubernetes集群内部节点间的双向 TLS 通信front-proxy-ca Kubernetes集群与外部扩展服务简单双向 TLS 通信。
+以 kubeadm 建立的集群为例，常见三组 CA 分别用于不同的信任边界：`etcd-ca` 为 etcd 服务端及其客户端证书签名；`ca` 为 Kubernetes API Server 和相关客户端证书签名；`front-proxy-ca` 为 API 聚合层的前端代理客户端证书签名。它们并不等同于“三种节点间通信模式”。
+在控制平面执行 `kubeadm certs check-expiration` 可查看由 kubeadm 管理的证书及 CA 的到期时间。原始终端截图被 PDF 抽取成许多独立的 `no` 行，无法直接阅读；下面只保留命令和主要列的含义，实际时间以本集群输出为准：
+
 ```bash
-[root@master1 ~]#kubeadm  certs  check-expiration
-[check-expiration] Reading configuration from the cluster...
-[check-expiration] FYI: You can look at this config file with 'kubectl -n kube-
-system get cm kubeadm-config -o yaml'
-[check-expiration] Error reading configuration from the Cluster. Falling back to
-default configuration
-
-CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE
-AUTHORITY   EXTERNALLY MANAGED
-admin.conf                 Apr 16, 2025 01:07 UTC   356d            ca
-no
-apiserver                  Apr 16, 2025 01:07 UTC   356d            ca
-no
-apiserver-etcd-client      Apr 16, 2025 01:07 UTC   356d            etcd-ca
-no
-apiserver-kubelet-client   Apr 16, 2025 01:07 UTC   356d            ca
-no
-controller-manager.conf    Apr 16, 2025 01:07 UTC   356d            ca
-no
-etcd-healthcheck-client    Apr 16, 2025 01:07 UTC   356d            etcd-ca
-no
-etcd-peer                  Apr 16, 2025 01:07 UTC   356d            etcd-ca
-no
-etcd-server                Apr 16, 2025 01:07 UTC   356d            etcd-ca
-no
-front-proxy-client         Apr 16, 2025 01:07 UTC   356d            front-proxy-
-ca          no
-scheduler.conf             Apr 16, 2025 01:07 UTC   356d            ca
-no
-
-CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY
-MANAGED
-ca                      Mar 04, 2033 04:30 UTC   8y              no
-etcd-ca                 Mar 04, 2033 04:30 UTC   8y              no
-front-proxy-ca          Mar 04, 2033 04:30 UTC   8y              no
+kubeadm certs check-expiration
 ```
+
+输出中 `CERTIFICATE` 表示证书名称，`EXPIRES` 和 `RESIDUAL TIME` 分别表示到期时间与剩余时间，`CERTIFICATE AUTHORITY` 指明签发它的 CA，`EXTERNALLY MANAGED` 表示是否由外部管理。末尾另列出 CA 证书的有效期。若无法读取集群中的 `kubeadm-config`，命令可能回退到默认配置，此时要结合实际部署方式核实结果。
 
 ## 2.5 Kubernetes 相关术语
 
 ### 2.5.1 Pod
 
-![原 PDF 第 30 页插图](assets/Kubernetes架构和部署/img-109de076559be690.png)
+![原 PDF 第 30 页插图](assets/Kubernetes架构和部署/img-109de076559be690.webp)
 
 Pod是其运行应用及应用调度的最小逻辑单元。本质上是共享Network、IPC和UTS名称空间以及存储资源的容器集。可将其想象成一台物理机或虚拟机，各容器就是该主机上的进程。各容器共享网络协议栈、网络设备、路由、IP地址和端口等，但Mount、PID和USER仍隔离。
 
-每个 Pod 还可附加存储卷（Volume），作为 Pod 内各容器共享的外部存储。存储卷独立于 Pod 的生命周期，可让数据在 Pod 删除后继续保留。
+Pod 可挂载 Volume，供其中的一个或多个容器使用；但数据能否在 Pod 删除后保留，取决于卷类型。`emptyDir` 随 Pod 消失，持久卷（PV/PVC）则可按存储与回收策略保留数据。
 
 Pod 具有动态性，删除后可通过资源清单重建，这体现了“不可变基础设施”的思路，也有助于应对误删除或主机故障等异常。设计上，仅应将关系紧密的应用分别放入同一 Pod 的不同容器中。
 
 ### 2.5.2 Service
 
-![原 PDF 第 30 页插图](assets/Kubernetes架构和部署/img-1e365895014576f0.png)
+![原 PDF 第 30 页插图](assets/Kubernetes架构和部署/img-1e365895014576f0.webp)
 
 Pod具有动态性，其IP地址也会在基于配置清单重构后重新进行分配，因而需要服务发现机制的支撑。Kubernetes使用Service资源和DNS服务（CoreDNS）进行服务发现。Service能够为一组提供了相同服务的Pod提供负载均衡机制，其IP地址（Service IP，也称为Cluster IP）即为客户端流量入口。一个Service对象存在于集群中的各节点之上，不会因个别节点故障而丢失，可为Pod提供固定的前端入口。
 
@@ -751,50 +727,28 @@ Service 使用标签选择器（Label Selector）匹配 Pod 上的标签（Label
 | StatefulSet | 针对有状态应用的需求创建和管理 Pod。 |
 | ReplicaSet | 维持期望数量的 Pod 实例。 |
 | Job | 创建执行一次性任务的短生命周期 Pod。 |
-| DaemonSet | 确保每个节点恰好运行一个对应的 Pod。 |
+| DaemonSet | 确保每个符合条件的节点运行一个对应的 Pod。 |
 | Pod | Kubernetes 最小的计算资源单元，可包含 1 个或多个容器。 |
 | Init Container | 执行启动前任务，例如数据库迁移。 |
 | Container | 运行主应用或边车（sidecar）应用。 |
 
 **对象关系**：上述控制器管理 Pod；Pod 包含 Init Container 与普通 Container。
 
-Pod虽然是运行应用的原子单元，并不需要我们直接管理每个 Pod。可以使用负载资源 workload resources  来替你管理一组 Pods。 这些资源配置 控制器 来确保合适类型的、处于运行状态的 Pod 个数是正确的，与你所指定的状态相一致。其生命周期管理和健康状态监测由kubelet负责完成，而诸如更新、扩缩容和重建等应用编排功能需要由专用的控制器实现，这类控制器即工作负载型控制器。
+通常不直接管理每一个 Pod，而是通过 Deployment、StatefulSet、DaemonSet、Job 或 CronJob 等工作负载资源声明期望状态。控制器根据模板创建、删除或更新 Pod，并借助标签选择器关联受管对象；节点上的 kubelet 则负责按 Pod 规格启动容器、执行健康探测并报告状态。
 
-Kubernetes 提供若干种内置的工作负载资源：
-
-ReplicaSet和Deployment DaemonSet StatefulSet Job和CronJob
-
-工作负载型控制器也通过标签选择器筛选Pod标签从而完成关联。
-
-**工作负载型控制器的主要功能**
-
-确保选定的Pod精确符合期望的数量,数量不足时依据Pod模板创建，超出时销毁多余的对象按配置定义进行扩容和缩容依照策略和配置进行应用更新。
+各类控制器的目标不同：Deployment 与 ReplicaSet 维持副本数并支持滚动更新；StatefulSet 为有状态副本提供稳定标识；DaemonSet 在符合条件的节点上运行守护 Pod；Job/CronJob 管理一次性和定时任务。需要扩缩容时，还应区分手动修改副本数和 HPA 等自动扩缩机制。
 
 ### 2.5.4 Network Model
 
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-f9b355badec5b112.png)
+![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-f9b355badec5b112.webp)
 
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-0566d124e558c36d.png)
+![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-0566d124e558c36d.webp)
 
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-0566d124e558c36d.png)
+![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-424d01b4eddba275.webp)
 
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-424d01b4eddba275.png)
+![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-dcd1d857552dd4c7.webp)
 
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-424d01b4eddba275.png)
-
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-424d01b4eddba275.png)
-
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-424d01b4eddba275.png)
-
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-424d01b4eddba275.png)
-
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-dcd1d857552dd4c7.png)
-
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-dcd1d857552dd4c7.png)
-
-![原 PDF 第 32 页插图](assets/Kubernetes架构和部署/img-dcd1d857552dd4c7.png)
-
-Kubernetes集群上默认会存在三个分别用于Node、Pod和Service的网络三个网络 于worker节点上完成交汇由node内核中的路由模块，以及iptables/netfilter和ipvs等完成网络间的流量转发安装Kubernetes时,需要分别指定三个网络的网段地址。
+理解 Kubernetes 网络时，可以把节点网络、Pod 网络和 Service 地址段分开：节点网络由基础设施提供；Pod 网络由 CNI 插件建立；Service 的虚拟地址与转发规则由集群组件维护。它们通过路由、网络插件和节点上的转发机制协同工作，不是安装时都必须由 Kubernetes 分配的三张物理网络。
 
 **三个网络功能**
 
@@ -804,61 +758,49 @@ Kubernetes集群上默认会存在三个分别用于Node、Pod和Service的网�
 
 **Pod网络**
 
-为集群上的Pod对象提供的网络
-
-Pod网络 IP地址配置在Pod的虚拟网络接口上。每个pod 从此网络动态获取地址,且每次重启pod后IP地址可能会变化。虚拟网络，需要经由CNI网络插件实现，例如Flannel、Calico、Cilium等。
-
-使用某此CNI插件也可以支持和节点网络使用相同的网络
+Pod 网络为 Pod 提供可通信的地址。Pod 在创建时分配 IP，重建后 IP 可能变化；通常由 Flannel、Calico、Cilium 等 CNI 插件实现。某些网络方案可让 Pod 地址与节点网络路由直接互通，但具体行为取决于插件和部署方式。
 
 **Service网络**
 
 主要用于解决 pod 使用动态地址问题。在部署Kubernetes集群时指定，各Service对象使用的地址将从该网络中分配。Service网络的IP地址并不配置在任何物理接口,而是存在于每个节点内核中其相关的iptables或ipvs规则中。
 
-由Kubernetes集群自行管理
-
-Kubernetes网络中主要存在4种类型的通信流量。
-
-同一Pod内的容器间通信Pod间的通信Pod与Service间的通信
-
-集群外部流量与Service间的通信
-
-Pod网络需要借助于第三方兼容CNI规范的网络插件完成，这些插件需要满足以下功能要求。所有Pod间均可不经NAT机制而直接通信所有节点均可不经NAT机制直接与所有Pod通信所有Pod对象都位于同一平面网络中。
+Service 地址由 Kubernetes 管理。阅读流量路径时，应分别看：同一 Pod 内容器通过共享网络命名空间通信；不同 Pod 通过 Pod 网络通信；客户端通过 Service 转发到后端 Pod；集群外部流量则通过 NodePort、LoadBalancer、Ingress/Gateway 等入口进入。基本 Pod 网络模型要求 Pod 之间、节点与 Pod 之间可直接通信，不依赖应用自行处理 NAT；具体封装和路由由 CNI 实现。
 
 ### 2.5.5 Kubernetes中应用部署一般流程
 
-依照编排需求，选定合适类型的工作负载型控制器创建工作负载型控制器对象，由其确保运行合适数量的Pod对象创建Service对象，为该组Pod对象提供固定的访问入口。
+先选择适合应用的工作负载类型并定义 Pod 模板、资源请求、探针和副本策略；控制器创建 Pod 后，再按访问需求创建 Service，提供稳定的集群内入口。需要外部访问时，另外配置 Ingress、Gateway 或 LoadBalancer，并确认后端就绪与网络策略。
 
 ## 2.6 Kubernetes 分层架构
 
 Kubernetes设计理念和功能其实就是一个类似Linux的分层架构，如下图所示。
 
-![原 PDF 第 33 页插图](assets/Kubernetes架构和部署/img-060f382a221ed836.jpeg)
+![原 PDF 第 33 页插图](assets/Kubernetes架构和部署/img-060f382a221ed836.webp)
 
 核心层：对应上图的最下面的黄色部分,Kubernetes最核心的功能，对外提供API构建高层的应用，对内提供插件式应用执行环境。
 
 应用层：部署（无状态应用、有状态应用、批处理任务、集群应用等）和路由（服务发现、DNS解析等）。
 
-管理层：系统度量（如基础设施、容器和网络的度量），自动化（如自动扩展、动态Provision等）以及策略管理RBAC、Quota、PSP、NetworkPolicy等）。
+管理层：系统度量、自动扩缩容、动态卷供给，以及 RBAC、ResourceQuota、NetworkPolicy 等策略管理。PodSecurityPolicy（PSP）已被移除，不应再作为新集群的准入方案。
 
 接口层：kubectl命令行工具、客户端SDK以及集群联邦。
 
 生态系统：在接口层之上的庞大容器集群管理调度的生态系统，可以划分为两个范畴。
 
-Kubernetes外部：日志、监控、配置管理、CI、CD、Workflow、FaaS、OTS应用、ChatOps等Kubernetes内部：CRI、CNI、CSI、镜像仓库、Cloud Provider、集群自身的配置和管理等。
+集群外部通常还需日志、监控、CI/CD 和配置管理系统；集群内部则依赖 CRI、CNI、CSI 等标准接口以及相应实现。镜像仓库可以部署在集群内或集群外，不属于某一固定层。
 
 ## 2.7 Kubernetes 版本
 
 Kubernetes 在2014年10月15日在Github上首次开源发布 v0.4版
 
-![原 PDF 第 34 页插图](assets/Kubernetes架构和部署/img-f3feccd652dda5a8.png)
+![原 PDF 第 34 页插图](assets/Kubernetes架构和部署/img-f3feccd652dda5a8.webp)
 
 **支持的版本**
 
-通常每年更新四个大版本,从v1.22后已经修改为每年发布3个大版本。Kubernetes 的版本以 X.Y.Z 模式命名，其中 X 是主版本号，Y 是小版本号，Z 是补丁版本号。Kubernetes 一次支持三个小版本，也就是只支持包含当前的发布版本和两个之前的版本。参阅 GitHub 上的 Kubernetes Release 页面以获取最新的发布信息。
+Kubernetes 使用 `vX.Y.Z` 版本号：`X` 为主版本，`Y` 为次版本，`Z` 为补丁版本。发布节奏和社区支持窗口会随时间调整，不应只凭此处历史数字规划升级；部署前应查询 Kubernetes 官方发布与版本偏差策略，确认目标版本仍受支持。
 
 **小版本**
 
-master 组件、node 组件和 kubectl 客户端之间允许有一定的版本偏差。Node 可能落后 master 两个小版本，但是不能超过 master 版本。客户端可能落后也可能超过 master 一个小版本。例如，一个 v1.8 的 master 将和 v1.6、v1.7 和 v1.8 的 node 兼容，并且和 v1.7、v1.8 和 v1.9 的客户端兼容。
+控制平面、kubelet 和 kubectl 允许一定的次版本偏差，但允许范围与具体版本、组件有关，不能把早期 `v1.8` 的示例照搬到新集群。升级前应查阅目标版本的[官方版本偏差策略](https://kubernetes.io/zh-cn/releases/version-skew-policy/)，通常先升级控制平面，再逐步升级节点组件。
 
 生产环境建议各个组件都采用相同的版本。
 
@@ -870,25 +812,17 @@ master 组件、node 组件和 kubectl 客户端之间允许有一定的版本�
 
 Kubernetes的设计初衷是支持可插拔架构，从而利于扩展kubernetes的功能。
 
-![原 PDF 第 35 页插图](assets/Kubernetes架构和部署/img-a7b912ae10259333.png)
+![原 PDF 第 35 页插图](assets/Kubernetes架构和部署/img-a7b912ae10259333.webp)
 
 Kubernetes提供了三个特定功能的接口,kubernetes通过调用这几个接口，来完成相应的功能。
 
-容器运行时接口CRI: Container Runtime Interface
+| 接口 | 解决的问题 | 常见实现 |
+| --- | --- | --- |
+| CRI（Container Runtime Interface） | kubelet 如何与容器运行时通信 | containerd、CRI-O |
+| CNI（Container Network Interface） | Pod 网络如何配置与连接 | Calico、Flannel、Cilium |
+| CSI（Container Storage Interface） | 存储卷如何供给与挂载 | 各类云盘或分布式存储 CSI 驱动 |
 
-CRI 首次发布于2016年12月的Kubernetes 1.5 版本。在此版本之前，Kubernetes 直接与 Docker 通信，没有标准化的接口。从 Kubernetes 1.5 开始，CRI 成为 Kubernetes 与容器运行时交互的标准接口，使得 Kubernetes可以与各种容器运行时进行通信，从而增加了灵活性和可移植性。
-
-kubernetes 对于容器的解决方案，只是预留了容器接口，只要符合CRI标准的解决方案都可以使用。
-
-容器网络接口CNI: Container Network Interface
-
-kubernetes 对于网络的解决方案，只是预留了网络接口，只要符合CNI标准的解决方案都可以使用。
-
-容器存储接口CSI: Container Storage Interface
-
-kubernetes 对于存储的解决方案，只是预留了存储接口，只要符合CSI标准的解决方案都可以使用。
-
-此接口非必须
+CRI 自 Kubernetes 1.5 引入后逐步成为运行时标准接口。CNI 和 CSI 分别让网络、存储能力可插拔；但仅“符合接口”并不保证插件满足集群所需的性能、策略或持久化能力。CSI 驱动并非所有无持久存储需求集群的必备组件。
 
 ## 2.9 容器运行时接口（CRI）
 
@@ -896,13 +830,7 @@ CRI是kubernetes定义的一组gRPC服务。Kubelet作为客户端，基于gRPC�
 
 CRI 包括两类服务：
 
-镜像服务（Image Service）
-
-镜像服务提供下载、检查和删除镜像的远程程序调用。
-
-运行时服务（Runtime Service）
-
-运行时服务包含用于管理容器生命周期，以及与容器交互的调用的远程程序调用。
+**镜像服务（Image Service）**负责拉取、检查和删除镜像；**运行时服务（Runtime Service）**负责 Pod 沙箱和容器的创建、启动、停止与状态查询。kubelet 通过这两组 gRPC 服务管理节点上的工作负载。
 
 **开放容器计划 Open Container Initiative**
 
@@ -914,15 +842,15 @@ OCI目前包含两个规范：创建容器的格式和运行时的开源行业�
 
 **容器运行时**
 
-对于容器运行时主要有两个级别：Low Level(使用接近内核层) 和 High Level(使用接近用户层)目前，市面上常用的容器引擎有很多，主要有下图的那几种。
+理解容器运行时可分两个层次：containerd、CRI-O 等较高层组件向 kubelet 提供 CRI 服务并管理镜像与容器生命周期；runc 等较低层组件按 OCI 运行时规范创建容器进程。两层角色不同，不应把“CRI 兼容”与“OCI 兼容”当作同一个条件。
 
-![原 PDF 第 36 页插图](assets/Kubernetes架构和部署/img-16fd83004f536261.png)
+![原 PDF 第 36 页插图](assets/Kubernetes架构和部署/img-16fd83004f536261.webp)
 
-dockershim, containerd 和cri-o都是遵循CRI的容器运行时，称为高层级运行时（High-level Runtime）。其他的容器运营厂商最底层的runc提供，并由 Open Container Initiative 组织维护。Google,CoreOS,RedHat都推出自已的运行时:lmctfy,rkt,cri-o,但到目前Docker仍然是最主流的容器引擎技术。
+早期 Kubernetes 内置的 dockershim 是适配 Docker Engine 的桥接层，已在 v1.24 移除；它不是独立的通用运行时。现代集群通常直接采用 containerd 或 CRI-O，是否使用 Docker 构建镜像与节点选择何种 CRI 运行时是两件事。
 
-![原 PDF 第 36 页插图](assets/Kubernetes架构和部署/img-329320601df3ec2b.png)
+![原 PDF 第 36 页插图](assets/Kubernetes架构和部署/img-329320601df3ec2b.webp)
 
-![原 PDF 第 37 页插图](assets/Kubernetes架构和部署/img-ebea990cc7fb1309.jpeg)
+![原 PDF 第 37 页插图](assets/Kubernetes架构和部署/img-ebea990cc7fb1309.webp)
 
 **Kubernetes 和容器运行时通信的方式**
 ```text
@@ -934,7 +862,7 @@ unix:///var/run/crio/crio.sock             #基于cri-o
 
 ## 2.10 Kubernetes v1.24 之后不再支持 Docker ?
 
-![原 PDF 第 37 页插图](assets/Kubernetes架构和部署/img-11d52e9c2417fd41.png)
+![原 PDF 第 37 页插图](assets/Kubernetes架构和部署/img-11d52e9c2417fd41.webp)
 
 2014年 Docker & Kubernetes 蜜月期
 
@@ -946,12 +874,12 @@ unix:///var/run/crio/crio.sock             #基于cri-o
 
 2020年 kubernetes宣布废弃dockershim，但 Mirantis 和 Docker 宣布维护 dockershim
 
-2022年5月3日，Kubernetes v1.24正式发布，此版本提供了很多重要功能。该版本涉及46项增强功能：其中14项已升级为稳定版，15项进入beta阶段，13项则刚刚进入alpha阶段。此外，另有2项功能被弃用、2项功能被删除。v1.24 之前的 Kubernetes 版本包括与 Docker Engine 的直接集成，使用名为dockershim 的组件。  值得注意的是v1.24 的 Kubernetes 正式移除对Dockershim的支持，即默认不再支持 docker
+Kubernetes v1.24 从 kubelet 中移除了内置 dockershim，因此 kubelet 不再直接通过内置适配层连接 Docker Engine。**这不影响运行由 Docker 构建的 OCI 镜像**：节点可直接使用 containerd、CRI-O，或在确有需要时另装 cri-dockerd 连接 Docker Engine。
 
 **官方说明**
 <https://kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes/>
 
-![原 PDF 第 38 页插图](assets/Kubernetes架构和部署/img-dccbe9ca53c289e4.png)
+![原 PDF 第 38 页插图](assets/Kubernetes架构和部署/img-dccbe9ca53c289e4.webp)
 
 **移除 Dockershim 的说明**
 
@@ -996,11 +924,11 @@ Kubernetes CNCF 2022-05-03 10:40 发表于香港
 
 **Docker 的运行机制**
 
-![原 PDF 第 39 页插图](assets/Kubernetes架构和部署/img-5f08bf31ab3aa651.png)
+![原 PDF 第 39 页插图](assets/Kubernetes架构和部署/img-5f08bf31ab3aa651.webp)
 
 **Kubernetes 调用 Docker 的变化**
 
-![原 PDF 第 40 页插图](assets/Kubernetes架构和部署/img-2ce96f19b52482ab.png)
+![原 PDF 第 40 页插图](assets/Kubernetes架构和部署/img-2ce96f19b52482ab.webp)
 
 **cri-dockerd 项目**
 
@@ -1013,11 +941,11 @@ Mirantis 和 Docker 已同意合作，在 Kubernetes 之外独立维护 shim 代
 
 **Kubernetes的CRI方案**
 
-![原 PDF 第 41 页插图](assets/Kubernetes架构和部署/img-083c5662a94785bf.png)
+![原 PDF 第 41 页插图](assets/Kubernetes架构和部署/img-083c5662a94785bf.webp)
 
 方式1: Containerd
 
-默认情况下,Kubernetes在创建集群的时候,使用的就是Containerd 方式。
+containerd 是常见的 CRI 运行时，但是否默认使用它取决于节点上安装的运行时、kubeadm 配置和发行版，不应假设所有集群相同。
 
 方式2: Docker
 
@@ -1027,9 +955,7 @@ cri-dockerd 项目站点: https://github.com/Mirantis/cri-dockerd
 
 方式3: CRI-O
 
-2016年成立,2019年4月8号加入CNCF孵化。CRI-O的方式是Kubernetes创建容器最直接的一种方式。
-
-在创建集群的时候,需要借助于cri-o插件的方式来实现Kubernetes集群的创建。
+CRI-O 专为 Kubernetes 的 CRI 接口设计，可与 OCI 运行时配合创建容器。部署时先安装与 Kubernetes 版本兼容的 CRI-O，再配置 kubelet 使用其 CRI socket；它不是安装在 Docker 上的插件。
 
 {% endraw %}
 

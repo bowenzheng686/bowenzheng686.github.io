@@ -229,7 +229,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 .container mjx-container[jax="SVG"]{box-sizing:border-box!important;max-width:100%!important;overflow:visible!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]{overflow-x:auto!important;overflow-y:hidden!important;text-align:left!important;overscroll-behavior-x:contain;scrollbar-width:auto;scrollbar-gutter:auto;padding-left:3px!important;padding-right:3px!important}
 .container mjx-container[jax="SVG"][data-math-overflow="scroll"]:not([display="true"]){padding-top:8px!important;padding-bottom:8px!important}
-.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style></head>
+.container mjx-container[jax="SVG"][data-math-overflow="scroll"]:focus-visible{outline:2px solid var(--std-primary,#0d9488);outline-offset:3px}</style><link rel="stylesheet" href="../../assets/image-reader.css">
+</head>
 <body>
 <a class="kc-skip" href="#main-content">跳到正文</a><nav class="kc-global-nav" data-kc-unified="knowcard-unified-v1"><a href="index.html" target="_blank" rel="noopener" data-reading-offline-home="true">⌂ 科目首页</a><span class="kc-current">Linux系统 · 日志管理与journald</span><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" title="上一章">← 上一章</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" title="下一章">下一章 →</a><details><summary>板块目录</summary><div class="kc-chapter-menu"><a href="01-Linux%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%8F%91%E8%A1%8C%E7%89%88%E9%80%89%E6%8B%A9.html" target="_blank" rel="noopener" title="Linux概述与发行版选择">Linux概述与发行版选择</a><a href="02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html" target="_blank" rel="noopener" title="文件系统层次结构">文件系统层次结构</a><a href="03-%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C.html" target="_blank" rel="noopener" title="文件与目录操作">文件与目录操作</a><a href="04-%E7%94%A8%E6%88%B7%E4%B8%8E%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="用户与权限管理">用户与权限管理</a><a href="05-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="进程管理与监控">进程管理与监控</a><a href="06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="软件包管理">软件包管理</a><a href="07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="systemd服务管理">systemd服务管理</a><a href="08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html" target="_blank" rel="noopener" title="Shell脚本基础">Shell脚本基础</a><a href="09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html" target="_blank" rel="noopener" title="文本处理三剑客">文本处理三剑客</a><a href="10-%E7%A3%81%E7%9B%98%E4%B8%8E%E5%AD%98%E5%82%A8%E7%AE%A1%E7%90%86.html" target="_blank" rel="noopener" title="磁盘与存储管理">磁盘与存储管理</a><a href="11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html" target="_blank" rel="noopener" title="内核模块与编译">内核模块与编译</a><a href="12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html" target="_blank" rel="noopener" title="启动流程与GRUB">启动流程与GRUB</a><a href="13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html" target="_blank" rel="noopener" aria-current="page" title="日志管理与journald">日志管理与journald</a><a href="14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html" target="_blank" rel="noopener" title="安全与防火墙">安全与防火墙</a><a href="15-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5.html" target="_blank" rel="noopener" title="备份与恢复策略">备份与恢复策略</a><a href="16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html" target="_blank" rel="noopener" title="性能调优与监控">性能调优与监控</a><a href="17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html" target="_blank" rel="noopener" title="容器基础Docker">容器基础Docker</a><a href="18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html" target="_blank" rel="noopener" title="Linux实战速查手册">Linux实战速查手册</a></div></details></nav>
 
@@ -262,14 +263,14 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 <div class="card">
   <div class="card-header"><span class="badge badge-concept">概</span><h3>从 syslog 协议到二进制 journald —— 日志的三层架构</h3><span class="tag tag-required">核心</span></div>
   <div class="card-body">
-    <h4>问题：一行 echo "error" 到底经历了什么才出现在 /var/log/syslog 里？</h4>
-    <p>Linux 的日志体系是一套分层的流水线，理解它才能知道"日志去哪了"以及"为什么找不到了"：</p>
+    <h4>问题：程序写出的日志最终去了哪里？</h4>
+    <p>先区分输出来源：交互式终端里的 <code>echo "error"</code> 只写到终端，不会自动进入 <code>/var/log/syslog</code>；systemd 服务的 stdout/stderr、程序调用 syslog API 或 <code>logger</code>、应用自行写文件，分别走不同路径。确认来源后再找收集器和存储位置：</p>
 
-    <p><strong>第一层：【产生者】应用程序或系统服务。</strong>任何进程都可以调用 <code>syslog(3)</code> 这个 C 库函数，把一条消息（附上"级别"如 ERROR/WARNING 和"类别"如 auth/mail）发送给系统日志服务。这就是 syslog 协议的核心——一个通用的日志投递标准，不绑定任何具体实现。还有个专门用来在 shell 脚本里写日志的命令 <code>logger "备份完成"</code>，背后调用的也是同一个 syslog 函数。</p>
+    <p><strong>产生者：应用程序或系统服务。</strong>程序可以调用 <code>syslog(3)</code> 按 facility 和 severity 投递消息，也可以写 stdout/stderr 或自行维护日志文件。Shell 中用 <code>logger "备份完成"</code> 可主动发出 syslog 消息；这些渠道不是同一件事。</p>
 
-    <p><strong>第二层：【收集者】日志守护进程。</strong>传统上这是 <code>rsyslogd</code> 或 <code>syslog-ng</code>。它们监听 UNIX domain socket <code>/dev/log</code>，接收所有进程投递过来的日志，然后根据 <code>/etc/rsyslog.conf</code> 中的规则把日志分发到不同文件。比如所有 <code>auth.*</code>（认证相关）写入 <code>/var/log/auth.log</code>，所有 <code>*.*</code> 写入 <code>/var/log/syslog</code>。rsyslog 同时支持 UDP/514 端口接收远程设备的日志，这就是为什么你可以把整机房的交换机日志集中到一台服务器管理。</p>
+    <p><strong>收集者：journald、rsyslog 或 syslog-ng。</strong>在 systemd 系统上，journald 通常接收服务标准流、内核及 syslog 消息；rsyslog 可从 journal 或本地 socket 接收消息，按发行版规则写入 <code>/var/log/syslog</code>、<code>/var/log/messages</code> 等文本文件。远程设备若要经 UDP/514 或 TCP/TLS 集中投递，需要另外启用并保护相应监听配置，不能假定默认开放。</p>
 
-    <p><strong>第三层：【存储者】journald + 文本文件。</strong>现代 systemd 系统里引入了一个全新的二进制日志系统——<code>systemd-journald</code>。它不仅收集传统的 syslog 消息，还收集所有服务的标准输出/标准错误（stdout/stderr）、内核消息、coredump 信息。journald 把全部日志存入 <code>/var/log/journal/</code> 下的二进制文件，通过 <code>journalctl</code> 提供统一的检索入口。同时 journald 可以转发给 rsyslog，所以最终两份——二进制 journald + 文本 /var/log/*——会同时存在。一些发行版（如 Ubuntu）默认保留了 rsyslog 做文本日志输出，而 Fedora/Arch 可能只依赖 journald。</p>
+    <p><strong>存储位置：journal 或应用/系统文本文件。</strong>journal 可能写在持久目录 <code>/var/log/journal/</code>，也可能写在重启即失的 <code>/run/log/journal/</code>；rsyslog 是否额外写文本文件取决于安装和规则。应用自己的 access/error 日志则可能完全不经过 journal。用 <code>journalctl -u 服务名</code>、<code>systemctl status rsyslog</code> 和应用配置逐项核对，不能预设一定存在两份日志。</p>
 
     <div class="box box-info">
       <strong>一句总结</strong><br>
@@ -279,7 +280,7 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
     </div>
 
     <h4>为什么 journald 要用二进制？</h4>
-    <p>文本日志对人类友好，但对机器不好。如果你需要在上百万条 syslog 中找到"昨天下午3点到4点之间由 nginx 产生的所有错误日志"，用 <code>grep</code> 是一条一条扫描文本——O(n)。journald 的二进制格式包含索引，按时间、服务、级别、进程 ID 查询都是 O(log n) 级别的。同时二进制存储每条日志的元数据（PID、UID、GID、SELinux context、cgroup 路径），这些是 syslog 文本格式里不可能完整记录的。</p>
+<p>文本日志易于直接阅读和加工；journal 则保存结构化字段，便于按时间、Unit、优先级及进程 ID 缩小范围。字段检索通常比反复扫描大文本文件更方便，但查询耗时取决于数据量、存储介质、过滤条件和缓存，不能笼统保证某个复杂度或速度。journal 还可附带 PID、UID、cgroup 等元数据；文本格式也能记录部分字段，只是结构化程度因格式而异。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="3ec9964917922b477c4d6f0c3c57c02066cc840cf4ebd5087d36b25ebd15718b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看当前系统日志收集架构</span>
 <span class="hljs-built_in">systemctl</span> status rsyslog    <span class="hljs-comment"># 传统 syslog 守护进程</span>
@@ -302,7 +303,7 @@ logger<span class="hljs-attr"> -p</span> auth.notice <span class="hljs-string">"
 
     <p><strong>Facility（设施类别）：</strong>日志来自哪个子系统。常见的有 <code>auth</code>（认证）、<code>cron</code>（定时任务）、<code>daemon</code>（守护进程）、<code>kern</code>（内核）、<code>mail</code>（邮件）、<code>local0</code>~<code>local7</code>（留给应用程序自定义）。Nginx 一般用 <code>local0</code>，数据库用 <code>local1</code>。</p>
 
-    <p><strong>Severity（严重级别/优先级）：</strong>从小到大依次为 <code>debug</code> → <code>info</code> → <code>notice</code> → <code>warning</code> → <code>err</code> → <code>crit</code> → <code>alert</code> → <code>emerg</code>。数字越小越不重要（debug=7），数字越大越严重（emerg=0）。</p>
+<p><strong>Severity（严重级别/优先级）：</strong>按严重程度从低到高依次为 <code>debug(7)</code> → <code>info(6)</code> → <code>notice(5)</code> → <code>warning(4)</code> → <code>err(3)</code> → <code>crit(2)</code> → <code>alert(1)</code> → <code>emerg(0)</code>。<strong>数字越小，级别越严重</strong>；例如 <code>journalctl -p err</code> 包含 err 及更严重的消息。</p>
 
     <div class="table-wrap">
     <table>
@@ -323,7 +324,7 @@ logger<span class="hljs-attr"> -p</span> auth.notice <span class="hljs-string">"
 </div>
 
 
-<figure class="merged-illustration" data-image-id="chapter13/01-linux-logging-pipeline.png"><img src="assets/chapter13/01-linux-logging-pipeline.png" alt="展示应用、syslog、内核与 systemd 日志进入 journald/rsyslog，再到查询、文本文件和远程服务器的路径。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第2节：关键日志文件速查 ═══════════ -->
+<figure class="merged-illustration" data-image-id="chapter13/01-linux-logging-pipeline.png"><img src="assets/chapter13/01-linux-logging-pipeline.webp" alt="展示应用、syslog、内核与 systemd 日志进入 journald/rsyslog，再到查询、文本文件和远程服务器的路径。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第2节：关键日志文件速查 ═══════════ -->
 <h2 class="section-title" id="sec13-2"><span class="icon">2</span>关键日志文件速查</h2>
 
 <div class="card">
@@ -408,7 +409,7 @@ grep log_error /etc/mysql/mysql.conf.d/mysqld.cnf
   <div class="card-header"><span class="badge badge-implement">实</span><h3>journalctl —— systemd 时代的日志瑞士军刀</h3><span class="tag tag-required">核心</span></div>
   <div class="card-body">
     <h4>问题：journalctl 和 grep 查日志的根本区别在哪？</h4>
-    <p><code>grep</code> 是"逐行扫描文本文件"——对于 5GB 的 syslog，一个关键词搜索就要读完整个文件。<code>journalctl</code> 用的是"数据库查询"——二进制索引让按时间范围、按服务名、按优先级的查询都在毫秒级完成。一个直观的对比：在 10GB 的日志中找某个服务的所有错误，grep 可能要 2 分钟，journalctl 只要 0.5 秒——差了几个数量级。</p>
+<p><code>grep</code> 适合在已知文本文件中搜索关键字；<code>journalctl</code> 适合在 journal 中组合时间、Unit 和优先级等结构化条件。先用 <code>journalctl -u 服务名 --since "1 hour ago" -p err</code> 缩小范围，再按需搜索消息正文。不要把示例耗时当成通用性能保证，也不要在只写文件的应用日志中期待 journal 能查到全部内容。</p>
 
     <h4>基础查询：最常用的 10 个命令</h4>
 
@@ -469,7 +470,7 @@ grep log_error /etc/mysql/mysql.conf.d/mysqld.cnf
     <p>如果你需要把 JSON 日志批量导入 ELK，可以用 <code>journalctl -o json</code> 管道输出给 Filebeat 或 Logstash 的 stdin 输入。如果你用 Grafana Loki，可以用 <code>promtail</code> 的 journal 采集器直接读取 journald 的二进制文件——不需要额外导出步骤。</p>
 
     <h4>日志持久化配置</h4>
-    <p>默认情况下 journald 把日志存在 <code>/run/log/journal/</code>（tmpfs——内存文件系统），重启就消失了。要持久化到磁盘，需要创建 <code>/var/log/journal/</code> 目录并设置权限：</p>
+<p>journald 默认的 <code>Storage=auto</code> 根据 <code>/var/log/journal/</code> 是否存在决定是否持久化；不少发行版已预建该目录。先用 <code>journalctl --list-boots</code> 判断重启前日志是否可见，再决定是否创建目录和调整 <code>journald.conf</code>：</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="e94d12b3cfd18207947c8ed9f08e9e04188218a18a5b779e422f469c8ecea8a8"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 创建持久化目录</span>
 sudo <span class="hljs-built_in">mkdir</span><span class="hljs-attr"> -p</span> /var/log/journal
@@ -495,7 +496,7 @@ sudo <span class="hljs-built_in">systemctl</span> restart systemd-journald
 </div>
 
 
-<figure class="merged-illustration" data-image-id="chapter13/02-journal-structured-query.png"><img src="assets/chapter13/02-journal-structured-query.png" alt="连接 Journal 字段、四类筛选入口与易失/持久化存储选择。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第4节：logrotate轮转 ═══════════ -->
+<figure class="merged-illustration" data-image-id="chapter13/02-journal-structured-query.png"><img src="assets/chapter13/02-journal-structured-query.webp" alt="连接 Journal 字段、四类筛选入口与易失/持久化存储选择。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第4节：logrotate轮转 ═══════════ -->
 <h2 class="section-title" id="sec13-4"><span class="icon">4</span>logrotate 日志轮转</h2>
 
 <div class="card">
@@ -552,7 +553,7 @@ sudo logrotate<span class="hljs-attr"> -d</span> /etc/logrotate.d/nginx
 </div>
 
 
-<figure class="merged-illustration" data-image-id="chapter13/03-logrotate-file-descriptor.png"><img src="assets/chapter13/03-logrotate-file-descriptor.png" alt="解释轮转、压缩、创建新文件、发信号和应用重新打开 fd 的完整链路。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第5节：错误定位实战 ═══════════ -->
+<figure class="merged-illustration" data-image-id="chapter13/03-logrotate-file-descriptor.png"><img src="assets/chapter13/03-logrotate-file-descriptor.webp" alt="解释轮转、压缩、创建新文件、发信号和应用重新打开 fd 的完整链路。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════ 第5节：错误定位实战 ═══════════ -->
 <h2 class="section-title" id="sec13-5"><span class="icon">5</span>错误定位实战</h2>
 
 <div class="card">
@@ -568,7 +569,7 @@ sudo logrotate<span class="hljs-attr"> -d</span> /etc/logrotate.d/nginx
 <span class="hljs-comment"># 传统 syslog 文件用法——用 grep 的时间正则</span>
 grep <span class="hljs-string">'Jul 31 03:0[0-9]'</span> /var/log/syslog</code></pre>
 
-    <p><strong>板斧二：查错误，看上下游。</strong>Web 返回 502 说明反向代理（Nginx）能连到上游服务（PHP-FPM/后端 API），但上游返回了无效响应。所以要先看 Nginx 的错误日志——它的视角是"上游怎么了"，再看上游服务自己的日志——它的视角是"我怎么了"。</p>
+<p><strong>板斧二：查错误，看上下游。</strong>502 表示网关未从上游获得有效响应，原因可能是连接失败、连接中断、协议错误或上游异常，不能据此断定已经成功连上。先查 Nginx 错误日志中的具体报错、上游地址与时间，再对照上游进程状态、监听端口和应用日志。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="4106c15250971ff8a4bffa54d824663c1af83cfc7e8703f8968ed624b39b15aa"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 1. Nginx 错误日志——找上游连接失败的线索</span>
 grep <span class="hljs-string">'upstream'</span> /var/log/nginx/error.log | <span class="hljs-built_in">tail</span> -50
@@ -648,7 +649,7 @@ awk <span class="hljs-string">'{print $10, $7}'</span> /var/log/nginx/access.log
   </div>
 </div>
 
-<figure class="merged-illustration" data-image-id="chapter13/04-log-root-cause-tracing.png"><img src="assets/chapter13/04-log-root-cause-tracing.png" alt="用统一时间窗、调用链和 request-id 将上游现象收敛到下游根因。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
+<figure class="merged-illustration" data-image-id="chapter13/04-log-root-cause-tracing.png"><img src="assets/chapter13/04-log-root-cause-tracing.webp" alt="用统一时间窗、调用链和 request-id 将上游现象收敛到下游根因。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- /container -->
 
 <section class="kc-acronyms" data-kc-acronyms=""><div class="kc-panel"><h2>注解</h2><div class="kc-acronym-grid kc-annotation-list"><p class="kc-annotation-line"><b>JSON</b> · JavaScript Object Notation JavaScript 对象表示法</p></div></div></section>
 </div><footer class="site-footer">
@@ -656,4 +657,6 @@ awk <span class="hljs-string">'{print $10, $7}'</span> /var/log/nginx/access.log
   <p style="margin-top:4px">日志管理 ——"没有日志的运维，就像蒙着眼睛开飞机"</p>
 </footer>
 
-<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script></body></html>
+<script id="reading-code-init">document.addEventListener('DOMContentLoaded',function(){if(!window.hljs)return;document.querySelectorAll('pre code:not([data-highlighted]):not(.nohighlight)').forEach(function(e){var l=(e.className.match(/language-([\w-]+)/)||[])[1];if(!l||hljs.getLanguage(l))hljs.highlightElement(e);});});</script><script src="../../assets/image-original-widths.js" defer></script>
+<script src="../../assets/image-reader.js" defer></script>
+</body></html>

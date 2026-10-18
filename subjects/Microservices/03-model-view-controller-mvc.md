@@ -13,24 +13,18 @@ syntax_highlight: true
 # 03 MVC 模型—视图—控制器
 ### 1.3 MVC
 
-JAVA的 MVC
+MVC（Model–View–Controller）将输入处理、业务数据和展示组织成不同职责。它描述的是**应用内部**的代码结构，不决定应用必须是单体，也不要求视图一定由服务端模板渲染。前后端分离的后端接口仍可采用 MVC 组织方式。
 
-MVC是模型(Model)、视图(View)、控制器(Controller)的简写，是一种软件设计规范。是将业务逻辑、数据、显示分离的方法来组织代码。 MVC主要作用是降低了视图与业务逻辑间的双向偶合。
+以“查看订单”为例，请求先进入 **Controller**：校验输入、调用应用服务并选择响应形式；**Model** 承载订单数据和相关业务规则，实际项目常进一步分为领域对象、服务与持久化层；**View** 负责将结果呈现给用户，可以是 HTML 模板，也可以是供前端使用的 JSON 表示。DAO 与 Value Object 分别负责数据访问和值表达，并不是 Model 的同义词。
 
-MVC不是一种设计模式，MVC是一种架构模式。当然不同的MVC存在差异。
+在 Java Web 项目中，Spring MVC 的 Controller 处理路由和请求，视图可以采用 Thymeleaf 模板或 JSON 响应。Django 常用 **MTV** 术语：Model 管理数据，Template 负责展示，View 接收请求并准备响应；Django View 在职责上更接近 MVC 的 Controller。
 
-MVC 采用template技术实现前端展示，前端和后端最终编译和整合为一个单体应用，和前后端分离方式分为两个独立项目是不同的。
-
-Model（模型）：数据模型，提供要展示的数据，因此包含数据和行为，可以认为是领域模型或JavaBean组件（包含数据和行为），不过现在一般都分离开来：Value Object（数据Dao） 和 服务层（行为Service）。也就是模型提供了模型数据查询和模型数据的状态更新等功能，包括数据和业务。 View（视图）：负责进行模型的展示，一般就是我们见到的用户界面，客户想看到的东西。可通过JSP实现 Controller（控制器）：接收用户请求，委托给模型进行处理（状态改变），处理完毕后把返回的模型数据返回给视图，由视图负责展示。也就是说控制器做了个调度员的工作。最终表现为Servlet
-
-Python的 MTV
-
-M: Model 数据模型，负责与数据库交互， T：Template 模板展示，负责呈现内容到浏览器，一般为.html文件 V:  view 流程逻辑，负责接收请求，相当于处理中枢，获取数据（来自用户） ，经过处理后选择合适的结果返回给用户。
+下一篇 SOA 讨论**系统之间**的服务边界；MVC 讨论**应用内部**的职责分工。两者不在同一个层面，也不是先后替代关系。
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/Microservices/02-monolithic-architecture.html' | relative_url }}">← Previous: Monolithic Architecture</a>
-  <a href="{{ '/subjects/Microservices/' | relative_url }}">Back to Microservices Index</a>
-  <a href="{{ '/subjects/Microservices/04-service-oriented-architecture-soa.html' | relative_url }}">Next: Service-Oriented Architecture (SOA) →</a>
+  <a href="{{ '/subjects/Microservices/02-monolithic-architecture.html' | relative_url }}">← 上一篇：单体(巨石)架构</a>
+  <a href="{{ '/subjects/Microservices/' | relative_url }}">返回微服务架构目录</a>
+  <a href="{{ '/subjects/Microservices/04-service-oriented-architecture-soa.html' | relative_url }}">下一篇：SOA 面向服务架构 →</a>
 </nav>

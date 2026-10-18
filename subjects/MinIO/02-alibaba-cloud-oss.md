@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "MinIO 对象存储 · 阿里云的OSS"
+title: "MinIO 对象存储 · 以阿里云 OSS 理解对象存储"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
@@ -10,71 +10,64 @@ syntax_highlight: true
 
 {% raw %}
 
-# 02 阿里云的OSS
-### 1.2 阿里云的OSS
+# 02 以阿里云 OSS 理解对象存储
 
-阿里云等公有云提供了OSS服务
+在学习 MinIO 之前，先用公有云对象存储作参照。阿里云 OSS（Object Storage Service）把文件作为 **Object（对象）** 存入 **Bucket（存储空间）**，应用通过 API 上传、下载和管理对象。它与本地文件系统或传统块设备的访问方式不同：通常按对象键读写，而不是直接修改文件中的某一小段。
 
-<https://www.aliyun.com/product/oss>
+产品介绍：<https://www.aliyun.com/product/oss>
 
-什么是 OSS
+原资料的视频介绍：
 
 <https://static-aliyun-doc.oss-cn-hangzhou.aliyuncs.com/file-manage-files/zh-CN/20220727/ttob/OSS%E6%96%B0%E7%89%88%E4%BA%A7%E5%93%81%E4%BB%8B%E7%BB%8D%EF%BC%88%E4%B8%AD%E6%96%87%EF%BC%89.mp4>
 
-阿里云对象存储OSS（Object Storage Service）是一款海量、安全、低成本、高可靠的云存储服务，可提供99.9999999999%（12个9）的数据持久性，99.995%的数据可用性。多种存储类型供选择，全面优化存储成本。
+对象存储适合图片、音视频、备份和日志归档等非结构化数据。服务通常提供多种存储类型，读写费用、存储费用与取回时间各不相同。原资料列出的持久性和可用性百分比是特定产品或服务等级的指标，不能理解为单个对象绝不会丢失、服务永不间断；生产使用仍需核对当前服务协议并设计备份。
 
-OSS具有与平台无关的RESTful API接口，您可以在任何应用、任何时间、任何地点存储和访问任意类型的数据。
+### 重要能力
 
-阿里云 OSS重要特性
+#### 版本控制
 
-版本控制
+对 Bucket 启用版本控制后，覆盖或删除对象可留下历史版本，便于恢复误操作。但历史版本继续占用空间并可能产生费用，应配合生命周期策略管理；它也不能代替异地备份。
 
-版本控制是针对存储空间（Bucket）级别的数据保护功能。开启版本控制后，针对数据的覆盖和删除操作将会以历史版本的形式保存下来。您在错误覆盖或者删除文件（Object）后，能够将Bucket 中存储的Object恢复到任意时刻的历史版本。更多信息，请参见版本控制概述。
+#### Bucket Policy
 
-Bucket Policy
+Bucket Policy 用于描述哪些身份能对 Bucket 或其中的对象执行哪些操作，可配合身份与访问管理策略实现跨账号或细粒度授权。默认应采用最小权限：开放匿名读取前，确认对象确实可以公开；写入、删除权限通常只授予指定身份。
 
-Bucket拥有者可通过Bucket Policy授权不同用户以何种权限访问指定的OSS资源。例如您需要进行跨账号或对匿名用户授权访问或管理整个Bucket或Bucket内的部分资源，或者需要对同账号下的不同RAM用户授予访问或管理Bucket资源的不同权限，例如只读、读写或完全控制的权限等。关于配置Bucket Policy的具体操作，请参见通过Bucket Policy授权用户访问指定资源。
+#### 跨区域复制
 
-跨区域复制
+跨区域复制把源 Bucket 的对象按规则异步同步到另一地域，可用于容灾或跨地域分发。异步意味着存在复制延迟；删除标记、历史版本和加密对象如何复制，也应在配置时逐项核对。它与版本控制、备份的职责不同。
 
-跨区域复制（Cross-Region Replication）是跨不同OSS数据中心（地域）的Bucket自动、异步 （近实时）复制Object，它会将Object的创建、更新和删除等操作从源存储空间复制到不同区域的目标存储空间。跨区域复制功能满足Bucket跨区域容灾或用户数据复制的需求。更多信息，请参见跨区域复制概述。
+#### 数据加密
 
-数据加密
+**服务端加密**由存储服务在接收对象后加密保存，读取时按授权解密；应明确密钥由谁管理。**客户端加密**在上传之前由应用加密，密钥管理和解密责任也留在应用侧。两者都不能代替传输链路上的 TLS 和访问控制。
 
-服务器端加密：上传文件时，OSS对收到的文件进行加密，再将得到的加密文件持久化保存；下载文件时，OSS自动将加密文件解密后返回给用户，并在返回的HTTP请求Header中，声明该文件进行了服务器端加密。更多信息，请参见服务器端加密。
+#### 生命周期与保留
 
-客户端加密：将文件上传到OSS之前在本地进行加密。更多信息，请参见客户端加密。
+对象的保留时间由生命周期规则、人工删除、版本控制与账号状态等共同决定。“默认没有自动过期”并不意味着永久保存。对临时文件、旧版本和归档数据，应设置符合业务和合规要求的保留周期。
 
-数据永久保存
+### 典型应用场景
 
-OSS默认永久保存上传到Bucket的数据
+#### 图片、音视频与日志
 
-阿里云 OSS应用场景
+应用可把上传的图片、音视频及日志保存为对象，再通过 API 读取。终端直传时，应使用有范围和有效期限制的临时凭证或签名，而不是在客户端内置长期密钥。上传方式还要结合文件大小选择普通上传、分片上传等接口。
 
-图片和音视频等应用的海量存储
+![MinIO 对象存储第 6 页插图](assets/img-3f9d0e19b5a4531c.webp)
 
-OSS可用于图片、音视频、日志等海量文件的存储。各种终端设备、Web网站程序、移动应用可以直接向OSS写入或读取数据。
+#### 静态资源分发
 
-OSS支持流式写入和文件写入两种方式。
+网站或移动应用可把图片、脚本和安装包等静态资源放在对象存储，并按访问区域与流量情况接入 CDN。动态请求仍由应用服务处理。采用 CDN 后，还要考虑缓存过期、文件版本命名和源站访问权限，否则更新资源时可能继续返回旧文件。
 
-![MinIO 对象存储第 6 页插图](assets/img-3f9d0e19b5a4531c.png)
+![MinIO 对象存储第 6 页插图](assets/img-2f444147c2633e5e.webp)
 
-网页或者移动应用的静态和动态资源分离
+#### 上传后的数据处理
 
-利用海量互联网带宽，OSS可以实现海量数据的互联网并发下载。OSS提供原生的传输加速功能， 支持上传加速、下载加速，提升跨国、跨洋数据上传、下载的体验。同时，OSS也可以结合CDN产品，提供静态内容存储、分发到边缘节点的解决方案，利用CDN边缘节点缓存的数据，提升同一个文件被同一地区客户大量重复并发下载的体验。
+对象上传后，可按需求触发图片缩放、视频转码或其他云端处理。原始对象与处理结果应分别规划存储类型、生命周期和权限，避免处理链路失败后找不到原件。
 
-![MinIO 对象存储第 6 页插图](assets/img-2f444147c2633e5e.png)
-
-云端数据处理
-
-上传文件到OSS后，可以配合智能媒体管理服务和图片处理服务进行云端的数据处理。
-
-![MinIO 对象存储第 7 页插图](assets/img-7f88bedd26dae307.png)
+![MinIO 对象存储第 7 页插图](assets/img-7f88bedd26dae307.webp)
 
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">
-  <a href="{{ '/subjects/MinIO/01-distributed-storage-use-cases.html' | relative_url }}">← Previous: Distributed Storage Use Cases</a>
-  <a href="{{ '/subjects/MinIO/' | relative_url }}">Back to MinIO Object Storage Index</a>
-  <a href="{{ '/subjects/MinIO/03-introduction-to-minio.html' | relative_url }}">Next: Introduction to MinIO →</a>
+  <a href="{{ '/subjects/MinIO/01-distributed-storage-use-cases.html' | relative_url }}">← 上一篇：分布式存储应用场景</a>
+  <a href="{{ '/subjects/MinIO/' | relative_url }}">返回 MinIO 对象存储专题目录</a>
+  <a href="{{ '/subjects/MinIO/03-introduction-to-minio.html' | relative_url }}">下一篇：MinIO 简介 →</a>
 </nav>
