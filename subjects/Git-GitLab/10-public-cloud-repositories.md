@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Public Cloud Repositories"
+title: "Git 与 GitLab 版本控制 · 公有云仓库"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 10 Public Cloud Repositories
+# 10 公有云仓库
 ### 2.4 公有云仓库
 
 git 创建本地仓库后,可以将本地仓库和远程仓库进行同步.实现网络共享和备份

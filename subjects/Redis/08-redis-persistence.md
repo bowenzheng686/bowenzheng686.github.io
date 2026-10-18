@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Persistence"
+title: "Redis 数据库 · Redis 持久化"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 08 Redis Persistence
+# 08 Redis 持久化
 ### 2.5 Redis 持久化
 
 Redis 是基于内存型的NoSQL, 和MySQL是不同的,使用内存进行数据保存如果想实现数据的持久化,Redis也也可支持将内存数据保存到硬盘文件中

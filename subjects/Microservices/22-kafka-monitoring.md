@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Kafka Monitoring"
+title: "微服务架构 · Kafka 监控"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 22 Kafka Monitoring
+# 22 Kafka 监控
 ### 3.10 Kafka 监控
 
 Prometheus 监控 kafka

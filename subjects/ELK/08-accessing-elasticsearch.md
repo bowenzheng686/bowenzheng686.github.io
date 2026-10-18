@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Accessing Elasticsearch"
+title: "ELK 日志分析 · Elasticsearch 访问"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 08 Accessing Elasticsearch
+# 08 Elasticsearch 访问
 ### 2.4 Elasticsearch 访问
 
 官方文档

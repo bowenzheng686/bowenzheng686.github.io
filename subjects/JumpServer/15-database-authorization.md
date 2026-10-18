@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Database Authorization"
+title: "JumpServer 堡垒机 · 数据库授权"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 15 Database Authorization
+# 15 数据库授权
 ### 3.5 数据库授权
 
 注意: JumpServer v2.5 此功能有Bug ,可以选择 V2.4版或者其它版本

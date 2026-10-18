@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Introduction to Kibana"
+title: "ELK 日志分析 · Kibana 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 20 Introduction to Kibana
+# 20 Kibana 介绍
 ## 5 Kibana 图形显示
 
 ### 5.1 Kibana 介绍

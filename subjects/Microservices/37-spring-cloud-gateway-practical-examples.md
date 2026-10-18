@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Spring Cloud Gateway Practical Examples"
+title: "微服务架构 · Spring Cloud Gateway 实战案例"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 37 Spring Cloud Gateway Practical Examples
+# 37 Spring Cloud Gateway 实战案例
 ### 7.4 Spring Cloud Gateway 实战案例
 
 ### 案例1: mall-microservice 项目

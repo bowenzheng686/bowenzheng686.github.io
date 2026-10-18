@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Introduction to Spring Cloud Gateway"
+title: "微服务架构 · Spring Cloud Gateway 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 34 Introduction to Spring Cloud Gateway
+# 34 Spring Cloud Gateway 介绍
 ## 7 Spring Cloud Gateway（重点）
 
 ### 7.1 Spring Cloud Gateway 介绍

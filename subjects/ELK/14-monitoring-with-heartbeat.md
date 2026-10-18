@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Monitoring with Heartbeat"
+title: "ELK 日志分析 · 利用 Heartbeat 监控"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 14 Monitoring with Heartbeat
+# 14 利用 Heartbeat 监控
 ### 3.2 利用 Heartbeat 监控
 
 heartbeat 用来定时探测服务是否正常运行。支持也支持TLS、身份验证和代理

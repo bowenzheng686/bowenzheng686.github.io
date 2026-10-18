@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Developing with Spring Cloud Gateway"
+title: "微服务架构 · Spring Cloud Gateway 开发"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 36 Developing with Spring Cloud Gateway
+# 36 Spring Cloud Gateway 开发
 ### 7.3 Spring Cloud Gateway 开发
 
 ### 添加依赖

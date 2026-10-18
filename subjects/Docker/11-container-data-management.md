@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Container Data Management"
+title: "Docker 容器技术 · 容器的数据管理介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 11 Container Data Management
+# 11 容器的数据管理介绍
 ## 3 Docker 数据管理
 
 ![Docker 容器技术第 242 页插图](assets/img-0b99c8d869445039.png)

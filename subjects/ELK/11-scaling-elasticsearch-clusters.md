@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Scaling Elasticsearch Clusters"
+title: "ELK 日志分析 · Elasticsearch 集群扩容和缩容"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 11 Scaling Elasticsearch Clusters
+# 11 Elasticsearch 集群扩容和缩容
 ### 2.7 Elasticsearch 集群扩容和缩容
 
 ### 集群扩容

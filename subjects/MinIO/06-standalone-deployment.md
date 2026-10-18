@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Standalone Deployment"
+title: "MinIO 对象存储 · 单机部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 06 Standalone Deployment
+# 06 单机部署
 ### 2.2 单机部署
 
 ### 单机部署说明

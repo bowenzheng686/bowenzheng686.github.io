@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Container Memory Limits"
+title: "Docker 容器技术 · 容器的内存限制"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 34 Container Memory Limits
+# 34 容器的内存限制
 ### 7.3 容器的内存限制
 
 Docker 可以强制执行硬性内存限制，即只允许容器使用给定的内存大小。

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Cross-Host Container Networking"
+title: "Docker 容器技术 · 实现跨宿主机的容器之间网络互联（了解）"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 17 Cross-Host Container Networking
+# 17 实现跨宿主机的容器之间网络互联（了解）
 ### 4.4 实现跨宿主机的容器之间网络互联（了解）
 
 同一个宿主机之间的各个容器之间是可以直接通信的，但是如果访问到另外一台宿主机的容器，默认是不能通信的

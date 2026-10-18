@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Installing Logstash"
+title: "ELK 日志分析 · Logstash 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 17 Installing Logstash
+# 17 Logstash 安装
 ### 4.2 Logstash 安装
 
 安装要求

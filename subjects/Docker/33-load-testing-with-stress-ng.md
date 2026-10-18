@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Load Testing with Stress-ng"
+title: "Docker 容器技术 · Stress-ng 压力测试工具"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 33 Load Testing with Stress-ng
+# 33 Stress-ng 压力测试工具
 ### 7.2 Stress-ng 压力测试工具
 
 ### Stress-ng 工具介绍

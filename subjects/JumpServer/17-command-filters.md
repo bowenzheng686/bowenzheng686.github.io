@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Command Filters"
+title: "JumpServer 堡垒机 · 命令过滤器"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 17 Command Filters
+# 17 命令过滤器
 ### 3.7 命令过滤器
 
 使用命令过滤器可以禁止用户执行特定的危险命令,防止误操作或恶意行为

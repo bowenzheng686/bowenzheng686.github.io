@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Configuration Files"
+title: "Redis 数据库 · Redis 配置文件说明"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 05 Redis Configuration Files
+# 05 Redis 配置文件说明
 ### 2.2 Redis 配置文件说明
 
 ![Redis 数据库第 62 页插图](assets/img-6709bda6922f6f4c.png)

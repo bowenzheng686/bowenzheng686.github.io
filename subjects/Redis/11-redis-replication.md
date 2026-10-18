@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Replication"
+title: "Redis 数据库 · Redis 主从复制"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 11 Redis Replication
+# 11 Redis 主从复制
 ## 3 Redis 集群与高可用
 
 Redis单机服务存在数据和服务的单点问题,而且单机性能也存在着上限,可以利用Redis的集群相关技术来解决这些问题.

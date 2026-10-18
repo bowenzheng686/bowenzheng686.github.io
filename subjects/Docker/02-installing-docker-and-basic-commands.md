@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Installing Docker and Basic Commands"
+title: "Docker 容器技术 · Docker 安装及基础命令介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 02 Installing Docker and Basic Commands
+# 02 Docker 安装及基础命令介绍
 ### 1.2 Docker 安装及基础命令介绍
 
 ### Docker 版本说明

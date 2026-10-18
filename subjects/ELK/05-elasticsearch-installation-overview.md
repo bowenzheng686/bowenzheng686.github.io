@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Elasticsearch Installation Overview"
+title: "ELK 日志分析 · Elasticsearch 安装说明"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 05 Elasticsearch Installation Overview
+# 05 Elasticsearch 安装说明
 ## 2 Elasticsearch 部署和管理
 
 Elasticsearch 是一个分布式的免费开源搜索和分析引擎，适用于包括文本、数字、地理空间、结构化和非结构化数据等在内的所有类型的数据

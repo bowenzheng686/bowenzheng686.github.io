@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Introduction to MinIO"
+title: "MinIO 对象存储 · MinIO介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 03 Introduction to MinIO
+# 03 MinIO介绍
 ### 1.3 MinIO介绍
 
 MinIO 是GlusterFS创始人之一Anand Babu Periasamy发布的新的开源项目。

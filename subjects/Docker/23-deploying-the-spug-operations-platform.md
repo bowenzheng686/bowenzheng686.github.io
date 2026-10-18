@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Deploying the Spug Operations Platform"
+title: "Docker 容器技术 · 实战案例: 搭建运维平台 Spug"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 23 Deploying the Spug Operations Platform
+# 23 实战案例: 搭建运维平台 Spug
 ### 5.6 实战案例: 搭建运维平台 Spug
 
 Spug是面向中小型企业设计的轻量级无Agent的自动化运维平台，整合了主机管理、主机批量执行、主机在线终端、文件在线上传下载、应用发布部署、在线任务计划、配置中心、监控、报警等一系列功能。

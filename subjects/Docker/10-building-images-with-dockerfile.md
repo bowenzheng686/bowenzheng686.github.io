@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Building Images with Dockerfile"
+title: "Docker 容器技术 · 利用 DockerFile 文件执行 docker build 自动构建镜像"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 10 Building Images with Dockerfile
+# 10 利用 DockerFile 文件执行 docker build 自动构建镜像
 ### 2.3 利用 DockerFile 文件执行 docker build 自动构建镜像
 
 ### Dockerfile 使用详解

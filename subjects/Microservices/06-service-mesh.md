@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Service Mesh"
+title: "微服务架构 · 服务网格 Mesh"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 06 Service Mesh
+# 06 服务网格 Mesh
 ### 1.6 服务网格 Mesh
 
 从软件层面独力应对微服务架构问题，发展到软、硬一体，合力应对架构问题的时代，此即为“后微服务时代”。

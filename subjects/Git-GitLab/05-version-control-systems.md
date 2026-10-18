@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Version Control Systems"
+title: "Git 与 GitLab 版本控制 · 版本控制系统 VCS"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 05 Version Control Systems
+# 05 版本控制系统 VCS
 ### 1.5 版本控制系统 VCS
 
 关于版本控制

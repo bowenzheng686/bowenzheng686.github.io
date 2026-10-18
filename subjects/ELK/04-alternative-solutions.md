@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Alternative Solutions"
+title: "ELK 日志分析 · 其它方案"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 04 Alternative Solutions
+# 04 其它方案
 ### 1.4 其它方案
 
 ### Fluentd 和 Fluent Bit

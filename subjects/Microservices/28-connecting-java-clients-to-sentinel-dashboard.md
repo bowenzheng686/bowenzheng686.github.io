@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Connecting Java Clients to Sentinel Dashboard"
+title: "微服务架构 · JAVA客户端接入控制台"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 28 Connecting Java Clients to Sentinel Dashboard
+# 28 JAVA客户端接入控制台
 ### 5.3 JAVA客户端接入控制台
 
 <https://github.com/alibaba/spring-cloud-alibaba/wiki/Sentinel>

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Recovering a Node After OS Reinstallation"
+title: "MinIO 对象存储 · 节点故障重新安装系统恢复故障"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 13 Recovering a Node After OS Reinstallation
+# 13 节点故障重新安装系统恢复故障
 ### 4.2 节点故障重新安装系统恢复故障
 
 范例:  3节点集群中一个节点彻底故障并重新安装进行恢复

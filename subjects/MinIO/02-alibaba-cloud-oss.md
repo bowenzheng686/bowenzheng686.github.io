@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Alibaba Cloud OSS"
+title: "MinIO 对象存储 · 阿里云的OSS"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 02 Alibaba Cloud OSS
+# 02 阿里云的OSS
 ### 1.2 阿里云的OSS
 
 阿里云等公有云提供了OSS服务

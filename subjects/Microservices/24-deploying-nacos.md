@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Deploying Nacos"
+title: "微服务架构 · Nacos 部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 24 Deploying Nacos
+# 24 Nacos 部署
 ### 4.2 Nacos 部署
 
 ### Nacos 部署说明

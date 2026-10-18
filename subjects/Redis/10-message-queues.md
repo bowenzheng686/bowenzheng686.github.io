@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Message Queues"
+title: "Redis 数据库 · 消息队列"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 10 Message Queues
+# 10 消息队列
 ### 2.7 消息队列
 
 消息队列: 把要传输的数据放在队列中,从而实现应用之间的数据交换

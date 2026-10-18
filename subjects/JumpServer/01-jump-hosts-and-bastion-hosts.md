@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Jump Hosts and Bastion Hosts"
+title: "JumpServer 堡垒机 · 跳板机和堡垒机"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 01 Jump Hosts and Bastion Hosts
+# 01 跳板机和堡垒机
 ## 1 堡垒机和 JumpServer
 
 ### 1.1 跳板机和堡垒机

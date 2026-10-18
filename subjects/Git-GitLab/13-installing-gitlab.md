@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Installing GitLab"
+title: "Git 与 GitLab 版本控制 · GitLab 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 13 Installing GitLab
+# 13 GitLab 安装
 ### 3.2 GitLab 安装
 
 GitLab 有两个版本：EE商业版和CE社区版，以下使用CE版

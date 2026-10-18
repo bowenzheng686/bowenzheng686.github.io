@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Monitoring MinIO with Prometheus and Grafana"
+title: "MinIO 对象存储 · MINIO 通过 Prometheus 和 Grafana 监控案例"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 19 Monitoring MinIO with Prometheus and Grafana
+# 19 MINIO 通过 Prometheus 和 Grafana 监控案例
 ### 7.2 MINIO 通过 Prometheus 和 Grafana 监控案例
 
 范例:

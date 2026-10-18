@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Sentinel Dashboard"
+title: "微服务架构 · Sentinel 控制台"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 27 Sentinel Dashboard
+# 27 Sentinel 控制台
 ### 5.2 Sentinel 控制台
 
 ### 概述

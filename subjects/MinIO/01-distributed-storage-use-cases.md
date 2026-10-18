@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Distributed Storage Use Cases"
+title: "MinIO 对象存储 · 分布式存储系统应用场景"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 01 Distributed Storage Use Cases
+# 01 分布式存储系统应用场景
 ## 1 MINIO 介绍
 
 ### 1.1 分布式存储系统应用场景

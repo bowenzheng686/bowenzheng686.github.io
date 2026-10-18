@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Deploying Kafka"
+title: "微服务架构 · Kafka 部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 18 Deploying Kafka
+# 18 Kafka 部署
 ### 3.6 Kafka 部署
 
 ### Kafka 部署说明

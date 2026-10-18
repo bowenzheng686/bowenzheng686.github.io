@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Scaling Out"
+title: "MinIO 对象存储 · 扩容"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 14 Scaling Out
+# 14 扩容
 ## 5 MINIO 扩容和缩容
 
 ### 5.1 扩容

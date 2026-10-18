@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · JumpServer Components"
+title: "JumpServer 堡垒机 · JumpServer 组成"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 05 JumpServer Components
+# 05 JumpServer 组成
 ### 1.5 JumpServer 组成
 
 ![JumpServer 堡垒机第 8 页插图](assets/img-44fb8cf28dc7691e.png)

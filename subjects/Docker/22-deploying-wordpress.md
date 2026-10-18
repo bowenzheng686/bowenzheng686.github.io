@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Deploying WordPress"
+title: "Docker 容器技术 · 实战案例: 实现 Wordpress 应用"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 22 Deploying WordPress
+# 22 实战案例: 实现 Wordpress 应用
 ### 5.5 实战案例: 实现 Wordpress 应用
 
 ### LNMP 架构

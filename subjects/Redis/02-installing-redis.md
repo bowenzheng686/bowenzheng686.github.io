@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Installing Redis"
+title: "Redis 数据库 · Redis 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 02 Installing Redis
+# 02 Redis 安装
 ### 1.2 Redis 安装
 
 官方安装方法说明：

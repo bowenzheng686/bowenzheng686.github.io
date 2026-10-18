@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Spring Cloud Gateway Core Concepts"
+title: "微服务架构 · Spring Cloud Gateway 核心概念"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 35 Spring Cloud Gateway Core Concepts
+# 35 Spring Cloud Gateway 核心概念
 ### 7.2 Spring Cloud Gateway 核心概念
 
 ### Spring Cloud Gateway 相关概念介绍

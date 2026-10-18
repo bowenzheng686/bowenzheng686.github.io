@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Slow Queries"
+title: "Redis 数据库 · 慢查询"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 07 Slow Queries
+# 07 慢查询
 ### 2.4 慢查询
 
 ![Redis 数据库第 68 页插图](assets/img-8ad615b999f424ec.png)

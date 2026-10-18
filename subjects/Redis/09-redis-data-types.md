@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Data Types"
+title: "Redis 数据库 · Redis 数据类型"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 09 Redis Data Types
+# 09 Redis 数据类型
 ### 2.6 Redis 数据类型
 
 参考资料：http://www.redis.cn/topics/data-types.html

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Session Management"
+title: "JumpServer 堡垒机 · 会话管理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 16 Session Management
+# 16 会话管理
 ### 3.6 会话管理
 
 会话管理可以实现查看当前在线的会话命令记录、历史会话过去的执行过的命令,也可以强制将用户踢出

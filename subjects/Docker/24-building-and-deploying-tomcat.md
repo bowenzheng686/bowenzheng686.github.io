@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Building and Deploying Tomcat"
+title: "Docker 容器技术 · 实战案例: 构建和部署 Tomcat"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 24 Building and Deploying Tomcat
+# 24 实战案例: 构建和部署 Tomcat
 ### 5.7 实战案例: 构建和部署 Tomcat
 
 ```yaml

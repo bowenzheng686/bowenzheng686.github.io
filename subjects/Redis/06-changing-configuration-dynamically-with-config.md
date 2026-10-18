@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Changing Configuration Dynamically with CONFIG"
+title: "Redis 数据库 · config 命令实现动态修改配置（热加载）"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 06 Changing Configuration Dynamically with CONFIG
+# 06 config 命令实现动态修改配置（热加载）
 ### 2.3 config 命令实现动态修改配置（热加载）
 
 config 命令用于查看当前redis配置、以及不重启redis服务实现动态更改redis配置等

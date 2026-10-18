@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · APISIX Examples"
+title: "微服务架构 · APISIX 案例"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 43 APISIX Examples
+# 43 APISIX 案例
 ### 8.6 APISIX 案例
 
 ### Apache APISIX 集成 Nacos 说明

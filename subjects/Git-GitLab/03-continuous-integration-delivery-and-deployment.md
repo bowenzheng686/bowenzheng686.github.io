@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Continuous Integration, Delivery, and Deployment"
+title: "Git 与 GitLab 版本控制 · 持续集成、持续交付和持续部署 CICD"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 03 Continuous Integration, Delivery, and Deployment
+# 03 持续集成、持续交付和持续部署 CICD
 ### 1.3 持续集成、持续交付和持续部署 CICD
 
 最初是瀑布模型，后来是敏捷开发，现在是DevOps，这是现代开发人员构建出色的产品的技术路线。 随着DevOps的兴起，出现了持续集成（Continuous Integration）、持续交付（Continuous Delivery） 、持续部署（Continuous Deployment） 的新方法。

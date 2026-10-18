@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Collecting Logs with Filebeat"
+title: "ELK 日志分析 · 利用 Filebeat 收集日志"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 15 Collecting Logs with Filebeat
+# 15 利用 Filebeat 收集日志
 ### 3.3 利用 Filebeat 收集日志
 
 Filebeat 是用于转发和集中日志数据的轻量级传送程序。作为服务器上的代理安装，Filebeat监视您指定的日志文件或位置，收集日志事件，并将它们转发到Elasticsearch或Logstash进行索引。

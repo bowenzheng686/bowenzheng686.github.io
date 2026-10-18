@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Distributed Cluster Deployment"
+title: "MinIO 对象存储 · 分布式集群部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 07 Distributed Cluster Deployment
+# 07 分布式集群部署
 ### 2.3 分布式集群部署
 
 ### 分布式集群机制

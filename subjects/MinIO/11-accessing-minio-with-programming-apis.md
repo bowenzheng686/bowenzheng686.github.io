@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Accessing MinIO with Programming APIs"
+title: "MinIO 对象存储 · 编程语言API访问"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 11 Accessing MinIO with Programming APIs
+# 11 编程语言API访问
 ### 3.3 编程语言API访问
 
 <https://min.io/docs/minio/linux/developers/minio-drivers.html>

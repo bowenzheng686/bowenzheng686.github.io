@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Starting a Single Container with Docker Compose"
+title: "Docker 容器技术 · 从 docker compose 启动单个容器"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 20 Starting a Single Container with Docker Compose
+# 20 从 docker compose 启动单个容器
 ### 5.3 从 docker compose 启动单个容器
 
 注意:  使用Docker compose之前，先要安装docker

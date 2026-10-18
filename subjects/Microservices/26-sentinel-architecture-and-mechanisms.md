@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Sentinel Architecture and Mechanisms"
+title: "微服务架构 · Sentinel 介绍和工作机制"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 26 Sentinel Architecture and Mechanisms
+# 26 Sentinel 介绍和工作机制
 ## 5 Sentinel（学习）
 
 ![微服务技术第 131 页插图](assets/img-e805d47316040008.png)

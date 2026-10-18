@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Comparing Message Queues"
+title: "微服务架构 · 常用消息队列对比"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 15 Comparing Message Queues
+# 15 常用消息队列对比
 ### 3.3 常用消息队列对比
 
 kafka 最主要的优势是其具备分布式功能、并可以结合 zookeeper 可以实现动态扩容，Kafka 是一种高吞吐量的分布式发布订阅消息系统。

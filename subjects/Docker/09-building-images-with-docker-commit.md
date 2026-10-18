@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Building Images with Docker Commit"
+title: "Docker 容器技术 · 将现有容器通过 docker commit 手动构建镜像"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 09 Building Images with Docker Commit
+# 09 将现有容器通过 docker commit 手动构建镜像
 ### 2.2 将现有容器通过 docker commit 手动构建镜像
 
 ### 基于容器手动制作镜像步骤

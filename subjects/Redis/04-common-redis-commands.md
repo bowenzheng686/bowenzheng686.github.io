@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Common Redis Commands"
+title: "Redis 数据库 · Redis 常用命令"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 04 Common Redis Commands
+# 04 Redis 常用命令
 ## 2 Redis 基础功能
 
 ### 2.1 Redis 常用命令

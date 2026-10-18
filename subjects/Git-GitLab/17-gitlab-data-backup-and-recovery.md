@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · GitLab Data Backup and Recovery"
+title: "Git 与 GitLab 版本控制 · GitLab 的数据备份和恢复"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 17 GitLab Data Backup and Recovery
+# 17 GitLab 的数据备份和恢复
 ### 3.6 GitLab 的数据备份和恢复
 
 数据备份和恢复官方帮助：

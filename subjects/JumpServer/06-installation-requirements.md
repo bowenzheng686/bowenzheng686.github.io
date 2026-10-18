@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Installation Requirements"
+title: "JumpServer 堡垒机 · 安装要求"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 06 Installation Requirements
+# 06 安装要求
 ## 2 JumpServer 安装
 
 官方说明

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Introduction to Kafka"
+title: "微服务架构 · Kafka 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 14 Introduction to Kafka
+# 14 Kafka 介绍
 ### 3.2 Kafka 介绍
 
 ![微服务技术第 40 页插图](assets/img-21dc56f8886243dc.png)

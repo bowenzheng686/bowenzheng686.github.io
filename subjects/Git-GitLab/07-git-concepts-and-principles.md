@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Git Concepts and Principles"
+title: "Git 与 GitLab 版本控制 · Git 相关概念和原理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 07 Git Concepts and Principles
+# 07 Git 相关概念和原理
 ## 2 版本控制系统 Git
 
 ### 2.1 Git 相关概念和原理

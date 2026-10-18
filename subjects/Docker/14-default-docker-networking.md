@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Default Docker Networking"
+title: "Docker 容器技术 · Docker的默认的网络通信（学习）"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 14 Default Docker Networking
+# 14 Docker的默认的网络通信（学习）
 ## 4 Docker 网络管理
 
 ![Docker 容器技术第 271 页插图](assets/img-cace5f8f392e04e4.png)

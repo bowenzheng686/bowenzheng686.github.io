@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Introduction to Message Queues"
+title: "微服务架构 · 消息队列简介"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 13 Introduction to Message Queues
+# 13 消息队列简介
 ## 3 Kafka
 
 ### 3.1 消息队列简介

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Starting Multiple Containers with Docker Compose"
+title: "Docker 容器技术 · 从 docker compose 启动多个容器"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 21 Starting Multiple Containers with Docker Compose
+# 21 从 docker compose 启动多个容器
 ### 5.4 从 docker compose 启动多个容器
 
 ### 编辑 docker-compose 文件并使用数据卷

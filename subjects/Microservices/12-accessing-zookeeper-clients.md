@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Accessing ZooKeeper Clients"
+title: "微服务架构 · ZooKeeper 客户端访问"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 12 Accessing ZooKeeper Clients
+# 12 ZooKeeper 客户端访问
 ### 2.4 ZooKeeper 客户端访问
 
 ### 命令行客户端访问 ZooKeeper

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Collecting Nginx Logs with Filebeat and Kafka Buffering"
+title: "ELK 日志分析 · Filebeat 收集Nginx日志并写入 Kafka 缓存发送至 Elasticsearch"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 27 Collecting Nginx Logs with Filebeat and Kafka Buffering
+# 27 Filebeat 收集Nginx日志并写入 Kafka 缓存发送至 Elasticsearch
 ### 6.2 Filebeat 收集Nginx日志并写入 Kafka 缓存发送至 Elasticsearch
 
 虽然利用redis 可以实现elasticsearch 缓存功能,减轻elasticsearch的压力,但不支持的redis集群,存在单点问题,可以利用kafka代替redis,且支持kafka集群,消除单点故障隐患

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Service-Oriented Architecture (SOA)"
+title: "微服务架构 · SOA 面向服务架构"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 04 Service-Oriented Architecture (SOA)
+# 04 SOA 面向服务架构
 ### 1.4 SOA
 
 SOA（Service Oriented Architecture）是由多个服务组成的分布式系统

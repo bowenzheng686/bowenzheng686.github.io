@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Microservices vs. Monoliths"
+title: "微服务架构 · 微服务还是单体"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 08 Microservices vs. Monoliths
+# 08 微服务还是单体
 ### 1.8 微服务还是单体
 
 <https://martinfowler.com/bliki/MonolithFirst.html>

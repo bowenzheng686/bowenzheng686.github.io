@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · CI/CD Process and Architecture"
+title: "Git 与 GitLab 版本控制 · CICD 流程过程和架构"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 04 CI/CD Process and Architecture
+# 04 CICD 流程过程和架构
 ### 1.4 CICD 流程过程和架构
 
 ### 应用部署发展阶段

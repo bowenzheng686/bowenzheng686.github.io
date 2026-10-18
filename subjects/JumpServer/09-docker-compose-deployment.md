@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Docker Compose Deployment"
+title: "JumpServer 堡垒机 · Docker-Compose 部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 09 Docker Compose Deployment
+# 09 Docker-Compose 部署
 ### 2.4 Docker-Compose 部署
 
 <https://github.com/jumpserver/Dockerfile/blob/v4.1.0/allinone/docker-compose.yml>

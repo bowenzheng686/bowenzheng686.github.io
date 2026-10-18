@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Kubernetes Deployment"
+title: "MinIO 对象存储 · 基于Kubernetes 部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 08 Kubernetes Deployment
+# 08 基于Kubernetes 部署
 ### 2.4 基于Kubernetes 部署
 
 <https://github.com/minio/minio/tree/master/docs/orchestration/kubernetes>

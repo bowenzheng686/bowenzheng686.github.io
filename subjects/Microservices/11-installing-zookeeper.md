@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Installing ZooKeeper"
+title: "微服务架构 · ZooKeeper 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 11 Installing ZooKeeper
+# 11 ZooKeeper 安装
 ### 2.3 ZooKeeper 安装
 
 Zookeeper 支持多种安装方法

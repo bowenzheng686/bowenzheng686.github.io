@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Cluster"
+title: "Redis 数据库 · Redis 集群"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 13 Redis Cluster
+# 13 Redis 集群
 ### 3.3 Redis Cluster
 
 ![Redis 数据库第 143 页插图](assets/img-c587f78f05b602e1.png)

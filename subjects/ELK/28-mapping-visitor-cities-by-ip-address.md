@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Mapping Visitor Cities by IP Address"
+title: "ELK 日志分析 · 通过坐标地图统计网站访问用户的 IP 所在城市"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 28 Mapping Visitor Cities by IP Address
+# 28 通过坐标地图统计网站访问用户的 IP 所在城市
 ### 6.3 通过坐标地图统计网站访问用户的 IP 所在城市
 
 注意: 7.X 前地图功能要求必须使用 logstash 开头的索引名称,8.X无此要求

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Backup and Restore Overview"
+title: "MinIO 对象存储 · 备份还原说明"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 16 Backup and Restore Overview
+# 16 备份还原说明
 ## 6 MINIO 备份还原
 
 ### 6.1 备份还原说明

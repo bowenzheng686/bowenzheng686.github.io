@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Installing and Configuring Kibana"
+title: "ELK 日志分析 · 安装并配置 Kibana"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 21 Installing and Configuring Kibana
+# 21 安装并配置 Kibana
 ### 5.2 安装并配置 Kibana
 
 可以通过包或者二进制的方式进行安装,可以安装在独立服务器,或者也可以和elasticsearch的主机安装在一起

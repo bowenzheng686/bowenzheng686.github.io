@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Introduction to JumpServer"
+title: "JumpServer 堡垒机 · JumpServer 简介"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 02 Introduction to JumpServer
+# 02 JumpServer 简介
 ### 1.2 JumpServer 简介
 
 JumpServer 是全球首款完全开源的堡垒机, 使用 GNU GPL v2.0 开源协议, 是符合 4A 的专业运维审计系统。为互联网企业提供了认证，授权，审计，自动化运维等功能。 JumpServer 使用 Python / Django 进行开发, 遵循 Web 2.0 规范, 配备了业界领先的 Web Terminal 解决方案, 交互界面美观、用户体验好。

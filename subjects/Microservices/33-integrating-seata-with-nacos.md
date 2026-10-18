@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Integrating Seata with Nacos"
+title: "微服务架构 · 综合案例: Seata 结合 Nacos"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 33 Integrating Seata with Nacos
+# 33 综合案例: Seata 结合 Nacos
 ### 6.3 综合案例: Seata 结合 Nacos
 
 Seata Example

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Seata Architecture and Mechanisms"
+title: "微服务架构 · Seata 介绍和工作机制"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 31 Seata Architecture and Mechanisms
+# 31 Seata 介绍和工作机制
 ## 6 Seata（了解）
 
 ### 6.1 Seata 介绍和工作机制

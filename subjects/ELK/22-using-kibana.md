@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Using Kibana"
+title: "ELK 日志分析 · 使用 Kibana"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 22 Using Kibana
+# 22 使用 Kibana
 ### 5.3 使用 Kibana
 
 ### 查看和操作Web界面

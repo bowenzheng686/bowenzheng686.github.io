@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Resources and Rules"
+title: "微服务架构 · 资源与规则"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 29 Resources and Rules
+# 29 资源与规则
 ### 5.4 资源与规则
 
 ### 资源与规则说明

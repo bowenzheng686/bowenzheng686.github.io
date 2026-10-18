@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · GitLab Migration and Upgrades"
+title: "Git 与 GitLab 版本控制 · GitLab 迁移和升级"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 19 GitLab Migration and Upgrades
+# 19 GitLab 迁移和升级
 ### 3.8 GitLab 迁移和升级
 
 在生产中升级往往伴随着服务器的迁移,比如从本地机房迁移到云环境中,而实现升级

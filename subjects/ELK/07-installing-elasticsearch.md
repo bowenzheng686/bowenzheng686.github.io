@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Installing Elasticsearch"
+title: "ELK 日志分析 · Elasticsearch 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 07 Installing Elasticsearch
+# 07 Elasticsearch 安装
 ### 2.3 Elasticsearch 安装
 
 ### 包安装 Elasticsearch

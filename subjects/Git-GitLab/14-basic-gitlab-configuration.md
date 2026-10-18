@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Basic GitLab Configuration"
+title: "Git 与 GitLab 版本控制 · GitLab 基本配置"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 14 Basic GitLab Configuration
+# 14 GitLab 基本配置
 ### 3.3 GitLab 基本配置
 
 ### 首次登录 GitLab Web 界面修改密码

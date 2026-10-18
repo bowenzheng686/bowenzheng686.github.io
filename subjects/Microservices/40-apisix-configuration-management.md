@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · APISIX Configuration Management"
+title: "微服务架构 · APISIX 配置管理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 40 APISIX Configuration Management
+# 40 APISIX 配置管理
 ### 8.3 APISIX 配置管理
 
 ### APISIX 配置文件

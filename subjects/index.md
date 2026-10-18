@@ -12,11 +12,11 @@ subject_index: true
   <li><a href="{{ '/subjects/KVM/' | relative_url }}">KVM 虚拟化（8 个章节）</a></li>
   <li><a href="{{ '/subjects/Kubernetes/' | relative_url }}">Kubernetes 学习笔记（36 个章节）</a></li>
   <li><a href="{{ '/subjects/Prometheus/' | relative_url }}">Prometheus 学习笔记（33 个章节）</a></li>
-  <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Git and GitLab Version Control (22 chapters)</a></li>
-  <li><a href="{{ '/subjects/MinIO/' | relative_url }}">MinIO Object Storage (19 chapters)</a></li>
-  <li><a href="{{ '/subjects/Redis/' | relative_url }}">Redis Database (14 chapters)</a></li>
-  <li><a href="{{ '/subjects/JumpServer/' | relative_url }}">JumpServer Bastion Host (18 chapters)</a></li>
-  <li><a href="{{ '/subjects/ELK/' | relative_url }}">ELK Log Analytics (30 chapters)</a></li>
-  <li><a href="{{ '/subjects/Docker/' | relative_url }}">Docker Container Technology (37 chapters)</a></li>
-  <li><a href="{{ '/subjects/Microservices/' | relative_url }}">Microservices (43 chapters)</a></li>
+  <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Git 与 GitLab 版本控制（22 个章节）</a></li>
+  <li><a href="{{ '/subjects/MinIO/' | relative_url }}">MinIO 对象存储（19 个章节）</a></li>
+  <li><a href="{{ '/subjects/Redis/' | relative_url }}">Redis 数据库（14 个章节）</a></li>
+  <li><a href="{{ '/subjects/JumpServer/' | relative_url }}">JumpServer 堡垒机（18 个章节）</a></li>
+  <li><a href="{{ '/subjects/ELK/' | relative_url }}">ELK 日志分析（30 个章节）</a></li>
+  <li><a href="{{ '/subjects/Docker/' | relative_url }}">Docker 容器技术（37 个章节）</a></li>
+  <li><a href="{{ '/subjects/Microservices/' | relative_url }}">微服务架构（43 个章节）</a></li>
 </ul>

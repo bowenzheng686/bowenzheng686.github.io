@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Installing Git"
+title: "Git 与 GitLab 版本控制 · Git 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 08 Installing Git
+# 08 Git 安装
 ### 2.2 Git 安装
 
 ### Linux 安装 git

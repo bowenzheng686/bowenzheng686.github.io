@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Introduction to GitLab"
+title: "Git 与 GitLab 版本控制 · GitLab 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 12 Introduction to GitLab
+# 12 GitLab 介绍
 ## 3 私有软件仓库 GitLab
 
 ### 3.1 GitLab 介绍

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Introduction to Docker Compose"
+title: "Docker 容器技术 · Docker Compose 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 18 Introduction to Docker Compose
+# 18 Docker Compose 介绍
 ## 5 Docker Compose 容器单机编排(了解)
 
 ### 5.1 Docker Compose 介绍

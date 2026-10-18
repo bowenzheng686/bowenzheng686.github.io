@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Using Logstash"
+title: "ELK 日志分析 · Logstash 使用"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 18 Using Logstash
+# 18 Logstash 使用
 ### 4.3 Logstash 使用
 
 ### Logstash 命令

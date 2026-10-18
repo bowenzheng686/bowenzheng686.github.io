@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Fundamentals"
+title: "Redis 数据库 · Redis 基础"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 01 Redis Fundamentals
+# 01 Redis 基础
 ## 1 Redis 部署
 
 ### 1.1 Redis 基础

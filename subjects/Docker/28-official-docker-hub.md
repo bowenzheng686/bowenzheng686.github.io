@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Official Docker Hub"
+title: "Docker 容器技术 · 官方 Docker 仓库"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 28 Official Docker Hub
+# 28 官方 Docker 仓库
 ## 6 Docker 仓库管理
 
 Docker仓库，类似于yum仓库，是用来保存镜像的仓库。

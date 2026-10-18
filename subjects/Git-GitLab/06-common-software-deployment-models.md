@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Common Software Deployment Models"
+title: "Git 与 GitLab 版本控制 · 常见的软件部署模式"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 06 Common Software Deployment Models
+# 06 常见的软件部署模式
 ### 1.6 常见的软件部署模式
 
 ### 蓝绿部署 Blue-green Deployments

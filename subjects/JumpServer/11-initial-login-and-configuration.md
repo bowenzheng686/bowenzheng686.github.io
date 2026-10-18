@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Initial Login and Configuration"
+title: "JumpServer 堡垒机 · 登录并初始化配置"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 11 Initial Login and Configuration
+# 11 登录并初始化配置
 ## 3 JumpServer 常见功能
 
 官方文档:

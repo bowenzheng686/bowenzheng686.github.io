@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · JumpServer Features and Benefits"
+title: "JumpServer 堡垒机 · JumpServer的优势和功能"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 04 JumpServer Features and Benefits
+# 04 JumpServer的优势和功能
 ### 1.4 JumpServer的优势和功能
 
 ### 特色优势

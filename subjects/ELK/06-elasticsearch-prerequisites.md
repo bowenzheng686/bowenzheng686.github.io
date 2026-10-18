@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Elasticsearch Prerequisites"
+title: "ELK 日志分析 · Elasticsearch 安装前准备"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 06 Elasticsearch Prerequisites
+# 06 Elasticsearch 安装前准备
 ### 2.2 Elasticsearch 安装前准备
 
 ### 安装前环境初始化

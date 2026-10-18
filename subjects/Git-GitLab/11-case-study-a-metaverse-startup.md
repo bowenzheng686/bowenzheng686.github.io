@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Case Study: A Metaverse Startup"
+title: "Git 与 GitLab 版本控制 · 综合案例: 元宇宙创业史"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 11 Case Study: A Metaverse Startup
+# 11 综合案例: 元宇宙创业史
 ### 2.5 综合案例: 元宇宙创业史
 
 ### 起步: 个人小型项目

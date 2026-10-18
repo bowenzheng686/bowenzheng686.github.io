@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Docker Network Modes"
+title: "Docker 容器技术 · Docker 网络连接模式(重点)"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 16 Docker Network Modes
+# 16 Docker 网络连接模式(重点)
 ### 4.3 Docker 网络连接模式(重点)
 
 ### 网络模式介绍

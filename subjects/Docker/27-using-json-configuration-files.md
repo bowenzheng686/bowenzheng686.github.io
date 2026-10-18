@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Using JSON Configuration Files"
+title: "Docker 容器技术 · 使用 Json 格式文件"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 27 Using JSON Configuration Files
+# 27 使用 Json 格式文件
 ### 5.10 使用 Json 格式文件
 
 ```yaml

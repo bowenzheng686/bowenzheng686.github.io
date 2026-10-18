@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Creating JumpServer Users and Groups"
+title: "JumpServer 堡垒机 · 创建JumpServer用户和组"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 12 Creating JumpServer Users and Groups
+# 12 创建JumpServer用户和组
 ### 3.2 创建JumpServer用户和组
 
 JumpServer 支持三种登录用户角色

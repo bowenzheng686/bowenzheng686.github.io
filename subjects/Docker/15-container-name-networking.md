@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Container Name Networking"
+title: "Docker 容器技术 · 容器名称互联（了解）"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 15 Container Name Networking
+# 15 容器名称互联（了解）
 ### 4.2 容器名称互联（了解）
 
 新建容器时，docker会自动分配容器名称，容器ID和IP地址，导致容器名称，容器ID和IP都不固定，那么如何区分不同的容器，实现和确定目标容器的通信呢？解决方案是给容器起个固定的名称，容器之间通过固定名称实现确定目标的通信

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Model-View-Controller (MVC)"
+title: "微服务架构 · MVC 模型—视图—控制器"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 03 Model-View-Controller (MVC)
+# 03 MVC 模型—视图—控制器
 ### 1.3 MVC
 
 JAVA的 MVC

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Elasticsearch Plugins"
+title: "ELK 日志分析 · Elasticsearch 插件"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 09 Elasticsearch Plugins
+# 09 Elasticsearch 插件
 ### 2.5 Elasticsearch 插件
 
 通过使用各种插件可以实现对 ES 集群的状态监控, 数据访问, 管理配置等功能

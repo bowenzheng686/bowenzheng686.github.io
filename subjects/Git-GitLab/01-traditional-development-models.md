@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Traditional Development Models"
+title: "Git 与 GitLab 版本控制 · 传统开发模型"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 01 Traditional Development Models
+# 01 传统开发模型
 ## 1 DevOps 简介
 
 ### 1.1 传统开发模型

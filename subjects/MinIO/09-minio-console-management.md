@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · MinIO Console Management"
+title: "MinIO 对象存储 · MINIO 控制台管理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 09 MinIO Console Management
+# 09 MINIO 控制台管理
 ## 3 MINIO 使用
 
 ### 3.1 MINIO 控制台管理

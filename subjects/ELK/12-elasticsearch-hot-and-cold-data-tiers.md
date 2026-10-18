@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Elasticsearch Hot and Cold Data Tiers"
+title: "ELK 日志分析 · Elasticsearch 数据冷热分离"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 12 Elasticsearch Hot and Cold Data Tiers
+# 12 Elasticsearch 数据冷热分离
 ### 2.8 Elasticsearch 数据冷热分离
 
 ### 冷热分离原理

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · How Elasticsearch Clusters Work"
+title: "ELK 日志分析 · Elasticsearch 集群工作原理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 10 How Elasticsearch Clusters Work
+# 10 Elasticsearch 集群工作原理
 ### 2.6 Elasticsearch 集群工作原理
 
 官方说明

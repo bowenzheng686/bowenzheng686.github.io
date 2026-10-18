@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Monitoring Performance with Metricbeat"
+title: "ELK 日志分析 · 利用 Metricbeat 监控性能相关指标"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 13 Monitoring Performance with Metricbeat
+# 13 利用 Metricbeat 监控性能相关指标
 ## 3 Beats 收集数据
 
 Beats 是一个免费且开放的平台，集合了多种单一用途数据采集器。它们从成百上千或成千上万台机器和系统向 Logstash 或 Elasticsearch 发送数据。

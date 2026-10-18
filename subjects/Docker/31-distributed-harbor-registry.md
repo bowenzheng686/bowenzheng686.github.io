@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Distributed Harbor Registry"
+title: "Docker 容器技术 · Docker 之分布式仓库 Harbor （重点）"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 31 Distributed Harbor Registry
+# 31 Docker 之分布式仓库 Harbor （重点）
 ### 6.4 Docker 之分布式仓库 Harbor （重点）
 
 ### Harbor 介绍和架构

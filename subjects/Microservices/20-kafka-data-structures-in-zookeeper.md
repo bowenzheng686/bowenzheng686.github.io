@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Kafka Data Structures in ZooKeeper"
+title: "微服务架构 · Kafka 在 ZooKeeper 里面的存储结构"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 20 Kafka Data Structures in ZooKeeper
+# 20 Kafka 在 ZooKeeper 里面的存储结构
 ### 3.8 Kafka 在 ZooKeeper 里面的存储结构
 
 ![微服务技术第 65 页插图](assets/img-7300427b62f238f7.jpeg)

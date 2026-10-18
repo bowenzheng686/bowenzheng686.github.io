@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Installing and Using APISIX Dashboard"
+title: "微服务架构 · APISIX Dashboard 安装和使用"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 41 Installing and Using APISIX Dashboard
+# 41 APISIX Dashboard 安装和使用
 ### 8.4 APISIX Dashboard 安装和使用
 
 ### APISIX Dashboard 说明

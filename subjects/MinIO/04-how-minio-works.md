@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · How MinIO Works"
+title: "MinIO 对象存储 · MinIO 工作机制"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 04 How MinIO Works
+# 04 MinIO 工作机制
 ### 1.4 MinIO 工作机制
 
 ### MinIO 相关术语

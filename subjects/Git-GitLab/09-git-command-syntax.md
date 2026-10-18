@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Git Command Syntax"
+title: "Git 与 GitLab 版本控制 · Git 常用语法"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 09 Git Command Syntax
+# 09 Git 常用语法
 ### 2.3 Git 常用语法
 
 使用 git 命令添加代码,提交等管理代码操作

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Kibana Visualizations"
+title: "ELK 日志分析 · Kibana 可视化画图功能"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 24 Kibana Visualizations
+# 24 Kibana 可视化画图功能
 ### 5.5.Kibana 可视化画图功能
 
 https://www.elastic.co/guide/cn/kibana/current/introduction.html

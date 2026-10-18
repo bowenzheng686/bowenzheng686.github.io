@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Collecting Nginx Logs with Filebeat and Redis Buffering"
+title: "ELK 日志分析 · Filebeat 收集Nginx日志利用 Redis 缓存发送至 Elasticsearch"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 26 Collecting Nginx Logs with Filebeat and Redis Buffering
+# 26 Filebeat 收集Nginx日志利用 Redis 缓存发送至 Elasticsearch
 ## 6 ELK 综合实战案例
 
 ### 6.1 Filebeat 收集Nginx日志利用 Redis 缓存发送至 Elasticsearch

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Resetting a Forgotten GitLab Password"
+title: "Git 与 GitLab 版本控制 · 重置 GitLab 忘记的密码"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 21 Resetting a Forgotten GitLab Password
+# 21 重置 GitLab 忘记的密码
 ### 3.10 重置 GitLab 忘记的密码
 
 官方说明

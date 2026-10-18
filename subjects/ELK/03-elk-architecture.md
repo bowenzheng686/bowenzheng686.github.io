@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · ELK Architecture"
+title: "ELK 日志分析 · ELK 应用架构"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 03 ELK Architecture
+# 03 ELK 应用架构
 ### 1.3 ELK 应用架构
 
 ![ELK 日志分析第 11 页插图](assets/img-37184e9efef7aa84.png)

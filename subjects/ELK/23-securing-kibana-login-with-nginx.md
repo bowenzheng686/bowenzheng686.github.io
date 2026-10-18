@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Securing Kibana Login with Nginx"
+title: "ELK 日志分析 · 通过 Nginx 实现 Kibana 登录安全认证"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 23 Securing Kibana Login with Nginx
+# 23 通过 Nginx 实现 Kibana 登录安全认证
 ### 5.4 通过 Nginx 实现 Kibana 登录安全认证
 
 将 Nginx 作为反向代理服务器，并增加登录用户认证的目的，可以有效避免其他人员随意访问kibana页面。

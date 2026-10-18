@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Docker Run Parameters"
+title: "Docker 容器技术 · 查看 docker run 启动参数命令"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 06 Docker Run Parameters
+# 06 查看 docker run 启动参数命令
 ### 1.6 查看 docker run 启动参数命令
 
 忘记之前启动一个容器的启动命令是什么，现在需要找回来 docker run 的运行参数，可以使用  runlike 工具实现

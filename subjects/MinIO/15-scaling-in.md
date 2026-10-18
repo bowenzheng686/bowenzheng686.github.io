@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · Scaling In"
+title: "MinIO 对象存储 · 缩容"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 15 Scaling In
+# 15 缩容
 ### 5.2 缩容
 
 如果MinIO不是基于LVM的存储，缩容相当于重新部署集群

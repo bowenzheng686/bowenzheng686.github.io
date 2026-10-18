@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Kafka Features and Benefits"
+title: "微服务架构 · Kafka 特点和优势"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 16 Kafka Features and Benefits
+# 16 Kafka 特点和优势
 ### 3.4 Kafka 特点和优势
 
 ![微服务技术第 41 页插图](assets/img-90ad2ba23f02a25f.png)

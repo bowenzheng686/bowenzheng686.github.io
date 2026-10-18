@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Introduction to ELK"
+title: "ELK 日志分析 · ELK 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 01 Introduction to ELK
+# 01 ELK 介绍
 ## 1 ELK 概述
 
 ### 1.1 ELK 介绍

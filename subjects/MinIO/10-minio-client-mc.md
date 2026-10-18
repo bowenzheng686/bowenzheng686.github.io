@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · MinIO Client (mc)"
+title: "MinIO 对象存储 · MINIO 客户端 MC"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 10 MinIO Client (mc)
+# 10 MINIO 客户端 MC
 ### 3.2 MINIO 客户端 MC
 
 ### MC 介绍

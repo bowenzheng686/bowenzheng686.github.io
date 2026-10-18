@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Introduction to Apache APISIX"
+title: "微服务架构 · Apache APISIX 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 38 Introduction to Apache APISIX
+# 38 Apache APISIX 介绍
 ## 8 APISIX
 
 ### 8.1 Apache APISIX 介绍

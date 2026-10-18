@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Bulk Asset Export and Import"
+title: "JumpServer 堡垒机 · 资产的批量导出和导入"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 18 Bulk Asset Export and Import
+# 18 资产的批量导出和导入
 ### 3.8 资产的批量导出和导入
 
 当需要管理的后端服务器很多时,每台主机手动导入效率很低,可以利用资产的导出导入功能实现批量导入,提高效率

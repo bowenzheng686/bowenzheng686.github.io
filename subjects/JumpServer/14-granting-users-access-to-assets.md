@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Granting Users Access to Assets"
+title: "JumpServer 堡垒机 · 授权用户使用资产"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 14 Granting Users Access to Assets
+# 14 授权用户使用资产
 ### 3.4 授权用户使用资产
 
 ![JumpServer 堡垒机第 69 页插图](assets/img-c9131b169b45885f.png)

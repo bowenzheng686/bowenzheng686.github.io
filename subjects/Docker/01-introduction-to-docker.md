@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Introduction to Docker"
+title: "Docker 容器技术 · Docker 介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 01 Introduction to Docker
+# 01 Docker 介绍
 ## 1 Docker 介绍和基础管理
 
 ![Docker 容器技术第 2 页插图](assets/img-85503f4a09c396c4.png)

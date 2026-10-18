@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Kafka Roles and Workflow"
+title: "微服务架构 · Kafka 角色和流程"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 17 Kafka Roles and Workflow
+# 17 Kafka 角色和流程
 ### 3.5 Kafka 角色和流程
 
 ### Kafka 概念

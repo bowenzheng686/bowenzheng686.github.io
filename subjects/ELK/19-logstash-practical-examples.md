@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Logstash Practical Examples"
+title: "ELK 日志分析 · Logstash 实战案例"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 19 Logstash Practical Examples
+# 19 Logstash 实战案例
 ### 4.4 Logstash 实战案例
 
 ### 收集单个系统日志并输出至 Elasticsearch

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Installation Methods"
+title: "JumpServer 堡垒机 · 安装方法介绍"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 07 Installation Methods
+# 07 安装方法介绍
 ### 2.2 安装方法介绍
 
 官方提供了多种安装方法

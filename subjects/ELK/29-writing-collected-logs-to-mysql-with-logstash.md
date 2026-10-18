@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "ELK Log Analytics · Writing Collected Logs to MySQL with Logstash"
+title: "ELK 日志分析 · Logstash收集日志写入 MySQL 数据库"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to ELK Log Analytics Index]({{ '/subjects/ELK/' | relative_url }})
+[← 返回ELK 日志分析目录]({{ '/subjects/ELK/' | relative_url }})
 
 {% raw %}
 
-# 29 Writing Collected Logs to MySQL with Logstash
+# 29 Logstash收集日志写入 MySQL 数据库
 ### 6.4 Logstash收集日志写入 MySQL 数据库
 
 ES中的日志后续会被删除,但有些重要数据,比如状态码、客户端IP、客户端浏览器版本等，后期可以会按月或年做数据统计等,因此需要持久保存

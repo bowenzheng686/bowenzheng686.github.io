@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Sentinel"
+title: "Redis 数据库 · Redis 哨兵 Sentinel"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 12 Redis Sentinel
+# 12 Redis 哨兵 Sentinel
 ### 3.2 Redis 哨兵 Sentinel
 
 ![Redis 数据库第 126 页插图](assets/img-8d3a065f212dbe00.png)

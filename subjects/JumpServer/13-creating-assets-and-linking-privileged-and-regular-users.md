@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Creating Assets and Linking Privileged and Regular Users"
+title: "JumpServer 堡垒机 · 创建资产并关联特权用户和普通用户"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 13 Creating Assets and Linking Privileged and Regular Users
+# 13 创建资产并关联特权用户和普通用户
 ### 3.3 创建资产并关联特权用户和普通用户
 
 JumpServer 可以管理各种类型的资产

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Kafka Tools"
+title: "微服务架构 · Kafka 工具"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 21 Kafka Tools
+# 21 Kafka 工具
 ### 3.9 Kafka 工具
 
 ### 图形工具 Offset Explorer (Kafka Tool)

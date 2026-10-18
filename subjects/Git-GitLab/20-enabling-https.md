@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · Enabling HTTPS"
+title: "Git 与 GitLab 版本控制 · 实现 Https"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 20 Enabling HTTPS
+# 20 实现 Https
 ### 3.9 实现 Https
 
 GitLab 如果用于不安全的网络，建议使用 https

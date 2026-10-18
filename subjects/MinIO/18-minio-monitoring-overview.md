@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "MinIO Object Storage · MinIO Monitoring Overview"
+title: "MinIO 对象存储 · MINIO 监控说明"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to MinIO Object Storage Index]({{ '/subjects/MinIO/' | relative_url }})
+[← 返回MinIO 对象存储目录]({{ '/subjects/MinIO/' | relative_url }})
 
 {% raw %}
 
-# 18 MinIO Monitoring Overview
+# 18 MINIO 监控说明
 ## 7 MINIO 监控
 
 ### 7.1. MINIO 监控说明

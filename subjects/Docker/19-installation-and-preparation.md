@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Installation and Preparation"
+title: "Docker 容器技术 · 安装和准备"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 19 Installation and Preparation
+# 19 安装和准备
 ### 5.2 安装和准备
 
 ### 安装 Docker Compose

@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "JumpServer Bastion Host · Docker Deployment"
+title: "JumpServer 堡垒机 · 基于 Docker 部署"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to JumpServer Bastion Host Index]({{ '/subjects/JumpServer/' | relative_url }})
+[← 返回JumpServer 堡垒机目录]({{ '/subjects/JumpServer/' | relative_url }})
 
 {% raw %}
 
-# 08 Docker Deployment
+# 08 基于 Docker 部署
 ### 2.3 基于 Docker 部署
 
 官方文档:

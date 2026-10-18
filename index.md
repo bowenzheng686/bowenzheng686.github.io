@@ -20,13 +20,13 @@ home: true
       <li><a href="{{ '/subjects/KVM/' | relative_url }}"><span>KVM 虚拟化学习笔记</span><span>8 章</span></a></li>
       <li><a href="{{ '/subjects/Kubernetes/' | relative_url }}"><span>Kubernetes 学习笔记</span><span>36 章</span></a></li>
       <li><a href="{{ '/subjects/Prometheus/' | relative_url }}"><span>Prometheus 学习笔记</span><span>33 章</span></a></li>
-      <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}"><span>Git and GitLab Version Control</span><span>22 章</span></a></li>
-      <li><a href="{{ '/subjects/MinIO/' | relative_url }}"><span>MinIO Object Storage</span><span>19 章</span></a></li>
-      <li><a href="{{ '/subjects/Redis/' | relative_url }}"><span>Redis Database</span><span>14 章</span></a></li>
-      <li><a href="{{ '/subjects/JumpServer/' | relative_url }}"><span>JumpServer Bastion Host</span><span>18 章</span></a></li>
-      <li><a href="{{ '/subjects/ELK/' | relative_url }}"><span>ELK Log Analytics</span><span>30 章</span></a></li>
-      <li><a href="{{ '/subjects/Docker/' | relative_url }}"><span>Docker Container Technology</span><span>37 章</span></a></li>
-      <li><a href="{{ '/subjects/Microservices/' | relative_url }}"><span>Microservices</span><span>43 章</span></a></li>
+      <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}"><span>Git 与 GitLab 版本控制</span><span>22 章</span></a></li>
+      <li><a href="{{ '/subjects/MinIO/' | relative_url }}"><span>MinIO 对象存储</span><span>19 章</span></a></li>
+      <li><a href="{{ '/subjects/Redis/' | relative_url }}"><span>Redis 数据库</span><span>14 章</span></a></li>
+      <li><a href="{{ '/subjects/JumpServer/' | relative_url }}"><span>JumpServer 堡垒机</span><span>18 章</span></a></li>
+      <li><a href="{{ '/subjects/ELK/' | relative_url }}"><span>ELK 日志分析</span><span>30 章</span></a></li>
+      <li><a href="{{ '/subjects/Docker/' | relative_url }}"><span>Docker 容器技术</span><span>37 章</span></a></li>
+      <li><a href="{{ '/subjects/Microservices/' | relative_url }}"><span>微服务架构</span><span>43 章</span></a></li>
     </ol>
   </section>
 </main>

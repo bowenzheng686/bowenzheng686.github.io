@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Installing APISIX"
+title: "微服务架构 · APISIX 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 39 Installing APISIX
+# 39 APISIX 安装
 ### 8.2 APISIX 安装
 
 ### 安装 APISIX 方法说明

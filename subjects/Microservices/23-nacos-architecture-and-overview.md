@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Nacos Architecture and Overview"
+title: "微服务架构 · Nacos 介绍和架构"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 23 Nacos Architecture and Overview
+# 23 Nacos 介绍和架构
 ## 4 Nacos（重点）
 
 ![微服务技术第 79 页插图](assets/img-bcf533975b8edb77.png)

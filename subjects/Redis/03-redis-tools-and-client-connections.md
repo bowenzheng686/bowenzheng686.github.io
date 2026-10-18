@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Redis Database · Redis Tools and Client Connections"
+title: "Redis 数据库 · Redis 工具和客户端连接"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Redis Database Index]({{ '/subjects/Redis/' | relative_url }})
+[← 返回Redis 数据库目录]({{ '/subjects/Redis/' | relative_url }})
 
 {% raw %}
 
-# 03 Redis Tools and Client Connections
+# 03 Redis 工具和客户端连接
 ### 1.3 Redis 工具和客户端连接
 
 ### 安装的相关程序介绍

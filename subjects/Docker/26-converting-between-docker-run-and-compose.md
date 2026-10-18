@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Converting Between Docker Run and Compose"
+title: "Docker 容器技术 · 实战案例: docker run 和 Docker Compose 文件相互转换"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 26 Converting Between Docker Run and Compose
+# 26 实战案例: docker run 和 Docker Compose 文件相互转换
 ### 5.9 实战案例: docker run 和 Docker Compose 文件相互转换
 
 利用网站将docker 命令自动生成 Docker Compose

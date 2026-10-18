@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · GitLab User and Group Management"
+title: "Git 与 GitLab 版本控制 · GitLab 用户和组管理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 15 GitLab User and Group Management
+# 15 GitLab 用户和组管理
 ### 3.4 GitLab 用户和组管理
 
 ### 用户管理

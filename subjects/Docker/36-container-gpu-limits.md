@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Container GPU Limits"
+title: "Docker 容器技术 · 容器的 GPU 限制 （了解）"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 36 Container GPU Limits
+# 36 容器的 GPU 限制 （了解）
 ### 7.5 容器的 GPU 限制 （了解）
 
 <https://docs.docker.com/engine/containers/resource_constraints/#gpu>

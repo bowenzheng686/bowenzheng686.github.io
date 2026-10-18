@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Docker Container Technology · Managing Container Images"
+title: "Docker 容器技术 · 容器镜像管理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Docker Container Technology Index]({{ '/subjects/Docker/' | relative_url }})
+[← 返回Docker 容器技术目录]({{ '/subjects/Docker/' | relative_url }})
 
 {% raw %}
 
-# 03 Managing Container Images
+# 03 容器镜像管理
 ### 1.3 容器镜像管理
 
 ### 镜像结构和原理

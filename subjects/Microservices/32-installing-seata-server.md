@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · Installing Seata Server"
+title: "微服务架构 · Seata Server 安装"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 32 Installing Seata Server
+# 32 Seata Server 安装
 ### 6.2 Seata Server 安装
 
 <https://seata.io/zh-cn/docs/ops/deploy-server>

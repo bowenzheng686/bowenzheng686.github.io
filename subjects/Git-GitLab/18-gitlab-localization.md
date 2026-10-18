@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Git and GitLab Version Control · GitLab Localization"
+title: "Git 与 GitLab 版本控制 · GitLab 汉化"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Git and GitLab Version Control Index]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
-# 18 GitLab Localization
+# 18 GitLab 汉化
 ### 3.7 GitLab 汉化
 
 gitlab 默认是英文界面，可以汉化为中文界面，有三种汉化方式

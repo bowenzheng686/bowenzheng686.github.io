@@ -1,16 +1,16 @@
 ---
 layout: default
-title: "Microservices · How ZooKeeper Works"
+title: "微服务架构 · ZooKeeper 工作原理"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← Back to Microservices Index]({{ '/subjects/Microservices/' | relative_url }})
+[← 返回微服务架构目录]({{ '/subjects/Microservices/' | relative_url }})
 
 {% raw %}
 
-# 10 How ZooKeeper Works
+# 10 ZooKeeper 工作原理
 ### 2.2 ZooKeeper 工作原理
 
 ZooKeeper 是一个分布式服务框架，它主要是用来解决分布式应用中经常遇到的一些数据管理问题，如：命名服务、状态同步、配置中心、 集群管理等。
