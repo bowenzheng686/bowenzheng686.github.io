@@ -105,7 +105,9 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .prose pre code { padding: 0; background: none; color: inherit; font-size: inherit; overflow-wrap: normal; word-break: normal; }
 .code-copy { position: absolute; top: 12px; right: 13px; padding: 5px 11px; border: 1px solid currentColor; background: transparent; color: var(--inverse-ink); font-size: 11px; }
 .code-copy:hover { opacity: .7; }
-.prose table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 28px 0; font-size: 14px; }
+.prose table { display: block; width: max-content; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 28px auto; font-size: 14px; }
+.prose figure.table { width: fit-content; max-width: 100%; margin-inline: auto; }
+.prose figure figcaption, .prose table caption { text-align: center; }
 .prose th, .prose td { padding: 11px 14px; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { border-bottom-color: var(--ink); }
 .article-toc { position: sticky; top: 115px; padding-left: 18px; border-left: 1px solid var(--fine-line); }
