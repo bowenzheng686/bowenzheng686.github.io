@@ -10,6 +10,7 @@ subject_index: true
 <ul>
   <li><a href="{{ '/subjects/Linux/' | relative_url }}">Linux 系统（18 个章节）</a></li>
   <li><a href="{{ '/subjects/KVM/' | relative_url }}">KVM 虚拟化（8 个章节）</a></li>
+  <li><a href="{{ '/subjects/CCNA/' | relative_url }}">CCNA 网络技术（53 个章节）</a></li>
   <li><a href="{{ '/subjects/Kubernetes/' | relative_url }}">Kubernetes 学习笔记（36 个章节）</a></li>
   <li><a href="{{ '/subjects/Prometheus/' | relative_url }}">Prometheus 学习笔记（33 个章节）</a></li>
   <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}">Git 与 GitLab 版本控制（22 个章节）</a></li>

@@ -17,6 +17,7 @@ home: true
     <ol class="subject-list">
       <li><a href="{{ '/subjects/Linux/' | relative_url }}"><span>Linux 系统学习笔记</span><span>18 章</span></a></li>
       <li><a href="{{ '/subjects/KVM/' | relative_url }}"><span>KVM 虚拟化学习笔记</span><span>8 章</span></a></li>
+      <li><a href="{{ '/subjects/CCNA/' | relative_url }}"><span>CCNA 网络技术</span><span>53 章</span></a></li>
       <li><a href="{{ '/subjects/Kubernetes/' | relative_url }}"><span>Kubernetes 学习笔记</span><span>36 章</span></a></li>
       <li><a href="{{ '/subjects/Prometheus/' | relative_url }}"><span>Prometheus 学习笔记</span><span>33 章</span></a></li>
       <li><a href="{{ '/subjects/Git-GitLab/' | relative_url }}"><span>Git 与 GitLab 版本控制</span><span>22 章</span></a></li>

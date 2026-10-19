@@ -1,0 +1,29 @@
+.ccna-back { margin-bottom: 12px !important; font-size: 14px; }
+.ccna-part-label { margin: 0 0 12px !important; color: var(--muted); font-size: 14px; }
+.ccna-chapter-nav { display: flex; justify-content: space-between; gap: 24px; margin: 20px 0 36px; font-size: 14px; }
+.ccna-source { min-width: 0; }
+.ccna-source h2.h2 { margin: 30px 0 0; border: 0; padding: 0; color: var(--muted); font-size: 14px; }
+.ccna-source h2.h2a { margin: 0 0 35px; border: 0; padding: 0; color: var(--ink); font-size: clamp(25px, 3vw, 34px); font-weight: 750; }
+.ccna-source h3.h3box, .ccna-source h3.h3 { margin-top: 48px; }
+.ccna-source h4, .ccna-source h5 { overflow-wrap: anywhere; }
+.ccna-source h5 { margin: 22px 0 10px; font-size: 16px; }
+.ccna-source figure { max-width: 100%; margin: 30px 0; }
+.ccna-source figcaption { color: var(--muted); font-size: 14px; line-height: 1.65; }
+.ccna-source figcaption p { margin-bottom: 6px; }
+.ccna-source table { width: max-content; min-width: min(100%, 500px); }
+.ccna-source .obj, .ccna-source .obj1, .ccna-source .obj2 { margin-bottom: 3px; color: var(--muted); font-size: 14px; }
+.ccna-source .obj1 { margin-left: 1em; }
+.ccna-source .obj2 { margin-left: 2em; }
+.ccna-source .quiz { margin-top: 28px; }
+.ccna-source .ans_key, .ccna-source .ans_key1 { margin-bottom: 8px; }
+.ccna-source .note, .ccna-source aside { margin: 24px 0; padding: 16px 20px; border-left: 3px solid var(--accent); background: var(--paper-raised); }
+.ccna-source .note p:last-child, .ccna-source aside p:last-child { margin-bottom: 0; }
+.ccna-source .pre-ex { white-space: pre; tab-size: 4; }
+.ccna-source .image-p img, .ccna-source figure img { max-width: 100%; height: auto; }
+.ccna-source [id] { scroll-margin-top: 28px; }
+.ccna-appendix { margin-top: 70px; padding-top: 10px; border-top: 2px solid var(--line); }
+.ccna-appendix > section > h2:first-child { margin-top: 40px; }
+@media (max-width: 700px) {
+  .ccna-source table { min-width: 0; }
+  .ccna-source .obj2 { margin-left: 1em; }
+}

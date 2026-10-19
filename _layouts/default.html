@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="{{ '/assets/image-reader.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}">
   {% if page.syntax_highlight %}<link rel="stylesheet" href="{{ '/assets/kvm-syntax.css' | relative_url }}">{% endif %}
   {% if page.kubernetes_notes or page.prometheus_notes or page.pdf_notes %}<link rel="stylesheet" href="{{ '/assets/kubernetes-reading.css' | relative_url }}">{% endif %}
+  {% if page.ccna_notes %}<link rel="stylesheet" href="{{ '/assets/ccna-reading.css' | relative_url }}">{% endif %}
 </head>
 <body class="{% if page.home %}page-home{% else %}page-article{% endif %}">
   <a class="skip-link" href="#main-content">跳到正文</a>
