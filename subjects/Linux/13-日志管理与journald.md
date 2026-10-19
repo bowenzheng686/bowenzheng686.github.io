@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # 日志管理
 
-*系统的"黑匣子" —— 从 syslog 协议到 journald，从日志堆积到轮转清理*
-
-操 / 实 / 运 · 风格：问题驱动 · 追本溯源 · 目标：建立完整日志认知体系，故障排查不靠猜测
-
 ## 1 日志体系概述 {#sec13-1}
 
 ### 从 syslog 协议到二进制 journald —— 日志的三层架构 · 核心 {#从-syslog-协议到二进制-journald-日志的三层架构-核心}
@@ -409,3 +405,9 @@ awk '{print $10, $7}' /var/log/nginx/access.log | sort -rn | head -20
 <strong>JSON</strong> · JavaScript Object Notation JavaScript 对象表示法
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/12-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%B8%8EGRUB.html' | relative_url }}">← 上一章：启动流程与GRUB</a>
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+  <a href="{{ '/subjects/Linux/14-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E7%81%AB%E5%A2%99.html' | relative_url }}">下一章：安全与防火墙 →</a>
+</nav>

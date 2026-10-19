@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # 启动流程与GRUB
 
-*从按下电源到登录提示 —— Linux 启动的每一步、每一个关键角色*
-
-固件：BIOS / UEFI · 引导器：GRUB2 · 进程1：systemd
-
 ## 1 启动流程6步走 — 从按下电源到登录提示 {#sec12-1}
 
 ### 一次完整的 Linux 启动涉及固件→引导器→内核→init进程四个阶段的精密协作 · 必知 {#一次完整的-linux-启动涉及固件引导器内核init进程四个阶段的精密协作-必知}
@@ -526,3 +522,9 @@ systemd-analyze critical-chain  # 最长依赖链
 ![展示正常 target 层次、恢复目标、default.target 以及 start/isolate 差异。](assets/chapter12/05-systemd-targets-start-isolate.webp)
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/11-%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E4%B8%8E%E7%BC%96%E8%AF%91.html' | relative_url }}">← 上一章：内核模块与编译</a>
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+  <a href="{{ '/subjects/Linux/13-%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86%E4%B8%8Ejournald.html' | relative_url }}">下一章：日志管理 →</a>
+</nav>

@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # Linux 概述与发行版选择
 
-*为什么 Linux 统治了服务器世界 —— 从历史渊源到实际选型*
-
-风格：问题驱动 · 追本溯源 · 目标：真正理解 Linux 的本质 · 主题：终端绿 (Terminal Green)
-
 ## 1 Linux 的起源与哲学 {#sec01-1}
 
 ### 从 UNIX 到 GNU/Linux —— 一段关于自由的故事 · 核心 {#从-unix-到-gnulinux-一段关于自由的故事-核心}
@@ -225,3 +221,8 @@ echo $SHELL             # /usr/bin/zsh
 <strong>SSH</strong> · Secure Shell 安全外壳协议
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+  <a href="{{ '/subjects/Linux/02-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.html' | relative_url }}">下一章：文件系统层次结构 →</a>
+</nav>

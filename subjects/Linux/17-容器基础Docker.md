@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # 容器基础Docker
 
-*下一代应用交付 —— 从虚拟机的重量到容器的轻量*
-
-引擎：Docker / containerd · 风格：问题驱动 · 追本溯源 · 目标：从零构建和编排容器化应用
-
 ## 1 容器 vs 虚拟机的本质区别 {#sec17-1}
 
 ### 场景：为什么说容器"不是轻量级虚拟机" · 基础 {#场景为什么说容器不是轻量级虚拟机-基础}
@@ -549,3 +545,9 @@ curl http://server:3000/health
 ![连接构建、测试、不可变 tag、Registry、版本发布、健康切流与回滚。](assets/chapter17/05-container-delivery-rollback.webp)
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/16-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E4%B8%8E%E7%9B%91%E6%8E%A7.html' | relative_url }}">← 上一章：性能调优与监控</a>
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+  <a href="{{ '/subjects/Linux/18-Linux%E5%AE%9E%E6%88%98%E9%80%9F%E6%9F%A5%E6%89%8B%E5%86%8C.html' | relative_url }}">下一章：Linux实战速查手册 →</a>
+</nav>

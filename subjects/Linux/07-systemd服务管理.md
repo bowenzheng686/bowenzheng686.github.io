@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # systemd 服务管理
 
-*Linux 的「后台总管」——从 SysV init 到 systemd 的进化之路*
-
-核心工具：systemctl / journalctl · 风格：问题驱动 · 追本溯源 · 目标：掌握 Linux 服务管理全流程
-
 ## 1 systemd vs SysV init {#sec07-1}
 
 ### Linux 初始化系统为什么需要一次彻底的变革？ · 原理 {#linux-初始化系统为什么需要一次彻底的变革-原理}
@@ -504,3 +500,9 @@ $ systemd-analyze blame
 <strong>UDP</strong> · User Datagram Protocol 用户数据报协议
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/06-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86.html' | relative_url }}">← 上一章：软件包管理</a>
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+  <a href="{{ '/subjects/Linux/08-Shell%E8%84%9A%E6%9C%AC%E5%9F%BA%E7%A1%80.html' | relative_url }}">下一章：Shell 脚本基础 →</a>
+</nav>

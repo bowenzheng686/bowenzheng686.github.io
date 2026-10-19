@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # Shell 脚本基础
 
-*从手工敲命令到自动化生产力工具——运维工程师的必修课*
-
-Shell：Bash / POSIX sh · 风格：问题驱动 · 追本溯源 · 目标：从零写出生产级运维脚本
-
 ## 1 为什么需要脚本 {#sec08-1}
 
 ### 从"每天敲一百遍同样的命令"到"一次编写，无限复用" · 入门 {#从每天敲一百遍同样的命令到一次编写无限复用-入门}
@@ -632,3 +628,9 @@ debug "用户: $(whoami)"
 ![把日志清理脚本的前置检查、执行、验证和退出清理连成生产流程。](assets/chapter08/04-strict-mode-trap-cleanup.webp)
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/07-systemd%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86.html' | relative_url }}">← 上一章：systemd 服务管理</a>
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+  <a href="{{ '/subjects/Linux/09-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E5%89%91%E5%AE%A2.html' | relative_url }}">下一章：文本处理三剑客 →</a>
+</nav>

@@ -12,10 +12,6 @@ syntax_highlight: true
 
 # Linux实战速查手册
 
-*你的随身命令行参考 —— 覆盖前 17 章常用场景；执行前先替换设备名、路径、主机与服务名*
-
-涵盖：命令 / 配置 / 快捷键 / 信号 / 排障 / 网络 · 风格：表格式速查 · 即查即用 · 目标：所有运维必备命令一页打尽
-
 ## 1 命令分类速查表 {#sec18-1}
 
 ### 文件操作 —— ls / cp / mv / rm / find / ln / tar · 核心 {#文件操作-ls-cp-mv-rm-find-ln-tar-核心}
@@ -640,3 +636,8 @@ echo "=== 系统解析器测试 ===" && getent ahosts example.com || echo "当�
 <strong>SSL</strong> · Secure Sockets Layer 安全套接层
 
 {% endraw %}
+
+<nav class="article-end" aria-label="章节导航">
+  <a href="{{ '/subjects/Linux/17-%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80Docker.html' | relative_url }}">← 上一章：容器基础Docker</a>
+  <a href="{{ '/subjects/Linux/' | relative_url }}">返回 Linux 系统目录</a>
+</nav>
