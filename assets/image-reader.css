@@ -42,6 +42,7 @@
   background: #f7f8f6;
 }
 .image-viewer-label { margin-right: auto; font-size: 13px; font-weight: 600; }
+.image-viewer-zoom { min-width: 3.5em; font-size: 12px; text-align: right; }
 .image-viewer-toolbar button {
   padding: 5px 9px;
   border: 1px solid #b9c2bc;
@@ -58,6 +59,7 @@
   width: 100%;
   height: calc(100% - 48px);
   overflow: auto;
+  overscroll-behavior: contain;
   text-align: center;
   background: #fff;
 }
@@ -73,7 +75,6 @@
   box-shadow: none;
   background: #fff;
 }
-.image-viewer-viewport img.image-viewer-original { max-width: none; max-height: none; }
 @media (max-width: 640px) {
   .image-viewer { width: 100vw; height: 100vh; border-radius: 0; }
   .image-viewer-label { display: none; }

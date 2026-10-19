@@ -12,6 +12,7 @@
     dialog.setAttribute("aria-label", "查看原尺寸图片");
     dialog.innerHTML = '<div class="image-viewer-toolbar">' +
       '<span class="image-viewer-label">图片查看</span>' +
+      '<span class="image-viewer-zoom" aria-label="当前缩放比例">100%</span>' +
       '<button type="button" data-image-fit aria-pressed="true">适应窗口</button>' +
       '<button type="button" data-image-original aria-pressed="false">原始大小</button>' +
       '<button type="button" data-image-close aria-label="关闭图片">关闭</button>' +
@@ -23,24 +24,80 @@
     var fitButton = dialog.querySelector("[data-image-fit]");
     var originalButton = dialog.querySelector("[data-image-original]");
     var closeButton = dialog.querySelector("[data-image-close]");
+    var zoomLabel = dialog.querySelector(".image-viewer-zoom");
+    var currentScale = 1;
+    var scaleMode = "fit";
 
-    function setScale(original) {
-      fullImage.classList.toggle("image-viewer-original", original);
-      fitButton.setAttribute("aria-pressed", String(!original));
-      originalButton.setAttribute("aria-pressed", String(original));
-      window.requestAnimationFrame(function () {
-        viewport.scrollLeft = original ? Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2) : 0;
-        viewport.scrollTop = original ? Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2) : 0;
-      });
+    function fitScale() {
+      if (!fullImage.naturalWidth || !fullImage.naturalHeight) return 1;
+      return Math.min(1, viewport.clientWidth / fullImage.naturalWidth,
+        viewport.clientHeight / fullImage.naturalHeight);
     }
 
-    fitButton.addEventListener("click", function () { setScale(false); });
-    originalButton.addEventListener("click", function () { setScale(true); });
+    function setScale(nextScale, mode, pointer) {
+      if (!fullImage.naturalWidth || !fullImage.naturalHeight) return;
+      var imageX = 0;
+      var imageY = 0;
+      if (pointer) {
+        var before = fullImage.getBoundingClientRect();
+        imageX = Math.max(0, Math.min(fullImage.naturalWidth,
+          (pointer.clientX - before.left) / currentScale));
+        imageY = Math.max(0, Math.min(fullImage.naturalHeight,
+          (pointer.clientY - before.top) / currentScale));
+      }
+
+      currentScale = nextScale;
+      scaleMode = mode;
+      fullImage.style.maxWidth = "none";
+      fullImage.style.maxHeight = "none";
+      fullImage.style.width = fullImage.naturalWidth * currentScale + "px";
+      fullImage.style.height = fullImage.naturalHeight * currentScale + "px";
+      fitButton.setAttribute("aria-pressed", String(mode === "fit"));
+      originalButton.setAttribute("aria-pressed", String(mode === "original"));
+      zoomLabel.textContent = Math.round(currentScale * 100) + "%";
+
+      if (pointer) {
+        var after = fullImage.getBoundingClientRect();
+        viewport.scrollLeft += after.left + imageX * currentScale - pointer.clientX;
+        viewport.scrollTop += after.top + imageY * currentScale - pointer.clientY;
+      } else {
+        viewport.scrollLeft = mode === "original"
+          ? Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2) : 0;
+        viewport.scrollTop = mode === "original"
+          ? Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2) : 0;
+      }
+    }
+
+    fitButton.addEventListener("click", function () { setScale(fitScale(), "fit"); });
+    originalButton.addEventListener("click", function () { setScale(1, "original"); });
+    viewport.addEventListener("wheel", function (event) {
+      if (!dialog.open || !fullImage.naturalWidth) return;
+      event.preventDefault();
+      var delta = event.deltaY * (event.deltaMode === 1 ? 16
+        : event.deltaMode === 2 ? viewport.clientHeight : 1);
+      var minScale = Math.max(0.1, fitScale() / 4);
+      var nextScale = Math.max(minScale,
+        Math.min(4, currentScale * Math.exp(-delta * 0.0012)));
+      if (Math.abs(nextScale - currentScale) > 0.001) {
+        setScale(nextScale, "custom", event);
+      }
+    }, { passive: false });
+    fullImage.addEventListener("load", function () {
+      if (dialog.open && scaleMode === "fit") setScale(fitScale(), "fit");
+    });
+    window.addEventListener("resize", function () {
+      if (dialog.open && scaleMode === "fit") setScale(fitScale(), "fit");
+    });
     closeButton.addEventListener("click", function () { dialog.close(); });
     dialog.addEventListener("click", function (event) {
       if (event.target === dialog) dialog.close();
     });
-    dialog.addEventListener("close", function () { fullImage.removeAttribute("src"); });
+    dialog.addEventListener("close", function () {
+      fullImage.removeAttribute("src");
+      fullImage.removeAttribute("style");
+      currentScale = 1;
+      scaleMode = "fit";
+    });
 
     images.forEach(function (img) {
       try {
@@ -73,10 +130,12 @@
         if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         if (typeof dialog.showModal !== "function") return;
         event.preventDefault();
+        currentScale = 1;
+        scaleMode = "fit";
+        dialog.showModal();
         fullImage.src = img.currentSrc || img.src;
         fullImage.alt = img.alt || "放大图片";
-        setScale(false);
-        dialog.showModal();
+        if (fullImage.complete && fullImage.naturalWidth) setScale(fitScale(), "fit");
         closeButton.focus();
       });
     });
