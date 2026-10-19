@@ -19,6 +19,9 @@
 .ccna-source .note, .ccna-source aside { margin: 24px 0; padding: 16px 20px; border-left: 3px solid var(--accent); background: var(--paper-raised); }
 .ccna-source .note p:last-child, .ccna-source aside p:last-child { margin-bottom: 0; }
 .ccna-source .pre-ex { white-space: pre; tab-size: 4; }
+.ccna-source pre strong { color: #e8edf5; font-weight: 750; }
+.ccna-source pre .bg-green { background: rgba(127, 212, 147, .16); }
+.ccna-source pre .bg-green strong { color: inherit; }
 .ccna-source .image-p img, .ccna-source figure img { max-width: 100%; height: auto; }
 .ccna-source [id] { scroll-margin-top: 28px; }
 .ccna-appendix { margin-top: 70px; padding-top: 10px; border-top: 2px solid var(--line); }

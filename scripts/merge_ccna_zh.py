@@ -23,6 +23,118 @@ PAGE_TYPES = ("index-zh.html", "references-zh.html", "code-images-zh.html")
 APPENDIX_PREFIX = {"index-zh.html": "", "references-zh.html": "ref-", "code-images-zh.html": "code-"}
 
 
+def normalize_code_whitespace(pre) -> None:
+    """Undo the source's doubled CRs without removing intentional blank lines."""
+    for element in pre.iter():
+        if element.text is not None:
+            element.text = re.sub(r"\n{3,}", "\n\n", re.sub(r"\r+\n?", "\n", element.text))
+        if element is not pre and element.tail is not None:
+            element.tail = re.sub(r"\n{3,}", "\n\n", re.sub(r"\r+\n?", "\n", element.tail))
+
+
+def code_text_nodes(code):
+    """Return source text nodes with their offsets, including emphasized text."""
+    nodes = []
+    offset = 0
+
+    def visit(element):
+        nonlocal offset
+        if element.text:
+            nodes.append((element, "text", element.text, offset))
+            offset += len(element.text)
+        for child in element:
+            visit(child)
+            if child.tail:
+                nodes.append((child, "tail", child.tail, offset))
+                offset += len(child.tail)
+
+    visit(code)
+    return nodes
+
+
+def highlight_code(pre) -> None:
+    """Add lightweight static syntax colors while retaining the source markup."""
+    code = pre.find("code")
+    if code is None:
+        return
+    code.set("class", " ".join(filter(None, (code.get("class"), "highlight"))))
+    nodes = code_text_nodes(code)
+    source = "".join(node[2] for node in nodes)
+    stripped = source.lstrip()
+    language = "json" if stripped.startswith(("{", "[")) else "yaml" if stripped.startswith("---") else "cli"
+    occupied = [False] * len(source)
+    tokens = []
+
+    def mark(pattern, css_class, flags=0, group=0):
+        for match in re.finditer(pattern, source, flags):
+            start, end = match.span(group)
+            if start == end or any(occupied[start:end]):
+                continue
+            tokens.append((start, end, css_class))
+            occupied[start:end] = [True] * (end - start)
+
+    if language == "json":
+        mark(r'"(?:\\.|[^"\\])*"(?=\s*:)', "na")
+        mark(r'"(?:\\.|[^"\\])*"', "s")
+        mark(r"\b(?:true|false|null)\b", "k")
+    elif language == "yaml":
+        mark(r"^[ \t]*#.*$", "c1", re.M)
+        mark(r"^[ \t]*(?:-\s+)?([\w-]+)(?=\s*:)", "na", re.M, 1)
+        mark(r"(?:\"[^\"\n]*\"|'[^'\n]*')", "s")
+        mark(r"\{\{[^\n}]*\}\}", "nv")
+    else:
+        mark(r"^[ \t]*!.*$", "c1", re.M)
+        mark(r"^[ \t]*[\w.-]+(?:\([\w-]+\))*[>#]", "gp", re.M)
+        mark(r"^[ \t]*(?:[\w.-]+(?:\([\w-]+\))*[>#][ \t]*)?(show|configure|interface|hostname|router|switchport|ip|ipv6|line|enable|password|no|shutdown|exit|copy|ping|traceroute|vlan|access-list|network|description|service|logging|ntp|snmp-server|spanning-tree|crypto|username|write|erase|reload)\b(?!:)", "k", re.I | re.M, 1)
+        mark(r"(?:\"[^\"\n]*\"|'[^'\n]*')", "s")
+        mark(r"\b(?:[0-9a-fA-F]{4}\.){2}[0-9a-fA-F]{4}\b", "m")
+        mark(r"\b(?:\d{1,3}\.){3}\d{1,3}(?:/\d+)?\b", "m")
+        mark(r"(?<![\w:])(?:[0-9a-fA-F]*:){2,}[0-9a-fA-F:]*(?:/\d+)?", "m")
+    mark(r"(?<![\w.])\d+(?:\.\d+)?(?![\w.])", "m")
+    tokens.sort()
+
+    def replace_node(element, kind, value, start):
+        pieces = []
+        cursor = 0
+        for token_start, token_end, css_class in tokens:
+            left = max(token_start - start, 0)
+            right = min(token_end - start, len(value))
+            if left >= right:
+                continue
+            if left > cursor:
+                pieces.append((value[cursor:left], None))
+            pieces.append((value[left:right], css_class))
+            cursor = right
+        if not pieces:
+            return
+        if cursor < len(value):
+            pieces.append((value[cursor:], None))
+        if kind == "text":
+            element.text = None
+            parent, index = element, 0
+        else:
+            element.tail = None
+            parent, index = element.getparent(), element.getparent().index(element) + 1
+        previous = None if kind == "text" else element
+        for piece, css_class in pieces:
+            if css_class:
+                span = html.Element("span")
+                span.set("class", css_class)
+                span.text = piece
+                parent.insert(index, span)
+                index += 1
+                previous = span
+            elif previous is None:
+                parent.text = (parent.text or "") + piece
+            else:
+                previous.tail = (previous.tail or "") + piece
+
+    for element, kind, value, offset in nodes:
+        replace_node(element, kind, value, offset)
+    if "".join(code.itertext()) != source:
+        raise ValueError("Syntax highlighting changed code text")
+
+
 def chapter_key(path: Path) -> tuple[int, int]:
     volume = int(path.parent.name.removeprefix("volume"))
     chapter = int(path.name.rsplit("chapter", 1)[1])
@@ -66,6 +178,9 @@ def prepare_main(source_file: Path, source_to_key: dict[Path, tuple[int, int]]):
         raise ValueError(f"Expected exactly one main in {source_file}")
     main = main[0]
     prefix = APPENDIX_PREFIX[source_file.name]
+    for pre in main.xpath(".//pre"):
+        normalize_code_whitespace(pre)
+        highlight_code(pre)
     for element in main.iter():
         if element.get("id") and prefix:
             element.set("id", prefix + element.get("id"))
@@ -155,6 +270,7 @@ def build():
             f"title: {escape_yaml(f'CCNA 网络技术 · {volume_name}第 {key[1]} 章 · {title}')}\n"
             "subject_page: true\n"
             "ccna_notes: true\n"
+            "syntax_highlight: true\n"
             "---\n\n"
             '<p class="ccna-back"><a href="{{ \'/subjects/CCNA/\' | relative_url }}">← 返回 CCNA 目录</a></p>\n'
             f'<p class="ccna-part-label">{volume_name} · {part_title}</p>\n'
