@@ -11,7 +11,7 @@
     dialog.className = "image-viewer";
     dialog.setAttribute("aria-label", "查看原尺寸图片");
     dialog.innerHTML = '<div class="image-viewer-toolbar">' +
-      '<span class="image-viewer-label">图片查看</span>' +
+      '<span class="image-viewer-label">滚轮缩放 · 按住拖动</span>' +
       '<span class="image-viewer-zoom" aria-label="当前缩放比例">100%</span>' +
       '<button type="button" data-image-fit aria-pressed="true">适应窗口</button>' +
       '<button type="button" data-image-original aria-pressed="false">原始大小</button>' +
@@ -27,6 +27,24 @@
     var zoomLabel = dialog.querySelector(".image-viewer-zoom");
     var currentScale = 1;
     var scaleMode = "fit";
+    var pan = null;
+
+    function canPan() {
+      return viewport.scrollWidth > viewport.clientWidth + 1 ||
+        viewport.scrollHeight > viewport.clientHeight + 1;
+    }
+
+    function updatePanState() {
+      viewport.classList.toggle("is-pannable", canPan());
+    }
+
+    function endPan(event) {
+      if (!pan || (event && event.pointerId !== pan.id)) return;
+      var pointerId = pan.id;
+      pan = null;
+      viewport.classList.remove("is-panning");
+      if (viewport.hasPointerCapture(pointerId)) viewport.releasePointerCapture(pointerId);
+    }
 
     function fitScale() {
       if (!fullImage.naturalWidth || !fullImage.naturalHeight) return 1;
@@ -36,14 +54,20 @@
 
     function setScale(nextScale, mode, pointer) {
       if (!fullImage.naturalWidth || !fullImage.naturalHeight) return;
+      var focus = null;
       var imageX = 0;
       var imageY = 0;
-      if (pointer) {
+      if (mode !== "fit") {
+        var viewportRect = viewport.getBoundingClientRect();
+        focus = pointer || {
+          clientX: viewportRect.left + viewportRect.width / 2,
+          clientY: viewportRect.top + viewportRect.height / 2
+        };
         var before = fullImage.getBoundingClientRect();
         imageX = Math.max(0, Math.min(fullImage.naturalWidth,
-          (pointer.clientX - before.left) / currentScale));
+          (focus.clientX - before.left) / currentScale));
         imageY = Math.max(0, Math.min(fullImage.naturalHeight,
-          (pointer.clientY - before.top) / currentScale));
+          (focus.clientY - before.top) / currentScale));
       }
 
       currentScale = nextScale;
@@ -56,20 +80,42 @@
       originalButton.setAttribute("aria-pressed", String(mode === "original"));
       zoomLabel.textContent = Math.round(currentScale * 100) + "%";
 
-      if (pointer) {
+      if (focus) {
         var after = fullImage.getBoundingClientRect();
-        viewport.scrollLeft += after.left + imageX * currentScale - pointer.clientX;
-        viewport.scrollTop += after.top + imageY * currentScale - pointer.clientY;
+        viewport.scrollLeft += after.left + imageX * currentScale - focus.clientX;
+        viewport.scrollTop += after.top + imageY * currentScale - focus.clientY;
       } else {
-        viewport.scrollLeft = mode === "original"
-          ? Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2) : 0;
-        viewport.scrollTop = mode === "original"
-          ? Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2) : 0;
+        viewport.scrollLeft = 0;
+        viewport.scrollTop = 0;
       }
+      updatePanState();
     }
 
     fitButton.addEventListener("click", function () { setScale(fitScale(), "fit"); });
     originalButton.addEventListener("click", function () { setScale(1, "original"); });
+    viewport.addEventListener("pointerdown", function (event) {
+      if (pan || event.button !== 0 || (event.pointerType !== "mouse" && event.pointerType !== "pen") || !canPan()) return;
+      event.preventDefault();
+      pan = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        scrollLeft: viewport.scrollLeft,
+        scrollTop: viewport.scrollTop
+      };
+      viewport.setPointerCapture(event.pointerId);
+      viewport.classList.add("is-panning");
+    });
+    viewport.addEventListener("pointermove", function (event) {
+      if (!pan || event.pointerId !== pan.id) return;
+      event.preventDefault();
+      viewport.scrollLeft = pan.scrollLeft - (event.clientX - pan.x);
+      viewport.scrollTop = pan.scrollTop - (event.clientY - pan.y);
+    });
+    viewport.addEventListener("pointerup", endPan);
+    viewport.addEventListener("pointercancel", endPan);
+    viewport.addEventListener("lostpointercapture", endPan);
+    viewport.addEventListener("dragstart", function (event) { event.preventDefault(); });
     viewport.addEventListener("wheel", function (event) {
       if (!dialog.open || !fullImage.naturalWidth) return;
       event.preventDefault();
@@ -93,10 +139,12 @@
       if (event.target === dialog) dialog.close();
     });
     dialog.addEventListener("close", function () {
+      endPan();
       fullImage.removeAttribute("src");
       fullImage.removeAttribute("style");
       currentScale = 1;
       scaleMode = "fit";
+      updatePanState();
     });
 
     images.forEach(function (img) {

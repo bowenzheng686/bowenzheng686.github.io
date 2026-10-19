@@ -63,6 +63,8 @@
   text-align: center;
   background: #fff;
 }
+.image-viewer-viewport.is-pannable { cursor: grab; }
+.image-viewer-viewport.is-panning { cursor: grabbing; user-select: none; }
 .image-viewer-viewport img {
   display: block;
   width: auto;
@@ -74,6 +76,8 @@
   border-radius: 0;
   box-shadow: none;
   background: #fff;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 @media (max-width: 640px) {
   .image-viewer { width: 100vw; height: 100vh; border-radius: 0; }
