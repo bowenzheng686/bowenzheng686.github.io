@@ -9,328 +9,113 @@ syntax_highlight: true
 
 # 第 08 章 · 创建 Windows 虚拟机
 
-> 公开版已将实验密码、主机标识和网络地址替换为示例值；正文图片已恢复，截图中的敏感区域已做本地像素覆盖。执行命令前请按实际环境调整。
+本章以 Windows Server 2016 为例，完成安装、VirtIO 驱动配置及模板克隆。与 Linux 来宾相比，关键区别是 Windows 安装程序未必内置所选 VirtIO 设备的驱动：安装时看不到磁盘、首次登录后看不到网卡，通常分别对应存储和网络驱动尚未加载，而不是虚拟机创建失败。
 
-## 8.1 准备工作
+> 文中的镜像名、路径和虚拟机配置是实验示例。实际操作前，应确认 Windows 安装介质、VirtIO 驱动版本和授权条件适用于自己的环境。截图只用于辨认关键界面，驱动目录以命令中配置的设备类型为准。
 
-### 资源获取
+## 8.1 准备安装介质与驱动
 
-**获取资源**
+准备 Windows 安装 ISO 和 VirtIO 驱动 ISO，并让运行 libvirt 的宿主机可以读取。VirtIO 驱动可从 [virtio-win 发布目录](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/)获取；旧版本位于[历史版本目录](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/)。本例使用 `virtio-win-0.1.266.iso`，版本号不是通用要求，选择时应核对驱动包中是否有对应的 Windows 版本目录。
 
-**VirtIO 下载地址：**
-https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/
-**VirtIO 历史版本下载地址：**
-https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/
+以下三种驱动与本章直接相关：
 
-驱动版本应与来宾 Windows 版本及宿主机虚拟设备配置兼容。下面沿用原实验的 `virtio-win-0.1.266.iso`；部署新环境时应先查阅项目发布说明并选受支持的稳定版本，不必固定使用旧版 0.1.141。
+| 虚拟设备 | 安装阶段或使用阶段 | 驱动 ISO 中的常见目录 |
+| --- | --- | --- |
+| VirtIO 块设备（`bus=virtio`） | 安装时识别系统盘 | `viostor/2k16/amd64` |
+| VirtIO SCSI 控制器（`bus=scsi`，且配置 VirtIO SCSI 控制器） | 安装时识别系统盘 | `vioscsi/2k16/amd64` |
+| VirtIO 网卡（`model=virtio`） | 系统安装后识别网卡 | `NetKVM/2k16/amd64` |
 
-![原文插图（第 160 页）]({{ '/subjects/KVM/assets/p160-img01.webp' | relative_url }})
+**存储总线与驱动必须对应。** 本章的创建命令使用 `bus=virtio`，因此在 Windows 安装程序中应加载 `viostor`，而非 `vioscsi`。原实验截图展示过 `vioscsi` 目录，那对应另一种磁盘控制器配置，不能照着截图与本章命令混用。不同驱动 ISO 的目录名称可能略有差异，应以 ISO 实际内容为准。
 
-可以检索 latest-virtio 和 stable-virtio
+VirtIO 让来宾系统通过为虚拟化设计的设备和驱动完成 I/O，通常比完全模拟旧式硬件更高效。并非所有 Windows 虚拟机都“必须”使用 VirtIO：IDE/SATA 磁盘或模拟网卡可能可以直接安装，但性能和功能取舍不同；这里选择 VirtIO，因此需要额外加载驱动。
 
-**获取稳定版本**
+## 8.2 创建虚拟机
 
-历史版本示例：<https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.141-1/virtio-win-0.1.141.iso>、<https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.266-1/virtio-win-0.1.266.iso>。
+先确认镜像文件和桥接网络存在，并为系统盘选定足够的空间。以下命令示例使用 2 个 vCPU、4 GiB 内存和 20 GiB QCOW2 系统盘；实际资源应满足所选 Windows 版本及工作负载的要求。
 
-**注意：**
-
-不同驱动版本支持的 Windows 系统范围会变化，不应仅凭镜像版本号推断兼容性。安装前核对驱动包内的系统目录及官方兼容说明；本例使用 Windows Server 2016 对应目录。
-
-### virtio定位
-
-在 KVM 中创建 Windows 虚拟机时，VirtIO 是一套由 Red Hat 开发的开源虚拟化驱动程序和设备规范，主要作用是优化虚拟机与宿主机之间的 I/O 性能，解决传统虚拟化中 “模拟设备” 效率低下的问题。
-
-KVM 在 Linux 内核中提供虚拟化能力，QEMU 则提供虚拟设备。Windows 安装介质不一定内置所选 VirtIO 存储或网卡驱动，因此安装时可能需要额外加载。
-
-若不使用 VirtIO，虚拟机只能通过 KVM 模拟的 “标准硬件设备”（如 Intel E1000 网卡、IDE 硬盘控制器等）与宿主机交互。这些模拟设备的兼容性好，但性能差（模拟过程会消耗大量 CPU 资源，且 I/O 延迟高）。
-
-**VirtIO 采用 “半虚拟化” 模式：**
-
-宿主机提供专门的 VirtIO 虚拟设备（如 VirtIO 网卡、VirtIO 块设备）；虚拟机中安装 VirtIO 驱动后，可直接与宿主机的 VirtIO 设备通信，跳过冗余的硬件模拟环节，大幅提升磁盘 I/O、网络传输等性能（尤其是高负载场景下）。
-
-2 Windows 系统默认不包含 KVM 虚拟设备的驱动，若直接在 KVM 中安装 Windows，可能出现磁盘无法识别、网卡无法识别等问题。VirtIO 为 Windows 虚拟机提供了多种核心虚拟设备的驱动，从而解决 Windows 对 KVM 的兼容性问题
-
-**VirtIO 块设备驱动：**
-
-优化虚拟机磁盘（如 QCOW2、RAW 镜像）的读写性能，替代传统的 IDE/SATA 模拟驱动。
-
-**VirtIO 网卡驱动：**
-
-提升网络吞吐量和响应速度，替代 E1000 等模拟网卡驱动。
-
-**VirtIO 气球驱动（Balloon）：**
-
-实现虚拟机内存的动态分配（宿主机可根据需求调整虚拟机的实际内存占用）。
-
-**VirtIO 控制台驱动：**
-
-支持虚拟机与宿主机的控制台交互（类似串口通信）。
-
-因此，在 KVM 中部署 Windows 时，几乎都会使用 VirtIO 驱动（需在安装系统时手动加载），否则会面临性能瓶颈或设备无法识别的问题。
-
-## 8.2 部署实践
-
-### 创建虚拟机
-
-**安装虚拟机**
-
-````console
-[root@kvm-host ~]# cd /data/images/
-[root@kvm-host images]# mv '14393.0.161119-1705.RS1_REFRESH_SERVER_EVAL_X64FRE_ZH-CN.ISO' cn_windows_server_2016_x64_dvd_9718765.iso
-[root@kvm-host images]# ls
-CentOS-7-x86_64-Minimal-2009.iso cn_windows_server_2016_x64_dvd_9718765.iso
- virtio-win-0.1.266.iso
+````bash
+ls -lh /data/images/cn_windows_server_2016_x64_dvd_9718765.iso \
+       /data/images/virtio-win-0.1.266.iso
+ip link show br0
+osinfo-query os | grep -i 'win2k16'
 ````
 
-**创建虚拟机**
+若本机 `osinfo-query` 列出的系统标识不同，应将下面的 `--os-variant` 调整为实际可用的值。`--cdrom` 指向 Windows 安装介质；第二个只读光驱装载 VirtIO 驱动 ISO。
 
-````console
-[root@kvm-host ~]# virt-install \
---os-variant=win2k16 --virt-type=kvm \
---name win2016 --ram 4096 --vcpus=2 \
---cdrom=/data/images/cn_windows_server_2016_x64_dvd_9718765.iso \
---network=bridge=br0,model=virtio \
---graphics vnc,listen=127.0.0.1 --noautoconsole \
---disk path=/opt/win2016.qcow2,size=20,bus=virtio,format=qcow2 \
---disk path=/data/images/virtio-win-0.1.266.iso,device=cdrom
+````bash
+virt-install \
+  --name win2016 \
+  --virt-type kvm \
+  --os-variant win2k16 \
+  --memory 4096 --vcpus 2 \
+  --cdrom /data/images/cn_windows_server_2016_x64_dvd_9718765.iso \
+  --disk path=/opt/win2016.qcow2,size=20,format=qcow2,bus=virtio \
+  --disk path=/data/images/virtio-win-0.1.266.iso,device=cdrom \
+  --network bridge=br0,model=virtio \
+  --graphics vnc,listen=127.0.0.1 \
+  --noautoconsole
 ````
 
-上例将 VNC 仅绑定本机；如需从其他主机连接，应通过受控通道访问，而不是直接将未加密的 VNC 暴露在所有接口上。安装介质、目标磁盘路径和桥接网络也应先核对。
+这里将 VNC 绑定在宿主机回环地址；可在宿主机图形桌面使用 `virt-manager` 打开控制台。远程管理时应通过受控连接访问 libvirt 或控制台，不要为了连接方便直接把未加密的 VNC 暴露到公网。创建后可用 `virsh list --all` 确认域存在并查看状态。
 
-````text
-开始安装......
-正在分配 'win2016.qcow2' | 20 GB 00:00:00
-创建域...... | 00:00:00
-域仍在运行。安装可能正在进行中。
-可以重新连接到控制台以完成安装过程。
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-------------------------------
- 4 win2016 运行
+## 8.3 安装 Windows 并加载存储驱动
+
+在虚拟机控制台启动 Windows 安装程序，选择语言、系统版本并接受许可条款；安装类型选择“自定义”。这些向导页面不影响 KVM 配置，本章不逐屏重复。
+
+如果“你想将 Windows 安装在哪里？”没有显示目标磁盘，点击“加载驱动程序”，浏览 VirtIO 光驱，选择与**本章 `bus=virtio` 命令**对应的 `viostor/2k16/amd64` 目录，然后继续加载。若更改了虚拟磁盘总线或 Windows 版本，需重新匹配驱动，不能只按截图中的目录名选择。
+
+驱动加载后，安装目标列表应出现约 20 GiB 的虚拟磁盘；若仍为空，依次核对域的磁盘总线、驱动目录的系统版本与架构、VirtIO ISO 是否成功挂载。确认目标盘后继续安装，等待自动重启和首次启动，不需要依据旧截图中的固定耗时判断是否成功。
+
+![加载匹配的存储驱动后，安装程序显示虚拟磁盘]({{ '/subjects/KVM/assets/p169-img02.webp' | relative_url }})
+
+首次登录时为管理员设置独立密码。若控制台截获了组合键，可在 `virt-manager` 的“发送按键”菜单发送 Ctrl+Alt+Del。密码及画面布局可能随 Windows 版本不同而变化。
+
+## 8.4 安装 VirtIO 网卡驱动
+
+桌面已出现但网络未连接时，先在“设备管理器”检查网卡或带感叹号的以太网设备。对该设备选择“更新驱动程序”→“浏览我的计算机以查找驱动程序”，指向 VirtIO 光驱中的 `NetKVM/2k16/amd64`（或选择驱动光驱根目录并勾选“包括子文件夹”）。**不要将存储驱动 `viostor` 用作网卡驱动。**
+
+![在设备管理器中定位尚未识别的网络设备]({{ '/subjects/KVM/assets/p175-img01.webp' | relative_url }})
+
+![驱动安装完成后的设备状态]({{ '/subjects/KVM/assets/p177-img02.webp' | relative_url }})
+
+安装后检查设备管理器中是否出现 VirtIO Ethernet Adapter，再验证 IP 地址与连通性；仅凭任务栏图标颜色不足以证明桥接网络、DHCP 和路由均正常。在来宾 PowerShell 中可运行：
+
+````powershell
+Get-NetAdapter
+Get-NetIPConfiguration
+Test-NetConnection <网关或已知可达地址>
 ````
 
-### 配置windows
+如果驱动已安装而仍未联网，继续核对宿主机 `br0` 的配置、虚拟网卡连接状态及来宾的地址设置。其他未识别设备可按设备硬件 ID 和驱动 ISO 中的相应目录逐一匹配，不应一概使用同一个驱动，也不应忽略仍有警告标志的设备。
 
-#### 连接windows
+## 8.5 制作通用模板并克隆
 
-**打开虚拟机管理工具**
+直接复制已配置的系统盘可能把计算机名、网络设置和系统定制状态一并带入克隆机。先完成必要更新与驱动安装，并清理临时数据；然后在来宾系统中运行 Sysprep，选择“进入系统全新体验(OOBE)”、勾选“通用”、关机。命令行与图形界面等价的示例为：
 
-````console
-[root@kvm-host ~]# virt-manager
+````powershell
+& "$env:WINDIR\System32\Sysprep\Sysprep.exe" /oobe /generalize /shutdown
 ````
 
-![原文插图（第 162 页）]({{ '/subjects/KVM/assets/p162-img01.webp' | relative_url }})
-
-**双击打开 win2016**
-
-![原文插图（第 163 页）]({{ '/subjects/KVM/assets/p163-img01.webp' | relative_url }})
-
-#### 选择语言
-
-![原文插图（第 163 页）]({{ '/subjects/KVM/assets/p163-img02.webp' | relative_url }})
-
-![原文插图（第 164 页）]({{ '/subjects/KVM/assets/p164-img01.webp' | relative_url }})
-
-![原文插图（第 164 页）]({{ '/subjects/KVM/assets/p164-img02.webp' | relative_url }})
-
-注意：该画面会持续20s左右
-
-#### 选择图形版本
-
-![原文插图（第 165 页）]({{ '/subjects/KVM/assets/p165-img01.webp' | relative_url }})
-
-**点击下一步**
-
-![原文插图（第 165 页）]({{ '/subjects/KVM/assets/p165-img02.webp' | relative_url }})
-
-勾选 我接受许可条款，点击下一步
-
-#### 选择安装方式
-
-![原文插图（第 166 页）]({{ '/subjects/KVM/assets/p166-img01.webp' | relative_url }})
-
-![原文插图（第 166 页）]({{ '/subjects/KVM/assets/p166-img02.webp' | relative_url }})
-
-#### 确定驱动
-
-**选择 加载驱动程序**
-
-![原文插图（第 167 页）]({{ '/subjects/KVM/assets/p167-img01.webp' | relative_url }})
-
-**点击浏览**
-
-![原文插图（第 167 页）]({{ '/subjects/KVM/assets/p167-img02.webp' | relative_url }})
-
-点击 virtio-win-0.1.266
-
-![原文插图（第 168 页）]({{ '/subjects/KVM/assets/p168-img01.webp' | relative_url }})
-
-找到amd64 下面的2k16，点击确定
-
-![原文插图（第 168 页）]({{ '/subjects/KVM/assets/p168-img02.webp' | relative_url }})
-
-点击下一步即可，该画面会持续 20s 左右，需要检测驱动是否正常
-
-![原文插图（第 169 页）]({{ '/subjects/KVM/assets/p169-img01.webp' | relative_url }})
-
-#### 安装系统
-
-验证通过后，会出现如下画面
-
-![原文插图（第 169 页）]({{ '/subjects/KVM/assets/p169-img02.webp' | relative_url }})
-
-直接点击下一步即可，整个安装过程会持续9min 【第二步解压会持续7min左右】
-
-![原文插图（第 170 页）]({{ '/subjects/KVM/assets/p170-img01.webp' | relative_url }})
-
-安装完毕后，会直接关闭主机
-
-### 配置windows
-
-#### 启动vm
-
-点击启动虚拟机，启动画面会持续 1min左右，会进行初始化环境
-
-![原文插图（第 170 页）]({{ '/subjects/KVM/assets/p170-img02.webp' | relative_url }})
-
-#### 基本配置
-
-为实验虚拟机设置独立的强密码；示例截图中的旧密码不可复用。
-
-![原文插图（第 171 页）]({{ '/subjects/KVM/assets/p171-img01.webp' | relative_url }})
-
-点击完成后，进入到画面
-
-![原文插图（第 171 页）]({{ '/subjects/KVM/assets/p171-img02.webp' | relative_url }})
-
-不要使用 键盘，传输快捷键解锁，通过 “发送按键” 来实现
-
-![原文插图（第 172 页）]({{ '/subjects/KVM/assets/p172-img01.webp' | relative_url }})
-
-发送按键后，查看效果
-
-![原文插图（第 172 页）]({{ '/subjects/KVM/assets/p172-img02.webp' | relative_url }})
-
-输入刚才设置的密码登录。
-
-![原文插图（第 173 页）]({{ '/subjects/KVM/assets/p173-img01.webp' | relative_url }})
-
-稍等10s钟，查看效果
-
-![原文插图（第 173 页）]({{ '/subjects/KVM/assets/p173-img02.webp' | relative_url }})
-
-#### 网络配置
-
-目前的服务器的右下角可以看到 网卡 是红色的，原因是网卡的驱动没有识别出来。
-
-点击 左下角，点击管理工具
-
-![原文插图（第 174 页）]({{ '/subjects/KVM/assets/p174-img01.webp' | relative_url }})
-
-点击计算机管理后，点击设备管理器
-
-![原文插图（第 174 页）]({{ '/subjects/KVM/assets/p174-img02.webp' | relative_url }})
-
-![原文插图（第 175 页）]({{ '/subjects/KVM/assets/p175-img01.webp' | relative_url }})
-
-右键后，点击 更新驱动程序软件
-
-![原文插图（第 175 页）]({{ '/subjects/KVM/assets/p175-img02.webp' | relative_url }})
-
-**点击 浏览计算机以查找驱动程序软件**
-
-![原文插图（第 176 页）]({{ '/subjects/KVM/assets/p176-img01.webp' | relative_url }})
-
-点击浏览，
-
-![原文插图（第 176 页）]({{ '/subjects/KVM/assets/p176-img02.webp' | relative_url }})
-
-选中 E盘 virtio-win-0.1.266 即可，然后点击确定
-
-![原文插图（第 177 页）]({{ '/subjects/KVM/assets/p177-img01.webp' | relative_url }})
-
-确保 勾选 包括 子文件夹，然后点击下一步，稍等10s后，可以看到驱动自动安装完毕
-
-![原文插图（第 177 页）]({{ '/subjects/KVM/assets/p177-img02.webp' | relative_url }})
-
-安装完成后，稍等一下，网络就会出现了
-
-![原文插图（第 178 页）]({{ '/subjects/KVM/assets/p178-img01.webp' | relative_url }})
-
-点击 是即可，确认最后效果
-
-![原文插图（第 178 页）]({{ '/subjects/KVM/assets/p178-img02.webp' | relative_url }})
-
-以同样的方式安装其他的几个叹号设备即可，但是注意关于人体学输入设备处，即使我们安装完毕后，依然会出现黄色叹号
-
-![原文插图（第 179 页）]({{ '/subjects/KVM/assets/p179-img01.webp' | relative_url }})
-
-### 模版制作
-
-#### 查看主机的sid
-
-**每一台windows都有自己唯一的身份id信息**
-
-命令：`whoami /user`，可查看当前登录账户的 SID；它不等同于机器 SID。
-
-![原文插图（第 179 页）]({{ '/subjects/KVM/assets/p179-img02.webp' | relative_url }})
-
-直接复制已安装的 Windows 镜像可能保留机器标识和其他定制状态。制作通用模板前，应按部署场景使用 Sysprep 的 `/generalize` 选项，并在克隆后重新配置计算机名、网络和授权信息。
-
-#### 去除主机的sid
-
-进入到VM主机的 C:\Windows\System32\Sysprep 目录下，找到一个文件
-
-![原文插图（第 180 页）]({{ '/subjects/KVM/assets/p180-img01.webp' | relative_url }})
-
-**双击 sysprep 程序**
-
-![原文插图（第 180 页）]({{ '/subjects/KVM/assets/p180-img02.webp' | relative_url }})
-
-勾选 通用，然后关机选项 选择 关机。 这就意味着，我一旦关机后，当前主机的所有定制信息都会被清理掉，重启后，会生成新的主机身份信息。
-
-点击确定后，查看效果
-
-![原文插图（第 181 页）]({{ '/subjects/KVM/assets/p181-img01.webp' | relative_url }})
-
-该过程会持续 1min左右，然后会自动关闭主机
-
-#### 克隆windows主机
-
-执行如下命令,该过程可能会持续7分钟，当然也看主机，有些主机可能只需要 几十秒
-
-````console
-[root@kvm-host ~]# virt-clone -o win2016 -n win2016-2 -f /opt/win2016-2.qcow2
-正在分配 'win2016-2.qcow2' 3% [= ] 496 MB/s | 707 MB
- 00:00:39
-正在分配 'win2016-2.qcow2' 3% [=- ] 417 MB/s | 814 MB
- 00:00:47
-正在分配 'win2016-2.qcow2' 3% [=- ] 333 MB/s | 814 MB
- 00:00:58
-...
-正在分配 'win2016-2.qcow2' | 20 GB
- 00:07:20
-成功克隆 'win2016-2'。
+![Sysprep 中选择 OOBE、通用和关机]({{ '/subjects/KVM/assets/p180-img02.webp' | relative_url }})
+
+等待虚拟机**完全关机**后再克隆，不要先重新启动模板；否则模板自身也会进入首次配置流程。`whoami /user` 显示的是当前账户 SID，不能据此验证所谓“机器 SID 已被去除”。Sysprep 的目的也不只是更换 SID，还包括重置一系列系统专有状态；克隆后仍需按部署要求分别设置计算机名、网络、授权及应用配置。
+
+在宿主机确认源虚拟机状态，随后克隆系统盘和虚拟机定义：
+
+````bash
+virsh domstate win2016
+virt-clone --original win2016 \
+  --name win2016-2 \
+  --file /opt/win2016-2.qcow2
+virsh list --all
+virsh domblklist win2016-2
 ````
 
-**查看克隆后效果**
+`virt-clone` 会为克隆机生成新的虚拟机标识与网卡 MAC；克隆完成后仍应检查域定义及光驱挂载情况，并在不再需要时卸载安装 ISO。保持源模板关机，将其作为后续克隆的起点。
 
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
-----------------------------------
- - CentOS-7-clone 关闭
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-bak 关闭
- - win2016 关闭
- - win2016-2 关闭
-````
+启动 `win2016-2`，在 OOBE 中完成首次配置，再检查系统盘、网卡、计算机名、IP 与业务应用。看到首次配置页面只能说明 Sysprep 流程进入了预期阶段，不能代替这些验证。
 
-#### 启动克隆windows主机
-
-启动主机后，通过vnc查看效果，启动后的vm主机需要自定义信息了
-
-![原文插图（第 182 页）]({{ '/subjects/KVM/assets/p182-img01.webp' | relative_url }})
+![克隆机首次启动进入 OOBE 配置]({{ '/subjects/KVM/assets/p182-img01.webp' | relative_url }})
 
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/KVM/07-virtualization-principles.html' | relative_url }}">← 上一章：虚拟化原理</a>

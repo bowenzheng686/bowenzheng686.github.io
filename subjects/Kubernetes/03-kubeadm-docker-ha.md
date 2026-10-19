@@ -459,7 +459,7 @@ kubectl get --raw='/readyz?verbose'
 
 高可用验证还应包括：停用当前持有 VIP 的入口节点，确认 VIP 漂移；依次停止一台控制平面节点，确认 API 仍可访问且 etcd 保持法定多数。每次测试后恢复节点并等它重新就绪，再进行下一项。`kubeadm reset` 是重建节点的操作，不是通用排错命令，且不会自动清理全部 CNI 和网络规则。
 
-<details class="historical-figures">
+<details class="historical-figures" markdown="1">
 <summary>查看原始讲义中的其余配图与历史操作截图（15 张）</summary>
 
 ![原 PDF 第 66 页插图](assets/Kubernetes架构和部署/img-fcbb98f6f05a33da.webp)

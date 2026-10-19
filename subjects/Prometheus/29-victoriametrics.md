@@ -20,7 +20,9 @@ VM 单机版把写入、查询和持久化放在一个进程中，部署最简�
 
 VM 支持 Prometheus 查询 API，Grafana 可将它配置为 **Prometheus 类型数据源**。它还提供 MetricsQL；虽然多数 PromQL 表达式可沿用，迁移前仍要测试关键查询和告警。与 Thanos 等方案的选择取决于存储介质、对象存储依赖和运维模型，不能凭没有限定条件的性能倍数比较。
 
-![单机版与集群版的组件关系](assets/img-5200891b8c02e31e.webp)
+![VictoriaMetrics 集群中 vminsert、vmstorage 与 vmselect 的端口和数据流](assets/img-2759ceaab942e334.webp)
+
+图中写入路径是 `vminsert:8480 → vmstorage:8400`，查询路径是 `vmselect:8481 → vmstorage:8401`；`8482` 是 vmstorage 自身的 HTTP 管理与指标端口。它只说明组件方向，副本与负载均衡仍需另行配置。
 
 ## 29.2 单机部署
 

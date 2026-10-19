@@ -151,6 +151,62 @@ Pod 的 `status.phase` 只有 `Pending`、`Running`、`Succeeded`、`Failed`、`
 重启发生在同一个 Pod 的节点上；节点永久故障后，控制器通常创建**新 Pod**，而不是将原 Pod 迁移。Job 的完整重试还受 `backoffLimit` 等控制器配置影响。
 
 镜像拉取策略 `Always` 每次启动都向仓库解析镜像引用，但层数据可复用缓存；`IfNotPresent` 在本地没有镜像时才拉取；`Never` 只使用本地镜像。省略策略时，`:latest` 或未写标签通常默认为 `Always`，其他标签通常为 `IfNotPresent`。生产环境推荐固定不可变摘要或明确版本标签，避免同一标签在不同节点解析到不同内容。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（25 张）</summary>
+
+![原 PDF 第 51 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-b160c608e61f50fe.webp)
+
+![原 PDF 第 51 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-fe05b0f61f175d4d.webp)
+
+![原 PDF 第 70 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-a2c6a813bef55543.webp)
+
+![原 PDF 第 77 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1f025ee3f293395d.webp)
+
+![原 PDF 第 83 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-0f724bc3277bb815.webp)
+
+![原 PDF 第 84 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-204e5f13d7b74507.webp)
+
+![原 PDF 第 90 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-66bfecdd60442c77.webp)
+
+![原 PDF 第 90 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-7203eb34f901899b.webp)
+
+![原 PDF 第 91 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-940661f30302f015.webp)
+
+![原 PDF 第 92 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-29bfa49781d614c9.webp)
+
+![原 PDF 第 93 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-f4a610e0441369f2.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-d58424e51051f067.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-b7c2ec269c6abdfd.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-a6b9993eb93a025d.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-6350098a06fed01a.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-12babda304e05f2f.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-6f908b754f9ab419.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-fca01c67ecf356c7.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-80d4f2d8acc498a5.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-6977f46b25ff672e.webp)
+
+![原 PDF 第 95 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-233e3f92ae049e58.webp)
+
+![原 PDF 第 96 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1cf78dc8950f652d.webp)
+
+![原 PDF 第 106 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-1a4d9972e0fd3dac.webp)
+
+![原 PDF 第 107 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-64cb2cfbc043684d.webp)
+
+![原 PDF 第 108 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-6223c64ace8e0bca.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

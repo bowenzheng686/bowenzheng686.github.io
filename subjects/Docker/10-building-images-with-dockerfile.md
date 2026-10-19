@@ -14,6 +14,10 @@ syntax_highlight: true
 
 与 `docker commit` 把交互操作固化为镜像相比，Dockerfile 把构建过程写成可审查、可复现的文本。本章先说明构建上下文、缓存与常用指令，再用 Web、Go、前端和 Java 场景展示单阶段与多阶段构建。原笔记的 Alpine 源码编译 Nginx、Oracle JDK 8 和旧版 Apollo 案例依赖过时版本或第三方下载源，下面保留其构建思想，不把历史命令伪装成当前可直接用于生产的配方。
 
+![Dockerfile 构建镜像、镜像运行容器以及推送或导出镜像的关系示意](assets/img-f0674de899ccbeca.webp)
+
+图中的 `build`、`run`、`push` 和 `save` 面向不同对象：`build` 生成镜像，`run` 由镜像创建容器，`push` 推送到仓库，`save` 导出镜像归档；容器可写层和业务卷并不随镜像归档一起保存。
+
 ## 10.1 构建上下文与层
 
 ```bash

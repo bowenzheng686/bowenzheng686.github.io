@@ -114,6 +114,50 @@ kubectl rollout undo deployment/web
 `kubectl rollout pause deployment/web` 可以暂时停止 Deployment 继续推进 Pod 模板变更，用于人工观察后再 `kubectl rollout resume deployment/web`；这不是精确的流量百分比金丝雀发布。要按 1%、5% 等比例导流，应使用支持权重路由的 Ingress/Gateway/服务网格，并同时监测错误率、延迟和饱和度。只有两个同选服务标签的 Deployment，副本比例也不必然等于实际请求比例。
 
 蓝绿发布可维护两套有不同版本标签的 Deployment，例如 `release=blue` 与 `release=green`；先验证 green 的健康和兼容性，再将 Service 的 selector 从 blue 切到 green。切换只影响新建连接的后端选择，已有连接和长会话可能继续访问旧版；旧版应保留一段观察期以便回切。切换前检查 green EndpointSlice 非空，避免 Service 短暂无后端。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（19 张）</summary>
+
+![原 PDF 第 3 页插图](assets/Kubernetes工作负载/img-0e2126c348856400.webp)
+
+![原 PDF 第 4 页插图](assets/Kubernetes工作负载/img-4878064c33a90930.webp)
+
+![原 PDF 第 4 页插图](assets/Kubernetes工作负载/img-abc1d054489e4d03.webp)
+
+![原 PDF 第 4 页插图](assets/Kubernetes工作负载/img-14bbf9bcc0e978bf.webp)
+
+![原 PDF 第 7 页插图](assets/Kubernetes工作负载/img-b8ebed631c0d2c2f.webp)
+
+![原 PDF 第 7 页插图](assets/Kubernetes工作负载/img-0937a4bf2b5ce361.webp)
+
+![原 PDF 第 11 页插图](assets/Kubernetes工作负载/img-834a59b921c42bef.webp)
+
+![原 PDF 第 18 页插图](assets/Kubernetes工作负载/img-41afe722cd74e631.webp)
+
+![原 PDF 第 21 页插图](assets/Kubernetes工作负载/img-55152225badbb0ac.webp)
+
+![原 PDF 第 27 页插图](assets/Kubernetes工作负载/img-559750fb3304c889.webp)
+
+![原 PDF 第 28 页插图](assets/Kubernetes工作负载/img-a1f44be531a21206.webp)
+
+![原 PDF 第 29 页插图](assets/Kubernetes工作负载/img-afd1ff6b871a041e.webp)
+
+![原 PDF 第 29 页插图](assets/Kubernetes工作负载/img-3fbe23dbf688f2e3.webp)
+
+![原 PDF 第 30 页插图](assets/Kubernetes工作负载/img-a3a5c55dc2d32ad2.webp)
+
+![原 PDF 第 31 页插图](assets/Kubernetes工作负载/img-762ca007e98f7545.webp)
+
+![原 PDF 第 37 页插图](assets/Kubernetes工作负载/img-4737d91f724f1542.webp)
+
+![原 PDF 第 40 页插图](assets/Kubernetes工作负载/img-a053b9d6e9ceed0c.webp)
+
+![原 PDF 第 53 页插图](assets/Kubernetes工作负载/img-1cb69d6210471dd4.webp)
+
+![原 PDF 第 54 页插图](assets/Kubernetes工作负载/img-b8e1c3199b533fb3.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

@@ -135,6 +135,52 @@ kubectl describe pod <被驱逐的Pod名> -n <命名空间>
 ```
 
 排查时查看节点 Conditions、`Allocated resources`、kubelet Events 与磁盘/内存指标；被驱逐 Pod 原对象不会迁移，控制器会根据期望副本数创建替代实例。预防要从合理 requests/limits、镜像与日志清理、容量余量和故障域分布入手。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（20 张）</summary>
+
+![原 PDF 第 2 页插图](assets/kubernetes调度机制/img-c3f927271d674014.webp)
+
+![原 PDF 第 4 页插图](assets/kubernetes调度机制/img-a07a2ffbff4a6cb2.webp)
+
+![原 PDF 第 4 页插图](assets/kubernetes调度机制/img-e2c92ee1ce9a6024.webp)
+
+![原 PDF 第 5 页插图](assets/kubernetes调度机制/img-4c59042cbf89a385.webp)
+
+![原 PDF 第 7 页插图](assets/kubernetes调度机制/img-8960f8fc5b8bff03.webp)
+
+![原 PDF 第 11 页插图](assets/kubernetes调度机制/img-6e238af0d7c1399d.webp)
+
+![原 PDF 第 14 页插图](assets/kubernetes调度机制/img-375fc773fbb0d9da.webp)
+
+![原 PDF 第 22 页插图](assets/kubernetes调度机制/img-b8eda86f310e3bdf.webp)
+
+![原 PDF 第 22 页插图](assets/kubernetes调度机制/img-1583de18479be3c5.webp)
+
+![原 PDF 第 23 页插图](assets/kubernetes调度机制/img-255bef64521428d0.webp)
+
+![原 PDF 第 23 页插图](assets/kubernetes调度机制/img-394a22c2f52546e6.webp)
+
+![原 PDF 第 38 页插图](assets/kubernetes调度机制/img-0806bfaab21a59ae.webp)
+
+![原 PDF 第 39 页插图](assets/kubernetes调度机制/img-648230dabf02fe13.webp)
+
+![原 PDF 第 52 页插图](assets/kubernetes调度机制/img-8b8888571fe1d05c.webp)
+
+![原 PDF 第 52 页插图](assets/kubernetes调度机制/img-54ad012e4c8d3eb6.webp)
+
+![原 PDF 第 52 页插图](assets/kubernetes调度机制/img-244861faaa4dfbba.webp)
+
+![原 PDF 第 52 页插图](assets/kubernetes调度机制/img-3680cc28745865eb.webp)
+
+![原 PDF 第 52 页插图](assets/kubernetes调度机制/img-ddb6263d02fb150c.webp)
+
+![原 PDF 第 53 页插图](assets/kubernetes调度机制/img-b147e3db43942782.webp)
+
+![原 PDF 第 59 页插图](assets/kubernetes调度机制/img-c6a4cf34c5835c24.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

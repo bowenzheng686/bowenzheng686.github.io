@@ -13,34 +13,19 @@ syntax_highlight: true
 # 05 微服务
 ### 1.5 微服务
 
-### 微服务介绍
+### 从业务能力划分服务
 
-<https://www.martinfowler.com/microservices/>
+Lewis 与 Fowler 的[微服务定义](https://www.martinfowler.com/microservices/)强调：围绕业务能力组织服务、独立部署，并通过轻量级机制通信。它描述了一种架构风格，不是要求每个服务都很小或必须使用 HTTP。图示中从单体拆分到多个服务，只表示一种可能的演进路径；拆分是否值得做，仍取决于业务边界、交付瓶颈和团队能力。
 
 ![微服务技术第 3 页插图](assets/img-42a2e72819485ba1.webp)
 
 ![微服务技术第 3 页插图](assets/img-540072d98230b76d.webp)
 
-```text
-In short, the microservice architectural style is an approach to developing a single application as a suite of
-small services, each running in its own process and communicating with lightweight mechanisms, often an HTTP
-resource API. These services are built around business capabilities and independently deployable by fully
-automated deployment machinery. There is a bare minimum of centralized management of these services, which may
-be written in different programming languages and use different data storage technologies.
-简而言之，微服务架构风格是一种将单个应用程序开发为一套小型服务的方法，每个服务都在自己的进程中运行并与轻量级机制（通常是 HTTP 资源
-API）进行通信。这些服务围绕业务功能构建，并可通过全自动部署机制独立部署。对这些服务进行最低限度的集中管理，这些服务可能用不同的编程
-语言编写并使用不同的数据存储技术。
--- James Lewis and Martin Fowler (2014)
-亚马逊创始人 Jeff Bezos 说过一句话：“一个最好的团队用两个披萨可以喂饱”。 订单99.99%，库存99.99%
-一个团队控制到6-10人左右
-https://wiki.mbalib.com/wiki/%E4%B8%A4%E4%B8%AA%E6%8A%AB%E8%90%A8%E5%8E%9F%E5%88%99
-```
-
 微服务是围绕业务能力划分的服务架构：每个服务有清楚的责任、独立的部署生命周期，并通过明确的接口协作。服务不必“小到只有一个函数”，也不保证拆分后彻底消除耦合；关键是让变更主要留在本服务边界内。通信可以采用 HTTP、RPC 或消息，数据是否独立存储要结合一致性与团队责任设计。
 
 “两个披萨团队”强调可沟通、可负责的小团队，并不是固定人数的规定。微服务也不必强制每个服务选不同语言或数据库；过多技术栈反而增加维护成本。SOA 与微服务有共同的服务化思想，但不存在必然的 1.0/2.0 替代关系。
 
-微服务特点
+### 微服务的四种边界
 
 微服务的价值可从四个边界理解：
 
@@ -49,7 +34,7 @@ https://wiki.mbalib.com/wiki/%E4%B8%A4%E4%B8%AA%E6%8A%AB%E8%90%A8%E5%8E%9F%E5%88
 - **交付边界**：服务可独立构建和发布，但仍须考虑兼容性、回滚和跨服务变更。
 - **故障边界**：超时、限流、重试和幂等可限制故障传播；独立部署并不自动带来高可用。
 
-SOA 和 微服务比较
+### SOA 与微服务的关系
 
 ![微服务技术第 5 页插图](assets/img-afb8e50b92bf6a94.webp)
 
@@ -61,37 +46,25 @@ SOA 和 微服务比较
 
 ### 微服务的优缺点
 
-微服务优点：
-
 **可能的收益**：当边界划分合理时，小团队可专注于一项业务能力，热点服务可以分别扩容，局部变更不必总是发布整个系统。服务接口明确后，也更容易为不同业务选择合适实现。不过“小”本身不会自动让代码简单：跨服务的调用链和数据流可能比单体更难理解。
 
 **前提条件**：自动化测试、持续交付、监控与告警、统一身份和配置管理都要跟上。服务有独立数据所有权时，其他服务应通过接口或事件获取所需信息；技术上共用一个数据库并非不可能，但若直接跨服务改表，独立演进的收益会明显下降。
-
-微服务缺点：
 
 **主要代价**：原本的进程内调用变成网络调用，需要处理超时、重试、限流和部分失败；跨服务数据更新需要明确一致性目标，可能使用事件、补偿或流程编排，而不是默认引入“分布式事务”。此外，测试环境、日志追踪、配置与发布流水线都会增多。若业务规模与团队协作尚未暴露这些瓶颈，模块化单体通常更省成本。
 
 ### 微服务技术栈
 
-架构并不是“发明”出来的，是持续进化的结果。
+技术栈应从实际问题出发，而不是按照架构图采购一套固定组件。
 
 ![微服务技术第 7 页插图](assets/img-225c726ffa49ecfa.webp)
 
-只要选择了分布式架构，无论是 SOA、微服务、服务网格或者其他架构风格，都会涉及与到和远程服务交互
-
-而服务的注册发现、跟踪治理、负载均衡、故障隔离、认证授权、伸缩扩展、传输通讯、事务处理，等等，这一系列问题都是无可避免的。
-
-不同的架构风格，其区别是到底要在技术规范上提供统一的解决方案，还是由应用系统自行去解决，又或者在基础设施层面将一类问题隔离掉
+分布式部署会引入远程调用、故障隔离、身份认证、数据一致性及可观测性等问题，但不代表每个系统都必须单独引入注册中心、服务网格或分布式事务框架。例如在 Kubernetes 中，Service 可提供基础服务发现；若业务无需跨服务原子提交，事件与补偿也可能比事务协调器更合适。先确定问题由应用、平台还是网关承担，避免重复治理。
 
 ![微服务技术第 7 页插图](assets/img-1bb23f39f68b3e13.webp)
 
 ### 常见的微服务框架
 
-在多种编程语言中，有许多专门设计用来开发微服务的框架。以下是一些主流的微服务开发框架：
-
 可把技术组件按问题分组：服务实现框架（Spring Boot、Go Kit、ASP.NET Core 等）、通信（HTTP API、gRPC、消息队列）、治理（服务发现、网关、配置、限流）、交付与观测（CI/CD、指标、日志、追踪）。Django、Flask、Express 可用来实现服务，但本身不定义微服务架构；gRPC 是通信框架，不是完整的服务治理平台。选择时以团队熟悉度和实际需求为先，不必一次引入整套组件。
-
-这些框架都有各自的特点和优点，选择哪种框架取决于你的项目需求以及团队对某种语言或框架的熟悉度。
 
 ### Spring Cloud
 
@@ -139,7 +112,7 @@ Spring Boot 帮助构建可独立运行的 Spring 应用，提供自动配置、
 
 不要根据一次“最后更新日期”判断所有组件已停更或可直接升级；以正在使用的版本与官方发布说明为准。
 
-Spring Cloud Alibaba
+#### Spring Cloud Alibaba 组件
 
 <https://github.com/alibaba/spring-cloud-alibaba>
 

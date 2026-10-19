@@ -391,14 +391,10 @@ dpkg<span class="hljs-attr"> -l</span> | <span class="hljs-built_in">wc</span><s
     </tbody></table>
     </div>
 
-    <p><strong>INPUT 链的策略是关键：</strong>一条默认规则 <code>-P INPUT DROP</code> 意味着"所有入站流量默认拒绝，只放行我明确允许的端口和协议"。这就是"最小权限原则"的在网络层的体现。生产环境的标准策略是：</p>
+    <p><strong>INPUT 链的策略是关键：</strong><code>-P INPUT DROP</code> 会拒绝未匹配到放行规则的入站包。远程主机上必须先确认 SSH 端口、现有连接和回滚通道，再添加放行规则，最后才切换默认策略；否则执行到一半就可能断开管理会话。下例仅用于说明顺序，实际还需结合 IPv6、当前规则集与发行版防火墙管理器。</p>
 
-    <pre data-presentation-code="v1" data-presentation-highlight="f76fca633af9e5797688e555ffccfae4a6df3156e841d3812599cabec2f3ca81"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 设置默认策略（先执行这些，再添加放行规则）===</span>
-<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> INPUT DROP      <span class="hljs-comment"># 入站流量默认拒绝</span>
-<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> FORWARD DROP    <span class="hljs-comment"># 转发默认拒绝（不做路由器的话）</span>
-<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> OUTPUT ACCEPT   <span class="hljs-comment"># 出站默认允许（大多数服务器场景下没问题）</span>
-
-<span class="hljs-comment"># === 基础规则：让系统能正常工作 ===</span>
+    <pre data-presentation-code="v1" data-presentation-highlight="f76fca633af9e5797688e555ffccfae4a6df3156e841d3812599cabec2f3ca81"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 先核对现有规则和管理端口，再添加放行规则 ===</span>
+<span class="hljs-comment"># 回环、已建立连接、SSH 和业务端口都要先加入规则</span>
 <span class="hljs-comment"># 1. 允许回环接口（localhost 必须通——很多服务依赖它）</span>
 <span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -i</span> lo<span class="hljs-attr"> -j</span> ACCEPT
 
@@ -413,7 +409,10 @@ dpkg<span class="hljs-attr"> -l</span> | <span class="hljs-built_in">wc</span><s
 <span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> tcp<span class="hljs-attr"> --dport</span> 443<span class="hljs-attr"> -j</span> ACCEPT
 
 <span class="hljs-comment"># 5. 允许 ICMP ping（方便排错，生产环境也建议保留）</span>
-<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> icmp<span class="hljs-attr"> --icmp-type</span> echo-request<span class="hljs-attr"> -j</span> ACCEPT</code></pre>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -A</span> INPUT<span class="hljs-attr"> -p</span> icmp<span class="hljs-attr"> --icmp-type</span> echo-request<span class="hljs-attr"> -j</span> ACCEPT
+
+<span class="hljs-comment"># 6. 核对放行规则及回滚通道后，最后收紧默认策略</span>
+<span class="hljs-built_in">iptables</span><span class="hljs-attr"> -P</span> INPUT DROP</code></pre>
 
     <p><strong>理解 ESTABLISHED,RELATED 这条规则的重要性。</strong>当你的服务器向外部发起了一个连接（比如 apt update 去连 Ubuntu 的仓库），回复的数据包进入你的服务器时，它不是"新的入站连接"——它是已经建立的出站连接的回复。如果没有 ESTABLISHED,RELATED 规则，INPUT 链默认 DROP 会把这部分合法的回包也丢掉，导致你的服务器无法访问外网。</p>
   </div>

@@ -9,825 +9,135 @@ syntax_highlight: true
 
 # 第 03 章 · 存储管理
 
-> 公开版已将实验密码、主机标识和网络地址替换为示例值；正文图片已恢复，截图中的敏感区域已做本地像素覆盖。执行命令前请按实际环境调整。
+libvirt 把宿主机存储后端组织为**存储池（pool）**，再在池中管理**存储卷（volume）**。卷附加到虚拟机后表现为块设备；来宾中的分区、文件系统和挂载点属于另一个层次。先分清这三层，再操作创建、扩容与删除，才不容易把“移除定义”误认为“删除数据”。
 
-## 3.1 存储池
+## 3.1 存储池：定义、启用和移除
 
-### 存储池环境
+存储池可以指向宿主机目录，也可以使用网络文件系统、LVM 或其他后端。它提供统一的卷管理入口，但**不自动提高底层存储的性能或可靠性**；容量、备份和故障域仍由后端决定。
 
-#### 基础知识
+![存储池与宿主机后端关系图]({{ '/subjects/KVM/assets/p080-img01.webp' | relative_url }})
 
-**需求**
+### 创建一个目录型持久存储池
 
-为了使虚拟机获得更强大的后端存储能力，libvirt 提供了对各种各样的存储介质支持，包括本地文件系统，网络文件系统，iSCSI，LVM 等多种后端存储系统。在虚拟机中主要以存储池(pool)与存储卷(volume)的形式存在。libvirt 中的存储管理独立于虚拟机管理。也就是存储池和存储卷的操作独立于虚拟机的操作存在，即使是没有虚拟机的场景。工作中我们可以当虚拟机需要存储资源时再进行灵活分配。
+本例选择宿主机目录 `/kvm/images`。创建前先确认目标路径的挂载、容量、权限和安全标签；若该路径已包含业务文件，不要把创建池当成清空目录的操作。
 
-**存储池**
+```bash
+sudo mkdir -p /kvm/images
+virsh pool-define-as gavin_pool dir --target /kvm/images
+virsh pool-start gavin_pool
+virsh pool-autostart gavin_pool
+virsh pool-info gavin_pool
+virsh pool-list --all
+```
 
-KVM平台以存储池的形式对存储进行统一管理。它可以理解为一种映射关系，即将宿主机器上的存储空间形成可被KVM使用的逻辑存储池，以方便虚拟主机存储资源的统一管理。宿主机的存储空间，可以是本地的、网络的等kvm支持的任意形式。
+`pool-define-as` 创建**持久定义**，不等于已经启动；本例的目标目录已准备好，因此直接用 `pool-start` 激活，再用 `pool-autostart` 设置宿主机重新启动后的自动激活。若后端尚未准备，可按池类型使用 `pool-build`，但不要在已有业务数据的路径上盲目构建。一次性实验可用 `virsh pool-create-as <名称> dir --target <目录>` 创建临时活动池，它停止后没有持久定义可重新启动。
 
-![原文插图（第 80 页）]({{ '/subjects/KVM/assets/p080-img01.webp' | relative_url }})
+`pool-list --all` 用于核对状态与自动启动列；配置文件通常由 libvirt 管理，不应为了修改池而直接编辑 `/etc/libvirt/storage/*.xml`。不同后端的创建参数和清理行为不同，NFS、iSCSI 或 LVM 池应阅读对应后端文档，而不能只把目录型命令中的 `dir` 换成别的类型。
 
-默认KVM将这些存储池的配置文件存放于/etc/libvirt/storage，因为我在创建虚拟机的时候，涉及到两个目录，所以这两个目录在虚拟机创建的时候，自动有存在了。通过virsh中pool命令能够查看、创建、激活、注册、删除存储池
+### 停用与取消定义不是删卷
 
-````bash
-    virsh --help | grep pool
-````
+先列出卷及引用它的虚拟机，再决定是否可以停用池。一个虚拟机仍在读写其中的卷时，强行停用或删除后端会造成 I/O 错误或数据丢失。
 
-#### 基本操作
+```bash
+virsh vol-list gavin_pool
+virsh domblklist <虚拟机名>
+virsh pool-destroy gavin_pool
+virsh pool-undefine gavin_pool
+```
 
-**信息查看**
+`pool-destroy` 在这里表示**停止池管理实例**，不是删除卷文件；`pool-undefine` 删除 libvirt 中的持久定义。二者都不等同于“安全清理磁盘”。`pool-delete` 会尝试清理后端资源，行为依池类型而异；只有确认池为空、没有虚拟机引用且已完成备份时才考虑它。
 
-用 `virsh pool-list --all` 列出池；用 `virsh pool-info <池名>` 查看容量、状态等信息。
+## 3.2 存储卷：创建、附加和使用
 
-**创建存储池**
-
-````text
-常见两种创建方法，基于文件夹和文件系统，我们主要介绍基于文件夹的方式。
-    定义永久池+创建池：virsh pool-define-as + virsh pool-build
-    创建临时池+启动池：virsh pool-create-as
-命令格式一：virsh pool-define-as vmware_pool --type dir --target /kvm/images
-    注释：
-        vmware_pool 定义的存储池名称
-        --type dir 我们的类型是一个dir
-        --target /kvm/images 存储池的在宿主机上的目录是/kvm/images
-命令格式二：virsh pool-create-as --name vmware_pool --type dir --target /kvm/images
-    注释：直接创建并启动一个存储池
-        vmware_pool 定义的存储池名称
-        --type dir 我们的类型是一个dir
-        --target /kvm/images 存储池的在宿主机上的目录是/kvm/images
-````
-
-**其他的创建命令**
-
-**基于分区创建存储池：**
-
-````text
-virsh pool-define-as <存储池名> fs --source-dev <分区名称> --target <挂载目录>
-基于磁盘创建存储池:
-virsh pool-define-as <存储池名> disk --source-dev <磁盘名称> --source-format gpt --target <挂载目录>
-基于lvm创建存储池:
-virsh pool-define-as <存储池名> logical --source-name <vg名称> --target <挂载目录>
-基于iscsi创建存储池:
-virsh pool-define-as <存储池名> iscsi --source-host <存储主机 IP> --source-dev <存储目标> --target <挂载目录>
-基于nfs创建存储池:
-virsh pool-define-as <存储池名> netfs --source-host <NFS 主机 IP> --source-path <NFS 共享目录> --target <挂载目录>
-````
-
-#### 永久存储池
-
-**创建目录**
-
-````console
-[root@kvm-host ~]# mkdir /kvm/images -p
-````
-
-**创建存储池**
-
-````console
-[root@kvm-host ~]# virsh pool-define-as gavin_dpool --type dir --target /kvm/images
-定义池 gavin_dpool
-[root@kvm-host ~]# virsh pool-build gavin_dpool
-构建池 gavin_dpool
-````
-
-**检查效果**
-
-````console
-[root@kvm-host ~]# virsh pool-list --persistent
- 名称 状态 自动开始
-----------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
-[root@kvm-host ~]# ls /etc/libvirt/storage/
-autostart default.xml images.xml opt.xml gavin_dpool.xml
-可以看到：
-    pool-define-as创建的存储池没有启动,在存储目录中有定义文件
-````
-
-#### 临时存储池
-
-**创建目录**
-
-````console
-[root@kvm-host ~]# mkdir /gavin/images -p
-````
-
-**创建存储池**
-
-````console
-[root@kvm-host ~]# virsh pool-create-as gavin_cpool --type dir --target /gavin/images
-创建池 gavin_cpool
-````
-
-**检查效果**
-
-````console
-[root@kvm-host ~]# virsh pool-list --transient
- 名称 状态 自动开始
----------------------------------
- gavin_cpool 活动 否
-[root@kvm-host ~]# ls /etc/libvirt/storage/
-autostart default.xml images.xml opt.xml gavin_dpool.xml
-可以看到：
-    pool-create-as创建的存储池启动成功了,在存储目录中没有定义文件
-````
-
-### 存储池实践
-
-#### 启动实践
-
-##### 命令解析
-
-**需求**
-
-**启动存储池**
-
-**语法**
-
-**启动命令：**
-
-````bash
-    virsh pool-start 存储池名称
-开机自启动：
-    virsh pool-autostart 存储池名称
-````
-
-##### 启动存储池
-
-刚才创建的 gavin_dpool存储池没有启动，现在我们启动它,使它生效。
-
-**启动创建的 gavin_dpool 存储池**
-
-````console
-[root@kvm-host ~]# virsh pool-start gavin_dpool
-池 gavin_dpool 已启动
-````
-
-**检查效果**
-
-````console
-[root@kvm-host ~]# virsh pool-list
- 名称 状态 自动开始
----------------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
- gavin_cpool 活动 否
- gavin_dpool 活动 否
-可以看到：
-    这个是时候，启用仅仅是让存储池生效了，但是还没有自动运行，如果要自动运行的话，还需要另一个命
-令
-````
-
-##### 设置为开机自启动
-
-设置刚才启用的存储池自动运行。
-
-````console
-[root@kvm-host ~]# virsh pool-autostart gavin_dpool
-池 gavin_dpool 标记为自动启动
-````
-
-**检查效果**
-
-````console
-[root@kvm-host ~]# virsh pool-list
- 名称 状态 自动开始
----------------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
- gavin_cpool 活动 否
- gavin_dpool 活动 是
-注意：
-    只有定义好的存储池，才可以设置为开机自启动，临时的存储池没有该功能。
-````
-
-#### 关闭实践
-
-**需求**
-
-若不再需要对某个存储池进行 libvirt 管理，可先停用它。`pool-destroy` 在这里表示停用池，不等于删除池中的卷文件；但停用前应确认没有虚拟机正在依赖该池。
-
-**语法**
-
-**关闭命令：**
-
-````bash
-    virsh pool-destroy 存储池
-````
-
-**关闭存储池**
-
-````console
-[root@kvm-host ~]# virsh pool-destroy gavin_dpool
-销毁池 gavin_dpool
-[root@kvm-host ~]# virsh pool-destroy gavin_cpool
-销毁池 gavin_cpool
-````
-
-检查效果，临时存储池一旦关闭后，就不再存在了
-
-````console
-[root@kvm-host ~]# virsh pool-list
- 名称 状态 自动开始
-----------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
-[root@kvm-host ~]# virsh pool-list --all
- 名称 状态 自动开始
------------------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
- gavin_dpool 不活跃 是
-````
-
-#### 取消实践
-
-2.1.1.2.3.1基础语法
-
-**需求**
-
-取消存储池分为两种不同操作：`pool-undefine` 删除 libvirt 中的池定义；`pool-delete` 可能删除或修改后端存储资源，具体行为依池类型而异。**不要把取消定义当作释放磁盘空间的自动步骤。**先用 `virsh vol-list <池名>`、`virsh domblklist <虚拟机>` 核对卷与虚拟机引用，完成独立备份后才考虑删除后端资源。
-
-**注意：**
-
-这两步都要求我们的存储对象在virsh pool-list的列表中
-
-**语法**
-
-**删除存储目录：**
-
-````bash
-    virsh pool-delete 存储池  # 可能影响后端资源；先核对池类型和内容
-删除存储配置文件：
-    virsh pool-undefine 存储池
-````
-
-##### 取消存储池
-
-**删除实验用空存储池的后端目录**
-
-````console
-[root@kvm-host ~]# virsh pool-delete gavin_dpool
-池 gavin_dpool 被删除
-````
-
-**检查效果**
-
-**检查对象**
-
-````console
-[root@kvm-host ~]# virsh pool-list --all
- 名称 状态 自动开始
------------------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
- gavin_dpool 不活跃 是
-查看目录
-[root@kvm-host ~]# ls /kvm
-[root@kvm-host ~]#
-````
-
-**删除存储池配置文件**
-
-````console
-[root@kvm-host ~]# virsh pool-undefine gavin_dpool
-池 gavin_dpool 已经被取消定义
-[root@kvm-host ~]# ls /etc/libvirt/storage/
-autostart default.xml images.xml opt.xml
-````
-
-## 3.2 存储卷
-
-### 存储卷环境
-
-#### 基础知识
-
-**需求**
-
-有了存储池，代表我们有存储数据的基本前提了，但是还不能正常使用，需要借助于存储卷才可以。
-
-存储卷是 libvirt 管理的存储单元，可能对应镜像文件、逻辑卷或块设备。它附加到虚拟机后通常显示为一块虚拟磁盘；来宾系统是否分区、格式化并挂载到目录，是独立的后续步骤，不能把卷与挂载点直接等同。
+一个目录型池中的卷通常是镜像文件；LVM 池中的卷则可能是逻辑卷。下图将存储池、存储卷与来宾磁盘的关系放在一起。来宾的 `/dev/vdb` 名称可能随控制器与设备顺序变化，不能只凭字母判断它是哪块盘。
 
 ![存储池与虚拟机存储卷关系图（高清重绘）]({{ '/subjects/KVM/assets/p087-img01-redrawn.webp' | relative_url }})
 
-#### 准备工作
+### 创建并核对卷
 
-存储卷是结合存储池来使用的，所以我们就先来做存储卷的准备工作：创建存储池
+```bash
+virsh vol-create-as gavin_pool gavin.img 2G --allocation 1G --format raw
+virsh vol-list gavin_pool
+virsh vol-info gavin.img gavin_pool
+virsh vol-path gavin.img gavin_pool
+```
 
-````console
-[root@kvm-host ~]# mkdir /kvm/images
-[root@kvm-host ~]# virsh pool-define-as gavin_pool --type dir --target /kvm/images
-定义池 gavin_pool
-[root@kvm-host ~]# virsh pool-start gavin_pool
-池 gavin_pool 已启动
-````
+`2G` 是虚拟容量，`--allocation 1G` 是初始分配量。不同格式和文件系统的实际占用可能不同；检查容量应同时看 `vol-info`、宿主机 `ls -lh` 和 `du -h`，并为后续写入预留真实空间。不要把“卷已创建”理解为来宾可直接使用的已格式化文件系统。
 
-**检查效果**
+### 将卷附加到虚拟机
 
-````console
-[root@kvm-host ~]# virsh pool-list
- 名称 状态 自动开始
---------------------------------
- default 活动 是
- images 活动 是
- opt 活动 是
- gavin_pool 活动 否
-````
+先确认该卷未被另一台虚拟机以可写方式使用。对运行中的来宾，按需同时修改当前状态和持久定义；实际版本支持的参数可通过 `virsh help attach-disk` 核对。
 
-#### 命令解析
+```bash
+virsh attach-disk <虚拟机名> /kvm/images/gavin.img vdb \
+  --targetbus virtio --live --config
+virsh domblklist <虚拟机名>
+```
 
-**通过virsh中vol命令能够查看、创建、激活、注册、删除存储卷**
+进入来宾后运行 `lsblk -f`，根据容量、序列号和已有分区识别新设备。**仅在确认是空盘后**，才对目标设备分区或格式化；旧实验直接把整个 `/dev/vdb` 格式化为 ext4，因此不能照搬到已有数据的磁盘上。格式化后可先临时挂载并写入测试文件，确认文件系统工作，再按 UUID 配置持久挂载。
 
-````console
-[root@kvm-host ~]# virsh --help | grep vol
- Storage Volume (指定关键字'volume'时可以显示此部分帮助信息)
-    vol-clone 克隆卷。
-    vol-create-as 从一组变量中创建卷
-    vol-create 从一个 XML 文件创建一个卷
-    vol-create-from 生成卷，使用另一个卷作为输入。
-    vol-delete 删除卷
-    vol-download 将卷内容下载到文件中
-    vol-dumpxml XML 中的卷信息
-    vol-info 存储卷信息
-    vol-key 为给定密钥或者路径返回卷密钥
-    vol-list 列出卷
-````
+```bash
+# 以下命令只在 /dev/vdb 已确认为本次新建的空盘时执行
+sudo mkfs.ext4 /dev/vdb
+sudo mkdir -p /gavin
+sudo mount /dev/vdb /gavin
+findmnt /gavin
+```
 
-````text
-    vol-name 为给定密钥或者路径返回卷名
-    vol-path 为给定密钥或者路径返回卷路径
-    vol-pool 为给定密钥或者路径返回存储池
-    vol-resize 创新定义卷大小
-    vol-upload 将文件内容上传到卷
-    vol-wipe 擦除卷
-````
+### 安全分离磁盘
 
-**创建存储卷主要有两种方式：**
+先在来宾停止使用该文件系统的进程，卸载它，再在宿主机分离虚拟磁盘。`umount` 失败时应查明仍在使用的进程，而不是强行拔盘。
 
-创建新的: virsh vol-create-as
+```bash
+# 来宾内
+sudo umount /gavin
+# 宿主机内
+virsh detach-disk <虚拟机名> vdb --live --config
+virsh domblklist <虚拟机名>
+```
 
-**查看存储卷信息**
+分离只解除虚拟机与卷的关联，卷仍保存在存储池中，可用 `virsh vol-info` 再次确认。
 
-查看列表用 `virsh vol-list <存储池>`；查看属性用 `virsh vol-info <卷名> <存储池>`；查看 XML 定义用 `virsh vol-dumpxml <卷名> <存储池>`。
+## 3.3 导出、恢复、扩容与删除
 
-**新建命令**
+### 离线导出与恢复
 
-**命令格式：**
+`vol-download` 可把卷内容导出为文件，`vol-upload` 可将文件写回已存在的目标卷。它们是数据复制工具，不保证运行中的来宾文件系统具有一致快照；本例应先正常关机或使用经过验证的快照/来宾冻结方案，再导出。恢复前核对源文件、目标卷容量和恢复后是否需要修复文件系统。
 
-````bash
-virsh vol-create-as --pool gavin_pool --name gavin.img --capacity 2G --allocation 1G --format raw
-注释：
-    virsh vol-create-as 命令
-    --pool gavin_pool 指定存储池
-    --name gavin.img 支持创建的磁盘卷
-    --capacity 2G 存储卷的虚拟容量
-    --allocation 1G 存储卷的初始分配大小
-    --format raw 存储卷的格式
-````
+```bash
+virsh domstate <虚拟机名>
+sudo mkdir -p /backup
+virsh vol-download gavin.img /backup/gavin.img --pool gavin_pool
+ls -lh /backup/gavin.img
+# 验证备份内容后，才在需要恢复的情形执行：
+virsh vol-upload gavin.img /backup/gavin.img --pool gavin_pool
+```
 
-#### 简单实践
+不要在演练中先 `vol-wipe` 再把 `vol-upload` 当成必然可成功的回滚：`vol-wipe` 会破坏卷数据，误选卷或备份不完整都不可逆。恢复能力应在独立卷上验证。
 
-**创建存储卷**
+### 扩大卷容量
 
-````console
-[root@kvm-host ~]# virsh vol-create-as --pool gavin_pool --name gavin.img --capacity 2G --allocation 1G --format raw
-卷 gavin.img 创建了
-````
+先检查宿主池剩余空间和来宾文件系统类型，再扩大卷的**虚拟容量**。这一步不自动扩展来宾的分区或文件系统；若来宾在线，可能还需刷新它看到的设备容量，之后再按该文件系统的扩容方式处理。
 
-**查看存储位置**
+```bash
+virsh vol-info gavin.img gavin_pool
+virsh vol-resize gavin.img 3G --pool gavin_pool
+virsh vol-info gavin.img gavin_pool
+```
 
-````console
-[root@kvm-host ~]# ll /kvm/images
-总用量 1048576
--rw------- 1 root root 2147483648 3月 25 22:03 gavin.img
-````
+扩容后在来宾执行 `lsblk`、`df -h` 核对设备与文件系统的差异。缩容需要先处理文件系统和数据边界，操作风险高，不能把 `vol-resize 1G` 作为“缩小文件”的对称命令。
 
-**查看存储池的存储卷列表**
+### 克隆与删除卷
 
-````console
-[root@kvm-host ~]# virsh vol-list gavin_pool
- 名称 路径
---------------------------------------
- gavin.img /kvm/images/gavin.img
-````
+克隆可用于创建独立副本，但源卷若仍被来宾写入，副本可能不一致；先关机或使用一致性快照。新旧卷必须使用不同名称，克隆后核对卷路径和数据。
 
-**查看存储卷信息**
+```bash
+virsh vol-clone gavin.img gavin-2.img --pool gavin_pool
+virsh vol-list gavin_pool
+virsh vol-info gavin-2.img gavin_pool
+```
 
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 1.00 GiB
-````
-
-**查看存储卷配置信息**
-
-````console
-[root@kvm-host ~]# virsh vol-dumpxml gavin.img gavin_pool
-<volume type='file'>
-  <name>gavin.img</name>
-  <key>/kvm/images/gavin.img</key>
-  <capacity unit='bytes'>2147483648</capacity>
-  <allocation unit='bytes'>1073741824</allocation>
-  <physical unit='bytes'>2147483648</physical>
-  <target>
-    <path>/kvm/images/gavin.img</path>
-    <format type='raw'/>
-    <permissions>
-      <mode>0600</mode>
-      <owner>0</owner>
-      <group>0</group>
-    </permissions>
-    <timestamps>
-      <atime>1742911401.107933868</atime>
-      <mtime>1742911401.106933853</mtime>
-      <ctime>1742911401.106933853</ctime>
-      <btime>0</btime>
-    </timestamps>
-  </target>
-</volume>
-````
-
-### 挂载、卸载
-
-#### 基础知识
-
-**需求**
-
-虚拟机在需要更多存储空间或者精简存储空间的时候，就遇到了存储卷的 挂载和卸载动作
-
-**方法指令**
-
-**附加磁盘到虚拟机：**
-
-````text
-    virsh attach-disk <虚拟机> <存储卷> <挂载设备>
-    注意：挂载设备可以是vdx或者sdx，x是从b开始的字母
-从虚拟机分离磁盘：
-    virsh detach-disk <虚拟机> <挂载设备>
-    注意：挂载格式可以是vdx或者sdx
-````
-
-#### 准备工作
-
-**磁盘的挂载和卸载操作依赖于运行中的虚拟机**
-
-````console
-[root@kvm-host ~]# virsh start CentOS-7-x86_64
-域 'CentOS-7-x86_64' 已启动
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-------------------------------
- 10 CentOS-7-x86_64 运行
-````
-
-#### 挂载实践
-
-**挂载操作**
-
-````console
-[root@kvm-host ~]# virsh attach-disk CentOS-7-x86_64 /kvm/images/gavin.img vdb
-成功附加磁盘
-````
-
-**检查效果**
-
-````console
-[root@kvm-host ~]# virsh console CentOS-7-x86_64
-连接到域 'CentOS-7-x86_64'
-转义字符是 ^] (Ctrl + ])
-CentOS Linux 7 (Core)
-Kernel 3.10.0-1160.el7.x86_64 on an x86_64
-localhost login: root
-密码：
-Last login: Tue Mar 25 20:30:10 on ttyS0
-[root@localhost ~]# fdisk -l
-磁盘 /dev/vda：10.7 GB, 10737418240 字节，20971520 个扇区
-Units = 扇区 of 1 * 512 = 512 bytes
-扇区大小(逻辑/物理)：512 字节 / 512 字节
-I/O 大小(最小/最佳)：512 字节 / 512 字节
-磁盘标签类型：dos
-磁盘标识符：0x000aecd9
-...
-磁盘 /dev/vdb：2147 MB, 2147483648 字节，4194304 个扇区 # 挂载的磁盘
-````
-
-````text
-Units = 扇区 of 1 * 512 = 512 bytes
-扇区大小(逻辑/物理)：512 字节 / 512 字节
-I/O 大小(最小/最佳)：512 字节 / 512 字节
-````
-
-#### 使用磁盘
-
-**在来宾系统内格式化新磁盘。** 以下命令会覆盖目标设备上的现有文件系统；必须先用 `lsblk -f` 核对 `/dev/vdb` 确实为新附加的空盘。
-
-````console
-[root@localhost ~]# mkfs.ext4 /dev/vdb
-mke2fs 1.42.9 (28-Dec-2013)
-文件系统标签=
-OS type: Linux
-块大小=4096 (log=2)
-分块大小=4096 (log=2)
-Stride=0 blocks, Stripe width=0 blocks
-131072 inodes, 524288 blocks
-26214 blocks (5.00%) reserved for the super user
-第一个数据块=0
-Maximum filesystem blocks=536870912
-16 block groups
-32768 blocks per group, 32768 fragments per group
-8192 inodes per group
-Superblock backups stored on blocks:
-        32768, 98304, 163840, 229376, 294912
-Allocating group tables: 完成
-正在写入inode表: 完成
-Creating journal (16384 blocks): 完成
-Writing superblocks and filesystem accounting information: 完成
-````
-
-**挂载虚拟磁盘**
-
-````console
-[root@localhost ~]# mkdir /gavin
-[root@localhost ~]# mount /dev/vdb /gavin/
-````
-
-**确认效果**
-
-````console
-[root@localhost ~]# df -h | grep vdb
-/dev/vdb 2.0G 6.0M 1.8G 1% /gavin
-````
-
-**测试效果**
-
-````console
-[root@localhost ~]# dd if=/dev/zero of=/gavin/test.1.txt bs=1M count=200
-记录了200+0 的读入
-记录了200+0 的写出
-209715200字节(210 MB)已复制，0.46875 秒，447 MB/秒
-[root@localhost ~]# ll /gavin/
-总用量 204816
-drwx------. 2 root root 16384 3月 25 22:10 lost+found
--rw-r--r--. 1 root root 209715200 3月 25 22:12 test.1.txt
-````
-
-#### 卸载实践
-
-**卸载目录**
-
-````console
-[root@localhost ~]# umount /gavin/
-[root@localhost ~]# # Ctrl + ] 退出虚拟机
-[root@kvm-host ~]#
-````
-
-**卸载磁盘**
-
-````console
-[root@kvm-host ~]# virsh detach-disk CentOS-7-x86_64 vdb
-成功分离磁盘
-````
-
-**确认效果**
-
-````console
-[root@kvm-host ~]# virsh console CentOS-7-x86_64
-[root@localhost ~]#fdisk -l
-````
-
-**检查磁盘效果**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 1.06 GiB
-````
-
-## 3.3 其他实践
-
-### 数据实践
-
-#### 基础知识
-
-**需求**
-
-在我们使用数据卷操作的时候，不可避免的涉及到 数据导出、数据清除、数据导入、容量变动 等操作。
-
-**语法格式**
-
-**数据导出**
-
-````text
-    virsh vol-download <存储卷名称> <导出文件名> --pool <存储池>
-数据清除
-    virsh vol-wipe <存储卷名称> --pool <存储池>
-数据导入
-    virsh vol-upload <存储卷名称> <导出文件名> --pool <存储池>
-容量变动
-    virsh vol-resize <已存在的存储卷名称> <新的容量大小> --pool <存储池>
-    注意：容量的变动主要针对的是磁盘容量，而不是磁盘里面存储的数据
-````
-
-#### 导出实践
-
-**导出卷中数据**
-
-````console
-[root@kvm-host ~]# virsh vol-download gavin.img file.txt --pool gavin_pool
-# 会有几秒的卡顿过程
-````
-
-**查看效果**
-
-````console
-[root@kvm-host ~]# ll file.txt
--rw-r--r-- 1 root root 2147483648 3月 25 22:17 file.txt
-结果显示：
-    将一个磁盘文件的所有信息都备份出来了，容量大小与数据卷大小一致
-````
-
-#### 清除实践
-
-**清除卷中数据前查看效果**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 1.06 GiB
-````
-
-**清除卷中数据。** `vol-wipe` 会擦除卷内容，不能靠随后 `vol-upload` 必然恢复；仅在已验证离线备份、卷未被虚拟机使用且确实需要清空时执行。
-
-````console
-[root@kvm-host ~]# virsh vol-wipe gavin.img --pool gavin_pool
-擦除卷 gavin.img
-````
-
-**再次查看效果**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 0.00 B
-````
-
-#### 导入实践
-
-**导入数据前检查效果**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 0.00 B
-````
-
-**导入卷中数据**
-
-````console
-[root@kvm-host ~]# virsh vol-upload gavin.img file.txt --pool gavin_pool
-# 会有几秒的卡顿过程
-````
-
-**再次测试效果**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 2.00 GiB
-注意：
-    如果没有数据卷，则无法导入数据
-````
-
-#### 容量变动
-
-**查看当前卷信息**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 2.00 GiB
-分配： 2.00 GiB
-````
-
-**调整卷容量为3G**
-
-````console
-[root@kvm-host ~]# virsh vol-resize gavin.img 3G --pool gavin_pool
-成功将卷 'gavin.img' 大小改为 3G
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 3.00 GiB
-分配： 2.00 GiB
-````
-
-**调整卷容量为5G**
-
-````console
-[root@kvm-host ~]# virsh vol-resize gavin.img 5G --pool gavin_pool
-成功将卷 'gavin.img' 大小改为 5G
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 5.00 GiB
-分配： 2.00 GiB
-````
-
-默认情况下不支持直接缩容。扩容存储卷也不会自动扩展来宾中的分区和文件系统；应在来宾内另行检查并调整。缩容涉及数据迁移和文件系统处理，不能只修改卷容量。
-
-````console
-[root@kvm-host ~]# virsh vol-resize gavin.img 1G --pool gavin_pool
-错误： 将卷 'gavin.img' 的大小改为 1G 失败
-错误： 无效参数：无法缩小现有分配的容量
-````
-
-### 克隆、删除
-
-#### 基础知识
-
-**需求**
-
-当我们定制好应用数据卷之后，可能需要快速的复制一个，这就用到了数据卷的克隆操作；当我们数据卷的使命结束后，我们就要删除数据卷了。
-
-**语法解析**
-
-**克隆存储卷**
-
-````text
-    virsh vol-clone <已存在的存储卷名称> <新的存储卷名称> --pool <存储池>
-删除存储卷
-    virsh vol-delete <已存在的存储卷> <存储池>
-````
-
-#### 克隆实践
-
-**克隆一个新的存储卷**
-
-````console
-[root@kvm-host ~]# virsh vol-clone gavin.img gavin-2.img gavin_pool
-从 gavin-2.img 克隆的卷 gavin.img
-[root@kvm-host ~]# virsh vol-list gavin_pool
- 名称 路径
-------------------------------------------
- gavin-2.img /kvm/images/gavin-2.img
- gavin.img /kvm/images/gavin.img
-[root@kvm-host ~]# ls /kvm/images/
-gavin-2.img gavin.img
-````
-
-**查看两个存储卷信息**
-
-````console
-[root@kvm-host ~]# virsh vol-info gavin.img gavin_pool
-名称： gavin.img
-类型： 文件
-容量： 5.00 GiB
-分配： 2.00 GiB
-[root@kvm-host ~]# virsh vol-info gavin-2.img gavin_pool
-名称： gavin-2.img
-类型： 文件
-容量： 5.00 GiB
-分配： 1.18 MiB
-````
-
-#### 删除实践
-
-**删除存储卷。** 先通过 `virsh domblklist` 确认没有虚拟机仍引用该卷，并验证备份可读；`vol-delete` 删除的是卷数据，不能仅通过重新定义存储池找回。
-
-````console
-[root@kvm-host ~]# virsh vol-delete gavin-2.img gavin_pool
-卷 gavin-2.img 被删除
-````
-
-**查看存储卷列表**
-
-````console
-[root@kvm-host ~]# virsh vol-list gavin_pool
- 名称 路径
---------------------------------------
- gavin.img /kvm/images/gavin.img
-[root@kvm-host ~]# ls /kvm/images/
-gavin.img
-````
+删除卷前用 `virsh domblklist <虚拟机名>` 确认没有虚拟机引用它，并验证独立备份可读。`virsh vol-delete gavin-2.img --pool gavin_pool` 删除的是卷数据；重新定义存储池不会把它找回来。
 
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/KVM/02-create-vm-from-cli.html' | relative_url }}">← 上一章：命令创建虚拟机</a>

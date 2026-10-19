@@ -352,7 +352,7 @@ systemd-analyze critical-chain</code></pre>
 <span class="hljs-built_in">cat</span> /etc/default/grub</code></pre>
 
 <p class="out-label">▶ 典型 /etc/default/grub 内容</p>
-<pre data-presentation-code="v1" data-presentation-highlight="9b43b62ab75603b6ed8a31ae2d20854eab8ac8d6b813642c02dfbae691a618d8"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 如果注释掉此行或设为 false，GRUB 菜单将隐藏。true 则强制显示菜单</span>
+<pre data-presentation-code="v1" data-presentation-highlight="9b43b62ab75603b6ed8a31ae2d20854eab8ac8d6b813642c02dfbae691a618d8"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># menu 显示菜单；hidden 或 countdown 的行为还受发行版配置影响</span>
 GRUB_TIMEOUT_STYLE=menu
 <span class="hljs-comment"># 菜单显示 5 秒后自动选择默认选项。0 表示不等待</span>
 GRUB_TIMEOUT=5

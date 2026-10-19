@@ -120,6 +120,12 @@ scrape_configs:
 
 原资料的 Compose 方法本质相同：Nginx 与 Exporter 在同一 Compose 网络，Exporter 可访问 nginx:8080/stub_status；若 Prometheus 在宿主机外部，则抓取宿主机映射的 9113。Grafana Dashboard 11199、14900 应在指标验证后再导入。
 
+<details>
+<summary>查看历史 Nginx Grafana 面板中的指标位置</summary>
+<p>图中同时展示 Exporter 存活状态、活动连接数和请求数；先确认 Prometheus 中相应指标有数据，再判断面板是否因数据源或标签不匹配而空白。界面布局随 Grafana 版本变化。</p>
+<img src="assets/img-719e1cbffda00759.webp" alt="历史 Nginx Grafana 面板中的存活状态和连接指标" loading="lazy">
+</details>
+
 ### 7.6.2 虚拟主机细分方案：VTS
 
 [nginx-module-vts](https://github.com/vozlt/nginx-module-vts) 是额外编译的模块，可提供按虚拟主机等维度细分的状态 JSON；[nginx-vts-exporter](https://github.com/hnlq715/nginx-vts-exporter) 再转换为 Prometheus 指标，原教程默认监听 9913。这适合需要 VTS 指标且能维护定制 Nginx 构建的场景，不能与官方 stub_status Exporter 混用。

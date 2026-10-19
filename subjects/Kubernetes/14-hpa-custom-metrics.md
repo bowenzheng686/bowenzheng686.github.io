@@ -158,6 +158,68 @@ kubectl get deployment metrics-app
 [KEDA](https://keda.sh/) 通过 ScaledObject 和触发器连接 Kafka、RabbitMQ、云队列、Prometheus 等事件源，通常与 HPA 协作处理活动时的水平扩缩，并能在适合的工作负载上实现零到非零副本的激活。并非所有触发器和所有工作负载都支持相同的伸缩范围；还要考虑队列语义、积压消费速度和冷启动。
 
 [Kapacity](https://github.com/traas-stack/kapacity) 面向更广泛的容量管理与智能伸缩实践，可以作为扩展方案了解，但不属于 Kubernetes 内置 HPA 或本文演示流水线的前提。选择扩缩方案时先明确目标指标、数据可靠性、延迟、伸缩上限和失败时的回退方式，避免因为组件更多而增加不可解释的控制环路。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（28 张）</summary>
+
+![原 PDF 第 38 页插图](assets/Kubernetes的HPA动态扩缩容/img-fda944248b625333.webp)
+
+![原 PDF 第 39 页插图](assets/Kubernetes的HPA动态扩缩容/img-dd1bea9c272b8044.webp)
+
+![原 PDF 第 41 页插图](assets/Kubernetes的HPA动态扩缩容/img-5c5926da13330bed.webp)
+
+![原 PDF 第 42 页插图](assets/Kubernetes的HPA动态扩缩容/img-b4b371961dcf1fd2.webp)
+
+![原 PDF 第 43 页插图](assets/Kubernetes的HPA动态扩缩容/img-404f6b8609205d80.webp)
+
+![原 PDF 第 44 页插图](assets/Kubernetes的HPA动态扩缩容/img-1907988d158137df.webp)
+
+![原 PDF 第 48 页插图](assets/Kubernetes的HPA动态扩缩容/img-441812f8df6cf01f.webp)
+
+![原 PDF 第 54 页插图](assets/Kubernetes的HPA动态扩缩容/img-6e30e9147734e40c.webp)
+
+![原 PDF 第 55 页插图](assets/Kubernetes的HPA动态扩缩容/img-902cfdd3fe07d7d7.webp)
+
+![原 PDF 第 55 页插图](assets/Kubernetes的HPA动态扩缩容/img-13d74584fa5c3919.webp)
+
+![原 PDF 第 56 页插图](assets/Kubernetes的HPA动态扩缩容/img-a15f80998bea3d2e.webp)
+
+![原 PDF 第 56 页插图](assets/Kubernetes的HPA动态扩缩容/img-c0d43a9dc03bfe86.webp)
+
+![原 PDF 第 56 页插图](assets/Kubernetes的HPA动态扩缩容/img-219660a401391fac.webp)
+
+![原 PDF 第 59 页插图](assets/Kubernetes的HPA动态扩缩容/img-d37abf238b971fc1.webp)
+
+![原 PDF 第 60 页插图](assets/Kubernetes的HPA动态扩缩容/img-381f078d8ed4b04e.webp)
+
+![原 PDF 第 60 页插图](assets/Kubernetes的HPA动态扩缩容/img-1331007d24b7447e.webp)
+
+![原 PDF 第 61 页插图](assets/Kubernetes的HPA动态扩缩容/img-8a2aba6a955fc97d.webp)
+
+![原 PDF 第 61 页插图](assets/Kubernetes的HPA动态扩缩容/img-5d6e040ca203dc17.webp)
+
+![原 PDF 第 62 页插图](assets/Kubernetes的HPA动态扩缩容/img-0075564c8f2a5e42.webp)
+
+![原 PDF 第 65 页插图](assets/Kubernetes的HPA动态扩缩容/img-6f5acacffc7f492f.webp)
+
+![原 PDF 第 67 页插图](assets/Kubernetes的HPA动态扩缩容/img-b8152af6d444a777.webp)
+
+![原 PDF 第 67 页插图](assets/Kubernetes的HPA动态扩缩容/img-95b3d171292adb71.webp)
+
+![原 PDF 第 71 页插图](assets/Kubernetes的HPA动态扩缩容/img-db7077997ecf2413.webp)
+
+![原 PDF 第 73 页插图](assets/Kubernetes的HPA动态扩缩容/img-bf6581a90349be02.webp)
+
+![原 PDF 第 82 页插图](assets/Kubernetes的HPA动态扩缩容/img-8b0c0eee9a508a65.webp)
+
+![原 PDF 第 82 页插图](assets/Kubernetes的HPA动态扩缩容/img-be9cedca62873320.webp)
+
+![原 PDF 第 83 页插图](assets/Kubernetes的HPA动态扩缩容/img-fb00a5139757cb91.webp)
+
+![原 PDF 第 83 页插图](assets/Kubernetes的HPA动态扩缩容/img-e78a864a6a17ff09.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

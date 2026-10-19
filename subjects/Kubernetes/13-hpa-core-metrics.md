@@ -177,6 +177,36 @@ behavior:
 2. `kubectl top pods`：确认资源指标 API 可用；若不可用，查 APIService、Metrics Server Pod 与日志、kubelet 证书及网络。
 3. 检查目标 Deployment 的 Pod 标签选择器与每个容器的 `requests.cpu` / `requests.memory`。`missing request for cpu` 指的是请求量缺失，不是节点没有 CPU。
 4. 区分 `ScalingLimited`（触及最小/最大副本数）、稳定窗口等待、指标缺失和调度失败。HPA 修改了期望副本数，也不保证新 Pod 一定能调度；节点容量不足还需处理资源或节点扩容。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（12 张）</summary>
+
+![原 PDF 第 9 页插图](assets/Kubernetes的HPA动态扩缩容/img-9d5fd24312ca1673.webp)
+
+![原 PDF 第 18 页插图](assets/Kubernetes的HPA动态扩缩容/img-cf33f4c3eaa7f61f.webp)
+
+![原 PDF 第 19 页插图](assets/Kubernetes的HPA动态扩缩容/img-ee233abe4550e044.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-369cb32c24b3686e.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-f78c80424127dbe6.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-9346f7f346c14878.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-e72f02c57c9cff91.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-5484a22d9fd72efe.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-56b5f54db57c0d54.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-ecfe7efda72a7cd3.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes的HPA动态扩缩容/img-fedca32889612d34.webp)
+
+![原 PDF 第 22 页插图](assets/Kubernetes的HPA动态扩缩容/img-21e4f18ed368154c.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

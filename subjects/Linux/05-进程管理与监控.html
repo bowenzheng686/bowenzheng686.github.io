@@ -316,9 +316,9 @@ root      2341  0.0  0.1  34876  8120 ?        D    Jul30   1:23 [jbd2/sda1-8]</
     </tbody></table>
     </div>
 
-    <div class="box box-danger"><strong>D 状态（不可中断睡眠）是系统健康的"煤矿金丝雀"：</strong>如果 top/ps 中频繁出现 D 状态进程且迟迟不消，说明磁盘 I/O 或 NFS 挂载出现严重问题。这是一个<strong>你完全无法干预的状态</strong>——kill -9 也无济于事，因为进程在内核态的 I/O 调用中，根本无法检查信号。唯一的办法是恢复底层存储/I/O 系统的正常。</div>
+    <div class="box box-danger"><strong>持续的 D 状态需要查 I/O 链路：</strong>不可中断睡眠常见于块设备或网络文件系统等待；单次短暂出现不等于故障。若进程长期停留，先查内核日志、存储延迟和挂载状态。此时发送 SIGKILL 通常不会立即生效，要等进程离开不可中断等待；排障重点是恢复其等待的底层资源。</div>
 
-    <div class="box box-warning"><strong>Z 状态（僵尸）清理指南：</strong>僵尸进程不消耗内存，但占用 PID。少量僵尸可以忽略；大量僵尸说明父进程有 bug——它持续创建子进程但不回收。用 <code>ps -eo ppid,pid,stat,cmd | grep "^Z"</code> 找到僵尸的父进程 PPID，然后 <code>kill -HUP &lt;PPID&gt;</code> 通知父进程回收。如果父进程就是不回收，只能 kill 父进程让 init 接管。</div>
+    <div class="box box-warning"><strong>Z 状态（僵尸）清理指南：</strong>僵尸不再运行，但仍占用进程表项。用 <code>ps -eo ppid,pid,stat,cmd | awk '$3 ~ /^Z/'</code> 找到其 PPID，再检查父进程为何没有调用 <code>wait</code> 回收子进程。不要把 <code>SIGHUP</code> 当作通用“回收信号”；是否重载或退出取决于程序实现。必要时按服务的正常重启流程处理父进程。</div>
   </div>
 </div>
 
@@ -600,8 +600,8 @@ Swap:         2.0Gi       512Mi       1.5Gi
 <span class="hljs-comment">#                                                   ↑1min ↑5min ↑15min</span>
 
 <span class="hljs-comment"># load average 含义：处于"可运行(R)"和"不可中断睡眠(D)"状态的平均进程数</span>
-<span class="hljs-comment"># 单核 CPU：load = 1.0 表示满负荷，&gt; 1.0 表示有进程在排队等待 CPU</span>
-<span class="hljs-comment"># 4 核 CPU：load = 4.0 表示满负荷，&gt; 4.0 表示排队</span></code></pre>
+<span class="hljs-comment"># 可与逻辑 CPU 数对比，但 D 状态任务也会计入 load</span>
+<span class="hljs-comment"># 高负载不一定是 CPU 饱和；继续结合 CPU 与 I/O 指标判断</span></code></pre>
     <p><strong>解读负载：</strong>如果 1 分钟负载远高于 15 分钟负载，说明系统正在变忙（可能来了突发流量）。如果三者都很高，说明系统长期超负荷。如果 1 分钟远低于 15 分钟，说明负载高峰已经过去。</p>
 
     <h4>lsof —— 进程打开了什么</h4>

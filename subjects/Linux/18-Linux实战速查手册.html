@@ -1051,7 +1051,7 @@ grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"= -1 E"</span>
 </div>
 
 <h4>网络排障的黄金命令组合</h4>
-<pre data-presentation-code="v1" data-presentation-highlight="3afb3a1d0439d1540d9b6cb8e28a5fbbfba36c524f4cbe1decf561cec7f50bc6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 一次性检查所有网络层面（复制粘贴到终端）</span>
+<pre data-presentation-code="v1" data-presentation-highlight="3afb3a1d0439d1540d9b6cb8e28a5fbbfba36c524f4cbe1decf561cec7f50bc6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 网络检查示例：先按环境确认网关、探测目标和防火墙管理器</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 网卡状态 ==="</span> &amp;&amp; <span class="hljs-built_in">ip</span> <span class="hljs-built_in">link</span> show &amp;&amp; <span class="hljs-built_in">echo</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"=== IP 地址 ==="</span> &amp;&amp; <span class="hljs-built_in">ip</span> addr show | grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"inet "</span> &amp;&amp; <span class="hljs-built_in">echo</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 路由表 ==="</span> &amp;&amp; <span class="hljs-built_in">ip</span> route show &amp;&amp; <span class="hljs-built_in">echo</span>
@@ -1059,11 +1059,11 @@ grep<span class="hljs-attr"> -E</span> <span class="hljs-string">"= -1 E"</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 监听端口 ==="</span> &amp;&amp; <span class="hljs-built_in">ss</span><span class="hljs-attr"> -tlnp</span> &amp;&amp; <span class="hljs-built_in">echo</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 防火墙规则 ==="</span> &amp;&amp; <span class="hljs-built_in">iptables</span><span class="hljs-attr"> -L</span><span class="hljs-attr"> -n</span><span class="hljs-attr"> -v</span><span class="hljs-attr"> --line-numbers</span> 2&gt;/dev/null || <span class="hljs-built_in">echo</span> <span class="hljs-string">"需要 root"</span>
 <span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 网关 Ping ==="</span> &amp;&amp; GATEWAY=$(<span class="hljs-built_in">ip</span> route | grep default | awk <span class="hljs-string">'{print $3}'</span>)
-ping<span class="hljs-attr"> -c</span> 3<span class="hljs-attr"> -W</span> 1 <span class="hljs-string">"<span class="hljs-variable">$GATEWAY</span>"</span> 2&gt;/dev/null &amp;&amp; <span class="hljs-built_in">echo</span> <span class="hljs-string">"网关可达"</span> || <span class="hljs-built_in">echo</span> <span class="hljs-string">"网关不可达!"</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 外网 Ping ==="</span> &amp;&amp; ping<span class="hljs-attr"> -c</span> 3<span class="hljs-attr"> -W</span> 1 8.8.8.8 2&gt;/dev/null &amp;&amp; <span class="hljs-built_in">echo</span> <span class="hljs-string">"外网可达"</span> || <span class="hljs-built_in">echo</span> <span class="hljs-string">"外网不可达!"</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== DNS 解析测试 ==="</span> &amp;&amp; nslookup google.com 2&gt;/dev/null || <span class="hljs-built_in">echo</span> <span class="hljs-string">"DNS 解析失败"</span></code></pre>
+ping<span class="hljs-attr"> -c</span> 3<span class="hljs-attr"> -W</span> 1 <span class="hljs-string">"<span class="hljs-variable">$GATEWAY</span>"</span> 2&gt;/dev/null &amp;&amp; <span class="hljs-built_in">echo</span> <span class="hljs-string">"网关有 ICMP 回复"</span> || <span class="hljs-built_in">echo</span> <span class="hljs-string">"网关未回复 ICMP，继续查路由和策略"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 示例公网地址 ICMP 探测 ==="</span> &amp;&amp; ping<span class="hljs-attr"> -c</span> 3<span class="hljs-attr"> -W</span> 1 8.8.8.8 2&gt;/dev/null &amp;&amp; <span class="hljs-built_in">echo</span> <span class="hljs-string">"探测地址有 ICMP 回复"</span> || <span class="hljs-built_in">echo</span> <span class="hljs-string">"探测地址未回复 ICMP，不能直接判定断网"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"=== 系统解析器测试 ==="</span> &amp;&amp; getent ahosts example.com || <span class="hljs-built_in">echo</span> <span class="hljs-string">"当前系统解析器未返回结果"</span></code></pre>
 
-<div class="box box-info"><strong>网络排障的心法：逐层排除，不跳跃</strong><br>遇事不决先 ping 网关（确认内部网络正常），再 ping 8.8.8.8（确认能出外网），然后 nslookup（确认 DNS 解析正常），最后 curl 目标 URL（确认应用层通讯正常）。<strong>绝不要跳过步骤——90% 的误判都是因为跳过了某一层。</strong></div>
+<div class="box box-info"><strong>网络排障的心法：按层定位，但不要把单次探测当作结论</strong><br>先核对链路、地址与路由，再探测本环境允许访问的网关或目标地址，之后查询系统实际使用的解析器，最后用 <code>curl</code> 验证目标应用。ICMP 可能被禁用，公网探测地址也可能被策略阻断；Ping 失败不能单独证明网络中断，DNS 成功也不能证明应用可用。</div>
 </div>
 </div>
 

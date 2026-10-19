@@ -394,6 +394,7 @@ sudo rmmod my_driver
 sudo rmmod<span class="hljs-attr"> -f</span> my_driver</code></pre>
 
 <h4>强制加载/屏蔽模块</h4>
+<p><code>blacklist</code> 主要阻止模块按别名自动加载，不等于禁止所有显式加载。网卡、存储或显示驱动可能参与启动；更改之前应先确认实际加载链、准备可恢复的控制台，并保留旧 initramfs 或救援介质。下面的模块名仅作示意，不要原样在生产主机运行。</p>
 <pre data-presentation-code="v1" data-presentation-highlight="0f095cfe6e1942d826e84f4621b01b25710e426d48b4e8cfc39263c0edf5ba4d"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === 场景：系统错误地加载了错误的网卡驱动，需要屏蔽它 ===</span>
 
 <span class="hljs-comment"># 1. 创建黑名单文件</span>

@@ -193,7 +193,7 @@ crictl info
 
 CSR 已批准但节点仍为 `NotReady` 时，应继续检查 CNI、Pod CIDR、节点间路由、镜像拉取和 kubelet 状态；不要反复执行 `join`。如果令牌过期，使用 `kubeadm token create --print-join-command` 创建新的加入命令。仅在实际需要时才查看 `kube-system` 的 kubeadm ConfigMap；它不是凭据备份，不能用从旧版本拷贝的 YAML 覆盖当前集群配置。
 
-<details class="historical-figures">
+<details class="historical-figures" markdown="1">
 <summary>查看原始讲义中的其余配图与历史操作截图（8 张）</summary>
 
 ![原 PDF 第 183 页插图](assets/Kubernetes架构和部署/img-404899e3ca9ffba9.webp)

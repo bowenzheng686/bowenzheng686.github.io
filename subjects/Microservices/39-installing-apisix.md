@@ -39,11 +39,12 @@ Dashboard 若独立运行，还会有自己的管理端口，例如旧版示例�
 2. 配置目标发行版对应的软件源，或下载发行包并验证。
 3. 配置 etcd 为受控地址并检查 `etcdctl endpoint health`。
 4. 在 `conf/config.yaml` 指定 etcd 端点、代理监听、Admin API 地址与密钥。
-5. 执行 `apisix init`、`apisix test`，再用 systemd **或** APISIX CLI 其中一种方式管理进程。
+5. 执行 `apisix init`、`apisix test`。先用 `systemctl cat apisix.service` 确认安装包是否提供服务单元；有则交给 systemd 管理，没有则按该版本文档用 APISIX CLI 管理，不能混用两套启动方式。
 
 ```bash
 apisix init
 apisix test
+# 以下两条仅适用于已安装 apisix.service 的系统包
 systemctl enable --now apisix
 systemctl status apisix
 ss -lntp | grep -E '9080|9180|9443'

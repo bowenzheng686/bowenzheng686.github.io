@@ -390,7 +390,7 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 <a href="#sec17-2">Docker三大件</a>
 <a href="#sec17-3">基础命令大全</a>
 <a href="#sec17-4">编写Dockerfile</a>
-<a href="#sec17-5">docker-compose编排</a>
+<a href="#sec17-5">Docker Compose 编排</a>
 <a href="#sec17-6">实用场景</a>
 </div></nav>
 
@@ -457,7 +457,7 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
 <h4>Image（镜像）—— 类比安装光盘</h4>
 <p>镜像包含分层的文件系统内容以及启动配置等元数据。Dockerfile 的部分指令会形成文件系统层，部分只改变镜像配置，因此不能机械地理解成“一条指令必定一层文件”。镜像在仓库中可作为压缩层传输，运行时由存储驱动组合为容器可见的文件系统。</p>
 <p>比如一个 Nginx 镜像的底层结构：</p>
-<div class="editorial-diagram-block" data-diagram-replacement="n070"><figure class="editorial-generated-diagram" data-diagram-source="1b3d5a4e9a051dd1538d44c8cb8e120c984ec51cb562fe32ea505e8523606b1e" data-diagram-asset-mode="built-in image_gen"><a href="assets/generated-diagrams/n070-v2.png" target="_blank" rel="noopener" title="查看原尺寸图片"><img src="assets/generated-diagrams/n070-v2.webp" alt="Image（镜像）—— 类比安装光盘" loading="lazy" decoding="async" width="1536" height="1024"></a></figure><details class="editorial-diagram-source" data-diagram-original="n070"><summary>查看原始图示文字</summary><pre><code class="language-plaintext">Layer 5 (最上层): CMD ["nginx", "-g", "daemon off;"]    ← 启动命令
+<div class="editorial-diagram-block" data-diagram-replacement="n070"><figure class="editorial-generated-diagram" data-diagram-source="1b3d5a4e9a051dd1538d44c8cb8e120c984ec51cb562fe32ea505e8523606b1e" data-diagram-asset-mode="built-in image_gen"><a href="assets/generated-diagrams/n070-v2.webp" target="_blank" rel="noopener" title="查看原尺寸图片"><img src="assets/generated-diagrams/n070-v2.webp" alt="Image（镜像）—— 类比安装光盘" loading="lazy" decoding="async" width="1536" height="1024"></a></figure><details class="editorial-diagram-source" data-diagram-original="n070"><summary>查看原始图示文字</summary><pre><code class="language-plaintext">Layer 5 (最上层): CMD ["nginx", "-g", "daemon off;"]    ← 启动命令
 Layer 4: COPY nginx.conf /etc/nginx/nginx.conf           ← 自定义配置
 Layer 3: RUN apt update &amp;&amp; apt install -y nginx           ← 安装 Nginx
 Layer 2: RUN apt update &amp;&amp; apt install -y curl ca-certificates  ← 安装依赖
@@ -701,33 +701,31 @@ CMD [<span class="hljs-string">"-g"</span>, <span class="hljs-string">"daemon of
 </div>
 
 <figure class="merged-illustration" data-image-id="chapter17/03-dockerfile-multistage-cache.png"><img src="assets/chapter17/03-dockerfile-multistage-cache.webp" alt="解释依赖层前置、builder/runtime 分离、非 root 和敏感信息边界。" loading="lazy" decoding="async" width="1536" height="1024"></figure><!-- ═══════════════ 17.5 docker-compose ═══════════════ -->
-<h2 class="section-title" id="sec17-5"><span class="icon">5</span>docker-compose —— 编排多个容器</h2>
+<h2 class="section-title" id="sec17-5"><span class="icon">5</span>Docker Compose —— 编排多个容器</h2>
 
 <div class="card">
 <div class="card-header"><span class="badge badge-operate">操</span><h3>场景：一个应用需要 Web 服务器 + 应用 + 数据库 + 缓存，怎么一键启动？</h3><span class="tag tag-practice">进阶</span></div>
 <div class="card-body">
-<h4>docker-compose 解决什么问题</h4>
-<p>一个 <code>docker run</code> 调用创建并启动一个容器；多服务应用若逐个调用，需要自行维护网络、卷和启动顺序。Docker Compose 用 YAML 文件声明这些服务及其依赖，通过当前常见的 <code>docker compose</code> 命令统一管理；旧版独立工具的命令写作 <code>docker-compose</code>。下面的示例按本机安装版本选择命令。</p>
+<h4>Docker Compose 解决什么问题</h4>
+<p>一个 <code>docker run</code> 调用创建并启动一个容器；多服务应用若逐个调用，需要自行维护网络、卷和启动顺序。Docker Compose 用 YAML 文件声明服务及其依赖，当前示例统一使用 Compose V2 的 <code>docker compose</code> 命令；旧版独立工具写作 <code>docker-compose</code>。Compose 的依赖关系不自动等于服务就绪，需要健康检查与相应的 <code>depends_on</code> 条件。</p>
 
 <h4>完整 compose 文件示例：LAMP 栈</h4>
-<pre data-presentation-code="v1" data-presentation-highlight="9666999880e7f9e71b24f24491526b5ddc010f1cb2a9f699638b1a718c4d06b8"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes"><span class="hljs-attr">version:</span> <span class="hljs-string">"3.8"</span>
-
+<p>运行前先创建 <code>html/</code> 和 <code>init.sql</code>，并通过未入库的环境配置提供 <code>DB_ROOT_PASSWORD</code>、<code>DB_PASSWORD</code>。下例只演示本地 HTTP 服务，未配置 TLS，因此不映射 443；phpMyAdmin 仅绑定本机环回地址。公开部署时还需准备 HTTPS 入口、密钥管理与明确的镜像版本。</p>
+<pre data-presentation-code="v1" data-presentation-highlight="9666999880e7f9e71b24f24491526b5ddc010f1cb2a9f699638b1a718c4d06b8"><code data-static-highlight="11.9.0" class="editorial-code language-yaml hljs" data-highlighted="yes">
 <span class="hljs-attr">services:</span>
   <span class="hljs-comment"># Apache + PHP</span>
   <span class="hljs-attr">web:</span>
     <span class="hljs-attr">image:</span> <span class="hljs-string">php:8.2-apache</span>
     <span class="hljs-attr">container_name:</span> <span class="hljs-string">lamp-web</span>
     <span class="hljs-attr">ports:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">"80:80"</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">"443:443"</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">"127.0.0.1:8088:80"</span>
     <span class="hljs-attr">volumes:</span>
       <span class="hljs-bullet">-</span> <span class="hljs-string">./html:/var/www/html</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">./php.ini:/usr/local/etc/php/php.ini</span>
-    <span class="hljs-attr">environment:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">PHP_MEMORY_LIMIT=256M</span>
     <span class="hljs-attr">depends_on:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">db</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">redis</span>
+      <span class="hljs-attr">db:</span>
+        <span class="hljs-attr">condition:</span> <span class="hljs-string">service_healthy</span>
+      <span class="hljs-attr">redis:</span>
+        <span class="hljs-attr">condition:</span> <span class="hljs-string">service_started</span>
     <span class="hljs-attr">networks:</span>
       <span class="hljs-bullet">-</span> <span class="hljs-string">lamp-net</span>
     <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span>
@@ -771,13 +769,13 @@ CMD [<span class="hljs-string">"-g"</span>, <span class="hljs-string">"daemon of
     <span class="hljs-attr">environment:</span>
       <span class="hljs-attr">PMA_HOST:</span> <span class="hljs-string">db</span>
     <span class="hljs-attr">ports:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">"8080:80"</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">"127.0.0.1:8080:80"</span>
     <span class="hljs-attr">depends_on:</span>
       <span class="hljs-bullet">-</span> <span class="hljs-string">db</span>
     <span class="hljs-attr">networks:</span>
       <span class="hljs-bullet">-</span> <span class="hljs-string">lamp-net</span>
     <span class="hljs-attr">profiles:</span>
-      <span class="hljs-bullet">-</span> <span class="hljs-string">debug</span>          <span class="hljs-comment"># 默认不启动，需要时: docker-compose --profile debug up</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">debug</span>          <span class="hljs-comment"># 默认不启动，需要时: docker compose --profile debug up</span>
 
 <span class="hljs-attr">volumes:</span>
   <span class="hljs-attr">db-data:</span>
@@ -787,37 +785,37 @@ CMD [<span class="hljs-string">"-g"</span>, <span class="hljs-string">"daemon of
   <span class="hljs-attr">lamp-net:</span>
     <span class="hljs-attr">driver:</span> <span class="hljs-string">bridge</span></code></pre>
 
-<figure class="merged-illustration" data-image-id="chapter17/04-compose-service-topology.png"><img src="assets/chapter17/04-compose-service-topology.webp" alt="展示公网入口、私有服务网络、命名卷、并行依赖健康检查与 down 行为。" loading="lazy" decoding="async" width="1536" height="1024"></figure><h4>docker-compose 常用命令</h4>
+<figure class="merged-illustration" data-image-id="chapter17/04-compose-service-topology.png"><img src="assets/chapter17/04-compose-service-topology.webp" alt="展示公网入口、私有服务网络、命名卷、并行依赖健康检查与 down 行为。" loading="lazy" decoding="async" width="1536" height="1024"></figure><h4>docker compose 常用命令</h4>
 <pre data-presentation-code="v1" data-presentation-highlight="c821b884600621621a766f197241c1b6c674f37fd3b0a1914804405c5c27ce4a"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 启动所有服务（后台）</span>
-<span class="hljs-built_in">docker</span>-compose up<span class="hljs-attr"> -d</span>
+<span class="hljs-built_in">docker</span> compose up<span class="hljs-attr"> -d</span>
 
 <span class="hljs-comment"># 启动特定服务</span>
-<span class="hljs-built_in">docker</span>-compose up<span class="hljs-attr"> -d</span> web db
+<span class="hljs-built_in">docker</span> compose up<span class="hljs-attr"> -d</span> web db
 
 <span class="hljs-comment"># 查看所有服务状态</span>
-<span class="hljs-built_in">docker</span>-compose ps
+<span class="hljs-built_in">docker</span> compose ps
 
 <span class="hljs-comment"># 查看日志（所有服务）</span>
-<span class="hljs-built_in">docker</span>-compose logs<span class="hljs-attr"> -f</span><span class="hljs-attr"> --tail</span> 50
+<span class="hljs-built_in">docker</span> compose logs<span class="hljs-attr"> -f</span><span class="hljs-attr"> --tail</span> 50
 
 <span class="hljs-comment"># 查看特定服务日志</span>
-<span class="hljs-built_in">docker</span>-compose logs<span class="hljs-attr"> -f</span> web
+<span class="hljs-built_in">docker</span> compose logs<span class="hljs-attr"> -f</span> web
 
 <span class="hljs-comment"># 停止所有服务（保留数据卷）</span>
-<span class="hljs-built_in">docker</span>-compose down
+<span class="hljs-built_in">docker</span> compose down
 
 <span class="hljs-comment"># 停止并删除数据卷（彻底清理）</span>
-<span class="hljs-built_in">docker</span>-compose down<span class="hljs-attr"> -v</span>
+<span class="hljs-built_in">docker</span> compose down<span class="hljs-attr"> -v</span>
 
 <span class="hljs-comment"># 重新构建并启动（代码改了）</span>
-<span class="hljs-built_in">docker</span>-compose up<span class="hljs-attr"> -d</span><span class="hljs-attr"> --build</span>
+<span class="hljs-built_in">docker</span> compose up<span class="hljs-attr"> -d</span><span class="hljs-attr"> --build</span>
 
 <span class="hljs-comment"># 在运行的服务中执行命令</span>
-<span class="hljs-built_in">docker</span>-compose <span class="hljs-built_in">exec</span> web bash
-<span class="hljs-built_in">docker</span>-compose <span class="hljs-built_in">exec</span> db <span class="hljs-built_in">mysql</span><span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span>
+<span class="hljs-built_in">docker</span> compose <span class="hljs-built_in">exec</span> web bash
+<span class="hljs-built_in">docker</span> compose <span class="hljs-built_in">exec</span> db <span class="hljs-built_in">mysql</span><span class="hljs-attr"> -u</span> root<span class="hljs-attr"> -p</span>
 
-<span class="hljs-comment"># 缩放服务实例数（需要去除 container_name 和端口冲突）</span>
-<span class="hljs-built_in">docker</span>-compose up<span class="hljs-attr"> -d</span><span class="hljs-attr"> --scale</span> web=3</code></pre>
+<span class="hljs-comment"># 本例 web 指定 container_name 且绑定固定主机端口，不能直接 --scale web=3</span>
+<span class="hljs-comment"># 扩容前需移除固定容器名、解决端口冲突并配置负载均衡</span></code></pre>
 
 <div class="box box-tip"><strong>.env 文件管理敏感信息</strong><br>compose 文件中的 <code>${DB_PASSWORD}</code> 变量来自同目录下的 <code>.env</code> 文件。不要把密码硬编码在 compose 文件里——把 <code>.env</code> 加入 <code>.gitignore</code>，用 <code>.env.example</code> 提供模板。</div>
 </div>

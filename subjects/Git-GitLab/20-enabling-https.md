@@ -1,12 +1,12 @@
 ---
 layout: default
-title: "Git 与 GitLab 版本控制 · 实现 Https"
+title: "Git 与 GitLab 版本控制 · 启用 HTTPS"
 subject_page: true
 pdf_notes: true
 syntax_highlight: true
 ---
 
-[← 返回Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
+[← 返回 Git 与 GitLab 版本控制目录]({{ '/subjects/Git-GitLab/' | relative_url }})
 
 {% raw %}
 
@@ -14,13 +14,7 @@ syntax_highlight: true
 
 HTTPS 可保护登录凭据与仓库传输；即使服务只在内部网络使用，也应按组织的证书管理要求配置。
 
-GitLab 如果用于不安全的网络，建议使用 https
-
-注意：建议使用权威CA颁发的证书，自签名的证书需要加入信任,否则会导致后续git clone等操作失败
-
-官方说明
-
-<https://docs.gitlab.com/omnibus/settings/nginx.html#enable-https>
+以下以 Linux 包安装且使用内置 NGINX 的 GitLab 为例；若前面还有负载均衡器或反向代理，TLS 终止位置和 `external_url`、转发头需要一并设计。具体选项以[GitLab 官方 HTTPS 配置说明](https://docs.gitlab.com/omnibus/settings/nginx.html#enable-https)和当前安装版本为准。
 
 ### 配置步骤
 
@@ -42,9 +36,9 @@ gitlab-ctl status
 curl -I https://gitlab.example.com/users/sign_in
 ```
 
-`curl` 验证后，还应从另一台客户端执行 `git clone`、登录与推送测试。不要通过关闭 Git 的证书校验掩盖证书名不匹配或缺少信任链的问题。
+`curl` 验证后，还应从另一台客户端检查证书链、域名匹配、HTTP 到 HTTPS 跳转，并执行登录、`git clone` 与推送测试。不要通过关闭 Git 的证书校验掩盖证书名不匹配或缺少信任链的问题。
 
-![Git 与 GitLab 版本管理第 157 页插图](assets/img-c1869c5bc514e494.webp)
+![启用 HTTPS 后的 GitLab 页面](assets/img-c1869c5bc514e494.webp)
 
 ### 内部 CA 的客户端信任
 

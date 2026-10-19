@@ -235,6 +235,16 @@ kubectl get service external-redis
 ```
 
 原文把 `nodePort: 0`、空 `selector` 放进 ExternalName 清单，并把它称为“无头服务结合外部 DNS”，容易误导：ExternalName 无需这些字段。外部域名必须由当前 DNS 解析链可解析；若企业域名需特殊转发，应单独配置 CoreDNS 上游。连接数据库还需检查端口、TLS 和凭据，DNS 解析成功不等于服务访问成功。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（2 张）</summary>
+
+![原 PDF 第 65 页插图](assets/Kubernetes服务发现和名称解析/img-591b83743329fa45.webp)
+
+![原 PDF 第 69 页插图](assets/Kubernetes服务发现和名称解析/img-6323b2935ad482e2.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

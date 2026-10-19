@@ -453,11 +453,9 @@ carol  ALL=(ALL)    NOPASSWD: /usr/bin/docker</code></pre>
 <span class="hljs-comment"># 给 alice 授予管理员权限（标准做法）</span>
 alice ALL=(ALL:ALL) ALL
 
-<span class="hljs-comment"># 允许 dev 组的所有成员执行 apt 命令（无需密码）</span>
-%dev ALL=(ALL) NOPASSWD: /usr/bin/apt, /usr/bin/apt-get
-
-<span class="hljs-comment"># 允许监控用户查看服务状态（不允许多余操作）</span>
-%monitoring ALL=(ALL) NOPASSWD: /usr/bin/systemctl status *, /usr/bin/journalctl
+<span class="hljs-comment"># 不要把 apt、journalctl 或带通配符的 systemctl 当作低权限只读规则</span>
+<span class="hljs-comment"># 包管理器可运行安装脚本；交互式 pager 也可能打开 Shell</span>
+<span class="hljs-comment"># 需要委派时，为具体操作编写受限工具，再用 visudo 精确授权</span>
 
 <span class="hljs-comment"># 推荐：给运维团队加上 sudo 权限</span>
 usermod<span class="hljs-attr"> -aG</span> sudo alice        <span class="hljs-comment"># Debian/Ubuntu 系 → 加入 sudo 组</span>

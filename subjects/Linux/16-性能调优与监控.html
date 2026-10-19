@@ -679,15 +679,10 @@ grep<span class="hljs-attr"> -i</span> <span class="hljs-string">"killed process
 <span class="hljs-comment"># 标记进程"优先被杀"（测试用）</span>
 <span class="hljs-built_in">echo</span> 1000  &gt; /proc/1234/oom_score_adj   <span class="hljs-comment"># 最容易被杀</span></code></pre>
 
-<div class="box box-info"><strong>oom_score_adj 取值范围</strong><br>范围是 -1000（完全免疫 OOM Killer）到 1000（必定被杀）。-1000 用于 SSHD、systemd 等守护进程，确保系统核心服务不会因 OOM 而挂掉。生产环境中数据库、消息队列等关键服务建议设为 -500 到 -800。</div>
+<div class="box box-info"><strong>oom_score_adj 取值范围</strong><br>范围是 -1000 到 1000；数值越高，被 OOM Killer 选中的倾向越大。它不是“必定被杀”的开关，容器内存限制、cgroup 和进程可用内存也会影响结果。不要给业务进程一律设置负值，否则可能把内存压力转嫁给系统关键进程；先核实 OOM 日志和实际内存使用。</div>
 
-<h4>手动触发 OOM —— 测试 OOM Killer 行为</h4>
-<pre data-presentation-code="v1" data-presentation-highlight="dc21ce7f94e0f975d2e610b2320196e2d99dce8934372e609371332d83e1160b"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 开启系统请求触发功能</span>
-<span class="hljs-built_in">echo</span> 1 &gt; /proc/sys/kernel/sysrq
-
-<span class="hljs-comment"># 手动触发 OOM Killer（模拟内存耗尽）</span>
-<span class="hljs-built_in">echo</span> f &gt; /proc/sysrq-trigger
-<span class="hljs-comment"># 内核会在 dmesg 中打印 killer 选择过程和结果</span></code></pre>
+<h4>验证 OOM 行为时先隔离测试范围</h4>
+<p>不要在共享或生产主机上通过 <code>/proc/sysrq-trigger</code> 强制调用系统级 OOM Killer；它会选择真实进程终止，也不等价于自然内存耗尽。需要演练时，在独立测试机或设置了内存上限的 cgroup / 容器中运行可控负载，观察 <code>memory.events</code>、<code>journalctl -k</code> 与应用恢复行为。</p>
 
 <h4>找出内存消耗大户的具体文件</h4>
 <pre data-presentation-code="v1" data-presentation-highlight="5d3bc81420a1668b89b1a7391b1cc0cd942827d2fdeac57db7aafeeb558396c2"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /proc/pid/smaps 显示进程的详细内存映射</span>

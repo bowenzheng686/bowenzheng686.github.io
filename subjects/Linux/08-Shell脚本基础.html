@@ -641,10 +641,10 @@ some_noisy_command &amp;&gt;/dev/null</code></pre>
 <!-- ═══════ 第六节 ═══════ -->
 <h2 class="section-title" id="sec08-6"><span class="icon">6</span>日志清理实战</h2>
 <div class="card">
-  <div class="card-header"><span class="badge badge-operate">运</span><h3>把前面学的知识拧成一股绳——写一个生产级日志清理脚本</h3><span class="tag tag-suggested">实战</span></div>
+  <div class="card-header"><span class="badge badge-operate">运</span><h3>把前面学的知识拧成一股绳——写一个日志清理练习脚本</h3><span class="tag tag-suggested">实战</span></div>
   <div class="card-body">
     <h4>需求场景</h4>
-    <p>生产服务器上有多个应用的日志目录，每天产生大量 <code>*.log</code> 文件。需要自动清理 N 天前的旧日志，防止磁盘爆满。同时要保留清理记录，便于审计。</p>
+    <p>先在专用测试目录演练清理 N 天前的日志文件，观察参数校验、统计与删除顺序。真实服务通常持续写入当前 <code>*.log</code>：不能仅凭修改时间删除正在使用的日志；生产环境优先配置 <code>logrotate</code> 或应用自身轮转机制，只清理明确识别为归档的文件，并保留审计记录。</p>
 
     <h4>完整脚本</h4>
     <pre data-presentation-code="v1" data-presentation-highlight="9efdfa3eaa3faf4201cc9c51ff87e5c59791df94e0c9c142d8c7e8f2a8f05e61"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-meta">#!/bin/bash</span>

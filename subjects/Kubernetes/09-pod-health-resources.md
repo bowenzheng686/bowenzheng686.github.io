@@ -105,9 +105,8 @@ spec:
       type: RuntimeDefault
   containers:
     - name: app
-      image: nginxinc/nginx-unprivileged:stable
-      ports:
-        - containerPort: 8080
+      image: busybox:stable
+      command: ["sleep", "3600"]
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
@@ -115,7 +114,7 @@ spec:
           drop: ["ALL"]
 ```
 
-此清单仅展示字段关系；只读根文件系统要求镜像把缓存、临时文件和日志写入可写 Volume 或标准输出，实际应用前应先测试。`runAsNonRoot` 要与镜像中的用户和端口相容。不要默认加 `privileged: true` 或 `SYS_ADMIN`；先识别真正需要的系统调用与能力，按最小权限授予。`hostNetwork`、`hostPID`、`hostPath` 会扩大与节点的耦合，也应单独审查。
+这里选择不写文件的 `sleep` 程序，使只读根文件系统的示例能够运行。真实应用若需要缓存或临时文件，须把对应路径挂载到可写 Volume，实际部署前先测试。`runAsNonRoot` 要与镜像中的用户和端口相容。不要默认加 `privileged: true` 或 `SYS_ADMIN`；先识别真正需要的系统调用与能力，按最小权限授予。`hostNetwork`、`hostPID`、`hostPath` 会扩大与节点的耦合，也应单独审查。
 
 Pod 级 `sysctls` 只能设置集群允许的内核参数，安全与非安全 sysctl 的可用范围取决于 Kubernetes、kubelet 配置和节点内核；共享节点的全局内核参数不能因单个 Pod 的请求而无约束修改。
 
@@ -168,6 +167,32 @@ spec:
 ```
 
 `emptyDir` 与 Pod 生命周期绑定，Pod 被替换后数据丢失；持久化状态应使用 PVC。无论选哪种模式，都要分别设计每个容器的资源请求、健康检查和失败时的行为，避免辅助容器故障导致主服务一直不可用。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（10 张）</summary>
+
+![原 PDF 第 114 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-2eefa841dd25c25c.webp)
+
+![原 PDF 第 115 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-ff57850677af710d.webp)
+
+![原 PDF 第 117 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-5d9a5d4e3eb4defe.webp)
+
+![原 PDF 第 118 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-a143669f21752b1d.webp)
+
+![原 PDF 第 119 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-949baa631c268f67.webp)
+
+![原 PDF 第 140 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-a80b8b37c9f37d4c.webp)
+
+![原 PDF 第 141 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-bea9117a16bc66e6.webp)
+
+![原 PDF 第 161 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-b06872c22a2e3413.webp)
+
+![原 PDF 第 165 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-628367d15611c8bc.webp)
+
+![原 PDF 第 165 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-01bb27d0bd33ed6b.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

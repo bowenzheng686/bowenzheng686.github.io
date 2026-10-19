@@ -846,6 +846,7 @@ find /home<span class="hljs-attr"> -type</span> f<span class="hljs-attr"> -empty
 
     <h4>对找到的文件执行操作 (-exec)</h4>
     <p><code>{}</code> 是找到的文件名的占位符。<code>\;</code> (反斜杠+分号) 告诉 find <code>-exec</code> 参数到此结束。</p>
+    <p>下方删除、压缩命令只用于演示 <code>-exec</code> 语法。真实日志可能仍被进程打开，不能直接按年龄删除或压缩当前 <code>*.log</code>；应先确认轮转与归档规则，在专用归档目录中预览候选文件，再按需操作。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="bf63767e2a03d77953b3f81dffc177f3604a3e730400eae1f74913f8a462c41c"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 删除 30 天前的日志</span>
 find /var/log<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.log"</span><span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -exec</span> <span class="hljs-built_in">rm</span><span class="hljs-attr"> -f</span> {} \;
@@ -869,13 +870,13 @@ find /var/log<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.
     </div>
 
     <h4>find + xargs：另一种执行方式</h4>
-    <p><code>xargs</code> 从标准输入读取内容，把它们作为参数传给另一个命令。结合管道使用，避免了 <code>-exec</code> 的场景限制，且 <code>xargs -P</code> 支持并行执行。</p>
+    <p><code>xargs</code> 从标准输入读取参数，可通过 <code>-P</code> 并行执行；它不是 <code>-exec</code> 的通用替代。文件名可能包含空格甚至换行，因此将 <code>find</code> 结果传给它时应成对使用 <code>-print0</code> 与 <code>xargs -0</code>；删除前先打印清单核对。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="067323fddf847ec600645fdc7fae53894bb37431f0911ca37dc8041235191aee"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查找并删除 (等效于 find -exec rm)</span>
-find /var/log<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.log"</span><span class="hljs-attr"> -mtime</span> +30 | xargs <span class="hljs-built_in">rm</span><span class="hljs-attr"> -f</span>
+find /var/log<span class="hljs-attr"> -type</span> f<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.log"</span><span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -print0</span> | xargs<span class="hljs-attr"> -0</span><span class="hljs-attr"> -r</span> <span class="hljs-built_in">rm</span><span class="hljs-attr"> -f</span>
 
 <span class="hljs-comment"># 并行压缩 (用 4 个进程同时执行，适合多核)</span>
-find /var/log<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.log"</span><span class="hljs-attr"> -mtime</span> +7 | xargs<span class="hljs-attr"> -P</span> 4 gzip
+find /var/log<span class="hljs-attr"> -type</span> f<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.log"</span><span class="hljs-attr"> -mtime</span> +7<span class="hljs-attr"> -print0</span> | xargs<span class="hljs-attr"> -0</span><span class="hljs-attr"> -r</span><span class="hljs-attr"> -P</span> 4 gzip
 
 <span class="hljs-comment"># 处理带空格的文件名 (用 NUL 分隔替代换行)</span>
 find .<span class="hljs-attr"> -name</span> <span class="hljs-string">"*.txt"</span><span class="hljs-attr"> -print0</span> | xargs -0 grep <span class="hljs-string">"ERROR"</span></code></pre>

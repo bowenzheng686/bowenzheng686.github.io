@@ -18,6 +18,10 @@ syntax_highlight: true
 
 Docker Engine 由 `dockerd` 守护进程、`docker` CLI、`containerd` 及相关组件组成。Docker CE、EE 与 Moby 的名称沿革用于理解旧文档即可；选择版本时应看当前发行版是否受支持，以及 [Docker 官方安装文档](https://docs.docker.com/engine/install/) 中该发行版的包名和依赖。**Kubernetes 1.24 起不再内置 dockershim**，新集群通常选 containerd 或 CRI-O 作为 CRI 运行时，不能仅按旧的“Kubernetes 对 Docker 版本要求”安装 Docker Engine。
 
+![Docker CLI 经 dockerd、containerd 与 runc 创建容器的组件链路](assets/img-6a7af8d6067991af.webp)
+
+图中的 `containerd-shim` 位于运行时与容器进程之间；这张组件关系图用于理解职责分层，不表示安装时要逐个手动启动它们。
+
 优先通过发行版对应的官方 Docker 软件仓库安装，便于更新。仅在离线或受限环境下使用静态二进制包；不要把官方便利脚本直接用于需要版本锁定和审计的生产主机。旧版 CentOS 7/8 已结束常规维护，新增部署优先选择仍受支持的发行版。
 
 ## 2.2 Ubuntu/Debian：软件包安装

@@ -64,6 +64,12 @@ curl -I https://harbor.example.com/
 
 在 Web 界面先创建项目，例如 `team`，再按职责授予成员角色。能否推送取决于**项目权限**，仅有 Harbor 账号不够。公共项目允许匿名拉取，私有项目需鉴权；生产项目一般保持私有。自动化流水线应使用范围受限的机器人账号/令牌，不要共用管理员账号。
 
+<details>
+<summary>查看旧版 Harbor 的项目成员角色界面</summary>
+<p>图中的“开发者”“项目管理员”等角色说明权限是在项目内授予的；界面来自历史版本，当前版本的入口与角色名称应以实际部署为准。</p>
+<img src="assets/img-92e63c351e165a12.webp" alt="旧版 Harbor 项目成员角色列表" loading="lazy">
+</details>
+
 ```bash
 docker login harbor.example.com
 docker tag nginx:1.27 harbor.example.com/team/nginx:1.27
@@ -85,9 +91,21 @@ docker login harbor.example.com
 
 不要通过关闭证书校验来掩盖名称、CA 或过期问题。若前置 Nginx/负载均衡器终止 TLS，要保证 Host、转发协议和 Harbor 的 `external_url` 一致，避免网页跳转到错误地址或 Docker push 失败。
 
+<details>
+<summary>查看证书链未被客户端信任时的历史错误界面</summary>
+<p>浏览器提示证书颁发机构无效时，应检查证书链、主机名与客户端 CA 信任；跳过警告并不能修复 Docker 客户端的信任问题。</p>
+<img src="assets/img-7d9f88b02b73a97f.webp" alt="浏览器报告 Harbor 证书颁发机构无效" loading="lazy">
+</details>
+
 ## 31.5 复制与真正的高可用
 
 在源 Harbor 添加目标 Registry endpoint，配置复制规则的项目范围、方向和触发方式，再执行首次同步并查看 Job Service 任务日志。规则可以是事件驱动、计划或手动，具体选项以版本为准；初次全量同步不要假定仅上传一次新镜像就能补齐历史数据。推送/删除/覆盖 tag 的行为需要分别验证，**不能默认删除必然在目标端同步**。
+
+<details>
+<summary>查看旧版复制规则中的关键字段</summary>
+<p>旧图同时展示源项目、目标端点、触发模式、初次复制和删除同步选项；尤其要注意，勾选“删除本地镜像时也删除远程镜像”会改变目标数据，不能不经评估照搬。</p>
+<img src="assets/img-d297cce72407ab5d.webp" alt="旧版 Harbor 新建复制规则的字段" loading="lazy">
+</details>
 
 两台 Harbor 相互配置复制属于**两套独立仓库的数据复制**，不是一个共享状态的双活 Harbor 集群。双向复制还可能造成标签冲突、循环或权限不一致；应明确主写入口、冲突策略与延迟容忍度。把两台独立 Harbor 直接放在轮询负载均衡之后也不等于高可用：客户端的一次上传可能跨节点，而两端数据和认证状态尚未同步。
 

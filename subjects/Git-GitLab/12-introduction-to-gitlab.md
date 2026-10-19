@@ -14,11 +14,9 @@ syntax_highlight: true
 
 Git 是分布式版本控制工具；GitLab 是围绕 Git 仓库提供协作、权限管理与 CI/CD 等能力的平台。它可以自建，也可以使用托管服务，不能把两者混为一谈。
 
-### Gitlab 介绍
+### GitLab 能提供什么
 
 ![Git 与 GitLab 版本管理第 91 页插图](assets/img-64a0cbd2503511b7.webp)
-
-GitLab 是一个基于Ruby on Rails构建用于仓库管理系统的开源项目，使用Git作为代码管理工具，提供了Web界面进行访问公开的或者私有的项目
 
 GitLab 提供仓库托管、合并请求、问题跟踪、权限控制和流水线等功能。可用能力取决于部署方式与许可证。离线提交是 Git 本身的能力，不是 GitLab 赋予的；权限通常按实例、组和项目配置，不能保证用户“只看到仓库中的部分代码”。
 
@@ -26,7 +24,7 @@ GitLab 提供仓库托管、合并请求、问题跟踪、权限控制和流水�
 
 GitLab 自建部署包含 Web/API、Git 数据访问、数据库、后台任务和可选的监控、邮件、容器镜像仓库等组件。理解它们的职责有助于排查服务故障，不必把每个组件都视为必装。
 
-<https://panlw.github.io/15365441001781.html>
+下图是组件关系示意，不代表每个版本都默认启用全部服务。
 
 ![Git 与 GitLab 版本管理第 92 页插图](assets/img-0c6ce07aa39cb90f.webp)
 
@@ -39,21 +37,13 @@ GitLab 自建部署包含 Web/API、Git 数据访问、数据库、后台任务�
 | Registry / Runner | 可选的容器镜像仓库，以及执行 CI/CD 作业的独立 Runner。 |
 | 邮件、LDAP、监控组件 | 按需求配置的通知、身份认证和可观测能力。 |
 
-Omnibus GitLab
+### Linux 软件包如何组织组件
 
-由于Gitlab 组件众多,各个组件的分别管理配置过于复杂,所以官方提供了 Omnibus GitLab 项目实现方便的管理
-
-Omnibus GitLab是基于Chef的应用编排工具，它基于Chef的cookbooks和recipes等组件自动化编排 GitLab的各组件，避免了用户复杂的配置过程
-
-相关项目 https://gitlab.com/gitlab-org/omnibus-gitlab Omnibus GitLab architecture and components: https://docs.gitlab.com/omnibus/architecture/
+Linux 软件包（旧称 Omnibus）把多项服务及其管理入口集成在一个安装方案中，降低单机自建部署的初始配置成本，但仍需规划容量、备份和升级。具体组件以安装版本的 [官方架构文档](https://docs.gitlab.com/administration/architecture/) 为准。
 
 ![Git 与 GitLab 版本管理第 93 页插图](assets/img-f63d5e8412915e7d.webp)
 
-管理各组件使用统一命令为gitlab-ctl，例如gitlab-ctl reconfigure或gitlab-ctl restart等能统—执行各组件的重新配置及重启操作
-
-此外还有一些各组件专用的命令，如:gitlab-backup,gitlab-pgsql,gitlab-rails和gitlab-rake等
-
-提供统一配置模板文件, 用于为GitLab中的每个组件提供配置信息
+`gitlab-ctl reconfigure` 应用配置，`gitlab-ctl status` 查看服务；`gitlab-backup` 和 `gitlab-rake` 等工具承担专门任务。它们的可用参数与服务组合随版本变化，执行前应核对当前实例文档。
 
 自建 Omnibus 安装通常通过 `/etc/gitlab/gitlab.rb` 设置参数，例如 `external_url 'https://gitlab.example.com'`；修改后运行 `gitlab-ctl reconfigure` 使配置生效。具体参数名称应以安装版本的官方文档为准。
 

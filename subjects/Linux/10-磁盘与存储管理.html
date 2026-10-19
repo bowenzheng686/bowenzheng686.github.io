@@ -739,19 +739,18 @@ iostat<span class="hljs-attr"> -x</span> 1
 <span class="hljs-comment"># 只显示磁盘设备（排除 CPU 信息）</span>
 iostat<span class="hljs-attr"> -d</span><span class="hljs-attr"> -x</span> 1</code></pre>
 <p class="out-label">▶ iostat -x 关键指标解读</p>
-<pre data-presentation-code="v1" data-presentation-highlight="e253a6c5c3cad44cc638454ce9c49190d4e486b83799edef08d5998b8cff07ad"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">Device   r/s    w/s     rkB/s   wkB/s   await  svctm  %util
-sda      120.0  45.0   5000    2000    3.2    1.5    25.0
-sdb      5.0    80.0   100     15000   15.0   0.8    6.8
+<pre data-presentation-code="v1" data-presentation-highlight="e253a6c5c3cad44cc638454ce9c49190d4e486b83799edef08d5998b8cff07ad"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes">Device   r/s    w/s     rkB/s   wkB/s   await  %util
+sda      120.0  45.0   5000    2000    3.2    25.0
+sdb      5.0    80.0   100     15000   15.0   6.8
 
 <span class="hljs-comment"># r/s, w/s       → 每秒读写请求数（IOPS）</span>
 <span class="hljs-comment"># rkB/s, wkB/s   → 每秒读写吞吐量（KB）</span>
 <span class="hljs-comment"># await          → 平均每个 IO 请求的等待时间（ms）</span>
 <span class="hljs-comment">#                  await 高说明有 IO 排队等待</span>
-<span class="hljs-comment"># svctm          → 平均每个 IO 请求的服务时间（ms）</span>
 <span class="hljs-comment"># %util          → 磁盘繁忙时间百分比</span>
-<span class="hljs-comment">#                  接近 100% 说明磁盘成为瓶颈</span></code></pre>
+<span class="hljs-comment">#                  对传统串行设备有参考价值；并行设备不能仅凭它判瓶颈</span></code></pre>
 
-<div class="box box-warning"><strong>await vs svctm</strong><br><code>await</code> = 请求在队列中等待的时间 + 实际服务时间。如果 <code>await</code> 远大于 <code>svctm</code>，说明 IO 请求在排队——磁盘忙不过来了。对于 HDD，await 在 5-10ms 正常；对于 SSD，应当是亚毫秒级别（&lt; 1ms）。</div>
+<div class="box box-warning"><strong>不要套用单一阈值：</strong>新版 sysstat 已不再提供不可靠的 <code>svctm</code>。<code>await</code> 包含排队与服务时间，但合理值取决于设备、负载和请求类型；<code>%util</code> 对并行 NVMe 也不能直接解释为“100% 才饱和”。应结合延迟分布、吞吐、队列深度和业务基线判断。</div>
 
 <h4>hdparm — 磁盘读取性能</h4>
 <pre data-presentation-code="v1" data-presentation-highlight="70eff7d69d8074a40f2e8ca7805ea43c8b5245ccb7fe3f1e55b99d5a45396d6e"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 测试缓冲读取（从内核缓存读，测试 CPU-内存-总线速度）</span>

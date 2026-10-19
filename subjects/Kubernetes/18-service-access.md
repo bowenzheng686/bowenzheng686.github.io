@@ -128,6 +128,58 @@ spec:
 ## 5 综合应用时的检查顺序
 
 原 WordPress/MySQL 案例涉及命名空间、Deployment、持久化存储和多个 Service。阅读这类方案时先分清：MySQL 用仅供集群内部访问的 Service，WordPress 可由 ClusterIP 配合 Ingress/Gateway 暴露；数据库数据必须由 PVC 或外部数据库承载，而不是依赖 Pod 文件系统。分别核对两个 Service 的 selector、EndpointSlice、端口映射与探针，再测试应用到数据库的 DNS、凭据和网络策略。完整存储拓扑在后续存储专题展开，避免把一个长终端记录当作可复用生产清单。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（23 张）</summary>
+
+![原 PDF 第 2 页插图](assets/Kubernetes服务发现和名称解析/img-17a99258253866d3.webp)
+
+![原 PDF 第 3 页插图](assets/Kubernetes服务发现和名称解析/img-cd44369c9e1a5d1f.webp)
+
+![原 PDF 第 3 页插图](assets/Kubernetes服务发现和名称解析/img-1d6b12ed81474b92.webp)
+
+![原 PDF 第 4 页插图](assets/Kubernetes服务发现和名称解析/img-a9f5ca6ad15120db.webp)
+
+![原 PDF 第 4 页插图](assets/Kubernetes服务发现和名称解析/img-d6b884d6e8d3e20b.webp)
+
+![原 PDF 第 6 页插图](assets/Kubernetes服务发现和名称解析/img-f6982d304f938960.webp)
+
+![原 PDF 第 7 页插图](assets/Kubernetes服务发现和名称解析/img-82dd0527d2efde0f.webp)
+
+![原 PDF 第 8 页插图](assets/Kubernetes服务发现和名称解析/img-c24726e10700536b.webp)
+
+![原 PDF 第 8 页插图](assets/Kubernetes服务发现和名称解析/img-9f06469d5e01c8a5.webp)
+
+![原 PDF 第 9 页插图](assets/Kubernetes服务发现和名称解析/img-1f5ff49abd7fbc74.webp)
+
+![原 PDF 第 9 页插图](assets/Kubernetes服务发现和名称解析/img-eae138c9bbc26d58.webp)
+
+![原 PDF 第 12 页插图](assets/Kubernetes服务发现和名称解析/img-1e68e48078c1ce3f.webp)
+
+![原 PDF 第 13 页插图](assets/Kubernetes服务发现和名称解析/img-c97694d15d29c9e6.webp)
+
+![原 PDF 第 27 页插图](assets/Kubernetes服务发现和名称解析/img-741a1358f49ed01a.webp)
+
+![原 PDF 第 28 页插图](assets/Kubernetes服务发现和名称解析/img-b1409ebd2196116c.webp)
+
+![原 PDF 第 28 页插图](assets/Kubernetes服务发现和名称解析/img-67075dc4fc3e8e81.webp)
+
+![原 PDF 第 29 页插图](assets/Kubernetes服务发现和名称解析/img-d6ac4a7682dd3d2e.webp)
+
+![原 PDF 第 29 页插图](assets/Kubernetes服务发现和名称解析/img-fbcc89bc5ff3df43.webp)
+
+![原 PDF 第 33 页插图](assets/Kubernetes服务发现和名称解析/img-77e9866711e53efb.webp)
+
+![原 PDF 第 34 页插图](assets/Kubernetes服务发现和名称解析/img-b53f433ebed9fd6e.webp)
+
+![原 PDF 第 36 页插图](assets/Kubernetes服务发现和名称解析/img-3f9c917e02fb5437.webp)
+
+![原 PDF 第 42 页插图](assets/Kubernetes服务发现和名称解析/img-e588209861280200.webp)
+
+![原 PDF 第 47 页插图](assets/Kubernetes服务发现和名称解析/img-78f1ba4d18d1e6f4.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

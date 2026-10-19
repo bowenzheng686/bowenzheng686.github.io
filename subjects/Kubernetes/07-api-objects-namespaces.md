@@ -162,7 +162,7 @@ kubectl get namespace stage -w
 
 `kubectl get all` 或 `kubectl delete all` 并不涵盖命名空间内的所有资源类型，不能据此断言空间已清空。若删除长期停留在 `Terminating`，先检查 APIService、CRD 控制器和资源 finalizer 的真实状态；不要直接强行移除 finalizer，否则可能留下外部资源。只删除某一类型时用 `kubectl delete <类型> <名称> -n <空间>` 明确限定对象。
 
-<details class="historical-figures">
+<details class="historical-figures" markdown="1">
 <summary>查看原始讲义中的其余配图与历史操作截图（13 张）</summary>
 
 ![原 PDF 第 2 页插图](assets/Kubernetes资源对象和Pod资源-851217ad6150/img-ad9ea0d6bde33576.webp)

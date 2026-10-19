@@ -14,17 +14,17 @@ syntax_highlight: true
 
 优先使用操作系统包管理器安装 Git，便于获得安全更新；仅在明确需要特定版本时再考虑额外软件源或源码编译。以下终端记录对应旧版系统，版本号只作历史示例。
 
-### Linux 安装 git
+### Linux 安装 Git
 
-<https://git-scm.com/download/linux>
+根据 [Git 官方 Linux 安装说明](https://git-scm.com/download/linux)选择对应系统的包管理器。下方 Ubuntu 与 Rocky 的版本号是当时软件源的结果，不应据此判断当前机器会安装到相同版本。
 
 ![Git 与 GitLab 版本管理第 41 页插图](assets/img-8cd22be40bbaa9e5.webp)
 
-### 二进制包安装
+### 使用系统软件包
 
-CentOS和Ubuntu 系统源都带有git版本,可以直接安装
+Ubuntu 和 RHEL 类发行版通常可直接安装 Git；先核对当前系统版本与软件源，再更新索引并安装。
 
-范例: Ubuntu 使系统内置仓库安装 git
+以下是 Ubuntu 24.04 的历史终端输出：
 
 ```bash
 [root@ubuntu2404 ~]#apt update && apt -y install git
@@ -63,7 +63,7 @@ N: There are 3 additional versions. Please use the '-a' switch to see them.
 git version 2.33.0
 ```
 
-范例: Rocky安装git
+Rocky Linux 的包管理方式类似，具体版本以系统仓库为准：
 
 ```bash
 [root@rocky8 ~]#yum -y install git
@@ -73,19 +73,13 @@ git version 2.27.0
 
 ### 源码安装
 
-安装文档
-
-<https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>
+只有确实需要包管理器尚未提供的版本或编译选项时，才参考 [Git 源码安装说明](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)。源码安装会增加更新与卸载成本。
 
 ![Git 与 GitLab 版本管理第 42 页插图](assets/img-ec840bde0f36eac7.webp)
 
-源码下载
+源码应从 [Git 发布页](https://github.com/git/git/releases) 或 [kernel.org](https://www.kernel.org/pub/software/scm/git/) 获取，并核对版本与完整性。
 
-<https://www.kernel.org/pub/software/scm/git>
-
-<https://github.com/git/git/releases>
-
-范例：Ubuntu 编译安装 Git。先安装依赖，以下命令应在取得可信源码并校验版本后执行。
+下面两段是旧版 Ubuntu、Rocky 的历史编译记录，只说明依赖安装、构建前缀和 PATH 的关系；其中的镜像仓库、固定 tarball 版本和系统名称都不适合直接复制到新环境。
 
 ```bash
 [root@ubuntu2204 ~]#apt update && apt -y install gcc make dh-autoreconf libcurl4-gnutls-dev libexpat1-dev
@@ -116,9 +110,11 @@ git version 2.39.1.388.g2fc9e9ca3c
 git version 2.33.0
 ```
 
-### Windows 安装 git
+### Windows 安装 Git
 
-<https://git-scm.com/downloads>
+从 [Git for Windows 官方页面](https://git-scm.com/download/win)下载安装包。安装选项应结合团队的默认编辑器、行尾规则和凭据方式选择；不确定时先保留推荐设置，安装后在 PowerShell 或 Git Bash 中执行 `git --version` 验证。
+
+以下截图来自旧版安装向导。第一组展示下载和初始选项；它们只作界面识别，当前版本的选项名称可能不同。
 
 ![Git 与 GitLab 版本管理第 44 页插图](assets/img-9d604d32e50235b2.webp)
 
@@ -132,6 +128,8 @@ git version 2.33.0
 
 ![Git 与 GitLab 版本管理第 46 页插图](assets/img-aaa12a719909ce8b.webp)
 
+中间几页涉及默认编辑器、PATH 和行尾转换。尤其行尾设置会影响跨 Windows/Linux 协作，应先遵循项目已有的 `.gitattributes` 约定，而不是按旧截图机械点击。
+
 ![Git 与 GitLab 版本管理第 47 页插图](assets/img-686161a33ed0d2fc.webp)
 
 ![Git 与 GitLab 版本管理第 47 页插图](assets/img-6a6a8cb663e5af6b.webp)
@@ -143,6 +141,8 @@ git version 2.33.0
 ![Git 与 GitLab 版本管理第 49 页插图](assets/img-b14e54829a02586e.webp)
 
 ![Git 与 GitLab 版本管理第 49 页插图](assets/img-1b70c1d6041a4920.webp)
+
+后续截图涉及终端、SSH 与凭据管理。HTTPS 凭据管理器与 SSH 密钥是两种认证路径；安装阶段不需要把访问令牌填进界面或仓库配置。
 
 ![Git 与 GitLab 版本管理第 50 页插图](assets/img-6cca07d38090ab93.webp)
 
@@ -156,13 +156,11 @@ git version 2.33.0
 
 ![Git 与 GitLab 版本管理第 52 页插图](assets/img-c36a76d28872d306.webp)
 
-注意:
-
 首次提交前配置提交身份：`git config --global user.name "你的姓名"` 和 `git config --global user.email "you@example.com"`。这用于标识提交作者，不等于远程平台的登录凭据。Windows 上若使用凭据管理器保存了 HTTPS 凭据，凭据失效后再更新；SSH 访问则使用密钥，与该 HTTPS 凭据流程不同。
 
-### Mac 安装 git
+### macOS 安装 Git
 
-<https://git-scm.com/download/mac>
+参照 [Git 官方 macOS 安装说明](https://git-scm.com/download/mac)选择 Xcode Command Line Tools 或包管理器。安装后同样先执行 `git --version`，再配置提交身份。
 
 {% endraw %}
 

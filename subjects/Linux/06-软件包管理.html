@@ -434,14 +434,14 @@ rpm<span class="hljs-attr"> -e</span><span class="hljs-attr"> --nodeps</span> <s
   <div class="card-header"><span class="badge badge-concept">运</span><h3>软件包的"来源地"——仓库配置是包管理的根基</h3><span class="tag tag-required">运维</span></div>
   <div class="card-body">
     <h4>问题：apt install 怎么知道去哪里下载软件包？</h4>
-    <p>APT 读取 <code>/etc/apt/sources.list</code> 和 <code>/etc/apt/sources.list.d/</code> 目录下的所有 <code>.list</code> 文件。每行定义一个仓库来源。</p>
+    <p>APT 会读取 <code>/etc/apt/sources.list</code> 以及 <code>/etc/apt/sources.list.d/</code> 下的源配置。旧格式使用 <code>.list</code> 的 <code>deb</code> 行，新版 Ubuntu 也常用 <code>.sources</code> 的 deb822 格式；先查看本机现有文件，再按该发行版的格式修改，不要机械覆盖。</p>
 
     <h4>APT 仓库配置详解</h4>
     <pre data-presentation-code="v1" data-presentation-highlight="4bc5838a4d0443d25887df9056ad0001cef90374f0c94d7b0114b54baf065a46"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># /etc/apt/sources.list 中的一行（Debian/Ubuntu）</span>
-deb https://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
+deb https://archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse
 <span class="hljs-comment"># ^   ^                                 ^       ^    ^</span>
 <span class="hljs-comment"># |   |                                 |       |    仓库组件（component）</span>
-<span class="hljs-comment"># |   |                                 |      发行版代号（focal = 20.04）</span>
+<span class="hljs-comment"># |   |                                 |      发行版代号（noble = 24.04；以本机版本为准）</span>
 <span class="hljs-comment"># |   仓库 URL                          |</span>
 <span class="hljs-comment"># 类型（deb=二进制包, deb-src=源码包）</span>
 
@@ -488,16 +488,12 @@ module_hotfixes=<span class="hljs-literal">true</span>
 
     <figure class="merged-illustration" data-image-id="chapter06/03-repository-trust-chain.png"><img src="assets/chapter06/03-repository-trust-chain.webp" alt="展示来源配置、签名验证、事务预览、root 安装及第三方源信任边界。" loading="lazy" decoding="async" width="1672" height="941"></figure><h4>添加仓库的实战操作</h4>
     <pre data-presentation-code="v1" data-presentation-highlight="a9b8e0bca0bf4e98670d0aca76d8debe2b8fc6f050bc15a89bb858c72e4f9613"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># === Debian/Ubuntu ===</span>
-<span class="hljs-comment"># 方法1：add-apt-repository</span>
-add-<span class="hljs-built_in">apt</span>-repository <span class="hljs-string">"deb https://packages.example.com/ubuntu focal main"</span>
-
-<span class="hljs-comment"># 方法2：手动创建 .list 文件</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"deb https://apt.releases.hashicorp.com focal main"</span> \
-  &gt; /etc/apt/sources.list.d/hashicorp.list
-
-<span class="hljs-comment"># 添加 GPG 密钥（两种方式）</span>
-<span class="hljs-built_in">curl</span><span class="hljs-attr"> -fsSL</span> https://apt.releases.hashicorp.com/gpg | <span class="hljs-built_in">apt</span>-key add -  <span class="hljs-comment"># 传统方式（已弃用）</span>
-<span class="hljs-built_in">curl</span><span class="hljs-attr"> -fsSL</span> https://example.com/gpg | gpg<span class="hljs-attr"> --dearmor</span><span class="hljs-attr"> -o</span> /etc/apt/trusted.gpg.d/example.gpg  <span class="hljs-comment"># 现代方式</span>
+<span class="hljs-comment"># 第三方仓库示意：先从供应商文档确认 URL、密钥指纹和发行版代号</span>
+<span class="hljs-comment"># 密钥放在专用 keyring，源条目用 signed-by 限定其信任范围</span>
+<span class="hljs-built_in">sudo</span> install<span class="hljs-attr"> -d</span><span class="hljs-attr"> -m</span> 0755 /etc/apt/keyrings
+<span class="hljs-comment"># 验证供应商密钥后保存为 /etc/apt/keyrings/vendor.gpg</span>
+<span class="hljs-comment"># deb [signed-by=/etc/apt/keyrings/vendor.gpg] https://packages.example.com/ubuntu noble main</span>
+<span class="hljs-comment"># 不再使用 apt-key，也不要把第三方密钥放进全局 trusted.gpg.d</span>
 
 <span class="hljs-comment"># === RHEL/CentOS ===</span>
 <span class="hljs-comment"># 方法1：yum-config-manager（需要 yum-utils）</span>

@@ -281,8 +281,8 @@ body>.site-header.site-header .subtitle{display:block!important;position:static!
     </div>
 
     <div class="box box-info">
-      <strong>用数学理解 3-2-1：故障概率的乘法原理</strong><br>
-      假设单个磁盘在一年内损坏的概率是 1%（p=0.01），同一时间点两份备份同时损坏的概率是 p^2 = 0.0001（万分之一）。如果两份备份在不同介质 + 不同地域，同时丢失的概率基本趋近于零。备份的本质就是用冗余对抗概率。
+      <strong>3-2-1 的关键是减少相关故障</strong><br>
+      只有在故障彼此独立时，才可以把单份损坏概率简单相乘。现实中误删、勒索软件、账号泄露和同机房故障会同时影响多份副本，所以“多份”还必须配合异地、隔离权限、不可变或离线副本及定期恢复演练；不能宣称丢失概率接近零。
     </div>
 
     <h4>常见的三个备份误区</h4>
@@ -718,7 +718,7 @@ rsync<span class="hljs-attr"> -az</span><span class="hljs-attr"> --bwlimit</span
 <span class="hljs-comment"># 4. 清理旧备份</span>
 <span class="hljs-built_in">log</span> <span class="hljs-string">"Phase 4: 清理"</span>
 find <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/db/"</span><span class="hljs-attr"> -name</span> <span class="hljs-string">"*.sql.gz"</span><span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -delete</span>
-find <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/"</span><span class="hljs-attr"> -maxdepth</span> 1<span class="hljs-attr"> -type</span> d<span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -exec</span> <span class="hljs-built_in">rm</span><span class="hljs-attr"> -rf</span> {} \;
+find <span class="hljs-string">"<span class="hljs-variable">${BACKUP_BASE}</span>/files/"</span><span class="hljs-attr"> -mindepth</span> 1<span class="hljs-attr"> -maxdepth</span> 1<span class="hljs-attr"> -type</span> d<span class="hljs-attr"> -mtime</span> +30<span class="hljs-attr"> -exec</span> <span class="hljs-built_in">rm</span><span class="hljs-attr"> -rf</span><span class="hljs-attr"> --</span> {} \;
 
 <span class="hljs-built_in">log</span> <span class="hljs-string">"===== 每日备份完成 ====="</span></code></pre>
 

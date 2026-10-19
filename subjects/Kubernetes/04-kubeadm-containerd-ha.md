@@ -469,7 +469,7 @@ nerdctl run --rm example/busybox:v1
 
 私有仓库应使用可信 CA 和受控凭据，保持 TLS 校验；不要把 `insecure = true` 当作固定配置。构建完成后，按仓库权限和镜像命名策略登录、标记和推送。
 
-<details class="historical-figures">
+<details class="historical-figures" markdown="1">
 <summary>查看原始讲义中的其余配图与历史操作截图（7 张）</summary>
 
 ![原 PDF 第 119 页插图](assets/Kubernetes架构和部署/img-9878d3f017c7f1ed.webp)

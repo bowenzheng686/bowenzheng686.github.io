@@ -196,6 +196,16 @@ kubectl describe networkpolicy same-namespace-http -n develop
 标准 NetworkPolicy 是命名空间级、只有允许规则。Calico 的 `GlobalNetworkPolicy` 是厂商扩展，可提供集群范围的策略、显式动作及顺序控制；它不是 `networking.k8s.io/v1` 的一部分。仅在安装了支持该 CRD 的 Calico 版本后使用，并先查阅该版本的 Calico 文档确认 `apiVersion`、选择器语法、策略层级和默认动作。
 
 原示例试图让部分系统命名空间访问其他命名空间，但它用 `name` 选择器、`order: 0.0` 和兜底行为组合起来，可能意外隔离业务或系统流量；尤其全局策略会扩大影响范围。这里保留其**概念关系**而不提供可直接应用的全局阻断清单：先用 `kubectl api-resources | findstr globalnetworkpolicies` 确认 CRD，再在独立测试命名空间验证规则范围、优先级和回滚方式，最后才考虑生产环境。验证时同时测试允许与预期阻断路径，并保存应用前的策略清单以便回退。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（2 张）</summary>
+
+![原 PDF 第 147 页插图](assets/Kubernetes网络插件/img-7e636c66ad14f915.webp)
+
+![原 PDF 第 147 页插图](assets/Kubernetes网络插件/img-92c1a8bfa4d92532.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

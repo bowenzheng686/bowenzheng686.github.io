@@ -668,8 +668,11 @@ Active: active (running)  <span class="hljs-comment"># 进程确实在跑</span>
     <pre data-presentation-code="v1" data-presentation-highlight="a44c1f74f5076011649056123aa26b730b4647db5f35a04df5512e132f17c8b3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 查看系统启动总耗时</span>
 systemd-analyze
 
-<span class="hljs-comment"># 查看每个服务的启动耗时排行（找出拖慢启动的元凶）</span>
+<span class="hljs-comment"># 查看 Unit 自身初始化耗时；并行启动时不能直接相加</span>
 systemd-analyze blame
+
+<span class="hljs-comment"># 查看实际影响启动目标的关键依赖链</span>
+systemd-analyze critical-chain
 
 <span class="hljs-comment"># 生成启动链的 SVG 图表（可视化依赖关系和时间线）</span>
 systemd-analyze plot &gt; boot.svg
@@ -678,7 +681,7 @@ systemd-analyze plot &gt; boot.svg
 systemd-analyze security <span class="hljs-built_in">nginx</span></code></pre>
     <p class="out-label">▶ systemd-analyze blame 典型输出</p>
     <pre data-presentation-code="v1" data-presentation-highlight="c55d71d4de9ce4f9872dc1425429a0052d419546cafe649a608886f242107cf6"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-built_in">$ systemd-analyze</span> blame
-15.234s <span class="hljs-built_in">mysql</span>.service          <span class="hljs-comment"># MySQL 花了 15 秒——启动瓶颈</span>
+15.234s <span class="hljs-built_in">mysql</span>.service          <span class="hljs-comment"># MySQL 自身耗时 15 秒；还需查关键链是否延迟启动</span>
  4.567s <span class="hljs-built_in">docker</span>.service
  3.210s networkd-dispatcher.service
  1.023s <span class="hljs-built_in">nginx</span>.service

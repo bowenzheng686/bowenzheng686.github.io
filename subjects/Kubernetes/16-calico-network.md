@@ -74,6 +74,60 @@ calicoctl node status
 少量节点的 BGP mesh 比较直观；规模较大时可使用 Route Reflector 减少全互联 peer 数量。但 RR 的数量、故障域、BGP ASN、peer 关系和切换顺序都须提前设计。先让 RR 与所有节点建立稳定会话并验证路由，再考虑关闭 node-to-node mesh；反过来操作会让 Pod 路由短暂或持续丢失。VXLAN-only 部署不需要仅为“优化”而照搬 RR 配置。
 
 网络策略可在下一章按命名空间与标签逐步实施。上线策略前先观察现有流量和 DNS 依赖，避免把“Calico Pod 都是 Running”误当成业务连通与策略正确的充分证据。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（24 张）</summary>
+
+![原 PDF 第 80 页插图](assets/Kubernetes网络插件/img-8b7a9496cfa98046.webp)
+
+![原 PDF 第 80 页插图](assets/Kubernetes网络插件/img-a0f89aa662564cb3.webp)
+
+![原 PDF 第 81 页插图](assets/Kubernetes网络插件/img-2fd3dba56916c70a.webp)
+
+![原 PDF 第 83 页插图](assets/Kubernetes网络插件/img-39a7bd00833ada85.webp)
+
+![原 PDF 第 85 页插图](assets/Kubernetes网络插件/img-a0779c1be67f7ef0.webp)
+
+![原 PDF 第 89 页插图](assets/Kubernetes网络插件/img-0c0019c8d353661e.webp)
+
+![原 PDF 第 93 页插图](assets/Kubernetes网络插件/img-9b1230ebd7cb4b07.webp)
+
+![原 PDF 第 93 页插图](assets/Kubernetes网络插件/img-9ccd17b02e135fcd.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes网络插件/img-1ef4d5bd3858d795.webp)
+
+![原 PDF 第 94 页插图](assets/Kubernetes网络插件/img-d51e55f6719ee6fd.webp)
+
+![原 PDF 第 95 页插图](assets/Kubernetes网络插件/img-7e32910e152b4059.webp)
+
+![原 PDF 第 95 页插图](assets/Kubernetes网络插件/img-56fc97cc1a95504e.webp)
+
+![原 PDF 第 96 页插图](assets/Kubernetes网络插件/img-1fffe811deeb93d5.webp)
+
+![原 PDF 第 96 页插图](assets/Kubernetes网络插件/img-4c79be2f4009eb16.webp)
+
+![原 PDF 第 97 页插图](assets/Kubernetes网络插件/img-8bd361fb6565bb32.webp)
+
+![原 PDF 第 98 页插图](assets/Kubernetes网络插件/img-77d60050fd937875.webp)
+
+![原 PDF 第 98 页插图](assets/Kubernetes网络插件/img-8ddf2a8f020b8192.webp)
+
+![原 PDF 第 100 页插图](assets/Kubernetes网络插件/img-edfd20062e2b1734.webp)
+
+![原 PDF 第 102 页插图](assets/Kubernetes网络插件/img-422018976170874d.webp)
+
+![原 PDF 第 104 页插图](assets/Kubernetes网络插件/img-dd0c758ffe9ed129.webp)
+
+![原 PDF 第 104 页插图](assets/Kubernetes网络插件/img-8c4e03c4ee37d932.webp)
+
+![原 PDF 第 117 页插图](assets/Kubernetes网络插件/img-926cc911ca845b25.webp)
+
+![原 PDF 第 128 页插图](assets/Kubernetes网络插件/img-087af3a1d3ddfc0f.webp)
+
+![原 PDF 第 132 页插图](assets/Kubernetes网络插件/img-389a4616b9a029b5.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

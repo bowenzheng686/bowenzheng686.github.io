@@ -19,236 +19,41 @@ syntax_highlight: true
 
 ![原文插图（第 48 页）]({{ '/subjects/KVM/assets/p048-img01.webp' | relative_url }})
 
-**虚拟机的管理有两套管理工具：**
+本章用三个层次的工具：
 
 QEMU 提供设备模拟和虚拟机进程；启用 KVM 加速后，CPU 虚拟化由内核模块与硬件扩展协作完成。`qemu-img` 管理磁盘镜像。libvirt 则在上层提供统一管理接口，`virt-install`、`virsh` 和 `virt-manager` 都可借助它工作。
 
-````text
-    qemu-img 虚拟磁盘的管理工具
-````
+具体分工是：`qemu-img` 创建或检查磁盘镜像，`virt-install` 通过 libvirt 定义并启动虚拟机，`virsh` 管理其生命周期。`virt-manager` 提供图形界面；它们不是互不兼容的“两套管理工具”。
 
-libvirt：通用的虚拟化技术管理工具
+### 配置保存在哪里
 
-````text
-    virt-install 虚拟机专用创建工具
-    virsh 操作虚拟环境的一个命令行管理工具，支持远程管理操作
-    virt-manager 管理虚拟机的图形化的桌面用户接口
-````
+libvirt 将来宾定义、虚拟网络和存储池信息分别管理。传统 QEMU/libvirt 安装中常能在 `/etc/libvirt/qemu/` 看到域 XML，在 `networks/` 看到网络定义；实际路径可能因发行版和守护进程布局不同而变化。日常查看与编辑应通过 `virsh`，而不是直接改写这些文件：
 
-我们的学习过程中创建虚拟机选用virt-install，管理虚拟机使用virsh，磁盘用qemu-img。
+```bash
+virsh list --all
+virsh dumpxml CentOS-7-x86_64
+virsh net-list --all
+virsh pool-list --all
+```
 
-### 配置结构
+创建虚拟机时，`virt-install` 会把来宾名称、资源、磁盘与网络写入 libvirt 定义。后续 `virsh` 查到的内容才是核对当前配置的依据。
 
-安装完毕kvm之后，会形成一个专用的目录结构
+### 用工作流理解 virt-install
 
-````console
-[root@kvm-host ~]# ls /etc/libvirt/
-hooks libxl-sanlock.conf qemu-sanlock.conf
-libvirt-admin.conf lxc.conf secrets
-libvirt.conf nwfilter storage
-libvirtd.conf qemu virtlockd.conf
-libxl.conf qemu.conf virtlogd.conf
-libxl-lockd.conf qemu-lockd.conf virt-login-shell.conf
-注意：
-    qemu目录是我们创建虚拟机后，保存虚拟机配置文件的目录
-````
+`virt-install` 创建并定义虚拟机，`virsh` 管理生命周期，`qemu-img` 处理磁盘镜像。与其阅读整页 `--help` 输出，不如先确定四个问题：来宾从哪里安装、磁盘保存在哪里、接入哪张网络、如何连接控制台。
 
-### 命令解读
+| 任务 | 常用参数 | 需要核对的内容 |
+| --- | --- | --- |
+| 标识与资源 | `--name`、`--memory`、`--vcpus` | 名称唯一，内存和 vCPU 不超出容量规划 |
+| 安装来源 | `--cdrom`、`--location`、`--import` | ISO 安装、网络安装和已有系统盘是三种不同路径 |
+| 磁盘 | `--disk path=...,format=qcow2` | 路径、格式、容量、权限和是否已有数据 |
+| 网络 | `--network network=default,model=virtio` 或 `bridge=br0` | NAT 网络与宿主机桥接不是同一拓扑 |
+| 图形与控制台 | `--graphics`、`--console`、`--noautoconsole` | 与来宾安装方式匹配，避免暴露 VNC 到不受控网络 |
+| 来宾类型 | `--osinfo` | 用 `virt-install --osinfo list` 查当前支持值 |
 
-虽然使用 virt-manager 可以方便的管理虚拟机,但如果需要批量进行虚拟机的创建管理,命令行工具virt-install 更加方便和适合
+`--cdrom` 通常启动交互式 ISO 安装；`--location` 可配合内核参数做自动化安装；`--import` 直接启动已有可引导磁盘，不会替来宾安装系统。涉及已有镜像时，先确认它是否为系统盘，不能对空白磁盘直接使用 `--import` 期待进入操作系统。
 
-**virt-install命令解读**
-
-````console
-[root@kvm-host ~]# virt-install --help
-usage: virt-install --name NAME --memory MB STORAGE INSTALL [options]
-从指定安装源创建新虚拟机。
-optional arguments:
-  -h, --help show this help message and exit
-  --version show program's version number and exit
-  --connect URI 通过 libvirt URI 连接到虚拟机管理程序
-通用选项:
-  -n NAME, --name NAME 客户机实例名称
-  --memory MEMORY 配置客户机内存分配。示例：
-                        --memory 1024 (in MiB)
-                        --memory memory=1024,currentMemory=512
-  --vcpus VCPUS 为客户机配置的 vCPU 数。示例：
-                        --vcpus 5
-                        --vcpus 5,maxvcpus=10,cpuset=1-4,6,8
-                        --vcpus sockets=2,cores=4,threads=2
-  --cpu CPU CPU 型号和功能。示例：
-                        --cpu coreduo,+x2apic
-                        --cpu host-passthrough
-````
-
-````text
-                        --cpu host
-  --metadata METADATA 配置客户机元数据。例如：
-                        --metadata name=foo,title="My pretty title",uuid=...
-                        --metadata description="My nice long description"
-  --xml XML 在最终 XML 上执行原始 XML XPath 选项。 示例：
-                        --xml ./cpu/@mode=host-passthrough
-                        --xml ./devices/disk[2]/serial=new-serial
-                        --xml xpath.delete=./clock
-安装方法选项:
-  --cdrom CDROM 光驱安装介质
-  -l LOCATION, --location LOCATION
-                        发行版安装 URL，例如：https://host/path。请参见手册页获取有关特
-定发行的示例。
-  --pxe 使用 PXE 协议从网络引导
-  --import 在已有的磁盘镜像中构建客户机
-  -x EXTRA_ARGS, --extra-args EXTRA_ARGS
-                        将附加参数添加到由 --location 引导的内核中
-  --initrd-inject INITRD_INJECT
-                        添加指定文件到由 --location 指定的 initrd 根中
-  --unattended [UNATTENDED]
-                        执行无人值守安装
-  --install INSTALL 指定细粒度的安装选项
-  --reinstall DOMAIN 重新安装现有的虚拟系统。仅应用安装选项，忽略所有其他虚拟系统配置选
-项。
-  --cloud-init [CLOUD_INIT]
-                        执行云映像安装，配置 cloud-init
-  --boot BOOT 配置客户机引导设置。例如：
-                        --boot hd,cdrom,menu=on
-                        --boot init=/sbin/init (针对容器)
-  --idmap IDMAP 为 LXC 容器启用用户名称空间。示例：
-                        --idmap uid.start=0,uid.target=1000,uid.count=10
-操作系统选项:
-  --os-variant OS_VARIANT, --osinfo OS_VARIANT
-                        要安装到客户机中的操作系统。
-                        This is used for deciding optimal defaults like VirtIO.
-                        Example values: fedora29, rhel7.0, win10, ...
-                        Use '--osinfo list' to see a full list.
-设备选项:
-  --disk DISK 指定存储的各种选项。例如：
-                        --disk size=10 (在默认位置创建 10GiB 镜像)
-                        --disk /my/existing/disk,cache=none
-                        --disk device=cdrom,bus=scsi
-                        --disk=?
-  -w NETWORK, --network NETWORK
-                        配置客户机网络接口。例如：
-                        --network bridge=mybr0
-                        --network network=my_libvirt_virtual_net
-                        --network network=mynet,model=virtio,mac=00:11...
-                        --network none
-                        --network help
-  --graphics GRAPHICS 配置客户机显示设定。示例：
-                        --graphics spice
-                        --graphics vnc,port=5901,listen=0.0.0.0
-````
-
-````text
-                        --graphics none
-  --controller CONTROLLER
-                        Configure a guest controller device. Ex:
-                        --controller type=usb,model=qemu-xhci
-                        --controller type=scsi,model=virtio-scsi
-  --input INPUT 配置客户机输入设备。例如：
-                        --input tablet
-                        --input keyboard,bus=usb
-  --serial SERIAL 配置客户机串口设备
-  --parallel PARALLEL 配置客户机并口设备
-  --channel CHANNEL 配置客户机通信通道
-  --console CONSOLE 配置文本控制台连接主机与客户机
-  --hostdev HOSTDEV 配置物理 USB/PCI 等主机设备与客户机共享
-  --filesystem FILESYSTEM
-                        传递主机目录到客户机。例如：
-                        --filesystem /my/source/dir,/dir/in/guest
-                        --filesystem template_name,/,type=template
-  --sound [SOUND] 配置客户机声音设备仿真
-  --audio AUDIO Configure host audio backend for sound devices
-  --watchdog WATCHDOG 配置客户机看门狗设备
-  --video VIDEO 配置客户机视频硬件。
-  --smartcard SMARTCARD
-                        配置客户机智能卡设备。例如：
-                        --smartcard mode=passthrough
-  --redirdev REDIRDEV 配置客户机重定向设备。例如：
-                        --redirdev usb,type=tcp,server=198.51.100.1:4000
-  --memballoon MEMBALLOON
-                        配置客户机 memballoon 设备。例如：
-                        --memballoon model=virtio
-  --tpm TPM 配置客户机 TPM 设备。例如：
-                        --tpm /dev/tpm
-  --rng RNG 配置客户机 RNG 设备。示例：
-                        --rng /dev/urandom
-  --panic PANIC 配置客户机 panic 设备。例如：
-                        --panic default
-  --shmem SHMEM Configure a guest shared memory device. Ex:
-                        --shmem name=shmem0
-  --memdev MEMDEV 配置客户机内存设备。示例：
-                        --memdev dimm,target.size=1024
-  --vsock VSOCK 配置客户机 vsock 套接字。示例：
-                        --vsock cid.auto=yes
-                        --vsock cid.address=7
-  --iommu IOMMU 配置 IOMMU 设备。示例：
-                        --iommu model=intel,driver.aw_bits=48
-客户机配置选项:
-  --iothreads IOTHREADS
-                        设定域 <iothreads> 和 <iothreadids> 配置。
-  --seclabel SECLABEL, --security SECLABEL
-                        设定域 seclabel 配置。
-  --keywrap KEYWRAP 设定客户机以执行 S390 加密密钥管理操作。
-  --cputune CPUTUNE 调整域进程的 CPU 参数。
-  --numatune NUMATUNE 为域进程调整 NUMA 策略。
-  --memtune MEMTUNE 为域进程调整内存策略。
-  --blkiotune BLKIOTUNE
-                        为域进程调整 blkio 策略。
-````
-
-````text
-  --memorybacking MEMORYBACKING
-                        为域进程设置内存后备策略。例如：
-                        --memorybacking hugepages=on
-  --features FEATURES 设定域 <features> XML。示例：
-                        --features acpi=off
-                        --features apic=on,apic.eoi=on
-  --clock CLOCK 设置域 <clock> XML。例如：
-                        --clock offset=localtime,rtc_tickpolicy=catchup
-  --pm PM 配置 虚拟系统 电源管理功能
-  --events EVENTS 配置 虚拟系统 生命周期管理策略
-  --resource RESOURCE 配置 虚拟系统 资源分区(cgroups)
-  --sysinfo SYSINFO 配置 SMBIOS 系统信息。示例：
-                        --sysinfo host
-                        --sysinfo bios.vendor=MyVendor,bios.version=1.2.3,...
-  --qemu-commandline QEMU_COMMANDLINE
-                        将参数直接传递给 QEMU 模拟器。示例：
-                        --qemu-commandline='-display gtk,gl=on'
-                        --qemu-commandline env=DISPLAY=:0.1
-  --launchSecurity LAUNCHSECURITY, --launchsecurity LAUNCHSECURITY
-                        Configure VM launch security (e.g. SEV memory
-encryption). Ex:
-                        --launchSecurity sev
-虚拟化平台选项:
-  -v, --hvm 这个客户机应该是一个全虚拟化客户机
-  -p, --paravirt 这个客户机应该是一个半虚拟化客户机
-  --container 这个客户机应该是一个容器客户机
-  --virt-type VIRT_TYPE
-                        要使用的虚拟机管理程序名称 (kvm, qemu, xen, ...)
-  --arch ARCH 模拟 CPU 架构
-  --machine MACHINE 机器类型为仿真类型
-其它选项:
-  --autostart 主机启动时自动启动域。
-  --transient 创建一个临时域。
-  --destroy-on-exit 关闭控制台查看器后，强制关闭域电源。
-  --wait [WAIT] 请等待数分钟以便完成安装。
-  --autoconsole AUTOCONSOLE
-                        配置客户机控制台自动连接。示例：
-                        --autoconsole text
-                        --autoconsole graphical
-                        --autoconsole none
-  --noautoconsole 不要自动尝试连接到客户端控制台
-  --noreboot 安装完成后不启动客户机。
-  --print-xml [XMLONLY]
-                        打印生成的 XML 域，而不是创建客户机。
-  --dry-run 运行安装程序，但不创建设备或定义客户机。
-  --check CHECK 启用或禁用验证检查。例如：
-                        --check path_in_use=off
-                        --check all=off
-  -q, --quiet 抑制非错误输出
-  -d, --debug 输入故障排除信息
-使用 '--option=?' 或 '--option help' 来查看可用的子选项
-请参考 man 手册，以便了解示例和完整的选项语法。
-````
+完整参数可在当前主机运行 `virt-install --help` 或阅读 `man virt-install`。帮助输出随版本变化，旧讲义的长清单不应作为固定命令模板。
 
 ## 2.2 初始化
 
@@ -256,9 +61,7 @@ encryption). Ex:
 
 #### 创建磁盘
 
-需求：要创建虚拟机，就需要给他提供一个虚拟的磁盘，我们就在/opt目录下创建一个10G大小的raw格式的虚拟磁盘CentOS-7-x86_64.raw
-
-**查看子命令帮助：**
+本例先创建 10 GiB 的 raw 磁盘，再用 ISO 安装来宾系统。CentOS 7 已结束常规维护，镜像在这里仅作历史实验；新环境应选仍受支持的来宾系统。磁盘路径可按宿主机存储规划调整，不必固定放在 `/opt`。
 
 `qemu-img create` 创建的 raw 文件可采用稀疏分配：`ls -lh` 显示逻辑容量，`du -h` 显示实际占用。写入数据后实际占用会增长，不能只看初始大小判断存储是否足够。
 
@@ -266,24 +69,25 @@ encryption). Ex:
 qemu-img create -f <磁盘格式> <镜像路径> <虚拟容量>
 ````
 
-命令格式：qemu-img create -f 磁盘格式 磁盘名称 磁盘大小
+创建前确认目标文件不存在，避免覆盖已有数据。
 
 ````console
 [root@kvm-host ~]# qemu-img create -f raw /opt/CentOS-7-x86_64.raw 10G
 Formatting '/opt/CentOS-7-x86_64.raw', fmt=raw size=10737418240
 ````
 
-**执行效果：**
+创建后核对逻辑容量与实际占用：
 
 ````console
-[root@kvm-host ~]# ls -lh /opt/
-总用量 1.0M
+[root@kvm-host ~]# ls -lh /opt/CentOS-7-x86_64.raw
 -rw-r--r-- 1 root root 10G 3月 24 22:59 CentOS-7-x86_64.raw
+[root@kvm-host ~]# du -h /opt/CentOS-7-x86_64.raw
+1.0M /opt/CentOS-7-x86_64.raw
 ````
 
 #### 创建虚拟机
 
-使用virt-install命令，基于我们提供的系统镜像和虚拟磁盘来创建一个虚拟机，另外在创建虚拟机之前，提前打开vnc客户端，在创建虚拟机的时候，通过vnc来连接虚拟机，对其进行配置和查看进度。
+使用 `virt-install` 将 ISO、磁盘、网络和资源组合为虚拟机定义。本例配置 VNC 只监听宿主机回环地址；可从宿主机本地连接，或先建立 SSH 隧道再用远端客户端，不需要在命令执行前暴露 VNC 端口。
 
 ````console
 [root@kvm-host ~]# virt-install --virt-type kvm --name CentOS-7-x86_64 \
@@ -292,20 +96,13 @@ Formatting '/opt/CentOS-7-x86_64.raw', fmt=raw size=10737418240
   --disk path=/opt/CentOS-7-x86_64.raw,format=raw,bus=virtio \
   --network network=default,model=virtio \
   --graphics vnc,listen=127.0.0.1 --noautoconsole
-参数解析：
-    --virt-type kvm 指定创建的虚拟机基于的虚拟化技术
-    --name CentOS-7-x86_64 指定创建虚拟机的名字，推荐"简洁"
-    --ram 1024 指定创建虚拟机的内存大小
-    --cdrom=XX.iso 指定创建虚拟机使用的系统镜像
-    --disk path=XX.raw 指定创建虚拟机使用的虚拟磁盘
-    --network network=default 指定创建虚拟机使用的网络类型
-    --graphics vnc,listen=127.0.0.1 仅允许宿主机本地访问 VNC；远程访问应使用受控通道
-    --noautoconsole 禁用配置的客户端自动连接虚拟机
 ````
+
+`--memory 1024` 以 MiB 为单位分配 1 GiB 内存，`--vcpus 1` 指定一个虚拟 CPU。`--cdrom` 指向安装 ISO，`--disk` 指向前一步创建的系统盘，`--network network=default` 接入 libvirt 默认 NAT 网络。`--noautoconsole` 仅表示命令完成后不自动打开控制台，不影响来宾能否使用 VNC。
 
 #### 连接虚拟机
 
-**打开vnc-viewer软件**
+先查询来宾控制台信息，再选择本地管理器或 VNC 客户端连接。
 
 ![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img01.webp' | relative_url }})
 
@@ -313,71 +110,60 @@ Formatting '/opt/CentOS-7-x86_64.raw', fmt=raw size=10737418240
 
 ![原文插图（第 54 页）]({{ '/subjects/KVM/assets/p054-img02.webp' | relative_url }})
 
-通过vnc客户端连接到安装界面,kvm虚拟机的默认端口从5900开始
-
-双击 192.0.2.12 连接
+VNC 显示号与端口通常有对应关系，但仍应以 `virsh vncdisplay <虚拟机名>` 和实际监听地址为准。旧截图里的 `192.0.2.12` 不能直接连到上方仅监听 `127.0.0.1` 的实例。
 
 ![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img01.webp' | relative_url }})
 
 #### 系统安装
 
-**网卡配置**
-
-- 选择安装Centos条目
-- 光标移动到“Install Centos7 ...”，
-- 通过给内核传递参数，配置网卡
-- 按Tab键，编辑配置，在末尾追加 net.ifnames=0 biosdevname=0，编辑完毕后，直接按Enter
+启动 ISO 安装程序后，按来宾发行版的安装向导配置语言、网络、磁盘和账户。旧实验在启动项后添加 `net.ifnames=0 biosdevname=0`，这会改变网卡命名方式；除非确实依赖传统接口名，否则无需照做，应以安装后实际接口名配置网络。
 
 ![原文插图（第 55 页）]({{ '/subjects/KVM/assets/p055-img02.webp' | relative_url }})
 
-接下来跟安装普通系统的步骤一致，毕竟是测试，所以注意以下几项：
-
-**网卡打开：**
+确保安装器中启用网卡并确认地址获取方式（DHCP 或静态配置）；虚拟网卡接入默认 NAT 网络并不保证来宾内部自动启用网络。
 
 ![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img01.webp' | relative_url }})
 
-安装软件：最小化
+示例选择最小化安装；生产用途还应核对软件包、驱动与系统维护周期。
 
 ![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img02.webp' | relative_url }})
 
-检查安装源：(默认)
+检查 ISO 安装源与目标磁盘，避免把系统装到错误的设备。
 
 ![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img03.webp' | relative_url }})
 
-设置最简单密码：EXAMPLE_PASSWORD
+为来宾设置独立强密码或 SSH 密钥，不使用固定教程密码；安装完成后按组织要求更新系统。
 
 ![原文插图（第 56 页）]({{ '/subjects/KVM/assets/p056-img04.webp' | relative_url }})
 
-等待系统安装完毕后，点击reboot，重启虚拟机
+安装完成后重启来宾，再确认它从系统盘启动，能够登录并访问网络。
 
 ### 简单操作
 
 #### 连接虚拟机
 
-vnc中虚拟机是不会重启的，需要在宿主机系统中，使用命令开启虚拟机
+安装程序退出或虚拟机关机后，可在宿主机用 `virsh list --all` 确认状态，再视情况执行 `virsh start <名称>`。不要把安装阶段一次重启失败归因于 VNC 本身。
 
-命令格式：virsh start 虚拟机名称
+`virsh start` 用于启动已定义但处于关闭状态的来宾；运行 ID 可能变化，因此后续操作仍应使用名称。
 
 ````console
 [root@kvm-host ~]# virsh start CentOS-7-x86_64
 域 'CentOS-7-x86_64' 已启动
-注意：
-    每次关闭虚拟机后，再次开启虚拟机，虚拟机的id都会自动的变化
 [root@kvm-host ~]# virsh list
  Id 名称 状态
 ------------------------------
  1 CentOS-7-x86_64 运行
 ````
 
-**vnc连接登录**
+控制台能够登录后，还需要从来宾内部检查 IP 与默认路由。
 
 ![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img01.webp' | relative_url }})
 
-**查看ip地址**
+旧截图中的地址仅是当时的实验结果，应以当前网络配置为准。
 
 ![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img02.webp' | relative_url }})
 
-**查看路由信息**
+若来宾无法访问外部网络，先检查默认网关，再回到宿主机核对 libvirt 网络和转发规则。
 
 ![原文插图（第 57 页）]({{ '/subjects/KVM/assets/p057-img03.webp' | relative_url }})
 
@@ -385,53 +171,18 @@ vnc中虚拟机是不会重启的，需要在宿主机系统中，使用命令�
 
 #### 宿主机检查
 
-**宿主机检查网络**
+来宾启动后，宿主机一般会出现对应的 QEMU 进程；若接入 libvirt 默认 NAT 网络，还会出现 `virbr0` 网桥及 `vnet*` 端口。网桥通常有 IPv4 网关地址，`vnet*` 是来宾网卡接入点，不要求它自己配置 IPv4 地址。
 
-**宿主机检查网络**
+```bash
+ip -brief address show virbr0
+virsh domiflist CentOS-7-x86_64
+virsh domblklist CentOS-7-x86_64
+virsh dominfo CentOS-7-x86_64
+```
 
-````console
-[root@kvm-host ~]# ifconfig
-...
-virbr0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
-        inet 198.18.122.1 netmask 255.255.255.0 broadcast 198.18.122.255
-        ether 02:00:00:00:00:04 txqueuelen 1000 (Ethernet)
-        RX packets 0 bytes 0 (0.0 B)
-        RX errors 0 dropped 0 overruns 0 frame 0
-        TX packets 1 bytes 125 (125.0 B)
-        TX errors 0 dropped 0 overruns 0 carrier 0 collisions 0
-vnet0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500
-        inet6 fe80::fc54:ff:fee8:440d prefixlen 64 scopeid 0x20<link>
-        ether 02:00:00:00:00:0a txqueuelen 1000 (Ethernet)
-        RX packets 0 bytes 0 (0.0 B)
-        RX errors 0 dropped 0 overruns 0 frame 0
-        TX packets 105 bytes 6792 (6.6 KiB)
-        TX errors 0 dropped 0 overruns 0 carrier 0 collisions 0
-效果：
-    虚拟机启动后，当前系统中，多出来了一个网卡vnet0，这个vnet网卡没有ipv4的地址
-````
+`domiflist` 中的接口名可与宿主机 `ip link show` 对照。若来宾无法联网，依次检查来宾 IP/默认路由、虚拟网卡所属网络、libvirt NAT 网络状态及宿主机转发与防火墙，而不是直接修改 `vnet*` 地址。
 
-**宿主机检查进程**
-
-**宿主机检查进程**
-
-````console
-[root@kvm-host ~]# ps aux | grep CentOS
-qemu 2607 14.3 2.8 2844772 462116 ? Sl 13:35 0:27
-/usr/libexec/qemu-kvm -name guest=CentOS-7-x86_64,debug-threads=on -S -object
-{"qom-
-type":"secret","id":"masterKey0","format":"raw","file":"/var/lib/libvirt/qemu/dom
-ain-1-CentOS-7-x86_64/master-key.aes"} -machine pc-q35-rhel9.4.0,usb=off,dump-
-guest-core=off,memory-backend=pc.ram,hpet=off,acpi=on -accel kvm -cpu
-host,migratable=on -m size=1048576k -object ...} -sandbox
-on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny -msg
-timestamp=on
-效果：
-    虚拟机，本质上就是在宿主机系统上的一个kvm进程，管理虚拟机跟管理进程基本一样
-注意：
-    我的libvirtd服务即使停止了，它不会影响虚拟机的正常运行
-    但是就不能使用virsh来管理虚拟机了
-````
-
+一台运行中的来宾通常对应一个 QEMU 进程，vCPU 在其中以线程运行。查看进程可帮助排障，但正常关机、暂停或强制停止都应通过 `virsh` 完成；直接终止 QEMU 进程可能造成数据丢失。
 #### 配置解析
 
 ##### 配置目录
@@ -455,928 +206,208 @@ timestamp=on
 辑
 ````
 
-##### 配置文件
+##### 读取虚拟机定义
 
-**虚拟机配置文件**
+libvirt 把虚拟机定义保存为 XML。直接改写 `/etc/libvirt/qemu/*.xml` 可能被守护进程覆盖；查看当前定义用 `virsh dumpxml <虚拟机名>`，需要修改时用 `virsh edit <虚拟机名>`，并在改动前导出备份。
 
-````console
-[root@kvm-host ~]# cat /etc/libvirt/qemu/CentOS-7-x86_64.xml
-<!--
-WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
-OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
-  virsh edit CentOS-7-x86_64 提示我们只能用virsh edit进行编辑这个文件
-````
+```bash
+virsh dumpxml CentOS-7-x86_64 > CentOS-7-x86_64.xml.bak
+virsh edit CentOS-7-x86_64
+```
 
-````xml
-or other application using the libvirt API.
--->
-<domain type='kvm'> # domain完全指虚拟机系统。type一项指明了使用的是哪种虚拟
-化技术
-  下面几项是虚拟机的全局配置信息：
-虚拟机名称和uuid信息
-  <name>CentOS-7-x86_64</name> # 名字不允许包含空格
-  <uuid>00000000-0000-4000-8000-000000000002</uuid>
-内存信息
+以下是**结构示意**，只保留与本案例有关的关键节点，不是可直接导入的完整域定义：
+
+```xml
+<domain type='kvm'>
+  <name>CentOS-7-x86_64</name>
   <memory unit='KiB'>1048576</memory>
-  <currentMemory unit='KiB'>1048576</currentMemory>
-cpu信息
-  <vcpu placement='static'>1</vcpu>
+  <vcpu>1</vcpu>
   <os>
-<type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
-# type 表示全虚拟化还是半虚拟化，hvm表示全虚拟化
-<boot dev='hd'/> # 表示虚拟机从哪里开机
-# boot 怎么启动的，如"fd"表示从文件启动, "hd"从硬盘启动, "cdrom"从光驱启动 和 "network"从
-网络启动
-#可以重复多行，指定不同的值，作为一个启动设备列表。
-#The dev attribute takes one of the values "fd", "hd", "cdrom" or "network"
+    <type arch='x86_64'>hvm</type>
+    <boot dev='hd'/>
   </os>
-  <features> # 表示硬件资源(处理器)特性
-    <acpi/>
-    <apic/>
-  </features>
-  <cpu mode='custom' match='exact'>
-    <model fallback='allow'>SandyBridge</model>
-  </cpu>
-时钟信息
-  <clock offset='utc'> # utc表示时间模式，localtime表示使用本地时间
-    <timer name='rtc' tickpolicy='catchup'/>
-    <timer name='pit' tickpolicy='delay'/>
-    <timer name='hpet' present='no'/>
-  </clock>
-突发事件处理机制
-  <on_poweroff>destroy</on_poweroff>
-  <on_reboot>restart</on_reboot>
-  <on_crash>restart</on_crash>
-注意：
-    突发事件处理定义了当发生poweroff时，直接destroy虚拟机。当虚拟机reboot、crash的时候，会
-自动采用重启操作，还可以自定义
-虚拟机管理配置(内存和磁盘)
-  <pm>
-    <suspend-to-mem enabled='no'/>
-    <suspend-to-disk enabled='no'/>
-  </pm>
-虚拟机设备信息
-注意：
-    在虚拟化技术或者云计算中，都使用image一词来表示虚拟磁盘
-  <devices> #在<device></device>中的都是虚拟外设
-    模拟器信息
-<emulator>/usr/libexec/qemu-kvm</emulator>
-虚拟机磁盘信息
-````
-
-````xml
+  <devices>
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw'/>
       <source file='/opt/CentOS-7-x86_64.raw'/>
       <target dev='vda' bus='virtio'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </disk>
-    <disk type='file' device='cdrom'>
-      <driver name='qemu' type='raw'/>
-      <target dev='hda' bus='ide'/>
-      <readonly/>
-      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
-</disk>
-虚拟机控制器配置信息
-    <controller type='usb' index='0' model='ich9-ehci1'>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x7'/>
-    </controller>
-    ...
-    <controller type='virtio-serial' index='0'>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
-</controller>
-虚拟机网络接口配置信息
     <interface type='network'>
-      <mac address='02:00:00:00:00:05'/>
       <source network='default'/>
       <model type='virtio'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
-</interface>
-# 虚拟机的网卡的mac地址，前面的52:54:00地址是固定的，后面的三项是随机的。
-虚拟机串口配置信息，可以不用更改
-    <serial type='pty'>
-      <target port='0'/>
-</serial>
-虚拟机终端配置信息
-    <console type='pty'>
-      <target type='serial' port='0'/>
-</console>
-虚拟机渠道配置信息
-    <channel type='unix'>
-      <target type='virtio' name='org.qemu.guest_agent.0'/>
-      <address type='virtio-serial' controller='0' bus='0' port='1'/>
-</channel>
-虚拟机输入输出设备信息
-    <input type='tablet' bus='usb'>
-      <address type='usb' bus='0' port='1'/>
-    </input>
-    <input type='mouse' bus='ps2'/>
-<input type='keyboard' bus='ps2'/>
-# vnc方式登录，端口号自动分配 可以通过virsh vncdisplay来查询[vncdisplay domainId]
-虚拟机图形设备信息
-    <graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0'>
-      <listen type='address' address='0.0.0.0'/>
-</graphics>
-虚拟机声音设备信息
-    <video>
-````
-
-````xml
-      <model type='cirrus' vram='16384' heads='1' primary='yes'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
-</video>
-虚拟机存储信息
-    <memballoon model='virtio'>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>
-    </memballoon>
+    </interface>
+    <graphics type='vnc' autoport='yes' listen='127.0.0.1'/>
   </devices>
 </domain>
-# 虚拟机网络文件
-````
+```
 
-注意：配置文件中展示的所有信息，都可以在ps aux 中的进程中一一找到对应的配置项
+`<memory>` 的单位在此为 KiB，`1048576` 约等于 1 GiB；`<vcpu>` 给出来宾可用的虚拟 CPU 数；`<source file>` 指向宿主机磁盘镜像，`<target bus='virtio'>` 决定来宾看到的磁盘接口；`network='default'` 连接 libvirt 默认网络。显卡和控制台设置随安装方式变化，不应把旧实验中监听 `0.0.0.0` 的 VNC 配置当作默认做法。
 
-##### 网络配置
+机器类型、CPU 模型和 PCI 地址由 libvirt/QEMU 按宿主环境生成；迁移到另一台宿主机前应检查兼容性，不能直接复制旧主机的完整 XML 文件。
 
-**网络配置文件**
+### 用 virsh 管理虚拟机
 
-````console
-[root@kvm-host ~]# cat /etc/libvirt/qemu/networks/default.xml
-<!--
-WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
-OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
-  virsh net-edit default
-or other application using the libvirt API.
--->
-<network>
-  <name>default</name>
-  <uuid>00000000-0000-4000-8000-000000000007</uuid>
-  <forward mode='nat'/>
-  <bridge name='virbr0' stp='on' delay='0'/>
-  <mac address='02:00:00:00:00:04'/>
-  <ip address='198.18.122.1' netmask='255.255.255.0'>
-    <dhcp>
-      <range start='198.18.122.2' end='198.18.122.254'/>
-    </dhcp>
-  </ip>
-</network>
-````
+#### 先辨认状态和定义
 
-### 基础功能
+`virsh list` 只显示运行中的来宾；`virsh list --all` 还显示已关闭的来宾。列表中的 ID 是一次运行实例的编号，重启后可能变化；脚本和操作说明应使用稳定的虚拟机名称或 UUID，而不是 ID。
 
-#### 检查
+```bash
+virsh list --all
+virsh dominfo CentOS-7-x86_64
+virsh domblklist CentOS-7-x86_64
+virsh domiflist CentOS-7-x86_64
+```
 
-**命令解析**
+`domblklist` 与 `domiflist` 分别核对磁盘和网卡。定义中的设备路径可能指向已有数据，修改或删除前必须先确认对象。
 
-````text
-virsh list 列出所有活动的虚拟机
-virsh list --all 列出所有活动和不活的的虚拟机
-virsh list --transient 列出所有临时的虚拟机
-virsh list --persistent 列出所有永久的虚拟机
-````
+#### 临时域与持久域
 
-**示例效果**
+`virsh create <XML 文件>` 按 XML 启动**临时域**：来宾关闭后，这个定义不再保留。`virsh define <XML 文件>` 注册**持久域**：定义会保留，之后再用 `virsh start <名称>` 启动。已由 `virt-install` 创建的来宾通常已经是持久域，不需要再次 `define`。
 
-**查看所有运行中的虚拟机**
+```bash
+virsh dumpxml CentOS-7-x86_64 > CentOS-7-x86_64.xml.bak
+virsh dominfo CentOS-7-x86_64
+# 只有确需从独立 XML 注册新定义时才执行：
+virsh define /path/to/new-domain.xml
+virsh start NEW_VM
+```
 
-````console
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-------------------------------
- 1 CentOS-7-x86_64 运行
-查看所有的虚拟机，无论运行与否
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
-------------------------------
- 1 CentOS-7-x86_64 运行
-注意：
-    虚拟机的每次重启，虚拟机的id都会自动的变化，因为虚拟机的运行本质上是操作系统的一个进程而已
-````
+**不要通过只改 `<name>` 和 `<uuid>` 复制正在运行的来宾。** 若两个定义仍指向同一可写系统盘，第二个来宾可能因文件锁启动失败；即使绕过锁，同时写入也会破坏文件系统。新来宾必须有独立磁盘和网卡标识。复制已有系统可用后文的 `virt-clone`；仅需保留配置则导出 XML，而不是复制整个 `/etc/libvirt/qemu` 目录。
 
-#### 创建
+#### 图形与串口控制台
 
-##### 方法解读
+来宾启用 VNC 时，先查询 libvirt 返回的地址，而非猜测端口。上节的示例让 VNC 只监听 `127.0.0.1`，因此远端客户端需先建立受控连接通道，不能直接访问宿主机公网地址。
 
-创建虚拟机的方式除了初始方法，还有一种经常使用的方法--使用配置文件，而使用配置文件的话，会有
+```bash
+virsh domdisplay CentOS-7-x86_64
+virsh vncdisplay CentOS-7-x86_64
+```
 
-**两种创建的方式：**
-
-**临时创建**
-- 借助于现成的配置文件和之前创建的虚拟机数据，创建一个新虚拟机，他会自动清除
-- 步骤：配置文件-创建虚拟机-查看
-- 命令：virsh create file_name.xml
-
-**正规创建**
-- 借助于现成的配置文件在虚拟机管理程序中注册一个新的虚拟机，他不会自动清除
-- 步骤：配置文件-注册虚拟机-开启虚拟机-查看
-- 命令：virsh define file_name.xml
-
-**关键点：**
-
-尽量拷贝一个完整的虚拟机配置文件，然后修改配置文件中的名字，这个配置文件名称和配置文件中的 name属性要一致，且名字唯一
-
-##### 临时创建
-
-**拷贝文件**
-
-````console
-[root@kvm-host ~]# cd /etc/libvirt/qemu
-[root@kvm-host qemu]# cp CentOS-7-x86_64.xml CentOS-7-x86_64-1.xml
-[root@kvm-host qemu]# ls
-autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
-````
-
-**修改配置文件**
-
-````console
-[root@kvm-host qemu]# vim CentOS-7-x86_64-1.xml
-    ...
-  9 <name>CentOS-7-x86_64-1</name>
- 10 <uuid>00000000-0000-4000-8000-00000000000b</uuid>
-    ...
-    注意：
-        主要修改的地方就是：虚拟机的名字，uuid
-        虚拟磁盘不需要修改，如果要修改的话，一个新建的虚拟磁盘里面因为没有boot文件，就会报错
-        网卡什么的尽量不要更改，更改后即使可以，但是启动不成功
-````
-
-因为一个运行中的vm是占用硬件磁盘的，所以会导致资源冲突
-
-````console
-[root@kvm-host qemu]# virsh create /etc/libvirt/qemu/CentOS-7-x86_64-1.xml
-错误： 从 /etc/libvirt/qemu/CentOS-7-x86_64-1.xml 创建域失败
-错误： 内部错误：连接监控的过程中进程退出: 2025-03-25T05:46:06.860047Z qemu-kvm: -device
-{"driver":"virtio-blk-pci","bus":"pci.4","addr":"0x0","drive":"libvirt-2-
-storage","id":"virtio-disk0","bootindex":1}: Failed to get "write" lock
-Is another process using the image [/opt/CentOS-7-x86_64.raw]?
-````
-
-为了避免资源冲突，我们将另外一个虚拟机关闭
-
-````console
-[root@kvm-host qemu]# virsh shutdown CentOS-7-x86_64
-域 'CentOS-7-x86_64' 正在关闭
-[root@kvm-host qemu]# virsh list
- Id 名称 状态
--------------------
-````
-
-创建新的虚拟机,而且虚拟机处于运行状态
-
-````console
-[root@kvm-host qemu]# virsh create /etc/libvirt/qemu/CentOS-7-x86_64-1.xml
-从 CentOS-7-x86_64-1 创建的域 '/etc/libvirt/qemu/CentOS-7-x86_64-1.xml'
-[root@kvm-host qemu]# virsh list --all
- Id 名称 状态
---------------------------------
- 3 CentOS-7-x86_64-1 运行
- - CentOS-7-x86_64 关闭
-可以看到：
-    新建的虚拟机已经成功了，而且启动的非常快 - 原因是系统盘是没有变的
-````
-
-1.2.2.3.2.3永久创建
-
-**配置文件**
-
-````console
-[root@kvm-host qemu]# cp CentOS-7-x86_64.xml CentOS-7-x86_64-2.xml
-````
-
-**编辑虚拟机配置**
-
-````console
-[root@kvm-host qemu]# vim CentOS-7-x86_64-2.xml
-...
-<domain type='kvm'>
-  <name>CentOS-7-x86_64-2</name>
-  <uuid>00000000-0000-4000-8000-000000000005</uuid>
-  ...
-````
-
-关闭虚拟机,刚才临时创建的虚拟机，找不到记录了
-
-````console
-[root@kvm-host qemu]# virsh shutdown CentOS-7-x86_64-1
-域 'CentOS-7-x86_64-1' 正在关闭
-[root@kvm-host qemu]# virsh list --all
- Id 名称 状态
-------------------------------
- - CentOS-7-x86_64 关闭
-````
-
-**注册虚拟机**
-
-````console
-[root@kvm-host qemu]# virsh define /etc/libvirt/qemu/CentOS-7-x86_64-2.xml
-从 CentOS-7-x86_64-2 定义的域 '/etc/libvirt/qemu/CentOS-7-x86_64-2.xml'
-查看效果
-[root@kvm-host qemu]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-2 关闭
-````
-
-**开启虚拟机**
-
-````console
-[root@kvm-host qemu]# virsh start CentOS-7-x86_64-2
-域 'CentOS-7-x86_64-2' 已启动
-确认效果
-[root@kvm-host qemu]# virsh list --all
- Id 名称 状态
---------------------------------
- 4 CentOS-7-x86_64-2 运行
- - CentOS-7-x86_64 关闭
-注意：
-    由于多个虚拟机使用同一个磁盘文件，所以，同一时间点内，只允许启动1个虚拟机
-````
-
-##### 登录
-
-当我们虚拟机过多的时候，如果想用vnc来连接的话，就不够了，但我还想用vnc怎么办？
-
-**思路：**
-
-执行 'virsh domdisplay 虚拟机名称' 来获取虚拟机的地址信息
-
-**启动虚拟机**
-
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-2 关闭
-启动虚拟机
-[root@kvm-host ~]# virsh start CentOS-7-x86_64
-域 'CentOS-7-x86_64' 已启动
-````
-
-**查看运行的地址**
-
-````console
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-------------------------------
- 1 CentOS-7-x86_64 运行
-[root@kvm-host ~]# virsh domdisplay CentOS-7-x86_64
-vnc://localhost:0
-注意：
-    :后面的数字n代表虚拟机启动的端口号，特指vnc端口号5900+n
-````
-
-**vnc查看连接方式：**
+旧实验截图展示了通过 VNC 客户端连接的界面；显示号 `:0` 通常对应 5900 端口，但实际访问仍以当前监听地址与配置为准。
 
 ![原文插图（第 66 页）]({{ '/subjects/KVM/assets/p066-img01.webp' | relative_url }})
 
-##### console登录
+若来宾配置了串口设备，且操作系统在串口上启动登录服务，可在宿主机执行 `virsh console <名称>`。很多 ISO 安装的系统默认未启用串口登录；需要在**来宾内部**配置内核控制台和 `serial-getty@ttyS0.service`，而不是只在宿主机上运行 `grubby`。以下命令是来宾使用 GRUB 时的一种做法，具体应以发行版启动配置为准：
 
-**需求**
+```bash
+# 在来宾内部执行，先确认存在 ttyS0，再修改启动参数
+sudo grubby --update-kernel=ALL --args='console=ttyS0,115200n8'
+sudo systemctl enable --now serial-getty@ttyS0.service
+# 回到宿主机，来宾重启后连接
+virsh console CentOS-7-x86_64
+```
 
-- 虽然我们可以使用vnc等方式连接到虚拟机中进行各种操作，但是，对于有些简单操作，使用vnc比较麻
-- 烦，所以我们这里学一种轻巧的登录虚拟机的方法：console
-- 注意：
-- 默认情况下，新安装的虚拟机，是无法通过virsh console 命令连入虚拟机中的，这时我们需要
-- 开启虚拟机的console功能。我们可以通过 grubby 来配置grub信息
+在 `virsh console` 中按 `Ctrl+]` 返回宿主机终端。若无法登录，检查域 XML 的串口设备、来宾的内核参数及 getty 服务；不要把黑屏直接归因于 libvirt 故障。
 
-使用vnc登录到虚拟机，添加ttyS0的许可，然后重启虚拟机
+### 生命周期操作
 
-````bash
-grubby --update-kernel=ALL --args="console=ttyS0"
-reboot
-````
+#### 暂停与恢复
 
-重启主机后，确认效果
+`virsh suspend` 暂停来宾的 vCPU 执行，内存状态仍占用宿主机资源；它不是保存状态或关机。需要继续运行时执行 `virsh resume`。暂停期间图形画面停止刷新，下面的截图是旧实验的可见效果。
 
-````console
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-------------------------------
- 1 CentOS-7-x86_64 运行
-````
-
-**思路**
-
-**命令帮助：**
-
-````text
-    virsh console --help
-命令格式：
-    virsh console 虚拟机名称
-````
-
-**使用console登录虚拟机**
-
-````console
-[root@kvm-host ~]# virsh console CentOS-7-x86_64
-连接到域 'CentOS-7-x86_64'
-转义字符是 ^] (Ctrl + ]) # 此处按Enter进入到登录界面
-CentOS Linux 7 (Core)
-Kernel 3.10.0-1160.el7.x86_64 on an x86_64
-localhost login: root
-密码：
-Last login: Tue Mar 25 20:28:50 on tty1
-[root@localhost ~]# id
-uid=0(root) gid=0(root) 组=0(root) 环境=unconfined_u:unconfined_r:unconfined_t:s0-
-s0:c0.c1023
-````
-
-**按 ctrl+] 组合键退出virsh console**
-
-````console
-[root@localhost ~]# # 按 ctrl+] 组合键退出
-[root@kvm-host ~]#
-````
-
-### 其他功能
-
-#### 挂起
-
-**命令解读**
-
-查看帮助：virsh suspend --help 命令格式：virsh suspend vmhost_name
-
-**挂起实践**
-
-**查看效果**
-
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- 1 CentOS-7-x86_64 运行
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-2 关闭
-````
-
-**挂起虚拟机**
-
-````console
-[root@kvm-host ~]# virsh suspend CentOS-7-x86_64
-域 'CentOS-7-x86_64' 已挂起
-````
-
-**查看效果**
-
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
-----------------------------------
- 1 CentOS-7-x86_64 已暂停
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-2 关闭
-````
-
-查看vnc效果，vnc的画面没有任何动的痕迹了 -- vnc界面卡死了，但是虚拟机并没有关机
+```bash
+virsh suspend CentOS-7-x86_64
+virsh domstate CentOS-7-x86_64
+virsh resume CentOS-7-x86_64
+```
 
 ![原文插图（第 68 页）]({{ '/subjects/KVM/assets/p068-img01.webp' | relative_url }})
 
-#### 恢复
-
-**命令解读**
-
-查看帮助：virsh resume --help 命令格式：virsh resume vmhost_name
-
-**恢复虚拟机**
-
-````console
-[root@kvm-host ~]# virsh resume CentOS-7-x86_64
-域 'CentOS-7-x86_64' 已恢复
-````
-
-**查看效果**
-
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- 1 CentOS-7-x86_64 运行
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-2 关闭
-````
-
-可以看到：vnc界面里面恢复了，而且可以进行操作
+恢复后应看到 `domstate` 回到 `running`，并在来宾内部确认业务正常；不要仅凭 VNC 画面重新变化判断应用已经恢复。
 
 ![原文插图（第 69 页）]({{ '/subjects/KVM/assets/p069-img01.webp' | relative_url }})
 
-#### 关闭实践
+#### 正常关机与强制停止
 
-**需求**
+优先使用 `virsh shutdown` 请求来宾操作系统正常关机，它依赖 ACPI 或来宾代理等机制响应，命令返回后状态可能仍暂时为 `running`。用 `virsh domstate` 等待确认；来宾长期无响应时，再考虑 `virsh destroy` 强制断电，并评估未写入数据的风险。`destroy` 不删除磁盘或定义。
 
-虚拟机运行时间太长了，向休息一下，那就关闭咯
-
-**方法**
-
-````text
-virsh shutdown 虚拟机名称
-注意：
-    shutdown方法依赖于acpid服务，Acpid是一个用户空间的服务进程，它充当linux内核与应用程序之
-间通信的接口，负责将kernel中的电源管理事件转发给应用程序。所以要保证我们的操作系统有acpid服务。
-````
-
-**acpid服务**
-
-对于ubuntu来说，它会自动安装相关软件并运行该服务对于centos来说，它需要手工安装并启动
-
-````console
-[root@kvm-host ~]# yum install acpid -y
-[root@kvm-host ~]# systemctl start acpid
-[root@kvm-host ~]# systemctl enable acpid
-````
-
-**关闭虚拟机**
-
-````console
-[root@kvm-host ~]# virsh shutdown CentOS-7-x86_64
-域 'CentOS-7-x86_64' 正在关闭
-````
-
-稍等5秒钟后，才会生效
-
-````console
-[root@kvm-host ~]# virsh list
- Id 名称 状态
--------------------
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-2 关闭
-````
-
-如果关机长时间无响应，先检查来宾系统状态和 QEMU 日志；`virsh shutdown` 发送正常关机请求，来宾可能暂时无法处理。确需断电时可用 `virsh destroy <虚拟机>`，但会丢失未写入磁盘的数据。不要直接 `kill` QEMU 进程或以“资源冲突”推断关机失败原因。
-
-**关闭虚拟机**
-
-````bash
+```bash
+virsh shutdown CentOS-7-x86_64
 virsh domstate CentOS-7-x86_64
-virsh destroy CentOS-7-x86_64  # 仅在正常关机失败且已接受数据丢失风险时执行
-virsh list --all
-````
+# 仅在正常关机失败且已接受断电风险时执行：
+virsh destroy CentOS-7-x86_64
+```
 
-#### 强制关闭
+旧系统若缺少 ACPI 支持或关机服务配置，先从来宾内部排查，不要把安装 `acpid` 当作所有来宾的通用步骤。恢复运行用 `virsh start`，而不是 `resume`；后者只适用于暂停状态。
 
-**功能简介**
+#### 开机自启动与取消
 
-将一个运行中的虚拟机强制关闭。命令格式：virsh destroy 虚拟机名称
+自启动属于**持久域定义**。启用后，libvirt 在宿主机启动流程中尝试启动来宾；是否成功还受存储池、网络、服务顺序及资源容量影响。先核对目标定义和依赖，再执行：
 
-**已关闭的虚拟机无法再次被关闭**
+```bash
+virsh autostart CentOS-7-x86_64
+virsh list --all --autostart
+# 取消时：
+virsh autostart --disable CentOS-7-x86_64
+virsh list --all --no-autostart
+```
 
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-1 关闭
-[root@kvm-host ~]# virsh destroy CentOS-7-x86_64-1
-错误： 销毁域 'CentOS-7-x86_64-1' 失败
-错误： 所需操作无效：域没有在运行
-````
+不要只依据 `/etc/libvirt/qemu/autostart/` 中的符号链接判断所有发行版的行为；以 `virsh` 查询及一次计划内重启验证为准。
 
-**准备运行的虚拟机**
+#### 注销定义
 
-````console
-[root@kvm-host ~]# virsh start CentOS-7-x86_64-1
-域 'CentOS-7-x86_64-1' 已启动
-[root@kvm-host ~]# virsh list
- Id 名称 状态
---------------------------------
- 1 CentOS-7-x86_64-1 运行
-````
+`virsh undefine` 注销持久域定义，**默认不会删除磁盘**。应先备份 XML，确认来宾已关闭，检查其磁盘是否还被快照或其他定义使用，再根据保留数据的意图决定后续清理。带有 UEFI NVRAM 或快照元数据的来宾可能还需附加选项，应先阅读当前版本的 `virsh help undefine`。
 
-**强制关闭运行中的虚拟机**
+```bash
+virsh dumpxml OLD_VM > OLD_VM.xml.bak
+virsh shutdown OLD_VM
+virsh domstate OLD_VM
+virsh domblklist OLD_VM
+virsh undefine OLD_VM
+```
+### 备份定义、克隆与编辑
 
-````console
-[root@kvm-host ~]# virsh destroy CentOS-7-x86_64-1
-域 'CentOS-7-x86_64-1' 已销毁
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-1 关闭
-````
+`virsh dumpxml` 导出的是**虚拟机定义**，不是系统盘数据备份。保存 XML 可以帮助回看配置，但若把它改个名称和 UUID 就 `virsh define`，新旧虚拟机仍可能指向**同一个可写磁盘**，并造成文件系统损坏。要制作独立副本，应先正常关机，再使用 `virt-clone` 或在确认格式和链关系后复制磁盘，并核对新虚拟机的磁盘路径、MAC 地址与来宾标识。
 
-#### 删除实践
+```bash
+virsh shutdown CentOS-7-x86_64
+virsh domstate CentOS-7-x86_64
+virsh dumpxml CentOS-7-x86_64 > CentOS-7-x86_64.xml.bak
+virt-clone --original CentOS-7-x86_64 \
+  --name CentOS-7-x86_64-copy \
+  --file /var/lib/libvirt/images/CentOS-7-x86_64-copy.raw
+virsh domblklist CentOS-7-x86_64-copy
+virsh domiflist CentOS-7-x86_64-copy
+```
 
-`virsh undefine` 取消虚拟机的持久定义，**默认不删除磁盘文件**。运行中的虚拟机可能继续运行到关机，但关机后不再作为持久虚拟机列出。执行前保存 XML（`virsh dumpxml <名称> > <备份文件>`），核对磁盘路径及快照；不要把“取消定义”与“删除所有数据”混为一谈。
+`virt-clone` 的可用选项与源镜像格式、存储池有关，执行前运行 `virt-clone --help`；源虚拟机应处于已关机状态。克隆后的来宾还可能保留原主机名、系统身份与静态 IP，首次启动前应制定变更方案。真正的数据备份仍需要独立副本和恢复验证。
 
-**删除虚拟机**
+编辑现有虚拟机使用 `virsh edit <名称>`，改动前导出 XML，改动后用 `virsh dumpxml` 核对，必要时重启来宾以使设备设置生效。编辑图形控制台时，不要把旧实验中 `listen='0.0.0.0'` 加固定密码的 VNC 配置直接用于共享网络；优先保持回环监听并通过 SSH 隧道或受控管理界面访问。
 
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-2 关闭
-[root@kvm-host ~]# virsh undefine CentOS-7-x86_64-2
-domain 'CentOS-7-x86_64-2' 已被解除定义
-````
+下列两张原课程图片记录旧实验修改 VNC 配置与连接结果，供识别界面；其中固定端口和密码不作为推荐配置。
 
-**检查效果**
+![旧版 VNC 编辑界面]({{ '/subjects/KVM/assets/p076-img01.webp' | relative_url }})
 
-````console
-[root@kvm-host ~]# virsh list --all
- Id 名称 状态
---------------------------------
- - CentOS-7-x86_64 关闭
- - CentOS-7-x86_64-1 关闭
-[root@kvm-host ~]# ls /etc/libvirt/qemu
-autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
-````
-
-注意：已取消持久定义的运行中虚拟机在关闭后不再列出；镜像文件仍需单独管理。若存在托管保存状态或快照，`undefine` 的具体选项和限制应先用 `virsh help undefine` 核对。
-
-### 开机自启动
-
-#### 基础知识
-
-**简介**
-
-默认情况下，创建好的kvm虚拟机不会随宿主机开启而启动，特殊的工作场景中，为了简便工作，我们会将其设置成开机自启动功能。
-
-**命令**
-
-**开启自启动命令格式：**
-
-帮助：virsh autostart --help 开启：virsh autostart 虚拟机名称关闭：virsh autostart --disable 虚拟机名称
-
-**注意：**
-
-开机自启动的操作，仅限于被注册的虚拟机，临时虚拟机没有该功能。
-
-#### 开启自启动
-
-**检查配置文件目录效果**
-
-````console
-[root@kvm-host ~]# ls /etc/libvirt/qemu
-autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
-````
-
-**设置开机自启动**
-
-````console
-[root@kvm-host ~]# virsh autostart CentOS-7-x86_64
-域 'CentOS-7-x86_64' 标记为自动启动
-````
-
-**确认效果**
-
-**方法1：**
-
-````console
-[root@kvm-host ~]# tree /etc/libvirt/qemu
-/etc/libvirt/qemu
-├── autostart # 多了一个autostart目录
-│ └── CentOS-7-x86_64.xml -> /etc/libvirt/qemu/CentOS-7-x86_64.xml
-├── CentOS-7-x86_64-1.xml
-├── CentOS-7-x86_64.xml
-└── networks
-    ├── autostart
-    │ └── default.xml -> ../default.xml
-    └── default.xml
-3 directories, 5 files
-方法2：
-[root@kvm-host ~]# virsh list --autostart --all
- Id 名称 状态
-------------------------------
- - CentOS-7-x86_64 关闭
-````
-
-**重启主机后确认效果**
-
-````console
-[root@kvm-host ~]# reboot
-Remote side unexpectedly closed network connection
-─────────────────────────────────────────────────────────────────────────────────
-───
-Session stopped
-    - Press <return> to exit tab
-    - Press R to restart session
-    - Press S to save terminal output to file
-登录后确认效果
-Last login: Tue Mar 25 20:23:42 2025 from 192.0.2.1
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-------------------------------
- 1 CentOS-7-x86_64 运行 # 确实是开机自启动了
-````
-
-#### 取消开机自启动
-
-**取消开机自启动**
-
-````console
-[root@kvm-host ~]# virsh autostart --disable CentOS-7-x86_64
-域 'CentOS-7-x86_64' 未标记为自动启动
-````
-
-**确认目录效果**
-
-````console
-[root@kvm-host ~]# tree /etc/libvirt/qemu
-/etc/libvirt/qemu
-├── autostart
-├── CentOS-7-x86_64-1.xml
-├── CentOS-7-x86_64.xml
-└── networks
-    ├── autostart
-    │ └── default.xml -> ../default.xml
-    └── default.xml
-3 directories, 4 files
-````
-
-**确认状态**
-
-````console
-[root@kvm-host ~]# virsh list --no-autostart --all
- Id 名称 状态
---------------------------------
- 1 CentOS-7-x86_64 运行
- - CentOS-7-x86_64-1 关闭
-````
-
-### 备份编辑
-
-#### 基础知识
-
-**需求**
-
-手工修改虚拟机的配置，限制太多。学习虚拟机配置文件的专用的操作功能。
-
-**基本操作**
-
-- 备份
-- 作用：文件内容的版本保存
-- 格式：virsh dumpxml 虚拟主机名 > backup_vmhost.file
-- 注意：备份文件如果想在本机使用的话，需要vim修改一下主机名和uuid，才可以
-- 编辑
-- 作用：文件内容的编辑动作
-- 格式：virsh edit 虚拟主机名
-- 注意：备份的虚拟机文件如果想要使用virsh edit编辑的话，必须要保证该文件已经注册到虚拟机管理
-- 设备中了
-
-#### 备份实践
-
-**查看效果**
-
-````console
-[root@kvm-host ~]# cd /etc/libvirt/qemu
-[root@kvm-host qemu]# ls
-autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml networks
-````
-
-**备份文件**
-
-````console
-[root@kvm-host qemu]# virsh dumpxml CentOS-7-x86_64 > CentOS-backup.xml
-[root@kvm-host qemu]# ls
-autostart CentOS-7-x86_64-1.xml CentOS-7-x86_64.xml CentOS-backup.xml
- networks
-````
-
-备份文件如果想在本机使用的话，需要vim修改一下主机名和uuid
-
-````console
-[root@kvm-host qemu]# vim CentOS-backup.xml
-<domain type='kvm' id='1'>
-  <name>CentOS-7-x86_64-bak</name>
-  <uuid>00000000-0000-4000-8000-000000000004</uuid>
-    ...
-注意：仅仅修改name和uuid即可
-````
-
-**创建虚拟机**
-
-````console
-[root@kvm-host qemu]# virsh define CentOS-backup.xml
-从 CentOS-7-x86_64-bak 定义的域 'CentOS-backup.xml'
-````
-
-**查看效果**
-
-````console
-[root@kvm-host qemu]# virsh list --all
- Id 名称 状态
-----------------------------------
- - CentOS-7-x86_64 运行
- - CentOS-7-x86_64-1 关闭
- - CentOS-7-x86_64-bak 关闭
-可以看到：
-    创建的虚拟机默认情况下是关闭状态的。
-````
-
-#### 编辑实践
-
-为了避免资源抢占，这里将所有的虚拟机关闭
-
-````console
-[root@kvm-host qemu]# virsh list
- Id 名称 状态
-------------------------------
- 1 CentOS-7-x86_64 运行
-[root@kvm-host qemu]# virsh shutdown 1
-域 '1' 正在关闭
-````
-
-**编辑虚拟机**
-
-````console
-[root@kvm-host qemu]# virsh edit CentOS-7-x86_64-bak
-域'CentOS-7-x86_64-bak' XML 配置已被编辑。
-原内容：
-    <graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0'>
-      <listen type='address' address='0.0.0.0'/>
-    </graphics>
-修改后内容：
-    <graphics type='vnc' port='8888' listen='0.0.0.0' passwd='EXAMPLE_PASSWORD'>
-      <listen type='address' address='0.0.0.0'/>
-    </graphics>
-````
-
-**确认效果**
-
-````console
-[root@kvm-host qemu]# virsh start CentOS-7-x86_64-bak
-域 'CentOS-7-x86_64-bak' 已启动
-[root@kvm-host ~]# virsh domdisplay CentOS-7-x86_64-bak
-vnc://localhost:2988
-关于vnc的连接，可以是 192.0.2.12:8888，不可以是192.0.2.12:2988
-````
-
-上面测试的信息是给 vnc 连接时候登录用的，不是给 virsh console 连接用的，因为virsh console 不走 vnc。
-
-![原文插图（第 76 页）]({{ '/subjects/KVM/assets/p076-img01.webp' | relative_url }})
-
-**点击输入密码后的效果**
-
-![原文插图（第 77 页）]({{ '/subjects/KVM/assets/p077-img01.webp' | relative_url }})
+![旧版 VNC 登录结果]({{ '/subjects/KVM/assets/p077-img01.webp' | relative_url }})
 
 ## 2.3 其他内容
 
-### 基础信息
+### 查询来宾系统类型
 
-**查看virsh默认支持的虚拟机操作系统**
+`virt-install` 的 `--osinfo` 值来自当前宿主机的 osinfo 数据库。支持列表与版本会变化，不要把旧实验中数百行的操作系统名称当成兼容性承诺；“有名称”也不代表安装镜像仍获得安全更新。
 
-````console
-[root@kvm-host ~]# virt-install --osinfo list | wc -l
-848
-````
+```bash
+virt-install --osinfo list | grep -i centos
+virt-install --osinfo list | grep -i win
+```
 
-**查看支持的win系列的操作系统**
+选择与来宾版本相符的标识；如果安装介质较新而本机列表过旧，先更新 osinfo 数据和相关工具，再参考当前文档选择相近配置并测试驱动、启动和网络功能。
 
-````console
-[root@kvm-host ~]# virt-install --osinfo list |grep win
-win98
-win95
-win11
-win10
-win8
-win8.1
-win7
-win3.1
-win2.1
-win2.0
-win2k
-win2k22
-win2k19
-win2k16
-win2k12
-win2k12r2
-win2k8
-win2k8r2
-win2k3
-win2k3r2
-win1.0
-winme
-winnt4.0
-winnt3.51
-winnt3.5
-winnt3.1
-winvista
-winxp
-````
+### 让 virt-install 创建新磁盘
 
-### 无需磁盘创建VM
+上面的主案例先用 `qemu-img` 创建磁盘；也可以在 `virt-install --disk` 中同时给出路径、容量与格式，由工具创建**新的空白磁盘**，再从 ISO 安装系统。这不等于「无磁盘虚拟机」，也不能把空盘与 `--import` 混用。
 
-无需事先创建磁盘文件，直接创建虚拟机
-
-**确认支持的系统版本**
+先查询当前宿主机支持的系统标识；这里的 CentOS 7 仅用于重现旧实验，新部署应选择受支持版本。
 
 ````console
 [root@kvm-host ~]# virt-install --osinfo list |grep centos7
 centos7, centos7.0
 ````
 
-**创建虚拟机**
+确认镜像路径和目标磁盘路径均可由 libvirt 访问，且目标文件尚不存在，然后创建来宾：
 
 ````console
-[root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name centos7 \
+[root@kvm-host ~]# virt-install --virt-type kvm --osinfo centos7 --name centos7 \
   --memory 1024 --vcpus 1 \
   --cdrom /data/images/CentOS-7-x86_64-Minimal-2009.iso \
   --disk path=/opt/centos7-new.qcow2,size=10,format=qcow2,bus=virtio \
@@ -1384,48 +415,40 @@ centos7, centos7.0
   --graphics vnc,listen=127.0.0.1 --noautoconsole
 ````
 
-**确认效果**
-
-````console
-[root@kvm-host ~]# virsh list
- Id 名称 状态
-----------------------------------
- 4 CentOS-7-x86_64-bak 运行
- 5 centos7 运行
-````
+创建后执行 `virsh domblklist centos7` 和 `qemu-img info /opt/centos7-new.qcow2`，分别确认来宾挂载的磁盘路径及镜像格式/容量；不要只看 `virsh list` 中是否出现名称。
 
 ### 桥接方式创建VM
 
-注意：使用桥接方式创建vm，需要提前保证是存在桥接网卡的，否则下面的命令无法执行
+桥接方式让来宾通过宿主机外部桥接入局域网，与 `network=default` 的 libvirt NAT 网络不同。先按第 04 章建立并验证宿主机桥 `br0`，核对物理网卡、DHCP 与防火墙策略，再创建来宾；不要把 `virbr0` 当作外部桥。
 
 ````console
-[root@kvm-host ~]# virt-install --virt-type kvm --os-variant=centos7 --name centos7-bridge \
+[root@kvm-host ~]# virt-install --virt-type kvm --osinfo centos7 --name centos7-bridge \
   --memory 1024 --vcpus 1 \
   --cdrom /data/images/CentOS-7-x86_64-Minimal-2009.iso \
   --disk path=/opt/centos7-bridge.qcow2,size=10,format=qcow2,bus=virtio \
   --network bridge=br0,model=virtio \
   --graphics vnc,listen=127.0.0.1 --noautoconsole
-
-这里使用第 04 章创建的宿主机外部桥 `br0`，而不是 libvirt NAT 网络默认使用的 `virbr*`。两台虚拟机也必须使用**不同的可写磁盘镜像**，不能同时指向同一镜像文件。
 ````
+
+两台来宾必须使用**不同的可写磁盘镜像**。创建后通过 `virsh domiflist centos7-bridge` 确认网卡确实连接 `br0`，并在来宾内检查 IP 地址与网关。
 
 ### 克隆VM
 
-**打开virt-manager**
+命令行可用上一节的 `virt-clone`，图形界面则可在 `virt-manager` 中选择已关机的源虚拟机并执行克隆。克隆应产生独立磁盘，不能只复制虚拟机定义。
 
 ````console
 [root@kvm-host ~]# virt-manager
 ````
 
-clone的方式，仅限于关闭的主机场景
+下列截图展示旧版向导；实际操作时要核对新名称与目标磁盘路径。
 
 ![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img01.webp' | relative_url }})
 
-**对第一个主机进行克隆操作**
+完成克隆后先检查 `domblklist`，再启动新来宾。
 
 ![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img02.webp' | relative_url }})
 
-查看克隆后效果，克隆后的主机，和之前的主机运行效果一样，而且使用的不是同一个磁盘
+首次登录还应调整来宾内部的主机名、固定 IP 和身份信息，避免克隆实例与原实例冲突。
 
 ![原文插图（第 79 页）]({{ '/subjects/KVM/assets/p079-img03.webp' | relative_url }})
 

@@ -504,10 +504,7 @@ lsmod
       <tr><td><code>/etc/environment</code></td><td>系统级环境变量</td><td>全局代理/语言设置</td></tr>
     </tbody></table>
 
-    </div><pre data-presentation-code="v1" data-presentation-highlight="ce1d03da61cee507cc2333475ddf7e2029e57710f50f4843d40c65de84e30535"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># etc 目录是 git 仓库的最佳候选</span>
-<span class="hljs-built_in">cd</span> /etc; <span class="hljs-built_in">git</span> init; <span class="hljs-built_in">git</span> add .; <span class="hljs-built_in">git</span> commit<span class="hljs-attr"> -m</span> <span class="hljs-string">"baseline"</span>
-<span class="hljs-comment"># 每次改配置后 git diff 看变化，git commit 记录原因</span>
-<span class="hljs-comment"># 这是基础设施即代码 (IaC) 的最简实践</span></code></pre>
+    </div><div class="box box-warning"><strong>配置版本管理的边界：</strong><code>/etc</code> 中可能有私钥、令牌与机器专属配置，不要直接对整个目录执行 <code>git add .</code> 并推送远端。优先使用 etckeeper 或在单独的受控仓库中只跟踪经过筛选的配置文件；提交前核对差异、权限与敏感信息。</div>
 
     <h4>/opt —— 第三方软件的"独立别墅"</h4>
     <p>为那些不遵循 FHS 目录结构的第三方软件保留。典型的用途：Google Chrome 装在 <code>/opt/google/chrome/</code>，手动下载的 JDK 解压到 <code>/opt/jdk-17/</code>。<strong>opt = optional，意为"可选的附加软件"</strong>。与 <code>/usr/local</code> 的区别：<code>/opt</code> 倾向于"供应商打包的、自包含的"软件，每个软件一个子目录；<code>/usr/local</code> 倾向于"从源码编译安装的"按传统 FHS 结构组织的软件。</p>
@@ -636,11 +633,11 @@ lsmod
   <div class="card-body">
 
     <h4>这个哲学的威力</h4>
-    <p>在 Linux 中，"文件"是一个抽象概念。在这个抽象覆盖下，你可以用同一组系统调用 (<code>open()</code>、<code>read()</code>、<code>write()</code>、<code>close()</code>) 来操作磁盘文件、读取进程信息、发送网络数据、控制硬件设备。这意味着：</p>
+    <p>在 Linux 中，“文件”是一种重要抽象：普通文件、设备节点、管道、套接字及 <code>/proc</code> 中的虚拟文件都可以在某些场景使用文件描述符和通用读写接口。但各类资源支持的操作不同，网络套接字仍需要 <code>socket()</code>、<code>connect()</code> 等专用调用，不能把它们当成可随意 <code>cat</code> 的磁盘文件。这意味着：</p>
     <ul>
-      <li><strong>不需要新的 API：</strong>读取进程状态和读取文本文件用同一个 <code>read()</code> 系统调用</li>
-      <li><strong>不需要新的工具：</strong><code>cat</code>、<code>grep</code>、<code>echo</code> 这些处理文本文件的命令，同样可以处理设备、进程、网络</li>
-      <li><strong>不需要新的思维模型：</strong>学一次"文件操作"，就学会了操作 Linux 的一切</li>
+      <li><strong>复用通用接口：</strong>许多进程状态和设备信息可通过 <code>open()</code>、<code>read()</code> 观察</li>
+      <li><strong>仍需理解资源语义：</strong>写入 <code>/proc/sys</code> 会改变内核参数，设备节点可能产生副作用</li>
+      <li><strong>与专用工具配合：</strong>文件工具适合读虚拟文件，网络连接状态通常用 <code>ss</code> 等工具更易解读</li>
     </ul>
 
     <h4>实例一：设备即文件</h4>

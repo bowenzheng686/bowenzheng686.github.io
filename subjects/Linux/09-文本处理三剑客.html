@@ -558,6 +558,7 @@ awk <span class="hljs-string">'/ERROR/ {print $1, $2, $3}'</span> app.log</code>
     </table>
 
     </div><h4>-F 分隔符——处理 CSV、冒号分隔、等号分隔的文件</h4>
+    <p>用 <code>-F','</code> 切分只适合不含引号内逗号、转义与换行的简单数据；标准 CSV 请使用专门的 CSV 解析工具，不能把任意 CSV 当成简单分隔文本。</p>
     <pre data-presentation-code="v1" data-presentation-highlight="ae1519597f5313ef3b52ae3b7c50a2cd13ba84138145d56758be7e6fb5a4c2f3"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># 处理 /etc/passwd（冒号分隔）</span>
 awk<span class="hljs-attr"> -F</span><span class="hljs-string">':'</span> <span class="hljs-string">'{print $1, $3, $7}'</span> /etc/passwd
 <span class="hljs-comment"># 输出：root 0 /bin/bash</span>
@@ -572,10 +573,10 @@ awk<span class="hljs-attr"> -F</span><span class="hljs-string">'[, ]+'</span> <s
     <p><strong>BEGIN</strong> 块在处理任何输入行<strong>之前</strong>执行一次（用于初始化），<strong>END</strong> 块在处理完所有输入行<strong>之后</strong>执行一次（用于输出汇总结果）。</p>
 
     <pre data-presentation-code="v1" data-presentation-highlight="a4a9da94fdd9796943c2877783d37aa9830735c5ae5085670851b08f1cd369fe"><code data-static-highlight="11.9.0" class="editorial-code language-bash hljs" data-highlighted="yes"><span class="hljs-comment"># BEGIN：打印表头</span>
-awk <span class="hljs-string">'BEGIN {print "文件名\t大小\t权限"} {print $9, $5, $1}'</span> &lt; &lt;(<span class="hljs-built_in">ls</span><span class="hljs-attr"> -l</span>)
+<span class="hljs-built_in">printf</span> <span class="hljs-string">'a.txt 12 rw-r--r--\nb.txt 30 rw-------\n'</span> | awk <span class="hljs-string">'BEGIN {print "文件名\t大小\t权限"} {print $1, $2, $3}'</span>
 
 <span class="hljs-comment"># END：计算总和和平均值</span>
-awk <span class="hljs-string">'{sum += $3} END {print "总和:", sum, "平均值:", sum/NR}'</span> data.txt
+awk <span class="hljs-string">'{sum += $3} END {print "总和:", sum; if (NR) print "平均值:", sum/NR; else print "没有数据"}'</span> data.txt
 
 <span class="hljs-comment"># BEGIN + END：完整的报告</span>
 awk <span class="hljs-string">'

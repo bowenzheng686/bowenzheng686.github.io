@@ -51,6 +51,18 @@ spring:
 
 在 Dashboard 为**实际显示的资源名**创建 QPS 流控规则，例如每秒 1 次、直接拒绝。随后用可控速率并发请求，观察成功数与阻断数、客户端日志以及接口的 HTTP 状态。原资料中的 429 是其示例应用对 `BlockException` 的处理结果；Sentinel 核心库本身不保证所有框架和应用都返回 429，响应码与文案需由适配器或业务处理器定义。
 
+例如，在应用可直接访问的测试机上只发起八个并发请求，而不是使用无终止条件的压测循环：
+
+```bash
+for i in $(seq 1 8); do
+  curl -sS -o /dev/null -w "request=$i status=%{http_code}\n" \
+    http://APP_HOST:8081/hello/test &
+done
+wait
+```
+
+这组请求是否恰好落在同一统计窗口受调度和网络时延影响；若没有观察到阻断，先核对规则绑定的资源名、阈值与客户端实时指标，再重复一组有限请求。不要仅凭 HTTP 状态判断：应用可能把阻断转换成自定义响应，也可能因下游故障返回同样的错误码。
+
 ![新增流控规则](assets/img-448fa40fd5a33236.webp)
 ![规则参数示例](assets/img-7c9ca2757cf221eb.webp)
 ![控制台规则列表](assets/img-7a8c6d5e9a24e54a.webp)

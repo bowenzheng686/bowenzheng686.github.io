@@ -16,85 +16,39 @@ syntax_highlight: true
 
 ### 创建项目
 
-### 新建项目
-
 GitLab 项目属于某个命名空间：可以是个人，也可以是组。一个项目通常对应一个代码仓库及其协作设置，是否按服务或模块拆分取决于团队边界与发布方式。
 
 若准备推送已有本地仓库，可创建**空项目**以避免默认 README 产生额外初始提交；若从零开始，直接初始化 README 也可以，但后续推送须先整合远程历史。
 
 ![Git 与 GitLab 版本管理第 123 页插图](assets/img-81cd5d119cd7e59e.webp)
 
-新版界面
+下图展示较新版本中的项目创建入口。
 
 ![Git 与 GitLab 版本管理第 123 页插图](assets/img-2bfb657d07b59dce.webp)
 
-创建项目,指定项目属于组,并选择不进行初始化项目仓库
+本例把项目放在组命名空间下，并选择空仓库，以便上传已有本地历史。
 
 ![Git 与 GitLab 版本管理第 123 页插图](assets/img-b1de0ef7fc45f1a2.webp)
 
 ![Git 与 GitLab 版本管理第 124 页插图](assets/img-3753ea26c68fbda0.webp)
 
-命令行指引
+项目创建页会给出克隆、新文件夹初始化和已有仓库迁移三种指引。它们是**三选一**，不是连续执行的步骤。若已有 Git 仓库，只需要核对目标地址、分支和权限后添加远端并推送；若是普通文件夹，先初始化、提交，再关联远端。实际命令放在本章后面的客户端操作中。
 
-您还可以按照以下说明从计算机中上传现有文件。
-
-Git 全局设置
-
-```text
-git config --global user.name "Administrator"
-git config --global user.email "admin@example.com"
-```
-
-创建一个新仓库
-
-```text
-git clone http://gitlab.bowen.org/dev/meta.git
-cd meta
-git switch -c main  # 仅当空仓库克隆后尚未处于 main 时执行
-touch README.md
-git add README.md
-git commit -m "add README"
-git push -u origin main
-```
-
-推送现有文件夹
-
-```text
-cd existing_folder
-git init --initial-branch=main
-git remote add origin http://gitlab.bowen.org/dev/meta.git
-git add .
-git commit -m "Initial commit"
-git push -u origin main
-```
-
-推送现有的 Git 仓库
-
-```text
-cd existing_repo
-git remote rename origin old-origin
-git remote add origin http://gitlab.bowen.org/dev/meta.git
-git push -u origin --all
-git push -u origin --tags
-```
-
-旧版界面
+下面三张图是旧版创建流程，用于识别命名空间、可见性和结果页面，不必与新版流程重复操作。
 
 ![Git 与 GitLab 版本管理第 125 页插图](assets/img-1827db2fc43e3d2e.webp)
 
-使用管理员创建项目：
+旧版的创建表单如下。
 
 ![Git 与 GitLab 版本管理第 125 页插图](assets/img-f471758abb22e520.webp)
 
-创建后的项目效果：
+创建后先确认项目 URL、默认分支和可见性符合预期。
 
 ![Git 与 GitLab 版本管理第 126 页插图](assets/img-bf0595dc531c68ab.webp)
 
 ### 导入项目
 
-新版需要开启导入旧项目到Gitlab功能才支持导入
-
-搜索--管理中心--设置-- 通用--导入和导出设置
+如果迁移现有托管平台项目，可使用 GitLab 导入器；管理员可能需要先在**管理中心 → 设置 → 通用 → 导入和导出**启用相应来源。导入能力因版本与实例策略而异，迁移后还应核对分支、标签、议题、成员与 CI 设置，而不是仅确认页面出现。
 
 ![Git 与 GitLab 版本管理第 126 页插图](assets/img-b2bf90d02be422c2.webp)
 
@@ -104,11 +58,7 @@ git push -u origin --tags
 
 ### 将用户添加到组或项目并指定角色
 
-将用户添加到组或项目中,并指定不同的角色,可以获取不同的权限
-
-角色和权限官方帮助
-
-<https://docs.gitlab.com/ce/user/permissions.html>
+项目成员可以从组继承，也可以直接添加到项目。权限详情以 [GitLab 角色与权限文档](https://docs.gitlab.com/user/permissions/) 和实例配置为准。
 
 ![Git 与 GitLab 版本管理第 128 页插图](assets/img-83c4038dcceb89bd.webp)
 
@@ -122,7 +72,7 @@ git push -u origin --tags
 | Maintainer | 管理项目设置、成员及发布规则，权限高于普通开发者。 |
 | Owner | 主要是组级最高权限，涉及组成员与组设置；不是每个项目都单独有 Owner。 |
 
-在组中添加用户并指定角色
+多个项目共享同一团队时，优先在组中管理成员，以减少逐个项目授权的重复工作。
 
 ![Git 与 GitLab 版本管理第 129 页插图](assets/img-b3eb7595274ad620.webp)
 
@@ -132,27 +82,25 @@ Developer 通常可以推送非保护分支；对受保护的 `main`/`master` �
 
 ![Git 与 GitLab 版本管理第 129 页插图](assets/img-2c6257f23a86ff20.webp)
 
-或者在项目中添加用户进行角色指定，此方式后续管理不太方便，不建议加用户到项目，建议将用户加入组中
+项目直邀适合只需访问单个项目的协作者；组级授权便于统一管理，但也会将权限传播到组内其他项目。应选择最小必要范围，而不是一概避免项目直邀。
 
 ![Git 与 GitLab 版本管理第 130 页插图](assets/img-5df5577942ccb700.webp)
 
-旧版界面
+以下两张图是旧版成员管理界面，对应的角色含义仍需按当前版本核对。
 
 ![Git 与 GitLab 版本管理第 130 页插图](assets/img-ad9bac60abf3d149.webp)
 
 ![Git 与 GitLab 版本管理第 131 页插图](assets/img-45a595d82e5a902a.webp)
 
-### 使用项目
+### 在 Web 界面创建文件
 
-### 在项目中新建一个测试页面
-
-用上面创建的用户bowen登录，找到项目界面,在项目中新建文件
+用具有相应权限的成员登录项目，在仓库页面新建 `README.md` 或测试文件。若默认分支受到保护，界面可能引导创建新分支和合并请求，而非允许直接提交。
 
 ![Git 与 GitLab 版本管理第 131 页插图](assets/img-51362ca8f4062ba0.webp)
 
 ![Git 与 GitLab 版本管理第 132 页插图](assets/img-9c440a3a4e2f8e93.webp)
 
-旧版界面
+旧版的文件创建界面如下。
 
 ![Git 与 GitLab 版本管理第 132 页插图](assets/img-cdd375deb4200cf7.webp)
 
@@ -160,118 +108,36 @@ Developer 通常可以推送非保护分支；对受保护的 `main`/`master` �
 
 ![Git 与 GitLab 版本管理第 132 页插图](assets/img-242497ba479e5ce5.webp)
 
-新建项目文件
+提交后回到仓库文件列表，确认文件位于预期分支。
 
 ![Git 与 GitLab 版本管理第 133 页插图](assets/img-de85574f6f94c8d6.webp)
 
 ![Git 与 GitLab 版本管理第 133 页插图](assets/img-5eca40737d67c9c9.webp)
 
-### 在linux客户端测试clone和提交项目
+### 在 Linux 客户端克隆与提交
 
 ![Git 与 GitLab 版本管理第 133 页插图](assets/img-945309aaa0cf9fe0.webp)
 
-命令行指引
+上面的 Web 示例已有远端提交，因此客户端应先**克隆**，不要再用 `git init` 和强制推送覆盖历史。用项目页面提供的 HTTPS 地址替换占位符：
 
-您还可以按照以下说明从计算机中上传现有文件。 Git 全局设置
-
-```text
-git config --global user.name "Administrator"
-git config --global user.email "admin@example.com"
-```
-
-创建一个新仓库
-
-```text
-git clone http://gitlab.bowen.org/dev/meta.git
-cd meta
-git switch -c main
-touch README.md
+```bash
+git clone <项目 HTTPS URL>
+cd <项目目录>
+git config user.name "你的姓名"
+git config user.email "you@example.com"
+git switch -c feature/readme
+# 编辑 README.md 后检查并提交
+git status
 git add README.md
-git commit -m "add README"
-git push -u origin main
+git commit -m "完善项目说明"
+git push -u origin feature/readme
 ```
 
-推送现有文件夹
+如果项目尚是空仓库且本地已有提交，则在**现有本地仓库**中用 `git remote add origin <项目 URL>`、`git push -u origin <当前分支>`；不要把这些命令混进克隆流程。HTTPS 推送通常使用访问令牌或凭据管理器，不能将账号密码或令牌写进仓库文件。
 
-```text
-cd existing_folder
-git init --initial-branch=main
-git remote add origin http://gitlab.bowen.org/dev/meta.git
-git add .
-git commit -m "Initial commit"
-git push -u origin main
-```
+### 在 Windows 客户端验证
 
-推送现有的 Git 仓库
-
-```text
-cd existing_repo
-git remote rename origin old-origin
-git remote add origin http://gitlab.bowen.org/dev/meta.git
-git push -u origin --all
-git push -u origin --tags
-```
-
-根据不同的情况,在另一台主机上执行下面操作
-
-```bash
-[root@ubuntu1804 ~]#cd /data
-[root@ubuntu1804 data]#ls
-lost+found
-[root@ubuntu1804 data]#git clone https://gitlab.example.com/testgroup/testproject.git
-Cloning into 'testproject'...
-Username for 'http://10.0.0.100': bowen
-Password for 'http://bowen@10.0.0.100':
-remote: Enumerating objects: 6, done.
-remote: Counting objects: 100% (6/6), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 6 (delta 0), reused 0 (delta 0)
-Unpacking objects: 100% (6/6), done.
-[root@ubuntu1804 data]#ls -a
-.  ..  lost+found  testproject
-[root@ubuntu1804 data]#tree testproject/
-testproject/
-├── index.html
-└── README.md
-0 directories, 2 files
-#设置用户名和邮箱
-[root@ubuntu1804 data]#git config --global user.name "bowenxiaochun"
-[root@ubuntu1804 data]#git config --global user.email  "root@bowenxiaochun.com"
-[root@ubuntu1804 data]#cat ~/.gitconfig
-[user]
-name = bowenxiaochun
-email = root@bowenxiaochun.com
-[root@ubuntu1804 data]#vim testproject/
-#修改项目文件
-[root@ubuntu1804 data]#vim testproject/index.html
-[root@ubuntu1804 data]#cat testproject/index.html
-<h1>index.html v1 </h1>
-<h1>index.html v2 </h1>
-[root@ubuntu1804 data]#cd testproject/
-[root@ubuntu1804 testproject]#git add .
-[root@ubuntu1804 testproject]#git commit -m "v2"
-[master 44dbd92] v2
-1 file changed, 2 insertions(+), 1 deletion(-)
-```
-
-```bash
-[root@ubuntu1804 testproject]#git push
-Username for 'http://10.0.0.100': bowen
-Password for 'http://bowen@10.0.0.100':
-Counting objects: 3, done.
-Delta compression using up to 2 threads.
-Compressing objects: 100% (2/2), done.
-Writing objects: 100% (3/3), 296 bytes | 296.00 KiB/s, done.
-Total 3 (delta 0), reused 0 (delta 0)
-To http://10.0.0.100/testgroup/testproject.git
-928e057..44dbd92  master -> master
-```
-
-### 在 Windows 安装 git 客户端测试clone和提交项目
-
-官网下载链接:
-
-<https://git-scm.com/download/win>
+从 [Git for Windows 官方页面](https://git-scm.com/download/win)安装客户端；命令工作流与 Linux 一致。安装后用 `git --version` 检查，再克隆项目并确认凭据配置，而不是照搬旧截图中的用户名或远端地址。
 
 ![Git 与 GitLab 版本管理第 136 页插图](assets/img-013051ffec9909e1.webp)
 
@@ -279,17 +145,21 @@ To http://10.0.0.100/testgroup/testproject.git
 
 ![Git 与 GitLab 版本管理第 136 页插图](assets/img-5a12e56b7528b661.webp)
 
-### Web端验证数据
+### 在 Web 端核对结果
+
+客户端推送后刷新项目页面，检查分支、提交、文件和作者信息。若目标是受保护分支，还应确认合并请求与流水线检查状态。
 
 ![Git 与 GitLab 版本管理第 137 页插图](assets/img-a9e9c618635158b1.webp)
 
 ![Git 与 GitLab 版本管理第 137 页插图](assets/img-fe32f485a66437b1.webp)
 
-### 实现 ssh 基于key验证的 git 访问
+### 使用 SSH 密钥访问
+
+SSH 是 HTTPS 之外的另一种传输方式。生成密钥后，仅把**公钥**添加到 GitLab 个人设置；私钥留在本机。首次连接时，先核对服务器主机指纹与管理员发布的指纹一致，再接受提示。
 
 ```bash
-[root@centos8 ~]#ssh-keygen -t ed25519 -C "you@example.com"
-[root@centos8 ~]#cat ~/.ssh/id_ed25519.pub
+ssh-keygen -t ed25519 -C "you@example.com"
+cat ~/.ssh/id_ed25519.pub
 ssh-ed25519 AAAA... you@example.com
 ```
 
@@ -298,40 +168,19 @@ ssh-ed25519 AAAA... you@example.com
 ![Git 与 GitLab 版本管理第 138 页插图](assets/img-9b85acac7bc2ee95.webp)
 
 ```bash
-[root@centos8 ~]#cd /opt
-[root@centos8 opt]#ls
-[root@centos8 opt]#git clone git@10.0.0.100:testgroup/testproject.git
-Cloning into 'testproject'...
-The authenticity of host '10.0.0.100 (10.0.0.100)' can't be established.
-ECDSA key fingerprint is SHA256:SCZC/wgETlcNAvmd1gaG8Tvb4sR53VzbaX1MHKi9GLY.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '10.0.0.100' (ECDSA) to the list of known hosts.
-remote: Enumerating objects: 6, done.
-remote: Counting objects: 100% (3/3), done.
-remote: Compressing objects: 100% (2/2), done.
-remote: Total 6 (delta 0), reused 0 (delta 0), pack-reused 3
-Receiving objects: 100% (6/6), done.
+ssh -T git@<GitLab 主机>
+git clone git@<GitLab 主机>:<组>/<项目>.git
 ```
 
 ### 保护分支
 
-默认master 分支被保护,开发者角色无法对被保护的分支提交代码
-
-也可以将其它分支进行保护,防止指定分支被破环
+默认分支是否受保护、哪些角色可以推送或合并，取决于项目当前规则；不能假定所有版本都默认保护 `master`。建议限制主分支直接推送，要求通过合并请求、审查和必要的流水线检查。保护的是分支引用和操作权限，不会替代仓库备份。
 
 ![Git 与 GitLab 版本管理第 139 页插图](assets/img-a7422ac9511a27ee.webp)
 
 ### 合并分支
 
-由于普通开发者无法直接提交代码至master分支
-
-可以先创建其它分支如dev,再提交代码到dev分支
-
-接下来申请将dev 分支合并至master分支
-
-管理者收到请求,经过审核没有问题进行批准合并
-
-最终实现 master 代码的更新
+开发者将功能分支推送到远端后发起 Merge Request，选择目标分支并说明改动、测试结果和回滚影响。审查者核对差异与流水线，确认通过后按项目策略合并；若未通过，应在原分支修正并重新验证。合并后检查目标分支的新提交，而非只看到“已合并”状态就结束。
 
 ![Git 与 GitLab 版本管理第 140 页插图](assets/img-e7d2662ebb302b72.webp)
 
@@ -343,33 +192,27 @@ Receiving objects: 100% (6/6), done.
 
 ### Gitlab 协议和格式
 
-GitLab 可以支持http/https或者ssh协议上传和下载文件
+GitLab 通常提供 HTTPS 与 SSH 两种仓库地址，实际协议与端口以项目的“克隆”菜单为准。优先使用配置正确证书的 HTTPS；内网测试时也不应把明文 HTTP 当成默认生产方案。
 
-http[s] 协议
+HTTPS 地址格式：
 
 ```text
 #格式
 http[s]://host[:Port]/group/project.git
 #示例
-http://gitlab.bowen.org/testgroup/testproject.git
+https://gitlab.example.com/testgroup/testproject.git
 ```
 
-ssh 协议
+SSH 地址格式：
 
 ```text
 #格式
 git@host:group/project.git
-#如果使用非标准端口,使用下面格式
+#非标准端口使用 ssh:// 格式
 ssh://git@host:port/group/project.git
-#或者使用下面配置文件实现
-~/.ssh/config
-Host gitlab.bowen.org
-Port 30022
-Host *
-Port 22
 #示例
-git@gitlab.bowen.org:testgroup/testproject.git
-ssh://git@gitlab.bowen.org:30022/testgroup/testproject.git
+git@gitlab.example.com:testgroup/testproject.git
+ssh://git@gitlab.example.com:30022/testgroup/testproject.git
 ```
 
 {% endraw %}

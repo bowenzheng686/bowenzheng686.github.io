@@ -75,6 +75,108 @@ ss -ulnp | grep 8472
 ### 2.4 修改后端的边界
 
 变更 `VXLAN`、`host-gw` 或 `DirectRouting` 涉及全体节点的路由与 Pod 网络连接，不是只编辑 ConfigMap 就立即无损生效。先在测试集群验证底层网络条件、MTU、防火墙和跨节点通信；生产环境应安排维护窗口，备份现有清单，按所用 Flannel 版本的升级说明滚动更新 DaemonSet，并准备回退。更新后用多节点 Pod、Service 与 DNS 的实际请求验证，而不是只看 flannel Pod 为 `Running`。
+
+<details class="historical-figures" markdown="1">
+<summary>查看原始讲义中的其余配图与历史操作截图（48 张）</summary>
+
+![原 PDF 第 2 页插图](assets/Kubernetes网络插件/img-f9b355badec5b112.webp)
+
+![原 PDF 第 2 页插图](assets/Kubernetes网络插件/img-0566d124e558c36d.webp)
+
+![原 PDF 第 2 页插图](assets/Kubernetes网络插件/img-424d01b4eddba275.webp)
+
+![原 PDF 第 2 页插图](assets/Kubernetes网络插件/img-dcd1d857552dd4c7.webp)
+
+![原 PDF 第 3 页插图](assets/Kubernetes网络插件/img-c4b3cf99b168facc.webp)
+
+![原 PDF 第 3 页插图](assets/Kubernetes网络插件/img-8b5991f819228c84.webp)
+
+![原 PDF 第 4 页插图](assets/Kubernetes网络插件/img-2340edaf63d08f51.webp)
+
+![原 PDF 第 5 页插图](assets/Kubernetes网络插件/img-722a61f26a47e733.webp)
+
+![原 PDF 第 5 页插图](assets/Kubernetes网络插件/img-205397ca5e17b544.webp)
+
+![原 PDF 第 7 页插图](assets/Kubernetes网络插件/img-2058011988cb1690.webp)
+
+![原 PDF 第 9 页插图](assets/Kubernetes网络插件/img-f9b1d23a256171fa.webp)
+
+![原 PDF 第 13 页插图](assets/Kubernetes网络插件/img-516d3e8413abaa71.webp)
+
+![原 PDF 第 13 页插图](assets/Kubernetes网络插件/img-8d478717c3a7de3d.webp)
+
+![原 PDF 第 14 页插图](assets/Kubernetes网络插件/img-bd206c18c88e21f6.webp)
+
+![原 PDF 第 14 页插图](assets/Kubernetes网络插件/img-543c6e504254c604.webp)
+
+![原 PDF 第 15 页插图](assets/Kubernetes网络插件/img-1fffe811deeb93d5.webp)
+
+![原 PDF 第 15 页插图](assets/Kubernetes网络插件/img-98ed5af3505c3c05.webp)
+
+![原 PDF 第 16 页插图](assets/Kubernetes网络插件/img-70557e34955634af.webp)
+
+![原 PDF 第 17 页插图](assets/Kubernetes网络插件/img-d8869dbd0b6af97c.webp)
+
+![原 PDF 第 19 页插图](assets/Kubernetes网络插件/img-2db9b421ca19f911.webp)
+
+![原 PDF 第 19 页插图](assets/Kubernetes网络插件/img-8887305865525245.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes网络插件/img-8d056c9a641a3eda.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes网络插件/img-a81edeaa24b8c511.webp)
+
+![原 PDF 第 20 页插图](assets/Kubernetes网络插件/img-6117a29561e04440.webp)
+
+![原 PDF 第 21 页插图](assets/Kubernetes网络插件/img-32694ce030c1ea61.webp)
+
+![原 PDF 第 21 页插图](assets/Kubernetes网络插件/img-8c1604cfb06eb316.webp)
+
+![原 PDF 第 21 页插图](assets/Kubernetes网络插件/img-7c1f282ddda2ba9f.webp)
+
+![原 PDF 第 22 页插图](assets/Kubernetes网络插件/img-9f3a855fef165894.webp)
+
+![原 PDF 第 23 页插图](assets/Kubernetes网络插件/img-79260edd039097f9.webp)
+
+![原 PDF 第 24 页插图](assets/Kubernetes网络插件/img-56487ec401e52aea.webp)
+
+![原 PDF 第 26 页插图](assets/Kubernetes网络插件/img-244677e1437a2a95.webp)
+
+![原 PDF 第 26 页插图](assets/Kubernetes网络插件/img-5e5af8efbc36f840.webp)
+
+![原 PDF 第 31 页插图](assets/Kubernetes网络插件/img-f397883c13616147.webp)
+
+![原 PDF 第 31 页插图](assets/Kubernetes网络插件/img-f31f27004545e3f8.webp)
+
+![原 PDF 第 32 页插图](assets/Kubernetes网络插件/img-291573461c56b097.webp)
+
+![原 PDF 第 32 页插图](assets/Kubernetes网络插件/img-315616ffcd0e6b4a.webp)
+
+![原 PDF 第 33 页插图](assets/Kubernetes网络插件/img-f7a3bb4ba5f70dfc.webp)
+
+![原 PDF 第 34 页插图](assets/Kubernetes网络插件/img-66b59d6baa6fd652.webp)
+
+![原 PDF 第 35 页插图](assets/Kubernetes网络插件/img-dd604e3b8c4620fa.webp)
+
+![原 PDF 第 35 页插图](assets/Kubernetes网络插件/img-4424874b5ec97d0b.webp)
+
+![原 PDF 第 36 页插图](assets/Kubernetes网络插件/img-cd06b95da150943f.webp)
+
+![原 PDF 第 36 页插图](assets/Kubernetes网络插件/img-906e5838016b6dc9.webp)
+
+![原 PDF 第 43 页插图](assets/Kubernetes网络插件/img-6cd38cfda143fa6b.webp)
+
+![原 PDF 第 43 页插图](assets/Kubernetes网络插件/img-4aeb3ba6e83f9fca.webp)
+
+![原 PDF 第 44 页插图](assets/Kubernetes网络插件/img-d9ca8a87da1f5e98.webp)
+
+![原 PDF 第 45 页插图](assets/Kubernetes网络插件/img-903bda1db281874d.webp)
+
+![原 PDF 第 68 页插图](assets/Kubernetes网络插件/img-84294cbb0dac1061.webp)
+
+![原 PDF 第 69 页插图](assets/Kubernetes网络插件/img-ec7324cc59709618.webp)
+
+</details>
+
 {% endraw %}
 
 <nav class="article-end" aria-label="章节导航">

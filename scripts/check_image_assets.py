@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 
 from PIL import Image
@@ -17,6 +18,13 @@ from convert_images import (
 )
 
 
+# The page can display a WebP while its surrounding zoom link still points to
+# a removed PNG. Check image anchors as well as the visible <img> itself.
+HTML_LINKED_IMAGE = re.compile(
+    r"(<a\b[^>]*?\bhref\s*=\s*['\"])(?P<url>[^'\"]+)(['\"])", re.IGNORECASE
+)
+
+
 def main() -> int:
     if not MANIFEST.exists():
         print("Missing conversion manifest", file=sys.stderr)
@@ -26,7 +34,7 @@ def main() -> int:
     local_references = 0
     for document in content_files():
         text = document.read_text(encoding="utf-8")
-        for pattern in (MARKDOWN_IMAGE, HTML_IMAGE):
+        for pattern in (MARKDOWN_IMAGE, HTML_IMAGE, HTML_LINKED_IMAGE):
             for match in pattern.finditer(text):
                 target = referenced_path(match.group("url"), document)
                 if target is None:
