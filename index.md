@@ -6,14 +6,13 @@ home: true
 
 <main id="main-content" class="home-main">
   <section id="top" class="hero section-shell" aria-labelledby="hero-title">
-    <h1 id="hero-title">记录与探索。</h1>
+    <h1 id="hero-title">记录与探索</h1>
     <p>Bowen 的技术笔记</p>
   </section>
 
   <section id="subjects" class="subjects-section section-shell" aria-labelledby="subjects-title">
     <div class="home-section-heading">
       <h2 id="subjects-title">专题</h2>
-      <p>按主题阅读，选择感兴趣的内容开始。</p>
     </div>
     <ol class="subject-list">
       <li><a href="{{ '/subjects/Linux/' | relative_url }}"><span>Linux 系统学习笔记</span><span>18 章</span></a></li>
