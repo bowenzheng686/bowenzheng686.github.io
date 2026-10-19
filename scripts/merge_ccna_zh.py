@@ -93,7 +93,8 @@ def render_children(main) -> str:
         chunks.append(main.text)
     for child in main:
         chunks.append(html.tostring(child, encoding="unicode", method="html"))
-    return "\n".join(chunks).replace("\r\n", "\n").replace("\r", "\n")
+    return ("\n".join(chunks).replace("\r\n", "\n").replace("\r", "\n")
+            .replace("“这些知识我已经掌握了吗？”", ""))
 
 
 def nav_link(label: str, key: tuple[int, int] | None) -> str:
