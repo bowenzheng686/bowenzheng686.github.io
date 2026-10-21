@@ -40,6 +40,34 @@ CREATE TABLE employees (
 
 下一篇先读执行计划，再决定是否需要 SQL 或索引变更。[官方参考：慢查询日志](https://dev.mysql.com/doc/refman/8.0/en/slow-query-log.html)。
 
+## 建立可对比的性能基线
+
+先固定“慢”的定义：同一接口的请求量、成功率、p50/p95/p99、返回行数及服务端 SQL 时间应分别记录。客户端等待时间还包含连接池排队、网络传输、对象反序列化等环节；如果只看到 SQL 耗时下降，却没有看到接口尾延迟改善，就需要继续拆分链路。一次优化至少要留下变更前后相同时间窗口、相似流量与相同结果集的对照。
+
+慢查询日志适合捕获超过阈值的语句；Performance Schema 的 digest 汇总更适合寻找“单次不算慢、调用次数极高”的 SQL。下面的计时列以皮秒为单位，换算成秒后再比较：
+
+~~~sql
+SELECT SCHEMA_NAME, DIGEST_TEXT, COUNT_STAR,
+       ROUND(SUM_TIMER_WAIT / 1000000000000, 3) AS total_seconds,
+       ROUND(AVG_TIMER_WAIT / 1000000000000, 6) AS avg_seconds,
+       SUM_ROWS_EXAMINED, SUM_ROWS_SENT
+FROM performance_schema.events_statements_summary_by_digest
+WHERE SCHEMA_NAME = DATABASE()
+ORDER BY SUM_TIMER_WAIT DESC
+LIMIT 20;
+~~~
+
+`SUM_ROWS_EXAMINED / SUM_ROWS_SENT` 可提示扫描放大，但返回零行时不能直接做除法；高频写入和排序语句也需要结合自己的指标分析。digest 把不同常量归为相似语句，适合排序优先级，却可能掩盖数据倾斜：同一模板传入“热门值”和“冷门值”时，最优访问路径与耗时可能完全不同。选样时保留参数分布，而不是仅用一条碰巧很快的语句。
+
+## 可复现实验的四个控制量
+
+1. **数据规模与分布**：记录总行数、目标谓词的命中比例、是否有大量重复值以及最近是否批量写入。十行测试表与千万行生产表的计划不能直接类比。
+2. **表结构与版本**：保存 `SHOW CREATE TABLE`、`SHOW INDEX`、`SELECT VERSION()` 和隔离级别；尤其要核对索引列序、字符集与排序规则。
+3. **缓存与并发**：分别记录热缓存和冷缓存的结果，并在接近实际的并发下复测。单次客户端时间容易被磁盘预读、Buffer Pool 命中及网络抖动影响。
+4. **语义与资源**：优化前后比较结果集、排序稳定性、事务边界、锁等待、CPU/I/O 与写放大；只提升一条 SELECT 但使更新明显变慢，不算完整验收。
+
+实验记录建议包含假设、原 SQL、候选改写、计划、三次以上稳定期测量、业务指标及回滚条件。`EXPLAIN` 是诊断入口，下一章再逐字段解释它提供和未提供的信息。
+
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/MySQL-Performance/' | relative_url }}">返回专题目录</a>

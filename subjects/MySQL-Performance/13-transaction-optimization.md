@@ -24,6 +24,55 @@ ORDER BY trx_started;
 
 将更新放到事务靠后位置，有时可减少持锁时间，但不能机械执行：外键、唯一约束、并发竞争和业务依赖可能要求不同顺序。对于冲突后的重试，应设置次数上限、退避和幂等键；不要把死锁或超时吞掉当成成功。下一组进入锁机制。[官方参考：死锁处理](https://dev.mysql.com/doc/refman/8.0/en/innodb-deadlocks-handling.html)。
 
+
+
+## 长事务定位与边界优化
+
+事务问题定位
+
+```sql
+-- 查询已运行超过 1 秒的事务；结合线程与锁等待信息判断原因。
+SELECT
+	*
+FROM
+	information_schema.innodb_trx
+WHERE
+	TIME_TO_SEC( timediff( now( ), trx_started ) ) > 1;
+
+-- 确认会话归属、事务影响和回滚成本后，才考虑终止对应连接：
+-- KILL CONNECTION <trx_mysql_thread_id>;
+```
+
+大事务的影响
+
+- 并发情况下，数据库连接池容易被撑爆
+
+- 锁定太多的数据，造成大量的阻塞和锁超时
+
+- 执行时间长，容易造成主从延迟
+
+- 回滚所需要的时间比较长
+
+- undo log膨胀
+
+- 容易导致死锁
+
+### 事务优化
+
+- 将查询等数据准备操作放到事务外
+
+- 事务中避免远程调用，远程调用要设置超时，防止事务等待时间太久
+
+- 事务中避免一次性处理太多数据，可以拆分成多个事务分次处理
+
+- 更新等涉及加锁的操作尽可能放在事务靠后的位置
+
+- 能异步处理的尽量异步处理
+
+- 应用侧(业务代码)保证数据一致性，非事务执行
+
+
+
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/MySQL-Performance/12-isolation-anomalies.html' | relative_url }}">← 上一篇：隔离级别与并发异常</a>

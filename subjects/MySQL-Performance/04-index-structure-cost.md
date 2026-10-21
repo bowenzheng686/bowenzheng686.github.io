@@ -26,9 +26,82 @@ EXPLAIN SELECT name, age, position FROM employees WHERE name > 'LiLei';
 
 对照计划：强制索引时可能出现 `Using index condition`；仅取索引覆盖的列时出现 `Using index`。两图反映特定数据与版本下的执行计划，不代表所有实例的固定结果。
 
-![强制索引的执行计划](assets/index-1-002-e746417dbdcb.webp)
 
-![覆盖索引的执行计划](assets/index-1-003-a4d707431671.webp)
+
+## 示例表、范围扫描与覆盖索引
+
+### 示例表
+
+```sql
+CREATE TABLE `employees` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(24) NOT NULL DEFAULT '' COMMENT '姓名',
+  `age` int(11) NOT NULL DEFAULT '0' COMMENT '年龄',
+  `position` varchar(20) NOT NULL DEFAULT '' COMMENT '职位',
+  `hire_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '入职时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_name_age_position` (`name`,`age`,`position`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='员工记录表';
+
+INSERT INTO employees(name,age,position,hire_time) VALUES('LiLei',22,'manager',NOW());
+INSERT INTO employees(name,age,position,hire_time) VALUES('HanMeimei', 23,'dev',NOW());
+INSERT INTO employees(name,age,position,hire_time) VALUES('Lucy',23,'dev',NOW());
+
+-- 插入一些示例数据
+drop procedure if exists insert_emp;
+delimiter ;;
+create procedure insert_emp()
+begin
+  declare i int;
+  set i=1;
+  while(i<=100000)do
+    insert into employees(name,age,position) values(CONCAT('zhuge',i),i,'dev');
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+call insert_emp();
+```
+
+### 举一个大家不容易理解的综合例子：
+
+1、联合索引首列使用范围条件时，优化器可能选择索引范围扫描，也可能选择全表扫描。
+
+```sql
+EXPLAIN SELECT * FROM employees WHERE name > 'LiLei' AND age = 22 AND position ='manager';
+```
+
+![索引结构与访问成本配图](assets/index-1-001-c619f9d36f14.webp)
+
+结论：这次执行计划选了全表扫描，原因是符合范围条件的行较多，二级索引回表成本可能高于顺序扫描；不能推广为“首列范围查询不走索引”。
+
+2、强制走索引
+
+```sql
+EXPLAIN SELECT * FROM employees force index(idx_name_age_position) WHERE name > 'LiLei' AND age = 22 AND position ='manager';
+```
+
+![索引结构与访问成本配图](assets/index-1-002-e746417dbdcb.webp)
+
+结论：虽然使用了强制走索引让联合索引第一个字段范围查找也走索引，扫描的行rows看上去也少了点，但是最终查找效率不一定比全表扫描高，因为回表效率不高
+
+做了一个小实验：
+
+```sql
+SELECT * FROM employees WHERE name > 'LiLei';
+SELECT * FROM employees FORCE INDEX (idx_name_age_position) WHERE name > 'LiLei';
+-- 在同一数据集上分别运行 EXPLAIN ANALYZE，比较实际耗时与读取行数；旧版查询缓存参数不适用于 MySQL 8.0。
+```
+
+### 3、覆盖索引优化
+
+```sql
+EXPLAIN SELECT name,age,position FROM employees WHERE name > 'LiLei' AND age = 22 AND position ='manager';
+```
+
+![索引结构与访问成本配图](assets/index-1-003-a4d707431671.webp)
+
+
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

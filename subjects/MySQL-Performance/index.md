@@ -55,7 +55,7 @@ pdf_notes: true
 ## 全局调优与 MySQL 8.0
 <ol start="22">
   <li><a href="{{ '/subjects/MySQL-Performance/22-instance-observability.html' | relative_url }}">实例级观测与调优顺序</a></li>
-  <li><a href="{{ '/subjects/MySQL-Performance/23-configuration-tradeoffs.html' | relative_url }}">关键配置与资源预算</a></li>
+  <li><a href="{{ '/subjects/MySQL-Performance/23-configuration-tradeoffs.html' | relative_url }}">字段类型与资源预算</a></li>
   <li><a href="{{ '/subjects/MySQL-Performance/24-mysql-8-features.html' | relative_url }}">MySQL 8.0 中与调优相关的能力</a></li>
   <li><a href="{{ '/subjects/MySQL-Performance/25-end-to-end-case.html' | relative_url }}">端到端案例、验收与回滚</a></li>
 </ol>
