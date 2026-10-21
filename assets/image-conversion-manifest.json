@@ -1,11 +1,11 @@
 {
   "method": "lossless WebP; small images upscaled at most 2x with Lanczos",
-  "image_count": 2670,
-  "reference_count": 2754,
+  "image_count": 2741,
+  "reference_count": 2825,
   "changed_content_files": 242,
-  "source_bytes": 444618601,
-  "output_bytes": 324046848,
-  "upscaled_count": 349,
+  "source_bytes": 448534370,
+  "output_bytes": 329099630,
+  "upscaled_count": 369,
   "recovered_truncated_count": 1,
   "images": [
     {
@@ -48065,6 +48065,1284 @@
       "output_bytes": 36792,
       "source_sha256": "fbbf97a2d48d65f101fe6ec1c928f877c79468ced020933bf3028d3a2a7c3643",
       "output_sha256": "2c0bf6d004281878136272944a670ece5b9a72e7ff151f125968bf85dc6a68f1",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/global-8-001-ca70823a7ba1.png",
+      "output": "subjects/MySQL-Performance/assets/global-8-001-ca70823a7ba1.webp",
+      "source_dimensions": [
+        455,
+        348
+      ],
+      "output_dimensions": [
+        910,
+        696
+      ],
+      "source_bytes": 26206,
+      "output_bytes": 90524,
+      "source_sha256": "ca70823a7ba1b0868984aea458a1daad266bd4c22cd81b10176e0e806c2f0f08",
+      "output_sha256": "c6091d66a0e85a5929ec687ea561b23c4cc473d60e3808b3ad0ca884ab7c14a1",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/global-8-002-c9492c54275c.png",
+      "output": "subjects/MySQL-Performance/assets/global-8-002-c9492c54275c.webp",
+      "source_dimensions": [
+        1730,
+        129
+      ],
+      "output_dimensions": [
+        1730,
+        129
+      ],
+      "source_bytes": 21787,
+      "output_bytes": 7638,
+      "source_sha256": "c9492c54275c7167c625d191b2abed9ab54b162ab5527c6014522ad46db18568",
+      "output_sha256": "aa8d41a049273258659cdead0f340e2472485a204ee19c52179f9f5c427a5eca",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/global-8-003-389a489e02d6.png",
+      "output": "subjects/MySQL-Performance/assets/global-8-003-389a489e02d6.webp",
+      "source_dimensions": [
+        1075,
+        76
+      ],
+      "output_dimensions": [
+        1075,
+        76
+      ],
+      "source_bytes": 7913,
+      "output_bytes": 3278,
+      "source_sha256": "389a489e02d6601f45b719e0289b96b44bad2a78d9785b8256c535ead8582b69",
+      "output_sha256": "b6e536513721722564d24c37819964a2ac742f55c0c0443538e502caa28a3d59",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/global-8-004-cb9ea264fe28.png",
+      "output": "subjects/MySQL-Performance/assets/global-8-004-cb9ea264fe28.webp",
+      "source_dimensions": [
+        1650,
+        126
+      ],
+      "output_dimensions": [
+        1650,
+        126
+      ],
+      "source_bytes": 21412,
+      "output_bytes": 7620,
+      "source_sha256": "cb9ea264fe2850017af6ec5cd33ab1c978976e852a6843acfb9c003576fa0495",
+      "output_sha256": "b64edf05a8465c4e0336e76db357569e907caa317703740b6e95ad91f20b0935",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-001-c619f9d36f14.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-001-c619f9d36f14.webp",
+      "source_dimensions": [
+        1442,
+        82
+      ],
+      "output_dimensions": [
+        1442,
+        82
+      ],
+      "source_bytes": 32061,
+      "output_bytes": 24462,
+      "source_sha256": "c619f9d36f14297a4bc40d3689252c82b5c6d4c5eaa75485a3c49cf07d4da3a3",
+      "output_sha256": "0ce4d677f6282761cf18a7990c82cdc24bddc63f3f10c47ba054423c9e5db705",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-002-e746417dbdcb.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-002-e746417dbdcb.webp",
+      "source_dimensions": [
+        1560,
+        76
+      ],
+      "output_dimensions": [
+        1560,
+        76
+      ],
+      "source_bytes": 34827,
+      "output_bytes": 26040,
+      "source_sha256": "e746417dbdcbe0bf3f620008684f851490c0e98c9f635e5e9401aced9d9f6523",
+      "output_sha256": "55269de5f5f80e80d78a4769df0fc62b543250cba2519c920884720d5d645dc4",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-003-a4d707431671.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-003-a4d707431671.webp",
+      "source_dimensions": [
+        1585,
+        80
+      ],
+      "output_dimensions": [
+        1585,
+        80
+      ],
+      "source_bytes": 35092,
+      "output_bytes": 26296,
+      "source_sha256": "a4d707431671670bc48a764c9f08cfbe34181db417004fa58a4ef0e24cfa6158",
+      "output_sha256": "3839ecaa2cb3236d19c1f1a8636b35622386f6a337702cb632a6fd0bc8f580bc",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-004-cd0bfe14e0a1.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-004-cd0bfe14e0a1.webp",
+      "source_dimensions": [
+        1618,
+        87
+      ],
+      "output_dimensions": [
+        1618,
+        87
+      ],
+      "source_bytes": 34043,
+      "output_bytes": 25104,
+      "source_sha256": "cd0bfe14e0a18e9f75050bdc9642d06be0392f3a81a66783f83d057777481289",
+      "output_sha256": "569ad9ab0aaf8ce2442b7ccfa6ad0053bf7178357494b5ee5430cca90be69c29",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-005-40194c2625fc.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-005-40194c2625fc.webp",
+      "source_dimensions": [
+        1562,
+        84
+      ],
+      "output_dimensions": [
+        1562,
+        84
+      ],
+      "source_bytes": 35436,
+      "output_bytes": 26384,
+      "source_sha256": "40194c2625fcb66b982efecf0e5570144698fe5d6e0b0f9f026980ff1772eb73",
+      "output_sha256": "2f4a410e534285dcf63d3ad841dc4ebdc62fa6ea057b91228ece875ba8df75e9",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-006-c9585e37701a.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-006-c9585e37701a.webp",
+      "source_dimensions": [
+        1521,
+        75
+      ],
+      "output_dimensions": [
+        1521,
+        75
+      ],
+      "source_bytes": 32849,
+      "output_bytes": 24918,
+      "source_sha256": "c9585e37701aa5411d5704326ea1096ffea0285e9dd449f0a04732e01bd73c81",
+      "output_sha256": "8fa73925e578f6ef4047d989739e4b2ebcaf891acfd1b05b010891cf1ca10bcc",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-007-3dd3a45c7f0a.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-007-3dd3a45c7f0a.webp",
+      "source_dimensions": [
+        1475,
+        110
+      ],
+      "output_dimensions": [
+        1475,
+        110
+      ],
+      "source_bytes": 36961,
+      "output_bytes": 27616,
+      "source_sha256": "3dd3a45c7f0aa82cb46a49a10fc983452bf6a00d925d79337041ee751011094a",
+      "output_sha256": "f1a56c9bc038147bfa03822404eb64752ad2b48edd78cb39bfd75601bef48c1f",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-008-1d1e7f9e276f.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-008-1d1e7f9e276f.webp",
+      "source_dimensions": [
+        1580,
+        81
+      ],
+      "output_dimensions": [
+        1580,
+        81
+      ],
+      "source_bytes": 33448,
+      "output_bytes": 24730,
+      "source_sha256": "1d1e7f9e276f741b9500b7ec8884ca7956063602f8f9c630bbce3571b7f91713",
+      "output_sha256": "8c42c22679aefbfbf77339390da5d4344a2143975386212568520c6db3fe74e5",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-009-5fc826f9e9ed.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-009-5fc826f9e9ed.webp",
+      "source_dimensions": [
+        1549,
+        83
+      ],
+      "output_dimensions": [
+        1549,
+        83
+      ],
+      "source_bytes": 34265,
+      "output_bytes": 25332,
+      "source_sha256": "5fc826f9e9eda5a145dda82c72966d648f04956ab5b63d128aba0feb4a056c22",
+      "output_sha256": "af2c596dbcdd2ec33bb90cb10a08f3aab1b317c845909cbec39de2c880549f5e",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-010-4567d18effd9.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-010-4567d18effd9.webp",
+      "source_dimensions": [
+        1093,
+        68
+      ],
+      "output_dimensions": [
+        1093,
+        68
+      ],
+      "source_bytes": 23504,
+      "output_bytes": 18668,
+      "source_sha256": "4567d18effd93337391f8fb958728bdcaf5fa6f58231da7136f10cef1a5d00dc",
+      "output_sha256": "3a7c993c3a7c0b927149f7ce6126ddf4d2734684a9f09692f0d1b8e9baa05eac",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-011-91c4fa4b2579.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-011-91c4fa4b2579.webp",
+      "source_dimensions": [
+        1285,
+        77
+      ],
+      "output_dimensions": [
+        1285,
+        77
+      ],
+      "source_bytes": 26051,
+      "output_bytes": 20814,
+      "source_sha256": "91c4fa4b25793545a91787469b654c730a8d4b3430981321b26c8202e34515fc",
+      "output_sha256": "68c1c47d65656b41b058e5f0d5aea18a9fc24b557de18dad42325c25a62541b6",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-012-1f2ce769b3f7.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-012-1f2ce769b3f7.webp",
+      "source_dimensions": [
+        1292,
+        73
+      ],
+      "output_dimensions": [
+        1292,
+        73
+      ],
+      "source_bytes": 24613,
+      "output_bytes": 19638,
+      "source_sha256": "1f2ce769b3f7f207a881ccca2853975aa8a2b40dff3de4c05c527a74a145c183",
+      "output_sha256": "711c05f20cff791ad19ded6d030f83cb06d4442918489d7357c6de839f10093e",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-013-ce4ea0fd6946.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-013-ce4ea0fd6946.webp",
+      "source_dimensions": [
+        1515,
+        202
+      ],
+      "output_dimensions": [
+        1515,
+        202
+      ],
+      "source_bytes": 63058,
+      "output_bytes": 47438,
+      "source_sha256": "ce4ea0fd69465bbc17bcd4fab3cf5b3a22d64ab2df8167b7ccb4865252434010",
+      "output_sha256": "29c6174bda6fa5cf9f3c0b0a2029b78b49dd858bc1f3198e9db2b6c17d9a1ca0",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-014-22d22be9b8b1.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-014-22d22be9b8b1.webp",
+      "source_dimensions": [
+        1579,
+        188
+      ],
+      "output_dimensions": [
+        1579,
+        188
+      ],
+      "source_bytes": 62033,
+      "output_bytes": 46370,
+      "source_sha256": "22d22be9b8b10c75296006bb5d618e586343b156e60d8cb783bee52ffdb58cb7",
+      "output_sha256": "08a514af73526108c13d5d29cf22ae8a95046b9278c2cec5c22f1e7b823b98f4",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-015-1126573e94a8.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-015-1126573e94a8.webp",
+      "source_dimensions": [
+        1460,
+        190
+      ],
+      "output_dimensions": [
+        1460,
+        190
+      ],
+      "source_bytes": 60698,
+      "output_bytes": 45916,
+      "source_sha256": "1126573e94a86aada5e242b0fcdfd8bdf075d64b7cf681d74695cfe287fdf8c8",
+      "output_sha256": "d585c0208ff2b89ced4c3348cce81d6664d5c29af24f3a4b86233bf6e6f605fa",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-016-1bf8696d88cb.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-016-1bf8696d88cb.webp",
+      "source_dimensions": [
+        1593,
+        199
+      ],
+      "output_dimensions": [
+        1593,
+        199
+      ],
+      "source_bytes": 62857,
+      "output_bytes": 46984,
+      "source_sha256": "1bf8696d88cb2aecb23ca1e85e262f3bd17a5a0c7bb729a1150f42fb84d4f14f",
+      "output_sha256": "6e6fa899769aa458228ead6b0dd19f1af6f2a1951f09fc9a12d1868106137f87",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-017-a430ee428bc5.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-017-a430ee428bc5.webp",
+      "source_dimensions": [
+        1510,
+        203
+      ],
+      "output_dimensions": [
+        1510,
+        203
+      ],
+      "source_bytes": 65042,
+      "output_bytes": 48962,
+      "source_sha256": "a430ee428bc5fedf811c30603f5a2cc9d909a5ff772f66e73c66028f171eb717",
+      "output_sha256": "5b1c5053047cec9cade239a01152bbc50392c8cbfdebdba6717f6d7fe945ac30",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-018-1683e922707d.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-018-1683e922707d.webp",
+      "source_dimensions": [
+        1597,
+        197
+      ],
+      "output_dimensions": [
+        1597,
+        197
+      ],
+      "source_bytes": 65264,
+      "output_bytes": 49008,
+      "source_sha256": "1683e922707ddc3f89615ec7802175c86fd2b88b0fe881e22a18a0ac1f0eb119",
+      "output_sha256": "946e56fafa6c716dbf82373deeb28547f4f2d2cfd2768163555466bb2ab781f7",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-019-c8f6c1e20830.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-019-c8f6c1e20830.webp",
+      "source_dimensions": [
+        1435,
+        196
+      ],
+      "output_dimensions": [
+        1435,
+        196
+      ],
+      "source_bytes": 63273,
+      "output_bytes": 47836,
+      "source_sha256": "c8f6c1e20830c633fc72b599fb35f3c25b765901d9e2d0eab45ada181632d30b",
+      "output_sha256": "4530a0dae98005d1c25660b590f3b9e4f7373b511524a0f9a304d577851ca311",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-020-1f18f5737bb9.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-020-1f18f5737bb9.webp",
+      "source_dimensions": [
+        1423,
+        197
+      ],
+      "output_dimensions": [
+        1423,
+        197
+      ],
+      "source_bytes": 60789,
+      "output_bytes": 46834,
+      "source_sha256": "1f18f5737bb96ff1cca2e2d9a4ab987fa15207a8fffd0be5eb604832202b033c",
+      "output_sha256": "8cd2612b74906d6ddf735246b7839bb64b202fd15e1d9159f99b53d8618049b6",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-021-905a9a3719ec.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-021-905a9a3719ec.webp",
+      "source_dimensions": [
+        1379,
+        195
+      ],
+      "output_dimensions": [
+        1379,
+        195
+      ],
+      "source_bytes": 62025,
+      "output_bytes": 48140,
+      "source_sha256": "905a9a3719ec7cf1f5083aa488f726443377b39537331b4b01869ab068ec1f65",
+      "output_sha256": "7d0df241a4f8bb339b0e4fe061a4d456994d954bcb4ea0bd8b27df683156ab25",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-022-9375b4f3fca3.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-022-9375b4f3fca3.webp",
+      "source_dimensions": [
+        1487,
+        210
+      ],
+      "output_dimensions": [
+        1487,
+        210
+      ],
+      "source_bytes": 60991,
+      "output_bytes": 45704,
+      "source_sha256": "9375b4f3fca348ab95f90f16fe2ea492d0fcdc0cf43f4799239fbec79d82f9f1",
+      "output_sha256": "8d95b95c2fdeb0e6e2169226f7c14a8264fee5c580e491e034f82c3921a78fca",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-1-023-49cbb5dafe5d.png",
+      "output": "subjects/MySQL-Performance/assets/index-1-023-49cbb5dafe5d.webp",
+      "source_dimensions": [
+        1202,
+        1185
+      ],
+      "output_dimensions": [
+        1202,
+        1185
+      ],
+      "source_bytes": 90663,
+      "output_bytes": 17368,
+      "source_sha256": "49cbb5dafe5db5a0fba398ebb1ea5b2f6be162c0478bc15a8921e691236b311e",
+      "output_sha256": "2a87cf6ceb6b3ce479c5f6ded8c47db92642419fab2238dcfa17446f3246aa1a",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-001-d29f88aa1ada.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-001-d29f88aa1ada.webp",
+      "source_dimensions": [
+        669,
+        208
+      ],
+      "output_dimensions": [
+        1338,
+        416
+      ],
+      "source_bytes": 54395,
+      "output_bytes": 250060,
+      "source_sha256": "d29f88aa1adadadc010ce936a64371950390e47de903679b2103090a4dd0733e",
+      "output_sha256": "9a73684e3034a562b0686df201b1cd403d53c70ef9fae6c77772a522326d6afb",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-002-cde334d2a6b0.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-002-cde334d2a6b0.webp",
+      "source_dimensions": [
+        671,
+        203
+      ],
+      "output_dimensions": [
+        1342,
+        406
+      ],
+      "source_bytes": 54405,
+      "output_bytes": 248818,
+      "source_sha256": "cde334d2a6b0ad413c778eeeb7e1701865482ad39550da1082ea945b416c9033",
+      "output_sha256": "4d878eee9aa5e6f0e465322a42470fc2c3b21d7cee29bddbb389e2d2afe0f29c",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-003-e26862a93237.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-003-e26862a93237.webp",
+      "source_dimensions": [
+        1153,
+        79
+      ],
+      "output_dimensions": [
+        1153,
+        79
+      ],
+      "source_bytes": 27057,
+      "output_bytes": 20320,
+      "source_sha256": "e26862a93237cbe83bcb796be4ac8809ddefaaa5aa3e7215441feff214891d98",
+      "output_sha256": "4bf6b3f539cfb915dd2c4164b1c0973dea73e852e74c5d38257998f7aa8cda1b",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-004-358d0047744d.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-004-358d0047744d.webp",
+      "source_dimensions": [
+        1203,
+        76
+      ],
+      "output_dimensions": [
+        1203,
+        76
+      ],
+      "source_bytes": 30987,
+      "output_bytes": 23870,
+      "source_sha256": "358d0047744dd958acb6429e705a45714c21aae3769d109ed6f0a2a488b5654f",
+      "output_sha256": "67f55e432291f4fdaefa129b301ef8735a868d120f9e81b96fee3b2871d40e2c",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-005-9b4c651bcb43.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-005-9b4c651bcb43.webp",
+      "source_dimensions": [
+        652,
+        330
+      ],
+      "output_dimensions": [
+        1304,
+        660
+      ],
+      "source_bytes": 74840,
+      "output_bytes": 329192,
+      "source_sha256": "9b4c651bcb43c11826051bb8040cd0cc4c0ed381dd417913d6b63c5634b426fd",
+      "output_sha256": "3273aff18d1d2c6227bc9f6d1e2bd8578af5a6b7f667c7e8bf8cdfcb6aa198ef",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-006-36c2dd95a3a0.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-006-36c2dd95a3a0.webp",
+      "source_dimensions": [
+        675,
+        334
+      ],
+      "output_dimensions": [
+        1350,
+        668
+      ],
+      "source_bytes": 76681,
+      "output_bytes": 334024,
+      "source_sha256": "36c2dd95a3a0c2e32a2a1cd1ea5f0527d8b4eb7ac7cc095cd37f3cc841a811b5",
+      "output_sha256": "b713ede8cabb2e41ffcad49ca1d8c89a05994702370f208e3744805c25eb88c4",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-007-8d06bcb39029.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-007-8d06bcb39029.webp",
+      "source_dimensions": [
+        710,
+        332
+      ],
+      "output_dimensions": [
+        1420,
+        664
+      ],
+      "source_bytes": 73519,
+      "output_bytes": 308218,
+      "source_sha256": "8d06bcb3902991ced363de5b539ab3c9df7773f2d40444c31fa99ea1890805ae",
+      "output_sha256": "4d30472159e4a134f43a5df7192333597ee764c9f5123938dfd65a6363903972",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-008-8fbf183e84f7.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-008-8fbf183e84f7.webp",
+      "source_dimensions": [
+        1255,
+        198
+      ],
+      "output_dimensions": [
+        1255,
+        198
+      ],
+      "source_bytes": 56022,
+      "output_bytes": 41840,
+      "source_sha256": "8fbf183e84f7edc9ade8fe92ffe93f4b20dd3edac5be355602b12a0b9c739d9b",
+      "output_sha256": "bfd1ebe41c5016f058bed5f7b9af4987e326d640aa22ba5d248e490ec3d9e40a",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-009-143d33bca385.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-009-143d33bca385.webp",
+      "source_dimensions": [
+        1442,
+        331
+      ],
+      "output_dimensions": [
+        1442,
+        331
+      ],
+      "source_bytes": 85697,
+      "output_bytes": 50830,
+      "source_sha256": "143d33bca38548b518b87251f67241d86242cb2224e95036972ba5374a17bb26",
+      "output_sha256": "ab27888d7dd8c6270057e26317af07c2fd369c15539c2026a2e2b2ab69e7adfb",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-010-0a2aea47dbd0.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-010-0a2aea47dbd0.webp",
+      "source_dimensions": [
+        1552,
+        279
+      ],
+      "output_dimensions": [
+        1552,
+        279
+      ],
+      "source_bytes": 92882,
+      "output_bytes": 66560,
+      "source_sha256": "0a2aea47dbd0447f3f19df4e22daca25cec06038549c3ce5e2fbf4bba7e261aa",
+      "output_sha256": "5a3c761ade7587fb0146bc1fddf9111452c3a0520780dbef5efd6a987663e440",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-011-004067c77ba3.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-011-004067c77ba3.webp",
+      "source_dimensions": [
+        1197,
+        151
+      ],
+      "output_dimensions": [
+        1197,
+        151
+      ],
+      "source_bytes": 45313,
+      "output_bytes": 31060,
+      "source_sha256": "004067c77ba373571eade005375fb245989b1af3d84c1226689f31b89df2aeca",
+      "output_sha256": "576cc23b8d4cfbf04860705e853b52b29efcfb2c3b5d31fe5c11e2c4391590f0",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-012-c7d3deef1990.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-012-c7d3deef1990.webp",
+      "source_dimensions": [
+        1440,
+        145
+      ],
+      "output_dimensions": [
+        1440,
+        145
+      ],
+      "source_bytes": 52653,
+      "output_bytes": 36296,
+      "source_sha256": "c7d3deef199023fc8c76f13fb0cf5293e4561f3507f95d9094ec5e341084afe4",
+      "output_sha256": "4a7597c082526bcc3e631d028361a73193f8e224e12e8fd3f61e5712ceb0ad8e",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-013-5e1e6b9f7c78.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-013-5e1e6b9f7c78.webp",
+      "source_dimensions": [
+        1386,
+        87
+      ],
+      "output_dimensions": [
+        1386,
+        87
+      ],
+      "source_bytes": 33333,
+      "output_bytes": 25552,
+      "source_sha256": "5e1e6b9f7c7842d4bbf952d95c1b938cd7a7488a194a5d39f0075285e822a388",
+      "output_sha256": "ec3b4a4ef917be21481993c8e2b9bafc3a5dadcb9267e34a21a61e5f5523795f",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-014-851b35193f16.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-014-851b35193f16.webp",
+      "source_dimensions": [
+        1365,
+        174
+      ],
+      "output_dimensions": [
+        1365,
+        174
+      ],
+      "source_bytes": 45198,
+      "output_bytes": 34036,
+      "source_sha256": "851b35193f1689cfa3de5fa043570f70ce2859b371a16133a9244d7308e46482",
+      "output_sha256": "3e4ac2dc028e88fff92f0d48e36abe9ee5c9e64b7736e7fe1e5356083fe353ee",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/index-2-015-7370a7fc3319.png",
+      "output": "subjects/MySQL-Performance/assets/index-2-015-7370a7fc3319.webp",
+      "source_dimensions": [
+        830,
+        173
+      ],
+      "output_dimensions": [
+        830,
+        173
+      ],
+      "source_bytes": 35907,
+      "output_bytes": 27310,
+      "source_sha256": "7370a7fc33191dfa6fb295a5f6254a8c1205758c492dfe5f31b18630da20da6a",
+      "output_sha256": "5d2be6b29c56ac8de30ff03ea75ae659a78cb6d091a106c325e1e796723f0f16",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-001-8b037d012a4e.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-001-8b037d012a4e.webp",
+      "source_dimensions": [
+        735,
+        700
+      ],
+      "output_dimensions": [
+        1470,
+        1400
+      ],
+      "source_bytes": 41617,
+      "output_bytes": 191826,
+      "source_sha256": "8b037d012a4e360cf068e34332ac1a0bf2f6e4b7a462c445fd177d9377dd0e59",
+      "output_sha256": "b786fae1e71eb47c639b990e74b478aa950445b34a985258ba1f6a875c1821f8",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-002-472114e5c688.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-002-472114e5c688.webp",
+      "source_dimensions": [
+        507,
+        605
+      ],
+      "output_dimensions": [
+        1014,
+        1210
+      ],
+      "source_bytes": 29292,
+      "output_bytes": 91396,
+      "source_sha256": "472114e5c68824516ce2a4410186a3a1399bd9f97656526b7db5296022a2ac52",
+      "output_sha256": "58b30b92f1829069aba01132ee493d6e7381b1275f93b0447c303abe9806f8b2",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-003-4ba32ab7d2d9.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-003-4ba32ab7d2d9.webp",
+      "source_dimensions": [
+        1572,
+        800
+      ],
+      "output_dimensions": [
+        1572,
+        800
+      ],
+      "source_bytes": 119628,
+      "output_bytes": 61740,
+      "source_sha256": "4ba32ab7d2d9d38bf070e04bdac0ed9eb9a983f619e0f6bba8224ff537a447b1",
+      "output_sha256": "16aa3d9f3423acf51b61303e3e686720c5eb914ee2976f640ef4117d2d0950d1",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-004-9e5c100bae7c.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-004-9e5c100bae7c.webp",
+      "source_dimensions": [
+        1987,
+        1726
+      ],
+      "output_dimensions": [
+        1987,
+        1726
+      ],
+      "source_bytes": 339400,
+      "output_bytes": 91420,
+      "source_sha256": "9e5c100bae7cbc4dc3b52889cd13d4e59eca2b4f2d98ebe31b7445cef6f5c422",
+      "output_sha256": "00f19cbb3dc002391c14cd4756598562bff2ada970cfec4644b1f12774be33af",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-005-1aba15ed97a1.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-005-1aba15ed97a1.webp",
+      "source_dimensions": [
+        288,
+        68
+      ],
+      "output_dimensions": [
+        576,
+        136
+      ],
+      "source_bytes": 1789,
+      "output_bytes": 19280,
+      "source_sha256": "1aba15ed97a1768a11794184bc2b6264f9c1157509d61a212d0b57b0f488e855",
+      "output_sha256": "78d7f29dd015c1d0eb64613e8b8e9f7ac6bb0c597a945355387d960796ac3f64",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-006-ee44827869cd.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-006-ee44827869cd.webp",
+      "source_dimensions": [
+        673,
+        616
+      ],
+      "output_dimensions": [
+        1346,
+        1232
+      ],
+      "source_bytes": 89994,
+      "output_bytes": 154212,
+      "source_sha256": "ee44827869cdb2ca467aef8625c13aabf83341a16468224de6fe849c392e0d65",
+      "output_sha256": "99093942ab6300c900569f4509ece11f4bbf06f831c66c157bb40abede01d6ce",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-007-878f76ccde3f.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-007-878f76ccde3f.webp",
+      "source_dimensions": [
+        1933,
+        1354
+      ],
+      "output_dimensions": [
+        1933,
+        1354
+      ],
+      "source_bytes": 348922,
+      "output_bytes": 81002,
+      "source_sha256": "878f76ccde3fdde08e9918bb06825b0f8c350fea92fe3251801323b4850d2c1b",
+      "output_sha256": "9bcd9be16073060481ac55297173a9e6e0753122e8eb5feadd6e556ed012b467",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-008-72df84bd8570.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-008-72df84bd8570.webp",
+      "source_dimensions": [
+        901,
+        453
+      ],
+      "output_dimensions": [
+        901,
+        453
+      ],
+      "source_bytes": 25971,
+      "output_bytes": 7724,
+      "source_sha256": "72df84bd8570efa2f1461d8111fea5439bdcfbff576465f613a057157027277d",
+      "output_sha256": "b17b98d0339cc2019fe2ce9130595bd32db9f3c1d9963b9616163bfefcd156eb",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-009-45bec62eedd7.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-009-45bec62eedd7.webp",
+      "source_dimensions": [
+        482,
+        158
+      ],
+      "output_dimensions": [
+        964,
+        316
+      ],
+      "source_bytes": 5082,
+      "output_bytes": 31864,
+      "source_sha256": "45bec62eedd7f6278e158ac3e61c439dd1085d7cf5ea34e8b418a574ee16dbaf",
+      "output_sha256": "952fc25f144bb9d1540365ca9665c3e526ef09ce1241c53516af4412315b71a1",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/innodb-logs-010-e38a2bf3f07d.png",
+      "output": "subjects/MySQL-Performance/assets/innodb-logs-010-e38a2bf3f07d.webp",
+      "source_dimensions": [
+        1789,
+        432
+      ],
+      "output_dimensions": [
+        1789,
+        432
+      ],
+      "source_bytes": 39569,
+      "output_bytes": 10928,
+      "source_sha256": "e38a2bf3f07de9d521624f344a5bc21e434d795360dd30a36a18a7f7259e0edd",
+      "output_sha256": "dc9ea4501acb320c9c4e3f32086ea36ffc9d8c73ca4c8834ea016ad56b05d97d",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-001-63d7656acbda.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-001-63d7656acbda.webp",
+      "source_dimensions": [
+        811,
+        358
+      ],
+      "output_dimensions": [
+        811,
+        358
+      ],
+      "source_bytes": 27677,
+      "output_bytes": 5226,
+      "source_sha256": "63d7656acbdab980313edab2e915b9d97830421bdc9c9f0c0a7588c0730aa390",
+      "output_sha256": "83a64059935673c9d223b8e49b906734695b9c1d89e6ecdea5fd3ee5fa8b3ddc",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-002-8378b8002460.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-002-8378b8002460.webp",
+      "source_dimensions": [
+        843,
+        447
+      ],
+      "output_dimensions": [
+        843,
+        447
+      ],
+      "source_bytes": 38330,
+      "output_bytes": 6980,
+      "source_sha256": "8378b80024604f9e3f0d7cbafabcdd5aa0e6c1a52c50b90f6e950f142e2beb87",
+      "output_sha256": "1a2b17c2aeef4345e311a3e82251a714956b42846592c27f17ec13423198cdbd",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-003-cb22fa5ead61.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-003-cb22fa5ead61.webp",
+      "source_dimensions": [
+        703,
+        592
+      ],
+      "output_dimensions": [
+        1406,
+        1184
+      ],
+      "source_bytes": 40226,
+      "output_bytes": 73616,
+      "source_sha256": "cb22fa5ead61cf4c1c1fad3d2542dfb16dbe00177f2eb45d0db03f36c339419a",
+      "output_sha256": "423f1be383539335c89cbdd703a98d7bdbe55bef2ca5ef050d9045195cf78bd6",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-004-b2e0d1d8afee.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-004-b2e0d1d8afee.webp",
+      "source_dimensions": [
+        859,
+        523
+      ],
+      "output_dimensions": [
+        859,
+        523
+      ],
+      "source_bytes": 35528,
+      "output_bytes": 5502,
+      "source_sha256": "b2e0d1d8afee6dc29d57463092910486ff857ebb154d0ad0f0bdbca05b0299f6",
+      "output_sha256": "75853aa720c2f40938aa1df663356108dc8966b5d7d47395900bb0b36ad70c28",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-005-5802e3a8982b.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-005-5802e3a8982b.webp",
+      "source_dimensions": [
+        1144,
+        535
+      ],
+      "output_dimensions": [
+        1144,
+        535
+      ],
+      "source_bytes": 42429,
+      "output_bytes": 6328,
+      "source_sha256": "5802e3a8982b8820acb4da7a600cfbfca93df43ea2ecbd520ace946c94f3dbc9",
+      "output_sha256": "e51619c1b671995b544beeedb4e49a490f7c20aa822fa5f3b7d2418f52a23dad",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-006-0af119f00c23.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-006-0af119f00c23.webp",
+      "source_dimensions": [
+        840,
+        354
+      ],
+      "output_dimensions": [
+        840,
+        354
+      ],
+      "source_bytes": 28856,
+      "output_bytes": 5642,
+      "source_sha256": "0af119f00c2370dcb176629a1fddfd911a255ccf96a0a02e27258a58abef4498",
+      "output_sha256": "fa42622c265130a4335951ca5bce49f83fe43888861a59c9095b232d6f418042",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-007-7ab32401fcf0.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-007-7ab32401fcf0.webp",
+      "source_dimensions": [
+        836,
+        454
+      ],
+      "output_dimensions": [
+        836,
+        454
+      ],
+      "source_bytes": 37630,
+      "output_bytes": 6888,
+      "source_sha256": "7ab32401fcf085f04f8566b85f73d196672f1067bd7806b3eb31e0939a4911fa",
+      "output_sha256": "28295b6af761b1ee3f6ecba64610e07298a1aa247792c9e18e0e3f2c221a77bd",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-008-d498331607aa.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-008-d498331607aa.webp",
+      "source_dimensions": [
+        744,
+        457
+      ],
+      "output_dimensions": [
+        1488,
+        914
+      ],
+      "source_bytes": 28018,
+      "output_bytes": 57636,
+      "source_sha256": "d498331607aaa7fdf5ff762b1bcf0564773f4170985fb0396dbf3048052f14f2",
+      "output_sha256": "f9095d07e2ca2551aaf2d9faaf6cfc927bb3227ae3952cc0b86fc98ef88e983d",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-009-231bd446630e.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-009-231bd446630e.webp",
+      "source_dimensions": [
+        759,
+        387
+      ],
+      "output_dimensions": [
+        1518,
+        774
+      ],
+      "source_bytes": 29833,
+      "output_bytes": 76972,
+      "source_sha256": "231bd446630e038dd52f89488487bbb2d068e0d9fa30820af18c3aff6657b635",
+      "output_sha256": "c5431da52a9a7a4472e99d0dd9f077a8a818e372dad6c3a411b00d173be34b63",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-010-286cd37d4f8f.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-010-286cd37d4f8f.webp",
+      "source_dimensions": [
+        792,
+        459
+      ],
+      "output_dimensions": [
+        1584,
+        918
+      ],
+      "source_bytes": 34527,
+      "output_bytes": 81880,
+      "source_sha256": "286cd37d4f8f924acdaf67a787e9fec299ea774fe4a1e223325f8cfb420a1746",
+      "output_sha256": "92cbf9a375e70883c453ef7daedc68e3b705aede234af2d6049a370086a41254",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-011-6e498dd182b3.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-011-6e498dd182b3.webp",
+      "source_dimensions": [
+        836,
+        365
+      ],
+      "output_dimensions": [
+        836,
+        365
+      ],
+      "source_bytes": 27947,
+      "output_bytes": 5196,
+      "source_sha256": "6e498dd182b31bccd12a70dca193e3c531363f96f828ae6a3b638ba9f665e911",
+      "output_sha256": "7ec3474676b0107d0d94d8e53d0f5dd9850dedcaab5afd646db7b65ffd1ff4d9",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-012-c6d6fdb2ddb8.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-012-c6d6fdb2ddb8.webp",
+      "source_dimensions": [
+        844,
+        517
+      ],
+      "output_dimensions": [
+        844,
+        517
+      ],
+      "source_bytes": 43965,
+      "output_bytes": 7464,
+      "source_sha256": "c6d6fdb2ddb809f370fd19ca16cd4256e7ea17db9bd82109b3f46077d8046bb8",
+      "output_sha256": "f8fe64c3c9ba7affade190790c9b1b42ea61c70d363c20d4d6889da18c20c873",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-013-a0930e78ff80.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-013-a0930e78ff80.webp",
+      "source_dimensions": [
+        845,
+        452
+      ],
+      "output_dimensions": [
+        845,
+        452
+      ],
+      "source_bytes": 37573,
+      "output_bytes": 7058,
+      "source_sha256": "a0930e78ff80d29eb095c6589b13c97974c48c7ccdf19feea479d61e79cf70f9",
+      "output_sha256": "c08ebf39d5b9eb39a15b2d84304b74ca5cb93ad56664727623d6b4c403dbdf6a",
+      "upscaled": false,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-014-422ca5f3913e.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-014-422ca5f3913e.webp",
+      "source_dimensions": [
+        773,
+        544
+      ],
+      "output_dimensions": [
+        1546,
+        1088
+      ],
+      "source_bytes": 151656,
+      "output_bytes": 416222,
+      "source_sha256": "422ca5f3913e3177f7147bcb5e7be5bbfdf9dd4ce2c77ccc6cd0886db17755f3",
+      "output_sha256": "cea5391b9c746375604e6b3fe1e8f56b6490c5226ad19eaf07667b720d6283dc",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-015-4b6d1a89d8c1.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-015-4b6d1a89d8c1.webp",
+      "source_dimensions": [
+        613,
+        478
+      ],
+      "output_dimensions": [
+        1226,
+        956
+      ],
+      "source_bytes": 141755,
+      "output_bytes": 370986,
+      "source_sha256": "4b6d1a89d8c17bdbc3645002387bd98b504350bb8240bec0a868f46db622f3a7",
+      "output_sha256": "8b92d40810031e5e841c83a44dfcba71ace6beda14c52709b11b95311412ad0e",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-016-ab7a77aa0ce7.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-016-ab7a77aa0ce7.webp",
+      "source_dimensions": [
+        389,
+        197
+      ],
+      "output_dimensions": [
+        778,
+        394
+      ],
+      "source_bytes": 8141,
+      "output_bytes": 100394,
+      "source_sha256": "ab7a77aa0ce724cced19e783efa0eecc1e4439511c688cac5951f5c875c65f57",
+      "output_sha256": "9873962156b2d058342d9ce70bbe9e2af36daaab2270586f5572118594b9fb82",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-017-7105fee01a5c.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-017-7105fee01a5c.webp",
+      "source_dimensions": [
+        746,
+        362
+      ],
+      "output_dimensions": [
+        1492,
+        724
+      ],
+      "source_bytes": 17773,
+      "output_bytes": 211596,
+      "source_sha256": "7105fee01a5c1152af336157dd2b224686bf89c9116dab10534f5d5b6a0a2b18",
+      "output_sha256": "7136310352c8de1a2eef9e1a3610b12776204da68b4a3d47a88f0828e6e54a92",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-018-6995cfc42913.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-018-6995cfc42913.webp",
+      "source_dimensions": [
+        633,
+        243
+      ],
+      "output_dimensions": [
+        1266,
+        486
+      ],
+      "source_bytes": 10577,
+      "output_bytes": 124228,
+      "source_sha256": "6995cfc42913ae7357568bde382d9812991f082f1b97a431e3d7fc97587af5b0",
+      "output_sha256": "ca594ca2596b5485aecf678cc86b46833e453af38a3c1a37a7ac93aabf1dbd5f",
+      "upscaled": true,
+      "recovered_truncated_source": false
+    },
+    {
+      "source": "subjects/MySQL-Performance/assets/transaction-019-06e8b0fe2378.png",
+      "output": "subjects/MySQL-Performance/assets/transaction-019-06e8b0fe2378.webp",
+      "source_dimensions": [
+        1049,
+        248
+      ],
+      "output_dimensions": [
+        1049,
+        248
+      ],
+      "source_bytes": 76014,
+      "output_bytes": 23968,
+      "source_sha256": "06e8b0fe23780548fe7afd30e90d5f597db9bf11bb0dafc95717eac6f6272c18",
+      "output_sha256": "dd90314161418f320cb5fddae932c55387d2b0e6e765d58aee5e50672eea9a64",
       "upscaled": false,
       "recovered_truncated_source": false
     }

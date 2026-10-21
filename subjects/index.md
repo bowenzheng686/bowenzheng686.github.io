@@ -20,4 +20,5 @@ subject_index: true
   <li><a href="{{ '/subjects/ELK/' | relative_url }}">ELK 日志分析（30 个章节）</a></li>
   <li><a href="{{ '/subjects/Docker/' | relative_url }}">Docker 容器技术（37 个章节）</a></li>
   <li><a href="{{ '/subjects/Microservices/' | relative_url }}">微服务架构（43 个章节）</a></li>
+  <li><a href="{{ '/subjects/MySQL-Performance/' | relative_url }}">MySQL 性能调优（25 个章节）</a></li>
 </ul>
