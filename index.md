@@ -27,6 +27,7 @@ home: true
       <li><a href="{{ '/subjects/ELK/' | relative_url }}"><span>ELK 日志分析</span><span>30 章</span></a></li>
       <li><a href="{{ '/subjects/Docker/' | relative_url }}"><span>Docker 容器技术</span><span>37 章</span></a></li>
       <li><a href="{{ '/subjects/Microservices/' | relative_url }}"><span>微服务架构</span><span>43 章</span></a></li>
+      <li><a href="{{ '/subjects/MySQL-Performance/' | relative_url }}"><span>MySQL 性能调优</span><span>25 章</span></a></li>
     </ol>
   </section>
 </main>
