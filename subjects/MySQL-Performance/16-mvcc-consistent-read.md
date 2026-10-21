@@ -29,12 +29,6 @@ COMMIT;
 
 普通一致性读通常不等待记录写锁，锁定读需要读当前可加锁的记录；MVCC 并不是“所有读取都无锁”。长期持有快照会拖慢旧版本清理，因此与长事务治理直接相关。[官方参考：一致性读](https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html)。
 
----
-
-本章依据 MySQL 官方手册与前后章节内容整合；用户所给锁/MVCC 链接与事务篇重复。
-
-[原资料图像归档](source-figures.html)。
-
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">
   <a href="{{ '/subjects/MySQL-Performance/15-gap-next-key-locks.html' | relative_url }}">← 上一篇：记录锁、间隙锁与 next-key 锁</a>

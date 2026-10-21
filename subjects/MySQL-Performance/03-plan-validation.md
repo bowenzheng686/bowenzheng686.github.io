@@ -28,13 +28,7 @@ SELECT TRACE FROM information_schema.OPTIMIZER_TRACE\G
 SET SESSION optimizer_trace='enabled=off';
 ```
 
-原资料比较了 `name > 'a'` 与 `name > 'zzz'`：前者可能命中大部分表，后者可能很少，回表代价使最优路径不同。保留这个案例，但不把某个执行计划截图推广为“范围条件必然不用索引”。若估算和实测差异大，先检查统计信息、数据倾斜与参数，再考虑 `ANALYZE TABLE`，并记录它对线上负载的影响。[官方参考：优化器统计信息](https://dev.mysql.com/doc/refman/8.0/en/optimizer-statistics.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/s/YoQZCEjl)。
-
-[原资料图像归档](source-figures.html)。
+比较 `name > 'a'` 与 `name > 'zzz'`：前者可能命中大部分表，后者可能很少，回表代价使最优路径不同。不能把某个执行计划推广为“范围条件必然不用索引”。若估算和实测差异大，先检查统计信息、数据倾斜与参数，再考虑 `ANALYZE TABLE`，并记录它对线上负载的影响。[官方参考：优化器统计信息](https://dev.mysql.com/doc/refman/8.0/en/optimizer-statistics.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

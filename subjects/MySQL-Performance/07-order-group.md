@@ -23,13 +23,7 @@ EXPLAIN SELECT name, age FROM employees
 WHERE name > 'LiLei' ORDER BY position;
 ```
 
-原资料展示了 `<sort_key, additional_fields>` 与 `<sort_key, rowid>` 两类排序模式。保留为机制示例，但不建议仅凭旧版本的 `max_length_for_sort_data` 阈值去调整新版本配置；应以目标版本的 trace、实际行宽和内存使用验证。若过滤后只剩几十行，先过滤再排序可能优于为排序新增宽索引。减少 `SELECT *` 和过大的返回集往往同样重要。[官方参考：ORDER BY 优化](https://dev.mysql.com/doc/refman/8.0/en/order-by-optimization.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=d2e8a0ae8c9dc2a45c799b771a5899f6&sub=C1831C9ABBE84A29829DE1891B06EF5A)。
-
-[原资料图像归档](source-figures.html)。
+排序可采用 `<sort_key, additional_fields>` 或 `<sort_key, rowid>` 两类模式。不应仅凭旧版本的 `max_length_for_sort_data` 阈值调整新版本配置；应以目标版本的 trace、实际行宽和内存使用验证。若过滤后只剩几十行，先过滤再排序可能优于为排序新增宽索引。减少 `SELECT *` 和过大的返回集往往同样重要。[官方参考：ORDER BY 优化](https://dev.mysql.com/doc/refman/8.0/en/order-by-optimization.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

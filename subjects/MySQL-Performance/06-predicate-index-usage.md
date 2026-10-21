@@ -14,7 +14,7 @@ syntax_highlight: true
 
 ## 避免把语法写成“失效清单”
 
-原实战比较了范围、`IN`、`OR`、前缀 `LIKE` 在大表与小表上的不同计划。正确解释是优化器按代价选路径，语法形式本身不保证或禁止索引。`LIKE 'Li%'` 可能产生可用范围；`LIKE '%Li'` 通常不能利用普通 B+ 树的有序前缀定位。列上的函数、不同类型的隐式转换也可能削弱可搜索性，但生成列/函数索引和查询改写有适用条件。
+范围、`IN`、`OR`、前缀 `LIKE` 在大表与小表上可能产生不同计划。正确解释是优化器按代价选路径，语法形式本身不保证或禁止索引。`LIKE 'Li%'` 可能产生可用范围；`LIKE '%Li'` 通常不能利用普通 B+ 树的有序前缀定位。列上的函数、不同类型的隐式转换也可能削弱可搜索性，但生成列/函数索引和查询改写有适用条件。
 
 ```sql
 EXPLAIN SELECT * FROM employees WHERE name LIKE 'Li%';
@@ -22,13 +22,7 @@ EXPLAIN SELECT * FROM employees WHERE name IN ('LiLei','Lucy');
 EXPLAIN SELECT * FROM employees WHERE name > 'LiLei';
 ```
 
-索引条件下推（ICP）允许存储引擎在二级索引条目上先检验可用谓词，减少回表；它不等于把范围后的每一列都用作精确定位。`IS NULL`、`OR` 及不等式都需结合选择性、覆盖与实际计划判断。对比图来自旧实验，读图时以 SQL、数据量和 MySQL 版本为前提。[官方参考：ICP](https://dev.mysql.com/doc/refman/8.0/en/index-condition-pushdown-optimization.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=d2e8a0ae8c9dc2a45c799b771a5899f6&sub=C1831C9ABBE84A29829DE1891B06EF5A)。
-
-[原资料图像归档](source-figures.html)。
+索引条件下推（ICP）允许存储引擎在二级索引条目上先检验可用谓词，减少回表；它不等于把范围后的每一列都用作精确定位。`IS NULL`、`OR` 及不等式都需结合选择性、覆盖与实际计划判断。分析执行计划时，应同时核对 SQL、数据量和 MySQL 版本。[官方参考：ICP](https://dev.mysql.com/doc/refman/8.0/en/index-condition-pushdown-optimization.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

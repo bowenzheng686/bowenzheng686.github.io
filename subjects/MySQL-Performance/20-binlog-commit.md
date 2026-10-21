@@ -23,13 +23,7 @@ SHOW VARIABLES LIKE 'sync_binlog';
 SHOW BINARY LOGS;
 ```
 
-原资料的 `mysqlbinlog` 查看与误删恢复演示可以作为**隔离测试环境**案例；真实恢复须从经过校验的全量备份加 binlog 重放，并明确停止位置、GTID/事务边界和复制拓扑。清理日志前确认备份和所有副本的需求。[官方参考：binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=f030268c54f18d2116837f8f3ef045bf&sub=4D84722956BB4A4BBB6C42A1D337BCAA)。
-
-[原资料图像归档](source-figures.html)。
+`mysqlbinlog` 可用于查看 binlog；误删恢复应先在隔离测试环境演练。真实恢复须从经过校验的全量备份加 binlog 重放，并明确停止位置、GTID/事务边界和复制拓扑。清理日志前确认备份和所有副本的需求。[官方参考：binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

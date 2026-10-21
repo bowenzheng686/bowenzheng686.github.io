@@ -23,13 +23,7 @@ SELECT * FROM employees WHERE id = 1 FOR SHARE;
 COMMIT;
 ```
 
-MySQL 8.0 推荐 `FOR SHARE`（旧写法 `LOCK IN SHARE MODE` 仍用于兼容）。元数据锁（MDL）保护表结构与正在使用它的语句，长事务可能阻塞 DDL；它与行锁、显式 `LOCK TABLES` 不是一回事。原资料按“乐观/悲观、表/页/行、读/写”分类时，要区分应用层版本号乐观并发控制与 InnoDB 实际锁类型。[官方参考：InnoDB 锁](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html)。
-
----
-
-本章依据 MySQL 官方手册与前后章节内容整合；用户所给锁/MVCC 链接与事务篇重复。
-
-[原资料图像归档](source-figures.html)。
+MySQL 8.0 推荐 `FOR SHARE`（旧写法 `LOCK IN SHARE MODE` 仍用于兼容）。元数据锁（MDL）保护表结构与正在使用它的语句，长事务可能阻塞 DDL；它与行锁、显式 `LOCK TABLES` 不是一回事。讨论“乐观/悲观、表/页/行、读/写”分类时，要区分应用层版本号乐观并发控制与 InnoDB 实际锁类型。[官方参考：InnoDB 锁](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

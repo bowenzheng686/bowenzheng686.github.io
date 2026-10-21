@@ -23,13 +23,7 @@ EXPLAIN ANALYZE SELECT * FROM employees WHERE name > 'zzz';
 ANALYZE TABLE employees;
 ```
 
-原资料用 `FORCE INDEX` 对比全表扫描与索引回表，核心价值是证明“强制索引不必然更快”。提示可用于诊断或极少数稳定场景，但会与数据分布、版本升级和新索引相互影响；上线前应做回归，并准备移除提示。MySQL 8.0 的不可见索引可用于评估删除索引的影响，但要先确认查询是否依赖它。[官方参考：不可见索引](https://dev.mysql.com/doc/refman/8.0/en/invisible-indexes.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=d2e8a0ae8c9dc2a45c799b771a5899f6&sub=C1831C9ABBE84A29829DE1891B06EF5A)。
-
-[原资料图像归档](source-figures.html)。
+`FORCE INDEX` 与全表扫描、索引回表的对比表明：强制索引不必然更快。提示可用于诊断或极少数稳定场景，但会与数据分布、版本升级和新索引相互影响；上线前应做回归，并准备移除提示。MySQL 8.0 的不可见索引可用于评估删除索引的影响，但要先确认查询是否依赖它。[官方参考：不可见索引](https://dev.mysql.com/doc/refman/8.0/en/invisible-indexes.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

@@ -7,11 +7,9 @@ pdf_notes: true
 
 # MySQL 性能调优
 
-本专题共 25 章，按“定位问题 → 读执行计划 → 索引与 SQL → 事务 → 锁/MVCC → 存储与日志 → 实例调优 → 验收”阅读。旧笔记中的版本限定和绝对化结论已在正文中校订。
+本专题共 25 章，按“定位问题 → 读执行计划 → 索引与 SQL → 事务 → 锁/MVCC → 存储与日志 → 实例调优 → 验收”阅读。示例应结合实际 MySQL 版本、表结构与测试数据验证。
 
-[查看原笔记图片归档]({{ '/subjects/MySQL-Performance/source-figures.html' | relative_url }})。其中 71 张原图来自五篇可读取的有道笔记；图片中的旧版界面和说法不替代章节结论。
-
-“锁/MVCC”原链接与事务篇重复，因此第 14—17 章依据前后知识链及 MySQL 官方手册重新整合。“Explain”短链未返回正文，第 01—03 章以官方执行计划文档和原索引实战案例衔接。
+[查看配图汇总]({{ '/subjects/MySQL-Performance/source-figures.html' | relative_url }})。
 
 ## 执行计划与诊断
 <ol start="1">
@@ -61,14 +59,3 @@ pdf_notes: true
   <li><a href="{{ '/subjects/MySQL-Performance/24-mysql-8-features.html' | relative_url }}">MySQL 8.0 中与调优相关的能力</a></li>
   <li><a href="{{ '/subjects/MySQL-Performance/25-end-to-end-case.html' | relative_url }}">端到端案例、验收与回滚</a></li>
 </ol>
-
-## 原始资料
-
-- [explain](https://note.youdao.com/s/YoQZCEjl)
-- [index1](https://note.youdao.com/noteshare?id=d2e8a0ae8c9dc2a45c799b771a5899f6&sub=C1831C9ABBE84A29829DE1891B06EF5A)
-- [index2](https://note.youdao.com/noteshare?id=df15aba3aa76c225090d04d0dc776dd9&sub=B0D6000AA824407489097F4C87B3F36D)
-- [transaction](https://note.youdao.com/noteshare?id=9cdb35f4b463f3db296c57f5120bcf5d&sub=DA9C05A19FCE4B4EA56272006036698F)
-- [innodb](https://note.youdao.com/noteshare?id=f030268c54f18d2116837f8f3ef045bf&sub=4D84722956BB4A4BBB6C42A1D337BCAA)
-- [global](https://note.youdao.com/noteshare?id=c0b91c9b60a787a2293a780ca5d3c151&sub=A8EEC383AEEB4D7C883228E7CAF37B17)
-
-校订主要参考 [MySQL 8.0 官方手册](https://dev.mysql.com/doc/refman/8.0/en/)；使用示例前先检查实际小版本、表结构与测试数据。

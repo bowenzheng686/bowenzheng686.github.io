@@ -25,7 +25,7 @@ SHOW GLOBAL STATUS LIKE 'Threads_running';
 
 在可控环境用与生产相近的数据量、索引、统计信息和参数复现，再按 SQL digest 聚合调用次数、总耗时与最大耗时。比较同一查询的冷/热缓存结果，固定过滤条件和返回列；单次客户端计时不作为结论。高流量系统启用或下调慢日志阈值前要评估日志量、I/O 与敏感字段。
 
-本专题的索引实验沿用原资料的 `employees(id, name, age, position, hire_time)` 和复合索引 `(name, age, position)`；需要复现时先建表，再只在测试库造数：
+后续索引实验使用 `employees(id, name, age, position, hire_time)` 和复合索引 `(name, age, position)`；需要复现时先建表，再只在测试库造数：
 
 ```sql
 CREATE TABLE employees (
@@ -39,12 +39,6 @@ CREATE TABLE employees (
 ```
 
 下一篇先读执行计划，再决定是否需要 SQL 或索引变更。[官方参考：慢查询日志](https://dev.mysql.com/doc/refman/8.0/en/slow-query-log.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/s/YoQZCEjl)。
-
-[原资料图像归档](source-figures.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

@@ -24,13 +24,7 @@ ALTER TABLE employees ALTER INDEX idx_hire_desc_id INVISIBLE;
 -- 验证后可改回 VISIBLE；不要在尚有依赖时直接删除。
 ```
 
-旧资料中 MySQL 5.7 的 query cache 配置在 8.0 已不适用；同样，8.0.20 起无索引关联不能继续笼统解释为 Block Nested Loop。新能力的章节以官方版本说明和实验结果为准。[官方参考：MySQL 8.0 新特性](https://dev.mysql.com/doc/refman/8.0/en/mysql-nutshell.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=c0b91c9b60a787a2293a780ca5d3c151&sub=A8EEC383AEEB4D7C883228E7CAF37B17)。
-
-[原资料图像归档](source-figures.html)。
+MySQL 5.7 的 query cache 配置在 8.0 已不适用；同样，8.0.20 起无索引关联不能继续笼统解释为 Block Nested Loop。评估新能力时，应核对目标版本并做实验。[官方参考：MySQL 8.0 新特性](https://dev.mysql.com/doc/refman/8.0/en/mysql-nutshell.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

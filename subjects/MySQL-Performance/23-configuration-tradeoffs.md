@@ -24,13 +24,7 @@ SHOW VARIABLES WHERE Variable_name IN (
 SHOW GLOBAL STATUS LIKE 'Max_used_connections';
 ```
 
-原资料中的固定内存比例、连接数公式和默认值可能随版本变化，应改为“查看当前值 → 找到瓶颈 → 估算资源 → 单变量试验 → 回滚”。参数变更需注明作用域、动态生效性、重启需求和持久化方式。[官方参考：系统变量](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=c0b91c9b60a787a2293a780ca5d3c151&sub=A8EEC383AEEB4D7C883228E7CAF37B17)。
-
-[原资料图像归档](source-figures.html)。
+固定内存比例、连接数公式和默认值可能随版本变化；应按“查看当前值 → 找到瓶颈 → 估算资源 → 单变量试验 → 回滚”。参数变更需注明作用域、动态生效性、重启需求和持久化方式。[官方参考：系统变量](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

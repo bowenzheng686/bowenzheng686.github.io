@@ -18,13 +18,7 @@ syntax_highlight: true
 
 排查写入抖动时观察 redo 空间、脏页比例、刷盘速率、磁盘延迟和检查点推进，不应只把 `innodb_io_capacity` 调大。更改 `innodb_flush_log_at_trx_commit` 或 `sync_binlog` 前先确定可接受的数据丢失窗口。恢复演练应包括：备份可读、实例能启动、关键表计数和抽样校验、应用查询正确以及复制追平。
 
-原资料的流程图将 redo、binlog、undo 画在同一张图上，适合建立全貌；精确提交顺序仍以目标版本文档为准。[官方参考：InnoDB 恢复](https://dev.mysql.com/doc/refman/8.0/en/innodb-recovery.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=f030268c54f18d2116837f8f3ef045bf&sub=4D84722956BB4A4BBB6C42A1D337BCAA)。
-
-[原资料图像归档](source-figures.html)。
+redo、binlog、undo 分别承担崩溃恢复、复制与时间点恢复、回滚与一致性读等职责；精确提交和恢复顺序需结合目标版本验证。[官方参考：InnoDB 恢复](https://dev.mysql.com/doc/refman/8.0/en/innodb-recovery.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

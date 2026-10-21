@@ -22,13 +22,7 @@ FROM information_schema.innodb_trx
 ORDER BY trx_started;
 ```
 
-原资料建议“更新放到事务靠后位置”，可作为减少持锁时间的一个思路，但不能机械执行：外键、唯一约束、并发竞争和业务依赖可能要求不同顺序。对于冲突后的重试，应设置次数上限、退避和幂等键；不要把死锁或超时吞掉当成成功。下一组进入锁机制。[官方参考：死锁处理](https://dev.mysql.com/doc/refman/8.0/en/innodb-deadlocks-handling.html)。
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=9cdb35f4b463f3db296c57f5120bcf5d&sub=DA9C05A19FCE4B4EA56272006036698F)。
-
-[原资料图像归档](source-figures.html)。
+将更新放到事务靠后位置，有时可减少持锁时间，但不能机械执行：外键、唯一约束、并发竞争和业务依赖可能要求不同顺序。对于冲突后的重试，应设置次数上限、退避和幂等键；不要把死锁或超时吞掉当成成功。下一组进入锁机制。[官方参考：死锁处理](https://dev.mysql.com/doc/refman/8.0/en/innodb-deadlocks-handling.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

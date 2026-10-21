@@ -22,19 +22,13 @@ EXPLAIN SELECT * FROM employees WHERE name > 'LiLei';
 EXPLAIN SELECT name, age, position FROM employees WHERE name > 'LiLei';
 ```
 
-原资料的覆盖索引案例值得保留，结论应改为：是否采用索引取决于成本，投影列变化可能改变计划；不保证覆盖索引在每个数据集上都更快。低基数字段也不是“一律不建索引”：它可与其他条件或排序组合，或成为高频查询的一部分。设计时以真实查询、选择性、写入比例和维护成本共同决定。[官方参考：InnoDB 索引类型](https://dev.mysql.com/doc/refman/8.0/en/innodb-index-types.html)。
+覆盖索引案例说明：是否采用索引取决于成本，投影列变化可能改变计划；不保证覆盖索引在每个数据集上都更快。低基数字段也不是“一律不建索引”：它可与其他条件或排序组合，或成为高频查询的一部分。设计时以真实查询、选择性、写入比例和维护成本共同决定。[官方参考：InnoDB 索引类型](https://dev.mysql.com/doc/refman/8.0/en/innodb-index-types.html)。
 
-原资料对照：强制索引时可能出现 `Using index condition`；仅取索引覆盖的列时出现 `Using index`。两图是该实验的计划，不是新版实例的固定结果。
+对照计划：强制索引时可能出现 `Using index condition`；仅取索引覆盖的列时出现 `Using index`。两图反映特定数据与版本下的执行计划，不代表所有实例的固定结果。
 
-![原资料强制索引的执行计划](assets/index-1-002-e746417dbdcb.webp)
+![强制索引的执行计划](assets/index-1-002-e746417dbdcb.webp)
 
-![原资料覆盖索引的执行计划](assets/index-1-003-a4d707431671.webp)
-
----
-
-原始资料：[有道云笔记](https://note.youdao.com/noteshare?id=d2e8a0ae8c9dc2a45c799b771a5899f6&sub=C1831C9ABBE84A29829DE1891B06EF5A)。
-
-[原资料图像归档](source-figures.html)。
+![覆盖索引的执行计划](assets/index-1-003-a4d707431671.webp)
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">

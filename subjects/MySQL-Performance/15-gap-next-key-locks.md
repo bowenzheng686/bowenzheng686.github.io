@@ -24,13 +24,7 @@ WHERE name BETWEEN 'Li' AND 'Lu' FOR UPDATE;
 -- 会话 B 尝试在该范围插入，再查看 data_locks/data_lock_waits。
 ```
 
-原资料“RR 会锁住所有扫过的记录和间隙”可作为直观引入，但不应当成精确锁集合公式：谓词、索引、优化器计划、唯一性、隔离级别均会改变锁定范围。无索引的更新尤其应先用计划审查实际扫描量，不要笼统称为“自动升级为表锁”。[官方参考：锁定语句所加锁](https://dev.mysql.com/doc/refman/8.0/en/innodb-locks-set.html)。
-
----
-
-本章依据 MySQL 官方手册与前后章节内容整合；用户所给锁/MVCC 链接与事务篇重复。
-
-[原资料图像归档](source-figures.html)。
+RR 下的锁定范围不能套用“锁住所有扫过的记录和间隙”的固定公式：谓词、索引、优化器计划、唯一性、隔离级别均会改变锁定范围。无索引的更新尤其应先用计划审查实际扫描量，不要笼统称为“自动升级为表锁”。[官方参考：锁定语句所加锁](https://dev.mysql.com/doc/refman/8.0/en/innodb-locks-set.html)。
 
 {% endraw %}
 <nav class="article-end" aria-label="章节导航">
