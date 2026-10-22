@@ -400,9 +400,6 @@ awk '{print $10, $7}' /var/log/nginx/access.log | sort -rn | head -20
 
 ![用统一时间窗、调用链和 request-id 将上游现象收敛到下游根因。](assets/chapter13/04-log-root-cause-tracing.webp)
 
-## 注解
-
-<strong>JSON</strong> · JavaScript Object Notation JavaScript 对象表示法
 
 {% endraw %}
 

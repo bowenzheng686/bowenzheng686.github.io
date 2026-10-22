@@ -625,15 +625,6 @@ echo "=== 系统解析器测试 ===" && getent ahosts example.com || echo "当�
 <strong>网络排障的心法：按层定位，但不要把单次探测当作结论</strong><br>
 先核对链路、地址与路由，再探测本环境允许访问的网关或目标地址，之后查询系统实际使用的解析器，最后用 `curl` 验证目标应用。ICMP 可能被禁用，公网探测地址也可能被策略阻断；Ping 失败不能单独证明网络中断，DNS 成功也不能证明应用可用。
 
-## 注解
-
-<strong>ARP</strong> · Address Resolution Protocol 地址解析协议
-
-<strong>GDB</strong> · GNU Debugger GNU 调试器
-
-<strong>HTTPS</strong> · Hypertext Transfer Protocol Secure 安全超文本传输协议
-
-<strong>SSL</strong> · Secure Sockets Layer 安全套接层
 
 {% endraw %}
 

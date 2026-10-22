@@ -493,11 +493,6 @@ $ systemd-analyze blame
  892ms sshd.service
 ```
 
-## 注解
-
-<strong>DAG</strong> · Directed Acyclic Graph 有向无环图
-
-<strong>UDP</strong> · User Datagram Protocol 用户数据报协议
 
 {% endraw %}
 

@@ -206,19 +206,6 @@ chsh -s $(which zsh)
 echo $SHELL             # /usr/bin/zsh
 ```
 
-## 注解
-
-<strong>ACL</strong> · Access Control List 访问控制列表
-
-<strong>CPU</strong> · Central Processing Unit 中央处理器
-
-<strong>GUI</strong> · Graphical User Interface 图形用户界面
-
-<strong>RAM</strong> · Random-Access Memory 随机存取存储器
-
-<strong>SQL</strong> · Structured Query Language 结构化查询语言
-
-<strong>SSH</strong> · Secure Shell 安全外壳协议
 
 {% endraw %}
 
